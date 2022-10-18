@@ -30,15 +30,16 @@ const extractEmote = async (emoteIdentificator: string) => {
 
     try {
       const emoteInfo = (await getEmoteInfo(internalId!)) as EmoteResponseAPI;
-      let emotePrview = `https:${emoteInfo.host.url}/2x.webp`;
+      let emotePreview = `https:${emoteInfo.host.url}/2x.webp`;
 
       const rawEmote = await getRawEmote(emoteInfo.host.url);
       let emoteBuffer = Buffer.from(rawEmote!);
 
       if (emoteInfo.animated) {
-        emotePrview = `https:${emoteInfo.host.url}/2x.gif`;
+        emotePreview = `https:${emoteInfo.host.url}/2x.gif`;
         await sharp(emoteBuffer, { animated: true })
-          .gif()
+          .gif({ reoptimise: true, reoptimize: true })
+          // .resize(20, 20)
           .toBuffer()
           .then((data) => {
             emoteBuffer = data;
@@ -48,11 +49,13 @@ const extractEmote = async (emoteIdentificator: string) => {
           });
       }
 
+      console.log(emoteBuffer.byteLength);
+
       resolve({
         author: emoteInfo.owner.display_name,
         name: emoteInfo.name,
         image: emoteBuffer,
-        preview: emotePrview,
+        preview: emotePreview,
       });
     } catch (error) {
       console.error(error);
