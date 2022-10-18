@@ -1,39 +1,64 @@
 import isValidURL from "../utils/isValidURL";
+import sharp from "sharp";
 
 import { EmoteResponseAPI, EmoteFileAPI } from "../api/apiResponseType";
-import { Base64String } from "discord.js";
+import { Base64String, GuildPreview } from "discord.js";
+import getEmoteInfo from "../api/getEmoteInfo";
+import getRawEmote from "../api/getRawEmote";
 
 interface ExtractedEmote {
   name: string;
-  image: Base64String;
+  author: string;
+  image: Buffer;
+  preview: string;
 }
 
 const extractEmote = async (emoteIdentificator: string) => {
-  let internalId: string | undefined = emoteIdentificator;
+  return new Promise<ExtractedEmote>(async (resolve, reject) => {
+    let internalId: string | undefined = emoteIdentificator;
 
-  if (isValidURL(internalId)) {
-    let fullURL = new URL(emoteIdentificator);
-    let pathnamesArray = fullURL.pathname.split("/");
-    internalId = pathnamesArray.find((path) => path.length === 24);
-  }
+    if (isValidURL(internalId)) {
+      let fullURL = new URL(emoteIdentificator);
+      let pathnamesArray = fullURL.pathname.split("/");
+      internalId = pathnamesArray.find((path) => path.length === 24);
+    }
 
-  const emoteInfo = await fetch(`https://7tv.io/v3/emotes/${internalId}`);
-  const emoteInfoJSON: EmoteResponseAPI = await emoteInfo.json();
+    if (internalId === undefined || internalId.length !== 24) {
+      reject("Invalid emote reference or URL");
+      return;
+    }
 
-  let emotes: EmoteFileAPI[] = emoteInfoJSON.host.files.filter((file) => {
-    if (file.format === "AVIF") return false;
-    return true;
+    try {
+      const emoteInfo = (await getEmoteInfo(internalId!)) as EmoteResponseAPI;
+      let emotePrview = `https:${emoteInfo.host.url}/2x.webp`;
+
+      const rawEmote = await getRawEmote(emoteInfo.host.url);
+      let emoteBuffer = Buffer.from(rawEmote!);
+
+      if (emoteInfo.animated) {
+        emotePrview = `https:${emoteInfo.host.url}/2x.gif`;
+        await sharp(emoteBuffer, { animated: true })
+          .gif()
+          .toBuffer()
+          .then((data) => {
+            emoteBuffer = data;
+          })
+          .catch((error) => {
+            reject(error);
+          });
+      }
+
+      resolve({
+        author: emoteInfo.owner.display_name,
+        name: emoteInfo.name,
+        image: emoteBuffer,
+        preview: emotePrview,
+      });
+    } catch (error) {
+      console.error(error);
+      reject("Emote not found.");
+    }
   });
-
-  const emoteRaw = await fetch(`https:${emoteInfoJSON.host.url}/3x.webp`);
-  const emoteArrayBuffer = await emoteRaw.arrayBuffer();
-  const emoteBuffer = Buffer.from(emoteArrayBuffer);
-
-  return {
-    name: emoteInfoJSON.name,
-    emoteBuffer,
-    emotePreviewURL: `https:${emoteInfoJSON.host.url}/4x.webp`,
-  };
 };
 
 export default extractEmote;

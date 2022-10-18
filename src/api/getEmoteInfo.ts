@@ -5,16 +5,15 @@ const getURL = (emoteId: string): string => {
 };
 
 const getEmoteInfo = async (emoteId: string): Promise<EmoteResponseAPI> => {
-  // const response = await fetch(getURL(emoteId));
-  // const data = await response.json() as GetEmoteResponse;
-  // return data;
-
   return await fetch(getURL(emoteId))
     .then((response) => response.json())
     .then((data) => {
       return data;
     })
-    .catch(console.error);
+    .catch((error) => {
+      console.error(error);
+      return undefined;
+    });
 };
 
 export default getEmoteInfo;

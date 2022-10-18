@@ -18,8 +18,11 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: "10" }).setToken(discordBotToken);
 
+//823926383491022878 -- discord spoko
+//1031909216555896852 -- w?
+
 rest
-  .put(Routes.applicationGuildCommands(discordBotId, "823926383491022878"), {
+  .put(Routes.applicationGuildCommands(discordBotId, "1031909216555896852"), {
     body: commands,
   })
   .then((data) => console.log(`successfully registered`))
