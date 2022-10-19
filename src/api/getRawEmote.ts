@@ -1,7 +1,7 @@
 import { EmoteResponseAPI } from "./apiResponseType";
 
 const getURL = (hostURL: string): string => {
-  return new URL(`2x.webp`, `https:${hostURL}/`).href;
+  return new URL(`3x.webp`, `https:${hostURL}/`).href;
 };
 
 const getRawEmote = async (hostURL: string) => {

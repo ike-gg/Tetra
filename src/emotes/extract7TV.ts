@@ -1,10 +1,12 @@
 import isValidURL from "../utils/isValidURL";
 import sharp from "sharp";
 
-import { EmoteResponseAPI, EmoteFileAPI } from "../api/apiResponseType";
-import { Base64String, GuildPreview } from "discord.js";
+import { EmoteResponseAPI } from "../api/apiResponseType";
+import { CommandInteraction } from "discord.js";
+
 import getEmoteInfo from "../api/getEmoteInfo";
 import getRawEmote from "../api/getRawEmote";
+import emoteOptimise from "./emoteOptimise";
 
 interface ExtractedEmote {
   name: string;
@@ -13,12 +15,15 @@ interface ExtractedEmote {
   preview: string;
 }
 
-const extractEmote = async (emoteIdentificator: string) => {
+const extractEmote = async (
+  emoteReference: string,
+  interaction: CommandInteraction
+) => {
   return new Promise<ExtractedEmote>(async (resolve, reject) => {
-    let internalId: string | undefined = emoteIdentificator;
+    let internalId: string | undefined = emoteReference;
 
     if (isValidURL(internalId)) {
-      let fullURL = new URL(emoteIdentificator);
+      let fullURL = new URL(emoteReference);
       let pathnamesArray = fullURL.pathname.split("/");
       internalId = pathnamesArray.find((path) => path.length === 24);
     }
@@ -30,26 +35,39 @@ const extractEmote = async (emoteIdentificator: string) => {
 
     try {
       const emoteInfo = (await getEmoteInfo(internalId!)) as EmoteResponseAPI;
-      let emotePreview = `https:${emoteInfo.host.url}/2x.webp`;
+      let emotePreview = `https:${emoteInfo.host.url}/2x`;
+      emoteInfo.animated ? (emotePreview += ".gif") : (emotePreview += ".webp");
 
       const rawEmote = await getRawEmote(emoteInfo.host.url);
-      let emoteBuffer = Buffer.from(rawEmote!);
+      let rawEmoteBuffer = Buffer.from(rawEmote!);
 
-      if (emoteInfo.animated) {
-        emotePreview = `https:${emoteInfo.host.url}/2x.gif`;
-        await sharp(emoteBuffer, { animated: true })
-          .gif({ reoptimise: true, reoptimize: true })
-          // .resize(20, 20)
-          .toBuffer()
-          .then((data) => {
-            emoteBuffer = data;
-          })
-          .catch((error) => {
-            reject(error);
-          });
-      }
+      const emoteBuffer = await emoteOptimise(rawEmoteBuffer, {
+        animated: emoteInfo.animated,
+        interaction: interaction,
+      });
 
-      console.log(emoteBuffer.byteLength);
+      console.log(emoteBuffer);
+
+      // if (emoteInfo.animated) {
+      //   await sharp(emoteBuffer, { animated: true })
+      //     .gif({ reoptimise: true, reoptimize: true })
+      //     // .resize(20, 20)
+      //     .toBuffer()
+      //     .then((data) => {
+      //       emoteBuffer = data;
+      //     })
+      //     .catch((error) => {
+      //       reject(error);
+      //     });
+      // }
+
+      // if (emoteBuffer.byteLength > maxEmoteSize) {
+      //   reject(
+      //     `file size exceeded, fetching optimise function ${emoteBuffer.byteLength} / max. ${maxEmoteSize}`
+      //   );
+      // }
+
+      console.log("uwolnienie");
 
       resolve({
         author: emoteInfo.owner.display_name,

@@ -5,8 +5,8 @@ import {
   Interaction,
   SlashCommandBuilder,
 } from "discord.js";
-import extractEmote from "../emotes/extract7TV";
 
+import extractEmote from "../emotes/extract7TV";
 import messageCreator from "../utils/embedMessage/createEmbed";
 
 const importEmote = {
@@ -29,53 +29,44 @@ const importEmote = {
     ),
   async execute(interaction: CommandInteraction) {
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
-      interaction.reply({
-        embeds: [
-          messageCreator.errorEmbed(
-            "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
-          ),
-        ],
-      });
+      interaction.reply(
+        messageCreator.errorEmbed(
+          "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
+        )
+      );
       return;
     }
 
-    interaction.reply({
-      embeds: [
-        messageCreator.infoEmbed("Got'ya homie!", "Working on your request..."),
-      ],
-    });
+    await interaction.reply(
+      messageCreator.infoEmbed("Got'ya your request!", "Working on it... 🏗️")
+    );
 
     const emoteReference = interaction.options.get("link")?.value as string;
     const customName = interaction.options.get("name")?.value as string;
 
-    extractEmote(emoteReference)
+    extractEmote(emoteReference, interaction)
       .then((emote) => {
-        customName ? (emote.name = customName) : "";
+        customName ? (emote.name = customName) : null;
         interaction
           .guild!.emojis.create({ attachment: emote.image, name: emote.name })
-          .then((fulfilled) => {
-            interaction.editReply({
-              embeds: [
-                messageCreator
-                  .successfulEmbed(
-                    `Success!`,
-                    `Successfully added ${emote.name} emote!`
-                  )
-                  .setImage(emote.preview),
-              ],
-            });
+          .then(() => {
+            interaction.editReply(
+              messageCreator.successfulEmbed(
+                `Success!`,
+                `Successfully added \`${emote.name}\` emote!`,
+                emote.preview
+              )
+            );
           })
           .catch((error) => {
             const errorMessage = error as DiscordAPIError;
-            interaction.editReply({
-              embeds: [messageCreator.errorEmbed(errorMessage.message)],
-            });
+            interaction.editReply(
+              messageCreator.errorEmbed(errorMessage.message)
+            );
           });
       })
       .catch((error) => {
-        interaction.editReply({
-          embeds: [messageCreator.errorEmbed(error)],
-        });
+        interaction.editReply(messageCreator.errorEmbed(error));
       });
   },
 };
