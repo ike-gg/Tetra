@@ -1,7 +1,11 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 
-import { CommandInteraction } from "discord.js";
+import {
+  BaseInteraction,
+  ButtonInteraction,
+  CommandInteraction,
+} from "discord.js";
 import { maxEmoteSize } from "../../config.json";
 import warningEmbed from "../utils/embedMessage/warningEmbed";
 
@@ -9,7 +13,7 @@ const emoteOptimise = async (
   image: Buffer,
   options: {
     animated: boolean;
-    interaction?: CommandInteraction;
+    interaction?: CommandInteraction | ButtonInteraction;
   }
 ): Promise<Buffer> => {
   const { animated, interaction } = options;
@@ -25,10 +29,7 @@ const emoteOptimise = async (
         `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
       )
     );
-    console.log("beginning width/height");
-    console.log(dimensions.width, dimensions.height);
     while (processedBuffer.byteLength > maxEmoteSize) {
-      console.log("optimise round");
       dimensions.height = Math.floor((dimensions.height *= 0.8));
       dimensions.width = Math.floor((dimensions.width *= 0.8));
       if (animated) {
@@ -43,8 +44,6 @@ const emoteOptimise = async (
           .toBuffer();
       }
     }
-    console.log("ending with width/height");
-    console.log(dimensions.width, dimensions.height);
   }
   return processedBuffer;
 };

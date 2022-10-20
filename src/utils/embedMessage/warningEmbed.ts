@@ -1,13 +1,14 @@
 import { EmbedBuilder } from "@discordjs/builders";
-import { InteractionReplyOptions } from "discord.js";
+import { BaseMessageOptions } from "discord.js";
 
-const warningEmbed = (description: string): InteractionReplyOptions => {
+const warningEmbed = (description: string): BaseMessageOptions => {
   const embed = new EmbedBuilder()
     .setTitle("⚠️ Warning!")
     .setColor(0xf7e139)
     .setDescription(description);
   return {
     embeds: [embed],
+    components: [],
   };
 };
 

@@ -1,8 +1,6 @@
 import {
   CommandInteraction,
   DiscordAPIError,
-  ErrorEvent,
-  Interaction,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -11,8 +9,10 @@ import messageCreator from "../utils/embedMessage/createEmbed";
 
 const importEmote = {
   data: new SlashCommandBuilder()
-    .setName("import")
-    .setDescription("Import emote from 7TV to this server")
+    .setName("addemotelink")
+    .setDescription(
+      "Import emote from 7TV using reference to emote (link or ID)"
+    )
     .addStringOption((option) =>
       option
         .setName("link")

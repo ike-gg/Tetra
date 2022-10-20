@@ -12,7 +12,7 @@ const getEmoteInfo = async (emoteId: string): Promise<EmoteResponseAPI> => {
     })
     .catch((error) => {
       console.error(error);
-      return undefined;
+      throw new Error("Emote not found");
     });
 };
 

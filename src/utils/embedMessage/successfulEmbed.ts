@@ -1,10 +1,10 @@
-import { InteractionReplyOptions, EmbedBuilder } from "discord.js";
+import { BaseMessageOptions, EmbedBuilder } from "discord.js";
 
 const successfulEmbed = (
   title: string,
   description: string,
   image?: string
-): InteractionReplyOptions => {
+): BaseMessageOptions => {
   const embed = new EmbedBuilder()
     .setColor(0x3acf38)
     .setTitle(`✅ ${title}`)
@@ -12,7 +12,7 @@ const successfulEmbed = (
   if (image) {
     embed.setImage(image);
   }
-  return { embeds: [embed] };
+  return { embeds: [embed], components: [] };
 };
 
 export default successfulEmbed;

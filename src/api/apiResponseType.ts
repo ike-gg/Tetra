@@ -1,4 +1,6 @@
-interface EmoteFileAPI {
+//types for searching VIA ID
+
+export interface EmoteFileAPI {
   name: "1x" | "2x" | "3x" | "4x";
   static_name: "1x" | "2x" | "3x" | "4x";
   width: number;
@@ -7,7 +9,7 @@ interface EmoteFileAPI {
   format: "AVIF" | "WEBP";
 }
 
-interface EmoteResponseAPI {
+export interface EmoteResponseAPI {
   id: string;
   name: string;
   animated: boolean;
@@ -21,4 +23,33 @@ interface EmoteResponseAPI {
   };
 }
 
-export type { EmoteResponseAPI, EmoteFileAPI };
+//types for searching via name
+
+export interface EmoteGQL {
+  id: string;
+  name: string;
+  animated: boolean;
+  owner: {
+    display_name: string;
+  };
+  host: {
+    url: string;
+  };
+}
+
+export interface EmoteResponseGQL {
+  data: {
+    emotes: {
+      items: EmoteGQL[];
+    };
+  };
+}
+
+export interface EmptyEmoteResponseGQL {
+  errors: {
+    message: string;
+    extensions: {
+      message: string;
+    };
+  }[];
+}

@@ -2,7 +2,12 @@ import isValidURL from "../utils/isValidURL";
 import sharp from "sharp";
 
 import { EmoteResponseAPI } from "../api/apiResponseType";
-import { CommandInteraction } from "discord.js";
+import {
+  BaseInteraction,
+  ButtonBuilder,
+  ButtonInteraction,
+  CommandInteraction,
+} from "discord.js";
 
 import getEmoteInfo from "../api/getEmoteInfo";
 import getRawEmote from "../api/getRawEmote";
@@ -17,7 +22,7 @@ interface ExtractedEmote {
 
 const extractEmote = async (
   emoteReference: string,
-  interaction: CommandInteraction
+  interaction: CommandInteraction | ButtonInteraction
 ) => {
   return new Promise<ExtractedEmote>(async (resolve, reject) => {
     let internalId: string | undefined = emoteReference;
@@ -45,29 +50,6 @@ const extractEmote = async (
         animated: emoteInfo.animated,
         interaction: interaction,
       });
-
-      console.log(emoteBuffer);
-
-      // if (emoteInfo.animated) {
-      //   await sharp(emoteBuffer, { animated: true })
-      //     .gif({ reoptimise: true, reoptimize: true })
-      //     // .resize(20, 20)
-      //     .toBuffer()
-      //     .then((data) => {
-      //       emoteBuffer = data;
-      //     })
-      //     .catch((error) => {
-      //       reject(error);
-      //     });
-      // }
-
-      // if (emoteBuffer.byteLength > maxEmoteSize) {
-      //   reject(
-      //     `file size exceeded, fetching optimise function ${emoteBuffer.byteLength} / max. ${maxEmoteSize}`
-      //   );
-      // }
-
-      console.log("uwolnienie");
 
       resolve({
         author: emoteInfo.owner.display_name,
