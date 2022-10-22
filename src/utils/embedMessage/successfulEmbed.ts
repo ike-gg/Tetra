@@ -12,7 +12,7 @@ const successfulEmbed = (
   if (image) {
     embed.setImage(image);
   }
-  return { embeds: [embed], components: [] };
+  return { embeds: [embed] };
 };
 
 export default successfulEmbed;

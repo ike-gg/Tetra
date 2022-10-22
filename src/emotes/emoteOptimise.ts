@@ -30,6 +30,7 @@ const emoteOptimise = async (
       )
     );
     while (processedBuffer.byteLength > maxEmoteSize) {
+      console.log(`${processedBuffer.byteLength} / ${maxEmoteSize}`);
       dimensions.height = Math.floor((dimensions.height *= 0.8));
       dimensions.width = Math.floor((dimensions.width *= 0.8));
       if (animated) {

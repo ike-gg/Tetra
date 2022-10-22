@@ -1,10 +1,10 @@
-import {
-  EmoteGQL,
-  EmoteResponseGQL,
-  EmptyEmoteResponseGQL,
-} from "./apiResponseType";
+import { EmoteGQL } from "./apiResponseType";
 
-const searchEmote = async (emote: string): Promise<EmoteGQL[]> => {
+const searchEmote = async (
+  emote: string,
+  page = 1,
+  exact_match = true
+): Promise<EmoteGQL[]> => {
   return await fetch("https://7tv.io/v3/gql", {
     method: "POST",
     headers: {
@@ -12,7 +12,7 @@ const searchEmote = async (emote: string): Promise<EmoteGQL[]> => {
     },
     body: JSON.stringify({
       query: `{
-        emotes(query: "${emote}", page: 1, limit: 5, filter: {case_sensitive: true, exact_match: false, ignore_tags: true}) {
+        emotes(query: "${emote}", page: ${page}, limit: 5, filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}) {
           items {
             id
             name

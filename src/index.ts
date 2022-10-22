@@ -38,7 +38,6 @@ const buttonInteractionsFiles = fs
 for (const file of buttonInteractionsFiles) {
   const filePath = path.join(buttonInteractionsPath, file);
   import(filePath).then((buttonInteraction) => {
-    console.log(buttonInteraction);
     client.buttonInteractions.set(
       buttonInteraction.default.data.name,
       buttonInteraction.default

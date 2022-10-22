@@ -55,9 +55,9 @@ const importEmote = {
     );
 
     const emoteReference = interaction.options.get("name")?.value as string;
-    const customName = interaction.options.get("exactmatch")?.value as boolean;
+    const exactmatch = interaction.options.get("exactmatch")?.value as boolean;
 
-    searchEmote(emoteReference)
+    searchEmote(emoteReference, 1, exactmatch)
       .then((foundEmotes) => {
         if (foundEmotes.length == 0) {
           interaction.editReply(
@@ -86,7 +86,7 @@ const importEmote = {
               )
               .setEmoji(number)
               .setLabel("Select")
-              .setStyle(ButtonStyle.Primary)
+              .setStyle(ButtonStyle.Secondary)
           );
 
           return messageCreator.emotePreviewEmbed({
@@ -98,7 +98,18 @@ const importEmote = {
           });
         });
 
-        interaction.editReply({ embeds: emotesEmbed, components: [buttons] });
+        const navigatorRow = new ActionRowBuilder<ButtonBuilder>();
+        navigatorRow.addComponents(
+          new ButtonBuilder()
+            .setCustomId("cancelAction")
+            .setLabel("Cancel")
+            .setStyle(ButtonStyle.Danger)
+        );
+
+        interaction.editReply({
+          embeds: emotesEmbed,
+          components: [buttons, navigatorRow],
+        });
       })
       .catch((error) => {
         interaction.editReply(messageCreator.errorEmbed(error));

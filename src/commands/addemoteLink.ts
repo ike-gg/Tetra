@@ -36,7 +36,6 @@ const importEmote = {
       );
       return;
     }
-
     await interaction.reply(
       messageCreator.infoEmbed("Got'ya your request!", "Working on it... 🏗️")
     );

@@ -6,7 +6,6 @@ const infoEmbed = (title: string, description: string): BaseMessageOptions => {
   // return { embeds: [embed] };
   return {
     embeds: [embed],
-    components: [],
   };
 };
 

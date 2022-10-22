@@ -5,9 +5,9 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "npx ts-node src/index.ts",
-    "deployCommands": "npx ts-node src/deploy-commands.ts",
+    "deployCommands": "npx ts-node src/deploy-commands-global.ts",
     "dev": "nodemon",
-    "devdeploy": "ts-node src/deploy-commands.ts && nodemon"
+    "devdeploy": "ts-node src/deploy-commands-dev.ts && nodemon"
   },
   "author": "",
   "license": "ISC",

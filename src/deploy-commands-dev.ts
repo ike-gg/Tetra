@@ -2,9 +2,9 @@ import fs from "node:fs";
 import path from "path";
 
 import { REST, Routes } from "discord.js";
-import { discordBotToken, discordBotId } from "../config.json";
+import { discordBotToken, discordBotId, devGuilds } from "../config.json";
 
-const commands = [];
+const commands: any[] = [];
 const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs
   .readdirSync(commandsPath)
@@ -21,9 +21,11 @@ const rest = new REST({ version: "10" }).setToken(discordBotToken);
 //823926383491022878 -- discord spoko
 //1031909216555896852 -- w?
 
-rest
-  .put(Routes.applicationGuildCommands(discordBotId, "1031909216555896852"), {
-    body: commands,
-  })
-  .then((data) => console.log(`successfully registered`))
-  .catch(console.error);
+devGuilds.forEach((guildId) => {
+  rest
+    .put(Routes.applicationGuildCommands(discordBotId, guildId), {
+      body: commands,
+    })
+    .then((data) => console.log(`successfully registered to guild ${guildId}`))
+    .catch(console.error);
+});

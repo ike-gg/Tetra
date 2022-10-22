@@ -8,7 +8,6 @@ const warningEmbed = (description: string): BaseMessageOptions => {
     .setDescription(description);
   return {
     embeds: [embed],
-    components: [],
   };
 };
 

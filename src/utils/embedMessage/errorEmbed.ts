@@ -6,7 +6,7 @@ const errorEmbed = (description: string): BaseMessageOptions => {
     .setColor(0xeb3434)
     .setTitle("🔴 Something went wrong")
     .setDescription(description);
-  return { embeds: [embed], components: [] };
+  return { embeds: [embed] };
 };
 
 export default errorEmbed;

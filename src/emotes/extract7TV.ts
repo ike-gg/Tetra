@@ -43,7 +43,10 @@ const extractEmote = async (
       let emotePreview = `https:${emoteInfo.host.url}/2x`;
       emoteInfo.animated ? (emotePreview += ".gif") : (emotePreview += ".webp");
 
-      const rawEmote = await getRawEmote(emoteInfo.host.url);
+      const rawEmote = await getRawEmote(
+        emoteInfo.host.url,
+        emoteInfo.animated
+      );
       let rawEmoteBuffer = Buffer.from(rawEmote!);
 
       const emoteBuffer = await emoteOptimise(rawEmoteBuffer, {
