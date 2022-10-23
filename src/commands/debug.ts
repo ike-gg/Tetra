@@ -3,19 +3,32 @@ import {
   EmbedBuilder,
   Interaction,
   SlashCommandBuilder,
+  ChatInputCommandInteraction,
 } from "discord.js";
 
-const ping = {
+const debug = {
   data: new SlashCommandBuilder()
     .setName("debug")
-    .setDescription("dev purposes"),
-  async execute(interaction: CommandInteraction) {
-    const embed = new EmbedBuilder()
-      .setTitle("dev")
-      .setDescription("dev class embedbuilder")
-      .setAuthor({ name: interaction.user.id });
-    interaction.reply({ embeds: [embed] });
+    .setDescription("dev purposes")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("userid")
+        .setDescription("get user id")
+        .addUserOption((option) =>
+          option.setName("target").setDescription("select user")
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("guildid")
+        .setDescription("get guild id")
+        .addUserOption((option) =>
+          option.setName("guild").setDescription("select guild")
+        )
+    ),
+  async execute(interaction: ChatInputCommandInteraction) {
+    interaction.options.getSubcommand;
   },
 };
 
-export default ping;
+export default debug;

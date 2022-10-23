@@ -12,7 +12,7 @@ const searchEmote = async (
     },
     body: JSON.stringify({
       query: `{
-        emotes(query: "${emote}", page: ${page}, limit: 5, filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}) {
+        emotes(query: "${emote}", page: ${page}, limit: 5, filter: {case_sensitive: true, exact_match: ${exact_match}, ignore_tags: true}) {
           items {
             id
             name
