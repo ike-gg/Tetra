@@ -1,13 +1,7 @@
 import isValidURL from "../utils/isValidURL";
-import sharp from "sharp";
 
 import { EmoteResponseAPI } from "../api/apiResponseType";
-import {
-  BaseInteraction,
-  ButtonBuilder,
-  ButtonInteraction,
-  CommandInteraction,
-} from "discord.js";
+import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 import getEmoteInfo from "../api/getEmoteInfo";
 import getRawEmote from "../api/getRawEmote";
@@ -22,7 +16,7 @@ interface ExtractedEmote {
 
 const extractEmote = async (
   emoteReference: string,
-  interaction: CommandInteraction | ButtonInteraction
+  feedback?: FeedbackManager
 ) => {
   return new Promise<ExtractedEmote>(async (resolve, reject) => {
     let internalId: string | undefined = emoteReference;
@@ -51,7 +45,7 @@ const extractEmote = async (
 
       const emoteBuffer = await emoteOptimise(rawEmoteBuffer, {
         animated: emoteInfo.animated,
-        interaction: interaction,
+        feedback: feedback,
       });
 
       resolve({

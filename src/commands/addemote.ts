@@ -4,9 +4,10 @@ import {
   MessageContextMenuCommandInteraction,
   DiscordAPIError,
 } from "discord.js";
-import extractEmote from "../emotes/extract7TV";
+import extractEmote from "../emotes/extractEmote";
 
-import messageCreator from "../utils/embedMessage/createEmbed";
+import messageCreator from "../utils/embedMessages/createEmbed";
+import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 import findEmotes from "../utils/findEmotes";
 import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 
@@ -15,51 +16,42 @@ const importEmote = {
     .setName("Import emote here")
     .setType(ApplicationCommandType.Message),
   async execute(interaction: MessageContextMenuCommandInteraction) {
+    const feedback = new FeedbackManager(interaction);
     const messageContent = interaction.targetMessage.content;
     const emotesInMessage = findEmotes(messageContent);
 
     if (emotesInMessage.length === 0) {
-      interaction.reply(
-        messageCreator.errorEmbed("No emotes found in message.")
-      );
+      feedback.error("No emotes found in message.");
       return;
     }
 
     if (emotesInMessage.length === 1) {
       const emote = emotesInMessage[0];
       if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
-        interaction.reply(
-          messageCreator.errorEmbed("This emote is from this server.")
-        );
+        feedback.error("This emote is from this server.");
         return;
       }
 
-      await interaction.reply(
-        messageCreator.infoEmbed("Got'ya your request!", "Working on it... 🏗️")
-      );
+      await feedback.info("Got'ya your request!", "Working on it... 🏗️");
 
-      extractEmote(emote.link, interaction)
+      extractEmote(emote.link, feedback)
         .then((emote) => {
           interaction
             .guild!.emojis.create({ attachment: emote.image, name: emote.name })
             .then(() => {
-              interaction.editReply(
-                messageCreator.successfulEmbed(
-                  `Success!`,
-                  `Successfully added \`${emote.name}\` emote!`,
-                  emote.preview
-                )
+              feedback.success(
+                `Success!`,
+                `Successfully added \`${emote.name}\` emote!`,
+                emote.preview
               );
             })
             .catch((error) => {
               const errorMessage = error as DiscordAPIError;
-              interaction.editReply(
-                messageCreator.errorEmbed(errorMessage.message)
-              );
+              feedback.error(errorMessage.message);
             });
         })
         .catch((error) => {
-          interaction.editReply(messageCreator.errorEmbed(error));
+          feedback.error(error);
         });
     }
 

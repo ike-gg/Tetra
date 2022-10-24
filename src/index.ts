@@ -8,8 +8,9 @@ import {
   ExecutableCommandInteraction,
 } from "./types";
 import { discordBotToken } from "../config.json";
-import errorEmbed from "./utils/embedMessage/errorEmbed";
-import warningEmbed from "./utils/embedMessage/warningEmbed";
+import errorEmbed from "./utils/embedMessages/errorEmbed";
+import warningEmbed from "./utils/embedMessages/warningEmbed";
+import { FeedbackManager } from "./utils/embedMessages/FeedbackManager";
 
 const client = new Client({
   intents: [GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.Guilds],
@@ -51,9 +52,7 @@ client.on("ready", () => {
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.inGuild() && interaction.isRepliable()) {
-    interaction.reply(
-      errorEmbed("DM is not supported, try to use commands in guilds.")
-    );
+    interaction.reply("Not supported yet.");
   }
 
   if (interaction.isCommand()) {

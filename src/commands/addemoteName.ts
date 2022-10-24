@@ -6,9 +6,10 @@ import {
   ButtonStyle,
 } from "discord.js";
 
-import messageCreator from "../utils/embedMessage/createEmbed";
+import messageCreator from "../utils/embedMessages/createEmbed";
 import searchEmote from "../api/searchEmote";
 import { EmbedBuilder } from "@discordjs/builders";
+import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 const emojiNumbers = [`1️⃣`, `2️⃣`, `3️⃣`, `4️⃣`, `5️⃣`];
 
@@ -41,29 +42,24 @@ const importEmote = {
   //     .setRequired(false)
   // ),
   async execute(interaction: CommandInteraction) {
+    const feedback = new FeedbackManager(interaction);
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
-      interaction.reply(
-        messageCreator.errorEmbed(
-          "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
-        )
+      feedback.error(
+        "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
       );
       return;
     }
 
-    await interaction.reply(
-      messageCreator.infoEmbed("Got'ya your request!", "Working on it... 🏗️")
-    );
+    await interaction.deferReply();
 
     const emoteReference = interaction.options.get("name")?.value as string;
     const exactmatch = interaction.options.get("exactmatch")?.value as boolean;
 
     searchEmote(emoteReference, 1, exactmatch)
-      .then((foundEmotes) => {
+      .then(async (foundEmotes) => {
         if (foundEmotes.length == 0) {
-          interaction.editReply(
-            messageCreator.errorEmbed(
-              `I couldn't find any emotes with \`${emoteReference}\` query.`
-            )
+          feedback.error(
+            `I couldn't find any emotes with \`${emoteReference}\` query.`
           );
           return;
         }
@@ -106,13 +102,14 @@ const importEmote = {
             .setStyle(ButtonStyle.Danger)
         );
 
-        interaction.editReply({
+        //todo
+        interaction.followUp({
           embeds: emotesEmbed,
           components: [buttons, navigatorRow],
         });
       })
       .catch((error) => {
-        interaction.editReply(messageCreator.errorEmbed(error));
+        feedback.error(error);
       });
   },
 };

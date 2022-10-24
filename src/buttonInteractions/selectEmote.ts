@@ -1,41 +1,37 @@
 import { ButtonInteraction, DiscordAPIError } from "discord.js";
 
-import extractEmote from "../emotes/extract7TV";
-import messageCreator from "../utils/embedMessage/createEmbed";
+import extractEmote from "../emotes/extractEmote";
+import messageCreator from "../utils/embedMessages/createEmbed";
+import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 const selectEmote = {
   data: { name: "selectEmote" },
   async execute(interaction: ButtonInteraction) {
+    const feedback = new FeedbackManager(interaction);
     //selectemote data structure
     //identifier:emotereference:userid:guildid
     const [, emoteReference, userId, guildId] = interaction.customId.split(":");
     await interaction.update({ components: [] });
-    await interaction.editReply(
-      messageCreator.infoEmbed("Got'ya your request!", "Working on it... 🏗️")
-    );
-    extractEmote(emoteReference, interaction)
+    feedback.info("Got'ya your request!", "Working on it... 🏗️");
+    extractEmote(emoteReference, feedback)
       .then((emote) => {
         // customName ? (emote.name = customName) : null;
         interaction
           .guild!.emojis.create({ attachment: emote.image, name: emote.name })
           .then(() => {
-            interaction.editReply(
-              messageCreator.successfulEmbed(
-                `Success!`,
-                `Successfully added \`${emote.name}\` emote!`,
-                emote.preview
-              )
+            feedback.success(
+              `Success!`,
+              `Successfully added \`${emote.name}\` emote!`,
+              emote.preview
             );
           })
           .catch((error) => {
             const errorMessage = error as DiscordAPIError;
-            interaction.editReply(
-              messageCreator.errorEmbed(errorMessage.message)
-            );
+            feedback.error(errorMessage.message);
           });
       })
       .catch((error) => {
-        interaction.editReply(messageCreator.errorEmbed(error));
+        feedback.error(error);
       });
   },
 };

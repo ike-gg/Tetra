@@ -1,49 +1,53 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 
-import {
-  BaseInteraction,
-  ButtonInteraction,
-  CommandInteraction,
-} from "discord.js";
+import { ButtonInteraction, CommandInteraction } from "discord.js";
 import { maxEmoteSize } from "../../config.json";
-import warningEmbed from "../utils/embedMessage/warningEmbed";
+import warningEmbed from "../utils/embedMessages/warningEmbed";
+import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 const emoteOptimise = async (
   image: Buffer,
   options: {
     animated: boolean;
-    interaction?: CommandInteraction | ButtonInteraction;
+    feedback?: FeedbackManager;
   }
 ): Promise<Buffer> => {
-  const { animated, interaction } = options;
+  const { animated, feedback } = options;
   let processedBuffer: Buffer = image;
-  let dimensions = sizeOf(processedBuffer);
+  const imageData = sizeOf(processedBuffer);
+  let dimensions: [number, number] = [imageData.width, imageData.height];
 
+  const sharpOptions = { animated: options.animated };
   if (animated) {
-    processedBuffer = await sharp(image, { animated: true }).gif().toBuffer();
+    processedBuffer = await sharp(image, sharpOptions).gif().toBuffer();
   }
+
   if (processedBuffer.byteLength > maxEmoteSize) {
-    interaction?.editReply(
-      warningEmbed(
-        `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
-      )
-    );
+    feedback
+      ? feedback.warning(
+          `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
+        )
+      : null;
+
     while (processedBuffer.byteLength > maxEmoteSize) {
       console.log(`${processedBuffer.byteLength} / ${maxEmoteSize}`);
-      dimensions.height = Math.floor((dimensions.height *= 0.8));
-      dimensions.width = Math.floor((dimensions.width *= 0.8));
-      if (animated) {
-        processedBuffer = await sharp(processedBuffer, { animated })
-          .gif()
-          .resize(dimensions.width, dimensions.height)
-          .toBuffer();
-      } else {
-        processedBuffer = await sharp(processedBuffer)
-          .jpeg()
-          .resize(dimensions.width, dimensions.height)
-          .toBuffer();
-      }
+
+      dimensions = dimensions.map((dimension) =>
+        Math.floor((dimension *= 0.85))
+      ) as [number, number];
+
+      const [x, y] = dimensions;
+
+      animated
+        ? (processedBuffer = await sharp(processedBuffer, sharpOptions)
+            .gif()
+            .resize(x, y)
+            .toBuffer())
+        : (processedBuffer = await sharp(processedBuffer, sharpOptions)
+            .jpeg()
+            .resize(x, y)
+            .toBuffer());
     }
   }
   return processedBuffer;
