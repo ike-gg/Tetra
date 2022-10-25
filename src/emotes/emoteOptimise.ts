@@ -1,9 +1,7 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 
-import { ButtonInteraction, CommandInteraction } from "discord.js";
 import { maxEmoteSize } from "../../config.json";
-import warningEmbed from "../utils/embedMessages/warningEmbed";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 const emoteOptimise = async (
@@ -24,11 +22,10 @@ const emoteOptimise = async (
   }
 
   if (processedBuffer.byteLength > maxEmoteSize) {
-    feedback
-      ? await feedback.warning(
-          `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
-        )
-      : null;
+    feedback &&
+      (await feedback.warning(
+        `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
+      ));
 
     while (processedBuffer.byteLength > maxEmoteSize) {
       console.log(`${processedBuffer.byteLength} / ${maxEmoteSize}`);

@@ -10,11 +10,10 @@ const selectEmote = {
     //selectemote data structure
     //identifier:emotereference:userid:guildid
     const [, emoteReference, userId, guildId] = interaction.customId.split(":");
-    await interaction.update({ components: [] });
+    await feedback.removeButtons();
     await feedback.info("Got'ya your request!", "Working on it... 🏗️");
     emote7tv(emoteReference, feedback)
       .then((emote) => {
-        // customName ? (emote.name = customName) : null;
         interaction
           .guild!.emojis.create({ attachment: emote.image, name: emote.name })
           .then(async () => {

@@ -3,16 +3,12 @@ import {
   ContextMenuCommandBuilder,
   MessageContextMenuCommandInteraction,
   DiscordAPIError,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 import findEmotesFromMessage from "../utils/findEmotesFromMessage";
 import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 import emoteDiscord from "../emotes/emoteDiscord";
-import createEmbed from "../utils/embedMessages/createEmbed";
 
 import { ExtractedEmote } from "../types";
 
@@ -26,8 +22,10 @@ const importEmote = {
     const messageContent = interaction.targetMessage.content;
     const emotes = findEmotesFromMessage(messageContent);
 
+    await feedback.info("Got'ya your request!", "Working on it... 🏗️");
+
     if (emotes.length === 0) {
-      feedback.error("No emotes found in message.");
+      await feedback.error("No emotes found in message.");
       return;
     }
 
@@ -35,11 +33,9 @@ const importEmote = {
       const emote = emotes[0];
 
       if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
-        feedback.error("This emote is from this server.");
+        await feedback.error("This emote is from this server.");
         return;
       }
-
-      feedback.info("Got'ya your request!", "Working on it... 🏗️");
 
       try {
         const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
@@ -50,7 +46,7 @@ const importEmote = {
             name: extractedEmote.name,
           })
           .then(async () => {
-            feedback.success(
+            await feedback.success(
               `Success!`,
               `Successfully added \`${extractedEmote.name}\` emote!`,
               extractedEmote.preview
@@ -58,49 +54,17 @@ const importEmote = {
           })
           .catch(async (error) => {
             const errorMessage = error as DiscordAPIError;
-            feedback.error(errorMessage.message);
+            await feedback.error(errorMessage.message);
           });
       } catch (error: any) {
-        feedback.error(error);
+        await feedback.error(error);
       }
     }
 
     if (emotes.length > 1) {
-      try {
-        feedback.info("Got'ya your request!", "Working on it... 🏗️");
-
-        const extractedEmotes = (await emoteDiscord(
-          emotes
-        )) as ExtractedEmote[];
-
-        let buttons = new ActionRowBuilder<ButtonBuilder>();
-
-        const emotesEmbed = extractedEmotes
-          .filter((exEmote) => {
-            return isEmoteFromThisGuild(interaction.guild!, exEmote.id!);
-          })
-          .map((exEmote, index) => {
-            buttons.addComponents(
-              new ButtonBuilder()
-                .setEmoji("🛠️")
-                .setLabel(exEmote.name)
-                .setStyle(ButtonStyle.Primary)
-                .setCustomId(exEmote.id!)
-            );
-            return createEmbed.emotePreviewEmbed({
-              number: index.toString(),
-              name: exEmote.name,
-              reference: exEmote.id!,
-              preview: exEmote.preview,
-            });
-          });
-        feedback.sendMessage({
-          embeds: emotesEmbed,
-          components: [buttons],
-        });
-      } catch (error: any) {
-        feedback.error(error);
-      }
+      await feedback.error(
+        "Messages includes more than 1 emote is not supported yet."
+      );
     }
   },
 };

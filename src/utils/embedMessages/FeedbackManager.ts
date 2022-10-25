@@ -37,6 +37,12 @@ export class FeedbackManager {
       : await this.interaction.reply(messagePayload);
   }
 
+  async removeButtons() {
+    if (this.interaction instanceof ButtonInteraction) {
+      await this.interaction.update({ components: [] });
+    }
+  }
+
   async info(title: string, message: string) {
     const embed = infoEmbed(title, message);
     await this.sendMessage({ embeds: [embed] });

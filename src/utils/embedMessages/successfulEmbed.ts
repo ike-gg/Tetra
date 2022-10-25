@@ -1,4 +1,4 @@
-import { BaseMessageOptions, EmbedBuilder } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 
 const successfulEmbed = (
   title: string,

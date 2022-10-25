@@ -1,4 +1,13 @@
 {
-  "comment": "dont forget to remove _ from the name of THIS file",
-  "discordBotToken": "put your token here"
+  "comment": {
+    "important": "dont forget to remove _ from the name of THIS file",
+    "discordBotToken": "token to your discord bot, string",
+    "discordBotId": "id of your discord profile, string",
+    "devGuilds": "guilds id where you'd like to push the slash commands, string[]",
+    "maxEmoteSize": "max size of emote in bytes, in case if in the future discord change the max size, number"
+  },
+  "discordBotToken": "put your token here",
+  "discordBotId": "1029899066911490158",
+  "devGuilds": ["823926383491022878", "1031909216555896852"],
+  "maxEmoteSize": 262144
 }

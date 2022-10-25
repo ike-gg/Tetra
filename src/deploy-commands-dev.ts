@@ -18,9 +18,6 @@ for (const file of commandFiles) {
 
 const rest = new REST({ version: "10" }).setToken(discordBotToken);
 
-//823926383491022878 -- discord spoko
-//1031909216555896852 -- w?
-
 devGuilds.forEach((guildId) => {
   rest
     .put(Routes.applicationGuildCommands(discordBotId, guildId), {

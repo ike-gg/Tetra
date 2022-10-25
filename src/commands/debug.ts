@@ -1,10 +1,4 @@
-import {
-  CommandInteraction,
-  EmbedBuilder,
-  Interaction,
-  SlashCommandBuilder,
-  ChatInputCommandInteraction,
-} from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
 const debug = {
   data: new SlashCommandBuilder()

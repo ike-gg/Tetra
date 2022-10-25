@@ -8,9 +8,6 @@ import {
   ExecutableCommandInteraction,
 } from "./types";
 import { discordBotToken } from "../config.json";
-import errorEmbed from "./utils/embedMessages/errorEmbed";
-import warningEmbed from "./utils/embedMessages/warningEmbed";
-import { FeedbackManager } from "./utils/embedMessages/FeedbackManager";
 
 const client = new Client({
   intents: [GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.Guilds],

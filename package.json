@@ -1,6 +1,6 @@
 {
-  "name": "discord7tv",
-  "version": "1.0.0",
+  "name": "tetra",
+  "version": "1.1.0",
   "description": "Bot will help you to easily import emotes from 7TV into your discord server",
   "main": "src/index.ts",
   "scripts": {
@@ -9,7 +9,7 @@
     "dev": "nodemon",
     "devdeploy": "ts-node src/deploy-commands-dev.ts && nodemon"
   },
-  "author": "",
+  "author": "ike",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.11.0",

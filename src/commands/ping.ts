@@ -1,8 +1,4 @@
-import {
-  CommandInteraction,
-  Interaction,
-  SlashCommandBuilder,
-} from "discord.js";
+import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 
 const ping = {
   data: new SlashCommandBuilder()

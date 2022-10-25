@@ -9,5 +9,6 @@
     - [ ] more complex emote searching module
   - [x] by id
 - [x] emote file optimision so they can be uploaded
+- [x] context menu command to get unavailable emote from message and add it to server
 - [ ] splitting wider emotes
 - [ ] inticent way to import emotes from private (unavailable) servers (if possible)
