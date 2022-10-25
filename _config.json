@@ -7,7 +7,8 @@
     "maxEmoteSize": "max size of emote in bytes, in case if in the future discord change the max size, number"
   },
   "discordBotToken": "put your token here",
-  "discordBotId": "1029899066911490158",
-  "devGuilds": ["823926383491022878", "1031909216555896852"],
-  "maxEmoteSize": 262144
+  "discordBotId": "123",
+  "devGuilds": ["123", "345"],
+  "maxEmoteSize": 262144,
+  "inviteLink": "https://"
 }

@@ -60,7 +60,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!command) return;
 
     try {
-      command.execute(interaction);
+      command.execute(interaction, client);
     } catch {
       console.error;
     }

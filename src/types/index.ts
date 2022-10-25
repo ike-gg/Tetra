@@ -7,7 +7,7 @@ export interface DiscordBot extends Discord.Client {
 }
 
 export interface ExecutableCommandInteraction extends CommandInteraction {
-  execute(interaction: CommandInteraction): void;
+  execute(interaction: CommandInteraction, client?: DiscordBot): void;
 }
 
 export interface ExecutableButtonInteraction extends ButtonInteraction {

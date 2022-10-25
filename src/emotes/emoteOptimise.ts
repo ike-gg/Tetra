@@ -1,5 +1,6 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
+import path from "node:path";
 
 import { maxEmoteSize } from "../../config.json";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
@@ -17,15 +18,41 @@ const emoteOptimise = async (
   let dimensions: [number, number] = [imageData.width, imageData.height];
 
   const sharpOptions = { animated: options.animated };
+
+  //makes square
+
+  processedBuffer = await sharp(image, sharpOptions)
+    .resize({
+      width: dimensions[1],
+      height: dimensions[1],
+      fit: "fill",
+    })
+    .toBuffer();
+
+  // const testtt = ["cover", "contain", "fill", "inside", "outside"];
+
+  // for (const fita of testtt) {
+  //   // @ts-ignore
+  //   const loopImage = await sharp(image, sharpOptions)
+  //     .resize({
+  //       width: dimensions[1],
+  //       height: dimensions[1],
+  //       fit: `${fita}`,
+  //     })
+  //     .jpeg()
+  //     .toFile(path.join(__dirname, `${fita}.jpg`));
+  // }
+
   if (animated) {
-    processedBuffer = await sharp(image, sharpOptions).gif().toBuffer();
+    processedBuffer = await sharp(processedBuffer, sharpOptions)
+      .gif()
+      .toBuffer();
   }
 
   if (processedBuffer.byteLength > maxEmoteSize) {
-    feedback &&
-      (await feedback.warning(
-        `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
-      ));
+    await feedback?.warning(
+      `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
+    );
 
     while (processedBuffer.byteLength > maxEmoteSize) {
       console.log(`${processedBuffer.byteLength} / ${maxEmoteSize}`);
