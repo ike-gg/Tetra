@@ -1,23 +1,15 @@
 import isValidURL from "../utils/isValidURL";
 
-import { EmoteResponseAPI } from "../api/apiResponseType";
+import { EmoteResponseAPI } from "../api/7tv/apiResponseType";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
-import getEmoteInfo from "../api/getEmoteInfo";
-import getRawEmote from "../api/getRawEmote";
+import getEmoteInfo from "../api/7tv/getEmoteInfo";
+import getRawEmote from "../api/7tv/getRawEmote";
 import emoteOptimise from "./emoteOptimise";
 
-interface ExtractedEmote {
-  name: string;
-  author: string;
-  image: Buffer;
-  preview: string;
-}
+import { ExtractedEmote } from "../types";
 
-const extractEmote = async (
-  emoteReference: string,
-  feedback?: FeedbackManager
-) => {
+const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
   return new Promise<ExtractedEmote>(async (resolve, reject) => {
     let internalId: string | undefined = emoteReference;
 
@@ -41,7 +33,7 @@ const extractEmote = async (
         emoteInfo.host.url,
         emoteInfo.animated
       );
-      let rawEmoteBuffer = Buffer.from(rawEmote!);
+      const rawEmoteBuffer = Buffer.from(rawEmote!);
 
       const emoteBuffer = await emoteOptimise(rawEmoteBuffer, {
         animated: emoteInfo.animated,
@@ -61,4 +53,4 @@ const extractEmote = async (
   });
 };
 
-export default extractEmote;
+export default emote7tv;

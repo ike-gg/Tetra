@@ -25,7 +25,7 @@ const emoteOptimise = async (
 
   if (processedBuffer.byteLength > maxEmoteSize) {
     feedback
-      ? feedback.warning(
+      ? await feedback.warning(
           `We've got you but requesting emote is too big for discord.\n We're trying now to optimise it...`
         )
       : null;

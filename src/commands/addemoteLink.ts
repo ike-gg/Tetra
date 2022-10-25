@@ -4,7 +4,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 
-import extractEmote from "../emotes/extractEmote";
+import emote7tv from "../emotes/emote7tv";
 import messageCreator from "../utils/embedMessages/createEmbed";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
@@ -31,7 +31,7 @@ const importEmote = {
   async execute(interaction: CommandInteraction) {
     const feedback = new FeedbackManager(interaction);
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
-      feedback.error(
+      await feedback.error(
         "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
       );
       return;
@@ -42,25 +42,25 @@ const importEmote = {
     const emoteReference = interaction.options.get("link")?.value as string;
     const customName = interaction.options.get("name")?.value as string;
 
-    extractEmote(emoteReference, feedback)
+    emote7tv(emoteReference, feedback)
       .then((emote) => {
         customName ? (emote.name = customName) : null;
         interaction
           .guild!.emojis.create({ attachment: emote.image, name: emote.name })
-          .then(() => {
-            feedback.success(
+          .then(async () => {
+            await feedback.success(
               `Success!`,
               `Successfully added \`${emote.name}\` emote!`,
               emote.preview
             );
           })
-          .catch((error) => {
+          .catch(async (error) => {
             const errorMessage = error as DiscordAPIError;
-            feedback.error(errorMessage.message);
+            await feedback.error(errorMessage.message);
           });
       })
-      .catch((error) => {
-        feedback.error(error);
+      .catch(async (error) => {
+        await feedback.error(error);
       });
   },
 };

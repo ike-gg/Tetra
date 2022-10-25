@@ -1,6 +1,3 @@
-import { isatty } from "node:tty";
-import { EmoteResponseAPI } from "./apiResponseType";
-
 const getURL = (hostURL: string, isAnimated: boolean): string => {
   let extension = isAnimated ? "gif" : "webp";
   return new URL(`2x.${extension}`, `https:${hostURL}/`).href;

@@ -15,11 +15,12 @@ import {
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction;
+  isReplied = false;
   constructor(interaction: CommandInteraction | ButtonInteraction) {
     this.interaction = interaction;
   }
 
-  private sendMessage(options: {
+  async sendMessage(options: {
     embeds?: EmbedBuilder[];
     components?: ActionRowBuilder<ButtonBuilder>[];
   }) {
@@ -29,29 +30,30 @@ export class FeedbackManager {
       components: components,
     };
 
-    const isReplied = this.interaction.replied;
-    isReplied
-      ? this.interaction.reply(messagePayload)
-      : this.interaction.editReply(messagePayload);
+    this.isReplied = this.interaction.replied;
+
+    this.isReplied
+      ? await this.interaction.editReply(messagePayload)
+      : await this.interaction.reply(messagePayload);
   }
 
-  info(title: string, message: string) {
+  async info(title: string, message: string) {
     const embed = infoEmbed(title, message);
-    this.sendMessage({ embeds: [embed] });
+    await this.sendMessage({ embeds: [embed] });
   }
 
-  error(message: string) {
+  async error(message: string) {
     const embed = errorEmbed(message);
-    this.sendMessage({ embeds: [embed] });
+    await this.sendMessage({ embeds: [embed] });
   }
 
-  success(title: string, description: string, image?: string) {
+  async success(title: string, description: string, image?: string) {
     const embed = successfulEmbed(title, description, image);
-    this.sendMessage({ embeds: [embed] });
+    await this.sendMessage({ embeds: [embed] });
   }
 
-  warning(message: string) {
+  async warning(message: string) {
     const embed = warningEmbed(message);
-    this.sendMessage({ embeds: [embed] });
+    await this.sendMessage({ embeds: [embed] });
   }
 }

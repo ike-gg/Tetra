@@ -7,8 +7,7 @@ import {
 } from "discord.js";
 
 import messageCreator from "../utils/embedMessages/createEmbed";
-import searchEmote from "../api/searchEmote";
-import { EmbedBuilder } from "@discordjs/builders";
+import searchEmote from "../api/7tv/searchEmote";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 const emojiNumbers = [`1️⃣`, `2️⃣`, `3️⃣`, `4️⃣`, `5️⃣`];
@@ -44,13 +43,11 @@ const importEmote = {
   async execute(interaction: CommandInteraction) {
     const feedback = new FeedbackManager(interaction);
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
-      feedback.error(
+      await feedback.error(
         "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
       );
       return;
     }
-
-    await interaction.deferReply();
 
     const emoteReference = interaction.options.get("name")?.value as string;
     const exactmatch = interaction.options.get("exactmatch")?.value as boolean;
@@ -58,7 +55,7 @@ const importEmote = {
     searchEmote(emoteReference, 1, exactmatch)
       .then(async (foundEmotes) => {
         if (foundEmotes.length == 0) {
-          feedback.error(
+          await feedback.error(
             `I couldn't find any emotes with \`${emoteReference}\` query.`
           );
           return;
@@ -103,13 +100,13 @@ const importEmote = {
         );
 
         //todo
-        interaction.followUp({
+        await feedback.sendMessage({
           embeds: emotesEmbed,
           components: [buttons, navigatorRow],
         });
       })
-      .catch((error) => {
-        feedback.error(error);
+      .catch(async (error) => {
+        await feedback.error(error);
       });
   },
 };

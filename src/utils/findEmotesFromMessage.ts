@@ -1,12 +1,7 @@
+import { FoundEmotesDiscord } from "../types";
+
 const emoteRegex = /((?<!\\)<:[^:]+:(\d+)>)/gmu;
 const animatedEmoteRegex = /((?<!\\)<a:[^:]+:(\d+)>)/gmu;
-
-interface FoundEmotes {
-  name: string;
-  animated: boolean;
-  link: string;
-  id: string;
-}
 
 const testRegex = (testing: string, expression: RegExp): string[] => {
   const result = testing.match(expression);
@@ -14,14 +9,14 @@ const testRegex = (testing: string, expression: RegExp): string[] => {
   return [];
 };
 
-const findEmotes = (message: string): FoundEmotes[] => {
+const findEmotesFromMessage = (message: string): FoundEmotesDiscord[] => {
   const staticEmotes = testRegex(message, emoteRegex);
   const animatedEmotes = testRegex(message, animatedEmoteRegex);
 
   const foundEmotes = [...staticEmotes, ...animatedEmotes];
   const uniqueFoundEmotes = [...new Set(foundEmotes)];
 
-  const result = uniqueFoundEmotes.map((emote): FoundEmotes => {
+  const result = uniqueFoundEmotes.map((emote): FoundEmotesDiscord => {
     // emotedata structure
     //['a' if emote is animated : emote name : emote id (reference to URL)]
     const emoteData: string[] = emote.slice(1, -1).split(":");
@@ -45,4 +40,4 @@ const findEmotes = (message: string): FoundEmotes[] => {
   return result;
 };
 
-export default findEmotes;
+export default findEmotesFromMessage;

@@ -3,7 +3,7 @@ import { EmbedBuilder } from "@discordjs/builders";
 const emotePreviewEmbed = (options: {
   number: string;
   name: string;
-  author: string;
+  author?: string;
   preview: string;
   reference: string;
 }): EmbedBuilder => {
