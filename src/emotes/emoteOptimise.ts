@@ -21,13 +21,13 @@ const emoteOptimise = async (
 
   //makes square
 
-  processedBuffer = await sharp(image, sharpOptions)
-    .resize({
-      width: dimensions[1],
-      height: dimensions[1],
-      fit: "fill",
-    })
-    .toBuffer();
+  // processedBuffer = await sharp(image, sharpOptions)
+  //   .resize({
+  //     width: dimensions[1],
+  //     height: dimensions[1],
+  //     fit: "fill",
+  //   })
+  //   .toBuffer();
 
   // const testtt = ["cover", "contain", "fill", "inside", "outside"];
 

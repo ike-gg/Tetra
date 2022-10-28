@@ -41,8 +41,8 @@ const infobot = {
       inline: true,
     });
     messagePayload.addFields({
-      name: "GitHub author",
-      value: ghAuthorLink,
+      name: "Discord author",
+      value: dcAuthorLink,
       inline: true,
     });
     messagePayload.addFields({
@@ -51,10 +51,11 @@ const infobot = {
       inline: true,
     });
     messagePayload.addFields({
-      name: "Discord author",
-      value: dcAuthorLink,
+      name: "GitHub author",
+      value: ghAuthorLink,
       inline: true,
     });
+    messagePayload.setImage("https://i.imgur.com/vkJxLA2.png");
     messagePayload.setColor(0x000000);
     await interaction.reply({ embeds: [messagePayload] });
   },
