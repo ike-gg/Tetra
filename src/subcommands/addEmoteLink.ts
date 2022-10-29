@@ -2,32 +2,31 @@ import { ChatInputCommandInteraction, DiscordAPIError } from "discord.js";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 import emote7tv from "../emotes/emote7tv";
+import { DiscordBot } from "../types";
 
 const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,
+  client: DiscordBot,
   feedback: FeedbackManager
 ) => {
   const emoteReference = interaction.options.get("link")?.value as string;
 
-  emote7tv(emoteReference, feedback)
-    .then((emote) => {
-      interaction
-        .guild!.emojis.create({ attachment: emote.image, name: emote.name })
-        .then(async () => {
-          await feedback.success(
-            `Success!`,
-            `Successfully added \`${emote.name}\` emote!`,
-            emote.preview
-          );
-        })
-        .catch(async (error) => {
-          const errorMessage = error as DiscordAPIError;
-          await feedback.error(errorMessage.message);
-        });
-    })
-    .catch(async (error) => {
-      await feedback.error(error);
+  try {
+    const emote = await emote7tv(emoteReference, feedback);
+
+    await interaction.guild?.emojis.create({
+      attachment: emote.image,
+      name: emote.name,
     });
+
+    await feedback.success(
+      `Success!`,
+      `Successfully added \`${emote.name}\` emote! ${emote}`,
+      emote.preview
+    );
+  } catch (error: any) {
+    await feedback.error(error);
+  }
 };
 
 export default addEmoteLink;

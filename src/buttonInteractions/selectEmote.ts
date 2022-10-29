@@ -1,36 +1,40 @@
 import { ButtonInteraction, DiscordAPIError } from "discord.js";
 
 import emote7tv from "../emotes/emote7tv";
+import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 
 const selectEmote = {
   data: { name: "selectEmote" },
-  async execute(interaction: ButtonInteraction) {
+  async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
     //selectemote data structure
     //identifier:emotereference:userid:guildid
     const [, emoteReference, userId, guildId] = interaction.customId.split(":");
+
+    console.log(interaction.message.components);
+
+    console.log(client.tasks);
+
     await feedback.removeButtons();
     await feedback.info("Got'ya your request!", "Working on it... 🏗️");
-    emote7tv(emoteReference, feedback)
-      .then((emote) => {
-        interaction
-          .guild!.emojis.create({ attachment: emote.image, name: emote.name })
-          .then(async () => {
-            await feedback.success(
-              `Success!`,
-              `Successfully added \`${emote.name}\` emote!`,
-              emote.preview
-            );
-          })
-          .catch(async (error) => {
-            const errorMessage = error as DiscordAPIError;
-            await feedback.error(errorMessage.message);
-          });
-      })
-      .catch(async (error) => {
-        await feedback.error(error);
+
+    try {
+      const emote = await emote7tv(emoteReference, feedback);
+
+      const addedEmote = await interaction.guild?.emojis.create({
+        attachment: emote.image,
+        name: emote.name,
       });
+
+      await feedback.success(
+        `Success!`,
+        `Successfully added \`${addedEmote?.name}\` emote! ${addedEmote}`,
+        emote.preview
+      );
+    } catch (error: any) {
+      feedback.error(error);
+    }
   },
 };
 

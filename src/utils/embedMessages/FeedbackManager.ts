@@ -6,6 +6,7 @@ import {
   ButtonInteraction,
   CommandInteraction,
   BaseMessageOptions,
+  Client,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -15,9 +16,12 @@ import {
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction;
+  client!: Client;
   isReplied = false;
+
   constructor(interaction: CommandInteraction | ButtonInteraction) {
     this.interaction = interaction;
+    this.client = interaction.client;
   }
 
   async sendMessage(options: {
@@ -25,10 +29,24 @@ export class FeedbackManager {
     components?: ActionRowBuilder<ButtonBuilder>[];
   }) {
     const { embeds, components } = options;
+
+    if (embeds && embeds.length > 0) {
+      const lastIndex = embeds.length - 1;
+      embeds[lastIndex].setFooter({
+        text: this.client.user!.username,
+        iconURL: this.client.user!.avatarURL()!,
+      });
+    }
+
     const messagePayload: BaseMessageOptions = {
       embeds: embeds,
       components: components,
     };
+
+    if (this.interaction instanceof ButtonInteraction) {
+      this.interaction.message.edit(messagePayload);
+      return;
+    }
 
     this.isReplied = this.interaction.replied;
 

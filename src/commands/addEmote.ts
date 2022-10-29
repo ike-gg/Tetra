@@ -3,6 +3,7 @@ import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
 import addEmoteLink from "../subcommands/addEmoteLink";
 import addEmoteName from "../subcommands/addEmoteName";
+import { DiscordBot } from "../types";
 
 const importEmote = {
   data: new SlashCommandBuilder()
@@ -50,7 +51,7 @@ const importEmote = {
             .setRequired(true)
         )
     ),
-  async execute(interaction: ChatInputCommandInteraction) {
+  async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
 
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
@@ -66,10 +67,10 @@ const importEmote = {
 
     switch (subcommandUsed) {
       case "bylink":
-        addEmoteLink(interaction, feedback);
+        addEmoteLink(interaction, client, feedback);
         break;
       case "byname":
-        addEmoteName(interaction, feedback);
+        addEmoteName(interaction, client, feedback);
         break;
       default:
         feedback.error("Subcommand not supported yet.");

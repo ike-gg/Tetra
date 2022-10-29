@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "buffer-image-size": "^0.6.4",
+    "crypto": "^1.0.1",
     "discord.js": "^14.6.0",
     "sharp": "^0.31.1"
   }

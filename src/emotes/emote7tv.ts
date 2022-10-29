@@ -8,7 +8,6 @@ import getRawEmote from "../api/7tv/getRawEmote";
 import emoteOptimise from "./emoteOptimise";
 
 import { ExtractedEmote } from "../types";
-
 const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
   return new Promise<ExtractedEmote>(async (resolve, reject) => {
     let internalId: string | undefined = emoteReference;
@@ -26,6 +25,7 @@ const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
 
     try {
       const emoteInfo = (await getEmoteInfo(internalId!)) as EmoteResponseAPI;
+
       let emotePreview = `https:${emoteInfo.host.url}/2x`;
       emoteInfo.animated ? (emotePreview += ".gif") : (emotePreview += ".webp");
 
@@ -47,7 +47,6 @@ const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
         preview: emotePreview,
       });
     } catch (error) {
-      console.error(error);
       reject("Emote not found.");
     }
   });

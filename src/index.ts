@@ -8,6 +8,8 @@ import {
   ExecutableCommandInteraction,
 } from "./types";
 import { discordBotToken } from "../config.json";
+import TaskManager from "./utils/taskManager/TaskManager";
+import { FeedbackManager } from "./utils/embedMessages/FeedbackManager";
 
 const client = new Client({
   intents: [GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.Guilds],
@@ -15,6 +17,7 @@ const client = new Client({
 
 client.commands = new Collection();
 client.buttonInteractions = new Collection();
+client.tasks = new TaskManager();
 
 const commandsPath = path.join(__dirname, "commands");
 const commandFiles = fs
@@ -70,24 +73,30 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (!(interaction.user.id === interaction.message.interaction!.user.id))
       return;
 
-    const interactionData = interaction.customId.split(":");
+    const interactionTaskId = interaction.customId;
+    const taskDetails = client.tasks.getTask(interactionTaskId);
+
+    console.log(taskDetails);
+    console.log(taskDetails?.action);
+
+    if (!taskDetails) {
+      const feedback = new FeedbackManager(interaction);
+      feedback.removeButtons();
+      feedback.error("Request timed out. Create new interaction.");
+      return;
+    }
 
     const buttonInteraction = client.buttonInteractions.get(
-      interactionData[0]
+      taskDetails.action
     ) as ExecutableButtonInteraction;
 
     if (!buttonInteraction) return;
 
     try {
-      buttonInteraction.execute(interaction);
+      buttonInteraction.execute(interaction, client);
     } catch {
       console.error;
     }
-    // interaction.message.edit({
-    //   embeds: [{ title: interaction.customId.split(":").toString() }],
-    //   components: [],
-    // });
-    // interaction.fetchReply().then((message) => {});
   }
 });
 

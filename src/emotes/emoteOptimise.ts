@@ -29,20 +29,6 @@ const emoteOptimise = async (
   //   })
   //   .toBuffer();
 
-  // const testtt = ["cover", "contain", "fill", "inside", "outside"];
-
-  // for (const fita of testtt) {
-  //   // @ts-ignore
-  //   const loopImage = await sharp(image, sharpOptions)
-  //     .resize({
-  //       width: dimensions[1],
-  //       height: dimensions[1],
-  //       fit: `${fita}`,
-  //     })
-  //     .jpeg()
-  //     .toFile(path.join(__dirname, `${fita}.jpg`));
-  // }
-
   if (animated) {
     processedBuffer = await sharp(processedBuffer, sharpOptions)
       .gif()

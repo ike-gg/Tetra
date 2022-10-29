@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "path";
 
-import { REST, Routes } from "discord.js";
+import { REST, Routes, SlashCommandBuilder } from "discord.js";
 import { discordBotToken, discordBotId, devGuilds } from "../config.json";
 
 const commands: any[] = [];

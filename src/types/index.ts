@@ -1,9 +1,11 @@
 import Discord, { ButtonInteraction, CommandInteraction } from "discord.js";
 import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
+import TaskManager from "../utils/taskManager/TaskManager";
 
 export interface DiscordBot extends Discord.Client {
   commands: Discord.Collection<string, Discord.CommandInteraction>;
   buttonInteractions: Discord.Collection<string, Discord.ButtonInteraction>;
+  tasks: TaskManager;
 }
 
 export interface ExecutableCommandInteraction extends CommandInteraction {
@@ -11,7 +13,7 @@ export interface ExecutableCommandInteraction extends CommandInteraction {
 }
 
 export interface ExecutableButtonInteraction extends ButtonInteraction {
-  execute(interaction: ButtonInteraction): void;
+  execute(interaction: ButtonInteraction, client?: DiscordBot): void;
 }
 
 export interface ExtractedEmote {
