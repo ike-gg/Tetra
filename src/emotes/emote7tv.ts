@@ -8,8 +8,12 @@ import getRawEmote from "../api/7tv/getRawEmote";
 import emoteOptimise from "./emoteOptimise";
 
 import { ExtractedEmote } from "../types";
-const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
+const emote7tv = async (
+  emoteReference: string | undefined | null,
+  feedback?: FeedbackManager
+) => {
   return new Promise<ExtractedEmote>(async (resolve, reject) => {
+    if (!emoteReference) return;
     let internalId: string | undefined = emoteReference;
 
     if (isValidURL(internalId)) {

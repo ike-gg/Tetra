@@ -10,11 +10,14 @@ const selectEmote = {
     const feedback = new FeedbackManager(interaction);
     //selectemote data structure
     //identifier:emotereference:userid:guildid
-    const [, emoteReference, userId, guildId] = interaction.customId.split(":");
+    const taskId = interaction.customId;
 
     console.log(interaction.message.components);
 
     console.log(client.tasks);
+
+    const taskDetails = client.tasks.getTask(taskId);
+    const emoteReference = taskDetails?.emoteReference;
 
     await feedback.removeButtons();
     await feedback.info("Got'ya your request!", "Working on it... 🏗️");
