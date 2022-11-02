@@ -1,9 +1,13 @@
-import { EmoteGQL } from "./apiResponseType";
+import {
+  EmoteGQL,
+  EmoteResponseAPI,
+  EmoteResponseGQL,
+} from "./apiResponseType";
 
 const searchEmote = async (
   emote: string,
-  page = 1,
-  exact_match = true
+  page = 1
+  // exact_match = true
 ): Promise<EmoteGQL[]> => {
   return await fetch("https://7tv.io/v3/gql", {
     method: "POST",
@@ -11,8 +15,11 @@ const searchEmote = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
+      //filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}
+      //filter emotes
       query: `{
-        emotes(query: "${emote}", page: ${page}, limit: 5, filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}) {
+        emotes(query: "${emote}", page: ${page}, limit: 5) {
+          count
           items {
             id
             name
@@ -29,9 +36,14 @@ const searchEmote = async (
     }),
   })
     .then((response) => response.json())
-    .then((data) => {
-      if (data.data?.emotes.items) {
-        return data.data.emotes.items;
+    .then((responseData) => {
+      console.log(responseData);
+      const foundEmotes = responseData as EmoteResponseGQL;
+      if (foundEmotes.data?.emotes.items) {
+        foundEmotes.data.emotes.items.forEach((emote) => {
+          emote.count = foundEmotes.data.emotes.count;
+        });
+        return foundEmotes.data.emotes.items;
       } else {
         return [];
       }

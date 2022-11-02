@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
-import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import addEmoteLink from "../subcommands/addEmoteLink";
 import addEmoteName from "../subcommands/addEmoteName";
 import { DiscordBot } from "../types";

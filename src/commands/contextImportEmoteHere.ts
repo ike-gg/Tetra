@@ -5,7 +5,7 @@ import {
   DiscordAPIError,
 } from "discord.js";
 
-import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import findEmotesFromMessage from "../utils/findEmotesFromMessage";
 import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 import emoteDiscord from "../emotes/emoteDiscord";

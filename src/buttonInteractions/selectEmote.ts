@@ -2,20 +2,14 @@ import { ButtonInteraction, DiscordAPIError } from "discord.js";
 
 import emote7tv from "../emotes/emote7tv";
 import { DiscordBot } from "../types";
-import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const selectEmote = {
   data: { name: "selectEmote" },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
-    //selectemote data structure
-    //identifier:emotereference:userid:guildid
+
     const taskId = interaction.customId;
-
-    console.log(interaction.message.components);
-
-    console.log(client.tasks);
-
     const taskDetails = client.tasks.getTask(taskId);
     const emoteReference = taskDetails?.emoteReference;
 

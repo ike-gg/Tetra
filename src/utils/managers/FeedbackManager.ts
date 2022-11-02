@@ -1,7 +1,7 @@
-import errorEmbed from "./errorEmbed";
-import infoEmbed from "./infoEmbed";
-import successfulEmbed from "./successfulEmbed";
-import warningEmbed from "./warningEmbed";
+import errorEmbed from "../embedMessages/errorEmbed";
+import infoEmbed from "../embedMessages/infoEmbed";
+import successfulEmbed from "../embedMessages/successfulEmbed";
+import warningEmbed from "../embedMessages/warningEmbed";
 import {
   ButtonInteraction,
   CommandInteraction,

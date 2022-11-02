@@ -1,7 +1,7 @@
 import isValidURL from "../utils/isValidURL";
 
 import { EmoteResponseAPI } from "../api/7tv/apiResponseType";
-import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 import getEmoteInfo from "../api/7tv/getEmoteInfo";
 import getRawEmote from "../api/7tv/getRawEmote";
@@ -13,7 +13,7 @@ const emote7tv = async (
   feedback?: FeedbackManager
 ) => {
   return new Promise<ExtractedEmote>(async (resolve, reject) => {
-    if (!emoteReference) return;
+    if (!emoteReference) throw new Error("Invalid emote reference.");
     let internalId: string | undefined = emoteReference;
 
     if (isValidURL(internalId)) {

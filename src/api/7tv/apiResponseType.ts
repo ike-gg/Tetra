@@ -26,6 +26,7 @@ export interface EmoteResponseAPI {
 //types for searching via name
 
 export interface EmoteGQL {
+  count: number;
   id: string;
   name: string;
   animated: boolean;
@@ -40,6 +41,7 @@ export interface EmoteGQL {
 export interface EmoteResponseGQL {
   data: {
     emotes: {
+      count: number;
       items: EmoteGQL[];
     };
   };

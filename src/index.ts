@@ -8,8 +8,8 @@ import {
   ExecutableCommandInteraction,
 } from "./types";
 import { discordBotToken } from "../config.json";
-import TaskManager from "./utils/taskManager/TaskManager";
-import { FeedbackManager } from "./utils/embedMessages/FeedbackManager";
+import TaskManager from "./utils/managers/TaskManager";
+import { FeedbackManager } from "./utils/managers/FeedbackManager";
 
 const client = new Client({
   intents: [GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.Guilds],

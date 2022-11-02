@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, DiscordAPIError } from "discord.js";
-import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 import emote7tv from "../emotes/emote7tv";
 import { DiscordBot } from "../types";

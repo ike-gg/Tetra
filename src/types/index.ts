@@ -1,6 +1,6 @@
 import Discord, { ButtonInteraction, CommandInteraction } from "discord.js";
-import { FeedbackManager } from "../utils/embedMessages/FeedbackManager";
-import TaskManager from "../utils/taskManager/TaskManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import TaskManager from "../utils/managers/TaskManager";
 
 export interface DiscordBot extends Discord.Client {
   commands: Discord.Collection<string, Discord.CommandInteraction>;
