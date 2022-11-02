@@ -5,6 +5,8 @@ import {
   ContextMenuCommandInteraction,
   MessageComponentInteraction,
 } from "discord.js";
+import { update } from "lodash";
+import { FeedbackManager } from "./FeedbackManager";
 
 interface TaskBase {
   action: string;
@@ -12,9 +14,13 @@ interface TaskBase {
     | CommandInteraction
     | ButtonInteraction
     | ContextMenuCommandInteraction;
+  feedback?: FeedbackManager;
   emoteReference?: string;
   message?: MessageComponentInteraction;
-  options?: {};
+  options?: {
+    currentPage?: number;
+    pagesLimit?: number;
+  };
 }
 
 interface TaskWithId extends TaskBase {
@@ -38,6 +44,12 @@ class TaskManager {
     }, timeoutTime);
 
     return identificator;
+  }
+
+  updateCurrentPage(id: string, newPage: number) {
+    const taskIndex = this.tasks.findIndex((task) => task.id === id);
+    if (taskIndex === -1) return false;
+    this.tasks[taskIndex].options!.currentPage = newPage;
   }
 
   removeTask(id: string) {

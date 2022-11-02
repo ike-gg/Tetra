@@ -70,14 +70,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   if (interaction.isButton()) {
-    if (!(interaction.user.id === interaction.message.interaction!.user.id))
+    if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
       return;
+    }
 
-    const interactionTaskId = interaction.customId;
+    const interactionTaskId = interaction.customId.split(":")[0];
     const taskDetails = client.tasks.getTask(interactionTaskId);
 
+    console.log(interactionTaskId);
     console.log(taskDetails);
-    console.log(taskDetails?.action);
 
     if (!taskDetails) {
       const feedback = new FeedbackManager(interaction);
