@@ -15,4 +15,4 @@
 
   - [x] option to change aspect ratio of emote to 1:1 and fill content to edges
 
-- [ ] inticent way to import emotes from private (unavailable) servers (if possible)
+- [ ] inticent way to import emotes from private (unavailable) servers
