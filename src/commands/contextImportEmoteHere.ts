@@ -2,7 +2,6 @@ import {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
   MessageContextMenuCommandInteraction,
-  DiscordAPIError,
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";

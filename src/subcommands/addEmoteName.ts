@@ -1,17 +1,9 @@
-import {
-  ChatInputCommandInteraction,
-  ButtonBuilder,
-  ButtonStyle,
-} from "discord.js";
-import { ActionRowBuilder } from "@discordjs/builders";
+import { ChatInputCommandInteraction } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import messageCreator from "../utils/embedMessages/createEmbed";
 import searchEmote from "../api/7tv/searchEmote";
 import { DiscordBot } from "../types";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/emoteSelectMenu/getNavigatorRow";
-
-const emojiNumbers = [`1️⃣`, `2️⃣`, `3️⃣`, `4️⃣`, `5️⃣`];
 
 const addEmoteName = async (
   interaction: ChatInputCommandInteraction,
@@ -19,7 +11,6 @@ const addEmoteName = async (
   feedback: FeedbackManager
 ) => {
   const emoteReference = interaction.options.get("name")?.value as string;
-  const exactmatch = interaction.options.get("exactmatch")?.value as boolean;
 
   try {
     const foundEmotes = await searchEmote(emoteReference, 1);
@@ -48,7 +39,7 @@ const addEmoteName = async (
     });
 
     const navigatorRow = getNavigatorRow(navigatorTask, client, {
-      nextDisabled: false,
+      nextDisabled: pages > 1 ? false : true,
       previousDisabled: true,
     });
 

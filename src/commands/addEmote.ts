@@ -12,28 +12,29 @@ const importEmote = {
       "Add emote using command, by provided value like name or reference (link to 7TV website to emote)."
     )
     //subcommand byname
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("byname")
-        .setDescription(
-          "Use name, it will show you emotes that matches with provided name."
-        )
-        .addStringOption((option) =>
-          option
-            .setName("name")
-            .setDescription(
-              "Name of emote that you looking for, keep in mind that name is case sensitive!"
-            )
-            .setRequired(true)
-        )
-        .addBooleanOption((option) =>
-          option
-            .setName("exactmatch")
-            .setDescription(
-              "Does bot should find emotes with exact name, default is true"
-            )
-            .setRequired(false)
-        )
+    .addSubcommand(
+      (subcommand) =>
+        subcommand
+          .setName("byname")
+          .setDescription(
+            "Use name, it will show you emotes that matches with provided name."
+          )
+          .addStringOption((option) =>
+            option
+              .setName("name")
+              .setDescription(
+                "Name of emote that you looking for, keep in mind that name is case sensitive!"
+              )
+              .setRequired(true)
+          )
+      // .addBooleanOption((option) =>
+      //   option
+      //     .setName("exactmatch")
+      //     .setDescription(
+      //       "Does bot should find emotes with exact name, default is true"
+      //     )
+      //     .setRequired(false)
+      // )
     )
     //subcommand bylink
     .addSubcommand((subcommand) =>

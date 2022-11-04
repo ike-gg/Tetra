@@ -1,6 +1,5 @@
 import { ButtonInteraction } from "discord.js";
 import { DiscordBot } from "../types";
-import { merge } from "lodash";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import searchEmote from "../api/7tv/searchEmote";

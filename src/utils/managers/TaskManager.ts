@@ -5,7 +5,6 @@ import {
   ContextMenuCommandInteraction,
   MessageComponentInteraction,
 } from "discord.js";
-import { update } from "lodash";
 import { FeedbackManager } from "./FeedbackManager";
 
 interface TaskBase {

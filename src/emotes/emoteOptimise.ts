@@ -1,6 +1,5 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
-import path from "node:path";
 
 import { maxEmoteSize } from "../../config.json";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
