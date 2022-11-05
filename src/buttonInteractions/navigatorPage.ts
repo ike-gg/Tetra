@@ -9,7 +9,7 @@ const navigatorPage = {
   data: { name: "navigatorPage" },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
-    await feedback.info("Got'ya your request!", "Working on it... 🏗️");
+    await feedback.info("Got your request!", "Working on it... 🏗️");
     await feedback.removeButtons();
     try {
       const interationArguments = interaction.customId.split(":");

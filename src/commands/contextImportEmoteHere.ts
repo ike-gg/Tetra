@@ -17,7 +17,7 @@ const importEmote = {
     .setType(ApplicationCommandType.Message),
   async execute(interaction: MessageContextMenuCommandInteraction) {
     const feedback = new FeedbackManager(interaction);
-    await feedback.info("Got'ya your request!", "Working on it... 🏗️");
+    await feedback.info("Got your request!", "Working on it... 🏗️");
 
     const messageContent = interaction.targetMessage.content;
     const emotes = findEmotesFromMessage(messageContent);

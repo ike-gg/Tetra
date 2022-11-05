@@ -14,7 +14,7 @@ const selectEmote = {
     const emoteReference = taskDetails?.emoteReference;
 
     await feedback.removeButtons();
-    await feedback.info("Got'ya your request!", "Working on it... 🏗️");
+    await feedback.info("Got your request!", "Working on it... 🏗️");
 
     try {
       const emote = await emote7tv(emoteReference, feedback);
