@@ -51,6 +51,7 @@ for (const file of buttonInteractionsFiles) {
 
 client.on("ready", () => {
   console.log("Bot ready");
+  console.log(process.env);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

@@ -4,6 +4,8 @@ import {
   EmoteResponseGQL,
 } from "./apiResponseType";
 
+import fetch from "node-fetch";
+
 const searchEmote = async (
   emote: string,
   page = 1

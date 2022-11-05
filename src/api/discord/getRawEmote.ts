@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 const getRawEmote = async (hostURL: string) => {
   return await fetch(hostURL)
     .then((data) => {

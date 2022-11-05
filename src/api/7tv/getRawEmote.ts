@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 const getURL = (hostURL: string, isAnimated: boolean): string => {
   let extension = isAnimated ? "gif" : "webp";
   return new URL(`2x.${extension}`, `https:${hostURL}/`).href;
