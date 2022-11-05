@@ -5,7 +5,8 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { DiscordBot } from "../types";
-import { inviteLink } from "../../config.json";
+
+const inviteLink = process.env.inviteLink as string;
 
 const invitebot = {
   data: new SlashCommandBuilder()

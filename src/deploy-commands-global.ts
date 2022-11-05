@@ -6,7 +6,9 @@ import {
   RESTPostAPIChatInputApplicationCommandsJSONBody,
   Routes,
 } from "discord.js";
-import { discordBotToken, discordBotId } from "../config.json";
+
+const discordBotToken = process.env.discordBotToken as string;
+const discordBotId = process.env.discordBotId as string;
 
 const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
 const commandsPath = path.join(__dirname, "commands");

@@ -53,7 +53,7 @@ const getNavigatorRow = (
 
   navigatorRow.addComponents(
     new ButtonBuilder()
-      .setCustomId(client.tasks.addTask({ action: "cancelAction" }))
+      .setCustomId("cancelAction")
       .setLabel("Cancel")
       .setStyle(ButtonStyle.Danger)
   );

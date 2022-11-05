@@ -1,4 +1,16 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
+import {
+  SlashCommandBuilder,
+  ChatInputCommandInteraction,
+  ActionRow,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
+} from "discord.js";
+
+import { ModalActionRowComponentBuilder } from "discord.js";
 
 const debug = {
   data: new SlashCommandBuilder()
@@ -21,7 +33,30 @@ const debug = {
         )
     ),
   async execute(interaction: ChatInputCommandInteraction) {
-    interaction.options.getSubcommand;
+    const modal = new ModalBuilder().setCustomId("xd").setTitle("test");
+
+    const first = new TextInputBuilder()
+      .setCustomId("XDD")
+      .setLabel("co tam?")
+      .setStyle(TextInputStyle.Short);
+
+    const second = new TextInputBuilder()
+      .setCustomId("XDDDDD")
+      .setLabel("minimajk")
+      .setStyle(TextInputStyle.Paragraph);
+
+    const firstRow =
+      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+        first
+      );
+    const thirdRow =
+      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+        second
+      );
+
+    modal.addComponents(firstRow, thirdRow);
+
+    await interaction.showModal(modal);
   },
 };
 

@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 import fs from "fs";
 import path from "node:path";
 import { Client, Collection, GatewayIntentBits, Events } from "discord.js";
@@ -7,9 +9,10 @@ import {
   ExecutableButtonInteraction,
   ExecutableCommandInteraction,
 } from "./types";
-import { discordBotToken } from "../config.json";
 import TaskManager from "./utils/managers/TaskManager";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
+
+const discordBotToken = process.env.discordBotToken as string;
 
 const client = new Client({
   intents: [GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.Guilds],
@@ -76,9 +79,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     const interactionTaskId = interaction.customId.split(":")[0];
     const taskDetails = client.tasks.getTask(interactionTaskId);
-
-    console.log(interactionTaskId);
-    console.log(taskDetails);
 
     if (!taskDetails) {
       const feedback = new FeedbackManager(interaction);

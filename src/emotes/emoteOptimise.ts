@@ -1,8 +1,9 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 
-import { maxEmoteSize } from "../../config.json";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
+
+const maxEmoteSize = 262144;
 
 const emoteOptimise = async (
   image: Buffer,

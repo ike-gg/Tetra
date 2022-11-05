@@ -56,6 +56,13 @@ class TaskManager {
   }
 
   getTask(id: string) {
+    //bypass to do not create new task when it destiny is to only cancel the action.
+    if (id === "cancelAction") {
+      return {
+        action: "cancelAction",
+      };
+    }
+
     const findTask = this.tasks.find((task) => task.id === id);
     return findTask;
   }
