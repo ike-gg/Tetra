@@ -41,7 +41,9 @@ const emoteOptimise = async (
     );
 
     while (processedBuffer.byteLength > maxEmoteSize) {
-      console.log(`${processedBuffer.byteLength} / ${maxEmoteSize}`);
+      feedback?.warning(
+        `Optimising... ${processedBuffer.byteLength} / ${maxEmoteSize}`
+      );
 
       dimensions = dimensions.map((dimension) =>
         Math.floor((dimension *= 0.85))

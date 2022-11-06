@@ -62,7 +62,7 @@ const importEmote = {
       return;
     }
 
-    await feedback.info("Got your request!", "Working on it... 🏗️");
+    await feedback.gotRequest();
 
     const subcommandUsed = interaction.options.getSubcommand();
 

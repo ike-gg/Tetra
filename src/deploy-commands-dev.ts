@@ -20,7 +20,9 @@ const commandFiles = fs
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
   const command = require(filePath);
-  commands.push(command.default.data.toJSON());
+  const commandData = command.default.data as SlashCommandBuilder;
+  commandData.setName(`dev${commandData.name}`);
+  commands.push(commandData.toJSON());
 }
 
 const rest = new REST({ version: "10" }).setToken(discordBotToken);

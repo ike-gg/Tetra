@@ -3,7 +3,13 @@ dotenv.config();
 
 import fs from "fs";
 import path from "node:path";
-import { Client, Collection, GatewayIntentBits, Events } from "discord.js";
+import {
+  Client,
+  Collection,
+  GatewayIntentBits,
+  Events,
+  SlashCommandBuilder,
+} from "discord.js";
 
 import {
   DiscordBot,
@@ -12,8 +18,16 @@ import {
 } from "./types";
 import TaskManager from "./utils/managers/TaskManager";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
+import errorEmbed from "./utils/embedMessages/errorEmbed";
 
 const discordBotToken = process.env.discordBotToken as string;
+let env = process.env.env as "production" | "development";
+if (!env) {
+  console.error(
+    "enviroment is not defined in .env file, running in production enviroment instead."
+  );
+  env = "production";
+}
 
 const client = new Client({
   intents: [GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.Guilds],
@@ -31,7 +45,13 @@ const commandFiles = fs
 for (const file of commandFiles) {
   const filePath = path.join(commandsPath, file);
   import(filePath).then((command) => {
-    client.commands.set(command.default.data.name, command.default);
+    const commandData = command.default.data as SlashCommandBuilder;
+
+    if (env === "development") {
+      commandData.setName(`dev${commandData.name}`);
+    }
+
+    client.commands.set(commandData.name, command.default);
   });
 }
 
@@ -52,7 +72,6 @@ for (const file of buttonInteractionsFiles) {
 
 client.on("ready", () => {
   console.log("Bot ready");
-  console.log(process.env);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -76,6 +95,22 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isButton()) {
     if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
+      const error = errorEmbed(
+        "You are not allowed **YET** to use another users interactions!"
+      );
+      interaction.reply({ embeds: [error], ephemeral: true });
+      return;
+    }
+
+    if (
+      env === "development" &&
+      !interaction.message.interaction?.commandName.startsWith("dev")
+    ) {
+      return;
+    } else if (
+      env === "production" &&
+      interaction.message.interaction?.commandName.startsWith("dev")
+    ) {
       return;
     }
 

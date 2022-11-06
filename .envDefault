@@ -1,3 +1,4 @@
 discordBotToken=
 discordBotId=
 inviteLink=
+env=production | development

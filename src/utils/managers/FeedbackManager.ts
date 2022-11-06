@@ -1,3 +1,11 @@
+import dotenv from "dotenv";
+dotenv.config();
+
+let env = process.env.env as "development" | "production";
+if (!env) {
+  env = "production";
+}
+
 import errorEmbed from "../embedMessages/errorEmbed";
 import infoEmbed from "../embedMessages/infoEmbed";
 import successfulEmbed from "../embedMessages/successfulEmbed";
@@ -7,6 +15,7 @@ import {
   CommandInteraction,
   BaseMessageOptions,
   Client,
+  InteractionReplyOptions,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -24,27 +33,39 @@ export class FeedbackManager {
     this.client = interaction.client;
   }
 
-  async sendMessage(options: {
-    embeds?: EmbedBuilder[];
-    components?: ActionRowBuilder<ButtonBuilder>[];
-  }) {
+  async sendMessage(
+    options: {
+      embeds?: EmbedBuilder[];
+      components?: ActionRowBuilder<ButtonBuilder>[];
+    },
+    ephemeral: boolean = false
+  ) {
     const { embeds, components } = options;
 
     if (embeds && embeds.length > 0) {
       const lastIndex = embeds.length - 1;
+      let lastEmbedText = this.client.user!.username;
+      if (env === "development") {
+        lastEmbedText += " | Development stage.";
+      }
       embeds[lastIndex].setFooter({
-        text: this.client.user!.username,
+        text: lastEmbedText,
         iconURL: this.client.user!.avatarURL()!,
       });
     }
 
-    const messagePayload: BaseMessageOptions = {
+    const messagePayload: InteractionReplyOptions = {
       embeds: embeds,
       components: components,
+      ephemeral,
     };
 
     if (this.interaction instanceof ButtonInteraction) {
-      this.interaction.message.edit(messagePayload);
+      const editPayload: BaseMessageOptions = {
+        embeds: embeds,
+        components: components,
+      };
+      this.interaction.message.edit(editPayload);
       return;
     }
 
@@ -61,14 +82,18 @@ export class FeedbackManager {
     }
   }
 
+  async gotRequest() {
+    this.info("Got your request!", "Working on it... 🏗️");
+  }
+
   async info(title: string, message: string) {
     const embed = infoEmbed(title, message);
     await this.sendMessage({ embeds: [embed] });
   }
 
-  async error(message: string) {
+  async error(message: string, ephemeral: boolean = false) {
     const embed = errorEmbed(message);
-    await this.sendMessage({ embeds: [embed] });
+    await this.sendMessage({ embeds: [embed] }, ephemeral);
   }
 
   async success(title: string, description: string, image?: string) {
