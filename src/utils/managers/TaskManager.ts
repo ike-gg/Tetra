@@ -31,13 +31,13 @@ class TaskManager {
 
   addTask(taskBase: TaskBase) {
     const identificator = randomBytes(8).toString("hex");
-    const timeoutTime = 1000 * 60 * 10; //10 minutes
 
     const newTask: TaskWithId = taskBase;
     newTask.id = identificator;
 
     this.tasks.push(newTask);
 
+    const timeoutTime = 1000 * 60 * 10; //10 minutes
     setTimeout(() => {
       this.removeTask(identificator);
     }, timeoutTime);

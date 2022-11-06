@@ -8,8 +8,7 @@ import fetch from "node-fetch";
 
 const searchEmote = async (
   emote: string,
-  page = 1
-  // exact_match = true
+  ignoreTags: boolean = false
 ): Promise<EmoteGQL[]> => {
   return await fetch("https://7tv.io/v3/gql", {
     method: "POST",
@@ -20,7 +19,7 @@ const searchEmote = async (
       //filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}
       //filter emotes
       query: `{
-        emotes(query: "${emote}", page: ${page}, limit: 5) {
+        emotes(query: "${emote}", filter: {ignore_tags: ${ignoreTags}}) {
           count
           items {
             id
@@ -42,9 +41,6 @@ const searchEmote = async (
       console.log(responseData);
       const foundEmotes = responseData as EmoteResponseGQL;
       if (foundEmotes.data?.emotes.items) {
-        foundEmotes.data.emotes.items.forEach((emote) => {
-          emote.count = foundEmotes.data.emotes.count;
-        });
         return foundEmotes.data.emotes.items;
       } else {
         return [];

@@ -4,6 +4,7 @@ import searchEmote from "../api/7tv/searchEmote";
 import { DiscordBot } from "../types";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/emoteSelectMenu/getNavigatorRow";
+import { EmoteListManager } from "../utils/managers/EmoteListManager";
 
 const addEmoteName = async (
   interaction: ChatInputCommandInteraction,
@@ -11,9 +12,14 @@ const addEmoteName = async (
   feedback: FeedbackManager
 ) => {
   const emoteReference = interaction.options.get("name")?.value as string;
+  let ignoreTags = interaction.options.get("ignoretags")?.value as boolean;
+
+  if (ignoreTags === undefined) {
+    ignoreTags = false;
+  }
 
   try {
-    const foundEmotes = await searchEmote(emoteReference, 1);
+    const foundEmotes = await searchEmote(emoteReference, ignoreTags);
 
     if (foundEmotes.length == 0) {
       await feedback.error(
@@ -24,7 +30,7 @@ const addEmoteName = async (
 
     const emotesEmbedsPreview = renderEmotesSelect(foundEmotes, client);
 
-    const emotesFound = foundEmotes[0].count;
+    const emotesFound = foundEmotes.length;
     const pages = Math.ceil(emotesFound / 5);
 
     const navigatorTask = client.tasks.addTask({
@@ -48,6 +54,7 @@ const addEmoteName = async (
       embeds: emotesEmbedsPreview.embeds,
     });
   } catch (error) {
+    console.error(error);
     await feedback.error(String(error).slice(0, 300));
   }
 };
