@@ -36,7 +36,7 @@ const navigatorPage = {
         previousDisabled = true;
       }
 
-      const foundEmotes = await searchEmote(emoteReference!, newPage);
+      const foundEmotes = await searchEmote(emoteReference!);
 
       const emotesEmbedsPreview = renderEmotesSelect(foundEmotes, client);
       const navigatorRow = getNavigatorRow(taskId, client, {

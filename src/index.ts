@@ -22,6 +22,7 @@ import errorEmbed from "./utils/embedMessages/errorEmbed";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
+
 if (!env) {
   console.error(
     "enviroment is not defined in .env file, running in production enviroment instead."
