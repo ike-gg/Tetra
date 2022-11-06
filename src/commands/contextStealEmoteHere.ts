@@ -13,7 +13,7 @@ import { ExtractedEmote } from "../types";
 
 const importEmote = {
   data: new ContextMenuCommandBuilder()
-    .setName("Import emote here")
+    .setName("Steal emote here")
     .setType(ApplicationCommandType.Message),
   async execute(interaction: MessageContextMenuCommandInteraction) {
     const feedback = new FeedbackManager(interaction);

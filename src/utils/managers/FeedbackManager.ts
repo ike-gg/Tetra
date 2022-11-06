@@ -83,7 +83,7 @@ export class FeedbackManager {
   }
 
   async gotRequest() {
-    this.info("Got your request!", "Working on it... 🏗️");
+    await this.info("Got your request!", "Working on it... 🏗️");
   }
 
   async info(title: string, message: string) {
