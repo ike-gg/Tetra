@@ -4,6 +4,7 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import searchEmote from "../api/7tv/searchEmote";
 import getNavigatorRow from "../utils/emoteSelectMenu/getNavigatorRow";
+import { EmoteListManager } from "../utils/managers/EmoteListManager";
 
 const navigatorPage = {
   data: { name: "navigatorPage" },
@@ -15,9 +16,9 @@ const navigatorPage = {
       const interationArguments = interaction.customId.split(":");
       const [taskId, action] = interationArguments;
 
-      const taskDetails = client.tasks.getTask(taskId);
-      const { currentPage, pagesLimit } = taskDetails!.options!;
-      const { emoteReference } = taskDetails!;
+      const taskDetails = client.tasks.getTask(taskId)!;
+      const { currentPage, pagesLimit } = taskDetails.options!;
+      const { emoteReference, storeId } = taskDetails;
 
       let pageDirection: number;
       action === "previous" ? (pageDirection = -1) : (pageDirection = 1);
@@ -36,9 +37,9 @@ const navigatorPage = {
         previousDisabled = true;
       }
 
-      const foundEmotes = await searchEmote(emoteReference!);
+      const emotePage = EmoteListManager.getEmotesInPages(storeId!, newPage)!;
 
-      const emotesEmbedsPreview = renderEmotesSelect(foundEmotes, client);
+      const emotesEmbedsPreview = renderEmotesSelect(emotePage, client);
       const navigatorRow = getNavigatorRow(taskId, client, {
         nextDisabled,
         previousDisabled,
