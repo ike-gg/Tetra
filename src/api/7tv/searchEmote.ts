@@ -38,7 +38,6 @@ const searchEmote = async (
   })
     .then((response) => response.json())
     .then((responseData) => {
-      console.log(responseData);
       const foundEmotes = responseData as EmoteResponseGQL;
       if (foundEmotes.data?.emotes.items) {
         return foundEmotes.data.emotes.items;

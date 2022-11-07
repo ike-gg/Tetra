@@ -21,31 +21,33 @@ const addEmoteName = async (
   try {
     const foundEmotes = await searchEmote(emoteReference, ignoreTags);
 
-    if (foundEmotes.length == 0) {
+    if (foundEmotes.length === 0) {
       await feedback.error(
         `I couldn't find any emotes with \`${emoteReference}\` query.`
       );
       return;
     }
 
-    const emotesEmbedsPreview = renderEmotesSelect(foundEmotes, client);
+    const storeId = EmoteListManager.storeEmotes(emoteReference, foundEmotes)!;
+    const pageOfEmotes = EmoteListManager.getEmotesInPages(storeId, 1)!;
+    const storeInfo = EmoteListManager.getStoredInfo(storeId)!;
 
-    const emotesFound = foundEmotes.length;
-    const pages = Math.ceil(emotesFound / 5);
+    const emotesEmbedsPreview = renderEmotesSelect(pageOfEmotes, client);
 
     const navigatorTask = client.tasks.addTask({
       action: "navigatorPage",
       feedback: feedback,
       interaction: interaction,
       emoteReference: emoteReference,
+      storeId: storeId,
       options: {
         currentPage: 1,
-        pagesLimit: pages,
+        pagesLimit: storeInfo.pages,
       },
     });
 
     const navigatorRow = getNavigatorRow(navigatorTask, client, {
-      nextDisabled: pages > 1 ? false : true,
+      nextDisabled: storeInfo.pages > 1 ? false : true,
       previousDisabled: true,
     });
 

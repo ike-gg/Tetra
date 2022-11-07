@@ -16,6 +16,7 @@ interface TaskBase {
   feedback?: FeedbackManager;
   emoteReference?: string;
   message?: MessageComponentInteraction;
+  storeId?: string;
   options?: {
     currentPage?: number;
     pagesLimit?: number;

@@ -1,14 +1,15 @@
 import { randomBytes } from "crypto";
 import { EmoteGQL } from "../../api/7tv/apiResponseType";
+import { chunk } from "lodash";
 
 class EmoteListManager {
   private static instance: EmoteListManager;
-  private emotesPerPage = 5;
   static emotes: {
     id: string;
     pages: number;
     query: string;
-    emotes: EmoteGQL[];
+    amount: number;
+    emotes: EmoteGQL[][];
   }[] = [];
 
   private constructor() {}
@@ -22,13 +23,18 @@ class EmoteListManager {
   }
 
   static storeEmotes(query: string, emotes: EmoteGQL[]) {
+    const emotesPerPage = 5;
     const identificator = randomBytes(8).toString("hex");
-    const pages = Math.ceil(emotes.length / 5);
+    const pages = Math.ceil(emotes.length / emotesPerPage);
+
+    const chunkedEmtoes = chunk(emotes, emotesPerPage);
+
     this.emotes.push({
       id: identificator,
       pages: pages,
+      amount: emotes.length,
       query: query,
-      emotes: emotes,
+      emotes: chunkedEmtoes,
     });
 
     const timeoutTime = 1000 * 60 * 10; //10 minutes
@@ -41,6 +47,23 @@ class EmoteListManager {
 
   static removeStoredEmote(id: string) {
     this.emotes = this.emotes.filter((task) => task.id !== id);
+  }
+
+  static getStoredInfo(id: string) {
+    const foundEntry = this.emotes.find((entries) => entries.id === id);
+    if (!foundEntry) return undefined;
+    const { amount, pages, query } = foundEntry;
+    return {
+      amount,
+      pages,
+      query,
+    };
+  }
+
+  static getEmotesInPages(id: string, page: number) {
+    const foundEntry = this.emotes.find((entries) => entries.id === id);
+    if (!foundEntry) return;
+    return foundEntry.emotes[--page];
   }
 }
 
