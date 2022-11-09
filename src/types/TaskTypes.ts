@@ -29,3 +29,5 @@ export interface EmoteNavigatorTask extends TaskBase {
   currentPage: number;
   totalPages: number;
 }
+
+export default TaskBase;
