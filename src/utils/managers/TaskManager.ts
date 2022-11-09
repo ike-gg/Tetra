@@ -12,7 +12,7 @@ import TaskTypes from "../../types/TaskTypes";
 class TaskManager {
   tasks: TaskWithId[] = [];
 
-  addTask<T extends EmoteNavigatorTask>(taskBase: T) {
+  addTask(taskBase: T) {
     const identificator = randomBytes(8).toString("hex");
     console.log("creating task");
 
