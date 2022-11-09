@@ -7,34 +7,16 @@ import {
 } from "discord.js";
 import { FeedbackManager } from "./FeedbackManager";
 
-interface TaskBase {
-  action: string;
-  interaction?:
-    | CommandInteraction
-    | ButtonInteraction
-    | ContextMenuCommandInteraction;
-  feedback?: FeedbackManager;
-  emoteReference?: string;
-  message?: MessageComponentInteraction;
-  storeId?: string;
-  options?: {
-    currentPage?: number;
-    pagesLimit?: number;
-  };
-}
-
-interface TaskWithId extends TaskBase {
-  id?: string;
-}
+import TaskTypes from "../../types/TaskTypes";
 
 class TaskManager {
   tasks: TaskWithId[] = [];
 
-  addTask(taskBase: TaskBase) {
+  addTask<T extends EmoteNavigatorTask>(taskBase: T) {
     const identificator = randomBytes(8).toString("hex");
     console.log("creating task");
 
-    const newTask: TaskWithId = taskBase;
+    const newTask = taskBase;
     newTask.id = identificator;
 
     this.tasks.push(newTask);

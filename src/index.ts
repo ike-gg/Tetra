@@ -120,8 +120,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
     if (!taskDetails) {
       const feedback = new FeedbackManager(interaction);
-      feedback.removeButtons();
-      feedback.error("Request timed out. Create new interaction.");
+      await feedback.removeButtons();
+      await feedback.error("Request timed out. Create new interaction.");
       return;
     }
 

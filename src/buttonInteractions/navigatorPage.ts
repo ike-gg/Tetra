@@ -18,7 +18,7 @@ const navigatorPage = {
 
       const taskDetails = client.tasks.getTask(taskId)!;
       const { currentPage, pagesLimit } = taskDetails.options!;
-      const { emoteReference, storeId } = taskDetails;
+      const { storeId } = taskDetails;
 
       let pageDirection: number;
       action === "previous" ? (pageDirection = -1) : (pageDirection = 1);

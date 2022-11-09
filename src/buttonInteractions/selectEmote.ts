@@ -2,6 +2,7 @@ import { ButtonInteraction, DiscordAPIError } from "discord.js";
 
 import emote7tv from "../emotes/emote7tv";
 import { DiscordBot } from "../types";
+import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const selectEmote = {
