@@ -32,6 +32,7 @@ class TaskManager {
 
   addTask(taskBase: TaskBase) {
     const identificator = randomBytes(8).toString("hex");
+    console.log("creating task");
 
     const newTask: TaskWithId = taskBase;
     newTask.id = identificator;
