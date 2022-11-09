@@ -12,7 +12,7 @@ import TaskTypes from "../../types/TaskTypes";
 class TaskManager {
   tasks: TaskWithId[] = [];
 
-  addTask(taskBase: T) {
+  addTask(taskBase) {
     const identificator = randomBytes(8).toString("hex");
     console.log("creating task");
 
