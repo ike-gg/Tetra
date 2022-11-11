@@ -7,27 +7,25 @@ import {
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 export interface TaskBase {
+  id: string;
   action: string;
   interaction?:
     | CommandInteraction
     | ButtonInteraction
     | ContextMenuCommandInteraction;
   feedback?: FeedbackManager;
-  // emoteReference?: string;
   message?: MessageComponentInteraction;
-  // storeId?: string;
-  // multiAdd?: boolean;
-  // options?: {
-  //   currentPage?: number;
-  //   pagesLimit?: number;
-  // };
 }
 
-export interface EmoteNavigatorTask extends TaskBase {
+export interface EmoteNavigator extends TaskBase {
+  action: "navigatorPage";
   storeId: string;
   multiAdd: boolean;
   currentPage: number;
   totalPages: number;
 }
 
-export default TaskBase;
+export interface EmotePicker extends TaskBase {
+  action: "selectEmote";
+  emoteReference: string;
+}

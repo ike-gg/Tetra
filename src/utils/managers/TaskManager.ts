@@ -7,12 +7,12 @@ import {
 } from "discord.js";
 import { FeedbackManager } from "./FeedbackManager";
 
-import TaskTypes from "../../types/TaskTypes";
+import * as TaskTypes from "../../types/TaskTypes";
 
 class TaskManager {
-  tasks: TaskWithId[] = [];
+  tasks: TaskTypes.TaskBase[] = [];
 
-  addTask(taskBase) {
+  addTask<T extends TaskTypes.TaskBase>(taskBase: T) {
     const identificator = randomBytes(8).toString("hex");
     console.log("creating task");
 
