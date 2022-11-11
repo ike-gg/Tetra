@@ -10,11 +10,10 @@ import { FeedbackManager } from "./FeedbackManager";
 import * as TaskTypes from "../../types/TaskTypes";
 
 class TaskManager {
-  tasks: TaskTypes.TaskBase[] = [];
+  tasks: TaskTypes.Storeable[] = [];
 
-  addTask<T extends TaskTypes.TaskBase>(taskBase: T) {
+  addTask<T extends TaskTypes.Base>(taskBase: T) {
     const identificator = randomBytes(8).toString("hex");
-    console.log("creating task");
 
     const newTask = taskBase;
     newTask.id = identificator;
@@ -31,8 +30,14 @@ class TaskManager {
 
   updateCurrentPage(id: string, newPage: number) {
     const taskIndex = this.tasks.findIndex((task) => task.id === id);
-    if (taskIndex === -1) return false;
-    this.tasks[taskIndex].options!.currentPage = newPage;
+    const updatingTask = this.tasks[taskIndex];
+
+    if (!updatingTask) return;
+
+    if ("currentPage" in updatingTask) {
+      updatingTask.currentPage = newPage;
+      //before switching
+    }
   }
 
   removeTask(id: string) {

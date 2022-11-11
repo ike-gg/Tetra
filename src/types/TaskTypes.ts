@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
-export interface TaskBase {
+export interface Base {
   id: string;
   action: string;
   interaction?:
@@ -17,7 +17,7 @@ export interface TaskBase {
   message?: MessageComponentInteraction;
 }
 
-export interface EmoteNavigator extends TaskBase {
+export interface EmoteNavigator extends Base {
   action: "navigatorPage";
   storeId: string;
   multiAdd: boolean;
@@ -25,7 +25,9 @@ export interface EmoteNavigator extends TaskBase {
   totalPages: number;
 }
 
-export interface EmotePicker extends TaskBase {
+export interface EmotePicker extends Base {
   action: "selectEmote";
   emoteReference: string;
 }
+
+export type Storeable = EmoteNavigator | EmotePicker | Base;
