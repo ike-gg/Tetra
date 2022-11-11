@@ -22,6 +22,11 @@ const importEmote = {
     const messageContent = interaction.targetMessage.content;
     const emotes = findEmotesFromMessage(messageContent);
 
+    if (interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
+      await feedback.missingPermissions();
+      return;
+    }
+
     if (emotes.length === 0) {
       await feedback.error("No emotes found in message.");
       return;
