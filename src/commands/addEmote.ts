@@ -55,9 +55,7 @@ const importEmote = {
     const feedback = new FeedbackManager(interaction);
 
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
-      await feedback.error(
-        "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
-      );
+      await feedback.missingPermissions();
       return;
     }
 
