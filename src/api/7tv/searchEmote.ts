@@ -19,7 +19,7 @@ const searchEmote = async (
       //filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}
       //filter emotes
       query: `{
-        emotes(query: "${emote}", filter: {ignore_tags: ${ignoreTags}}) {
+        emotes(query: "${emote}", limit: 20000, filter: {ignore_tags: ${ignoreTags}}) {
           count
           items {
             id
