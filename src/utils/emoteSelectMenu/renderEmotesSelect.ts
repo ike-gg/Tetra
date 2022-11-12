@@ -3,6 +3,7 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 import { EmoteGQL } from "../../api/7tv/apiResponseType";
 import { DiscordBot } from "../../types";
 import emotePreviewEmbed from "../embedMessages/emotePreviewEmbed";
+import * as TaskTypes from "../../types/TaskTypes";
 
 interface EmoteSelectMessage {
   embeds: EmbedBuilder[];
@@ -24,7 +25,8 @@ const renderEmotesSelect = (
     let previewUrl = `https:${host.url}/2x`;
     animated ? (previewUrl += ".gif") : (previewUrl += ".webp");
 
-    const taskId = client.tasks.addTask({
+    const taskId = client.tasks.addTask<TaskTypes.EmotePicker>({
+      id: "",
       action: "selectEmote",
       emoteReference: id,
     });

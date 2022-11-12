@@ -1,9 +1,9 @@
-import { ButtonInteraction, DiscordAPIError } from "discord.js";
+import { ButtonInteraction } from "discord.js";
 
 import emote7tv from "../emotes/emote7tv";
 import { DiscordBot } from "../types";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import * as TaskTypes from "../types/TaskTypes";
 
 const selectEmote = {
   data: { name: "selectEmote" },
@@ -11,8 +11,8 @@ const selectEmote = {
     const feedback = new FeedbackManager(interaction);
 
     const taskId = interaction.customId;
-    const taskDetails = client.tasks.getTask(taskId);
-    const emoteReference = taskDetails?.emoteReference;
+    const taskDetails = client.tasks.getTask<TaskTypes.EmotePicker>(taskId);
+    const emoteReference = taskDetails.emoteReference;
 
     await feedback.removeButtons();
     await feedback.gotRequest();
@@ -31,7 +31,7 @@ const selectEmote = {
         emote.preview
       );
     } catch (error: any) {
-      feedback.error(error);
+      feedback.error(String(error));
     }
   },
 };

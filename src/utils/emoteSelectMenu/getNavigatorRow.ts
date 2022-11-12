@@ -1,6 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord.js";
 import { DiscordBot } from "../../types";
+import * as TaskTypes from "../../types/TaskTypes";
 
 const getNavigatorRow = (
   navigatorTaskId: string,
@@ -10,8 +11,9 @@ const getNavigatorRow = (
     previousDisabled: boolean;
   }
 ): ActionRowBuilder<ButtonBuilder> => {
-  const taskDetails = client.tasks.getTask(navigatorTaskId);
-  const { currentPage, pagesLimit } = taskDetails!.options!;
+  const taskDetails =
+    client.tasks.getTask<TaskTypes.EmoteNavigator>(navigatorTaskId);
+  const { currentPage, totalPages } = taskDetails;
 
   const navigatorRow = new ActionRowBuilder<ButtonBuilder>();
 
@@ -25,7 +27,7 @@ const getNavigatorRow = (
 
   navigatorRow.addComponents(
     new ButtonBuilder()
-      .setLabel(`Page ${currentPage}/${pagesLimit}`)
+      .setLabel(`Page ${currentPage}/${totalPages}`)
       .setDisabled(true)
       .setStyle(ButtonStyle.Secondary)
       .setCustomId(navigatorTaskId)

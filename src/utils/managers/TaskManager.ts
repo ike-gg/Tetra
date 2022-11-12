@@ -1,12 +1,4 @@
 import { randomBytes } from "crypto";
-import {
-  ButtonInteraction,
-  CommandInteraction,
-  ContextMenuCommandInteraction,
-  MessageComponentInteraction,
-} from "discord.js";
-import { FeedbackManager } from "./FeedbackManager";
-
 import * as TaskTypes from "../../types/TaskTypes";
 
 class TaskManager {
@@ -44,16 +36,9 @@ class TaskManager {
     this.tasks = this.tasks.filter((task) => task.id !== id);
   }
 
-  getTask(id: string) {
-    //bypass to do not create new task when it destiny is to only cancel the action.
-    if (id === "cancelAction") {
-      return {
-        action: "cancelAction",
-      };
-    }
-
+  getTask<T extends TaskTypes.Base>(id: string): T {
     const findTask = this.tasks.find((task) => task.id === id);
-    return findTask;
+    return findTask as T;
   }
 }
 

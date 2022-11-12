@@ -5,6 +5,7 @@ import { DiscordBot } from "../types";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/emoteSelectMenu/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
+import * as TaskTypes from "../types/TaskTypes";
 
 const addEmoteName = async (
   interaction: ChatInputCommandInteraction,
@@ -34,16 +35,15 @@ const addEmoteName = async (
 
     const emotesEmbedsPreview = renderEmotesSelect(pageOfEmotes, client);
 
-    const navigatorTask = client.tasks.addTask({
+    const navigatorTask = client.tasks.addTask<TaskTypes.EmoteNavigator>({
+      id: "",
       action: "navigatorPage",
       feedback: feedback,
       interaction: interaction,
-      emoteReference: emoteReference,
       storeId: storeId,
-      options: {
-        currentPage: 1,
-        pagesLimit: storeInfo.pages,
-      },
+      currentPage: 1,
+      multiAdd: false,
+      totalPages: storeInfo.pages,
     });
 
     const navigatorRow = getNavigatorRow(navigatorTask, client, {

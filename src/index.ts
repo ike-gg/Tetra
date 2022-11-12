@@ -19,6 +19,7 @@ import {
 import TaskManager from "./utils/managers/TaskManager";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import errorEmbed from "./utils/embedMessages/errorEmbed";
+import * as TaskTypes from "./types/TaskTypes";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
@@ -106,17 +107,26 @@ client.on(Events.InteractionCreate, async (interaction) => {
     if (
       env === "development" &&
       !interaction.message.interaction?.commandName.startsWith("dev")
-    ) {
+    )
       return;
-    } else if (
+    else if (
       env === "production" &&
       interaction.message.interaction?.commandName.startsWith("dev")
-    ) {
+    )
       return;
-    }
 
     const interactionTaskId = interaction.customId.split(":")[0];
-    const taskDetails = client.tasks.getTask(interactionTaskId);
+
+    let taskDetails;
+
+    if (interactionTaskId === "cancelAction") {
+      taskDetails = {
+        action: "cancelAction",
+      };
+    } else {
+      taskDetails =
+        client.tasks.getTask<TaskTypes.EmoteNavigator>(interactionTaskId);
+    }
 
     if (!taskDetails) {
       const feedback = new FeedbackManager(interaction);
