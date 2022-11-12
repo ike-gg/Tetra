@@ -28,7 +28,6 @@ class TaskManager {
 
     if ("currentPage" in updatingTask) {
       updatingTask.currentPage = newPage;
-      //before switching
     }
   }
 
