@@ -74,6 +74,7 @@ for (const file of buttonInteractionsFiles) {
 
 client.on("ready", () => {
   console.log("Bot ready");
+  console.log(client.guilds.cache.map((g) => g.name));
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

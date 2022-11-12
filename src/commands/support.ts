@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -12,28 +9,25 @@ import {
 import { DiscordBot } from "../types";
 import URLButton from "../utils/buttons/URLButton";
 
-const inviteLink = process.env.inviteLink as string;
-
-const invitebot = {
+const support = {
   data: new SlashCommandBuilder()
-    .setName("invitebot")
-    .setDescription(
-      "Invite bot to your discord server and easily import emotes from 7tv."
-    ),
+    .setName("support")
+    .setDescription("Get support from bot support server"),
   async execute(interaction: CommandInteraction, client: DiscordBot) {
-    const link = hyperlink("Click here!", inviteLink);
+    const supportDiscordLink = "https://discord.gg/d6UsB853";
+    const link = hyperlink("Click here!", supportDiscordLink);
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      URLButton("Invite link", inviteLink)
+      URLButton("Invite to support server", supportDiscordLink)
     );
 
     const messagePayload = new EmbedBuilder();
-    messagePayload.setTitle("Invitation link");
+    messagePayload.setTitle("Get support from bot support server!");
     messagePayload.setDescription(link);
     messagePayload.setAuthor({
       name: client.user!.username,
       iconURL: client.user!.avatarURL()!,
-      url: inviteLink,
+      url: supportDiscordLink,
     });
     messagePayload.setColor(0x000000);
 
@@ -44,4 +38,4 @@ const invitebot = {
   },
 };
 
-export default invitebot;
+export default support;

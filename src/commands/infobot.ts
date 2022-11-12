@@ -2,12 +2,15 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
   CommandInteraction,
   EmbedBuilder,
   hyperlink,
   SlashCommandBuilder,
 } from "discord.js";
 import { DiscordBot } from "../types";
+import URLButton from "../utils/buttons/URLButton";
 
 const inviteLink = process.env.inviteLink as string;
 
@@ -21,10 +24,18 @@ const infobot = {
     const discordAuthor = "https://discordapp.com/users/224978978362884096/";
     const activeGuilds = client.guilds.cache.size;
 
-    const invLink = hyperlink("Click here!", inviteLink);
-    const repoLink = hyperlink("@ike-gg/Tetra", githubRepo);
+    const dcInvLink = hyperlink("Click here!", inviteLink);
+    const ghRepoLink = hyperlink("@ike-gg/Tetra", githubRepo);
     const ghAuthorLink = hyperlink("@ike-gg", githubAuthor);
     const dcAuthorLink = hyperlink("ike", discordAuthor);
+
+    const componentsRow = new ActionRowBuilder<ButtonBuilder>();
+    componentsRow.addComponents(
+      URLButton("Invite link", inviteLink),
+      URLButton("Discord Author", discordAuthor),
+      URLButton("GitHub Repo", githubRepo),
+      URLButton("GitHub Author", githubAuthor)
+    );
 
     const messagePayload = new EmbedBuilder();
     messagePayload.setTitle("Bot informations");
@@ -36,7 +47,7 @@ const infobot = {
     });
     messagePayload.addFields({
       name: "Invite link",
-      value: invLink,
+      value: dcInvLink,
       inline: true,
     });
     messagePayload.addFields({
@@ -51,7 +62,7 @@ const infobot = {
     });
     messagePayload.addFields({
       name: "GitHub repository",
-      value: repoLink,
+      value: ghRepoLink,
       inline: true,
     });
     messagePayload.addFields({
@@ -61,7 +72,10 @@ const infobot = {
     });
     messagePayload.setImage("https://i.imgur.com/vkJxLA2.png");
     messagePayload.setColor(0x000000);
-    await interaction.reply({ embeds: [messagePayload] });
+    await interaction.reply({
+      embeds: [messagePayload],
+      components: [componentsRow],
+    });
   },
 };
 
