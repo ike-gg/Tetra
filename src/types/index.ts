@@ -1,10 +1,16 @@
-import Discord, { ButtonInteraction, CommandInteraction } from "discord.js";
+import Discord, {
+  ButtonInteraction,
+  Collection,
+  CommandInteraction,
+  SelectMenuInteraction,
+} from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import TaskManager from "../utils/managers/TaskManager";
 
 export interface DiscordBot extends Discord.Client {
-  commands: Discord.Collection<string, Discord.CommandInteraction>;
-  buttonInteractions: Discord.Collection<string, Discord.ButtonInteraction>;
+  commands: Collection<string, CommandInteraction>;
+  buttonInteractions: Collection<string, ButtonInteraction>;
+  selectMenu: Collection<string, SelectMenuInteraction>;
   tasks: TaskManager;
 }
 

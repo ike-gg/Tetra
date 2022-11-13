@@ -20,6 +20,7 @@ import TaskManager from "./utils/managers/TaskManager";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import errorEmbed from "./utils/embedMessages/errorEmbed";
 import * as TaskTypes from "./types/TaskTypes";
+import importInteractions from "./importInteractions";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
@@ -28,49 +29,20 @@ if (!env) {
   console.error(
     "enviroment is not defined in .env file, running in production enviroment instead."
   );
+  process.env.env = "production";
   env = "production";
 }
 
 const client = new Client({
-  intents: [GatewayIntentBits.GuildEmojisAndStickers, GatewayIntentBits.Guilds],
+  intents: [
+    GatewayIntentBits.GuildEmojisAndStickers,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+  ],
 }) as DiscordBot;
 
-client.commands = new Collection();
-client.buttonInteractions = new Collection();
+importInteractions(client);
 client.tasks = new TaskManager();
-
-const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs
-  .readdirSync(commandsPath)
-  .filter((file) => file.endsWith(".ts"));
-
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  import(filePath).then((command) => {
-    const commandData = command.default.data as SlashCommandBuilder;
-
-    if (env === "development") {
-      commandData.setName(`dev${commandData.name}`);
-    }
-
-    client.commands.set(commandData.name, command.default);
-  });
-}
-
-const buttonInteractionsPath = path.join(__dirname, "buttonInteractions");
-const buttonInteractionsFiles = fs
-  .readdirSync(buttonInteractionsPath)
-  .filter((file) => file.endsWith(".ts"));
-
-for (const file of buttonInteractionsFiles) {
-  const filePath = path.join(buttonInteractionsPath, file);
-  import(filePath).then((buttonInteraction) => {
-    client.buttonInteractions.set(
-      buttonInteraction.default.data.name,
-      buttonInteraction.default
-    );
-  });
-}
 
 client.on("ready", () => {
   console.log("Bot ready");
@@ -147,6 +119,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } catch {
       console.error;
     }
+  }
+
+  if (interaction.isSelectMenu()) {
   }
 });
 

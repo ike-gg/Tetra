@@ -16,6 +16,7 @@ import {
   BaseMessageOptions,
   Client,
   InteractionReplyOptions,
+  SelectMenuBuilder,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -26,20 +27,27 @@ import {
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction;
   client!: Client;
+  ephemeral: boolean;
   isReplied = false;
 
-  constructor(interaction: CommandInteraction | ButtonInteraction) {
+  constructor(
+    interaction: CommandInteraction | ButtonInteraction,
+    ephemeral: boolean = false
+  ) {
     this.interaction = interaction;
     this.client = interaction.client;
+    this.ephemeral = ephemeral;
   }
 
   async sendMessage(
     options: {
       embeds?: EmbedBuilder[];
-      components?: ActionRowBuilder<ButtonBuilder>[];
+      components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[];
     },
     ephemeral: boolean = false
   ) {
+    if (this.ephemeral) ephemeral = true;
+
     const { embeds, components } = options;
 
     if (embeds && embeds.length > 0) {
