@@ -4,6 +4,7 @@ import {
   ContextMenuCommandInteraction,
   MessageComponentInteraction,
 } from "discord.js";
+import { FoundEmotesDiscord } from ".";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 export interface Base {
@@ -30,4 +31,9 @@ export interface EmotePicker extends Base {
   emoteReference: string;
 }
 
-export type Storeable = EmoteNavigator | EmotePicker | Base;
+export interface StealEmote extends Base {
+  action: "stealEmote";
+  emote: FoundEmotesDiscord;
+}
+
+export type Storeable = EmoteNavigator | EmotePicker | StealEmote | Base;

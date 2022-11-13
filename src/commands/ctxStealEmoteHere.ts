@@ -11,7 +11,7 @@ import emoteDiscord from "../emotes/emoteDiscord";
 
 import { ExtractedEmote } from "../types";
 
-const importEmote = {
+const ctxStealEmoteHere = {
   data: new ContextMenuCommandBuilder()
     .setName("Steal emote here")
     .setType(ApplicationCommandType.Message),
@@ -22,7 +22,7 @@ const importEmote = {
     const messageContent = interaction.targetMessage.content;
     const emotes = findEmotesFromMessage(messageContent);
 
-    if (interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
+    if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
       await feedback.missingPermissions();
       return;
     }
@@ -39,32 +39,30 @@ const importEmote = {
       return;
     }
 
-    if (emotes.length === 1) {
-      const emote = emotes[0];
+    const emote = emotes[0];
 
-      if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
-        await feedback.error("This emote is from this server.");
-        return;
-      }
+    if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
+      await feedback.error("This emote is from this server.");
+      return;
+    }
 
-      try {
-        const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
+    try {
+      const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
 
-        const addedEmote = await interaction.guild?.emojis.create({
-          attachment: extractedEmote.image,
-          name: extractedEmote.name,
-        });
+      const addedEmote = await interaction.guild?.emojis.create({
+        attachment: extractedEmote.image,
+        name: extractedEmote.name,
+      });
 
-        await feedback.success(
-          `Success!`,
-          `Successfully added \`${addedEmote?.name}\` emote! ${addedEmote}`,
-          extractedEmote.preview
-        );
-      } catch (error: any) {
-        await feedback.error(error);
-      }
+      await feedback.success(
+        `Success!`,
+        `Successfully added \`${addedEmote?.name}\` emote! ${addedEmote}`,
+        extractedEmote.preview
+      );
+    } catch (error: any) {
+      await feedback.error(error);
     }
   },
 };
 
-export default importEmote;
+export default ctxStealEmoteHere;
