@@ -121,6 +121,15 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (interaction.isSelectMenu()) {
     const feedback = new FeedbackManager(interaction);
+
+    const isDevCommand =
+      interaction.message.interaction?.commandName.startsWith("dev");
+
+    console.log("is dev command?", isDevCommand);
+
+    if (env === "development" && !isDevCommand) return;
+    if (env === "production" && isDevCommand) return;
+
     if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
       const error = errorEmbed(
         "You are not allowed **YET** to use another users interactions!"

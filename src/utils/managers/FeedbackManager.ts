@@ -91,16 +91,6 @@ export class FeedbackManager {
     }
   }
 
-  async gotRequest() {
-    await this.info("Got your request!", "Working on it... 🏗️");
-  }
-
-  async missingPermissions() {
-    await this.error(
-      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
-    );
-  }
-
   async info(title: string, message: string) {
     const embed = infoEmbed(title, message);
     await this.sendMessage({ embeds: [embed] });
@@ -119,5 +109,19 @@ export class FeedbackManager {
   async warning(message: string) {
     const embed = warningEmbed(message);
     await this.sendMessage({ embeds: [embed] });
+  }
+
+  async gotRequest() {
+    await this.info("Got your request!", "Working on it... 🏗️");
+  }
+
+  async missingPermissions() {
+    await this.error(
+      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
+    );
+  }
+
+  async missingGuild() {
+    await this.error("Ooops! I couldn't find the server, please try again.");
   }
 }
