@@ -17,6 +17,7 @@ import {
   Client,
   InteractionReplyOptions,
   SelectMenuBuilder,
+  SelectMenuInteraction,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -25,13 +26,13 @@ import {
 } from "@discordjs/builders";
 
 export class FeedbackManager {
-  interaction: CommandInteraction | ButtonInteraction;
+  interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
   client!: Client;
   ephemeral: boolean;
   isReplied = false;
 
   constructor(
-    interaction: CommandInteraction | ButtonInteraction,
+    interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction,
     ephemeral: boolean = false
   ) {
     this.interaction = interaction;

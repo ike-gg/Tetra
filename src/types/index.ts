@@ -22,6 +22,10 @@ export interface ExecutableButtonInteraction extends ButtonInteraction {
   execute(interaction: ButtonInteraction, client?: DiscordBot): void;
 }
 
+export interface ExecutableSelectMenu extends SelectMenuInteraction {
+  execute(interaction: SelectMenuInteraction, client?: DiscordBot): void;
+}
+
 export interface ExtractedEmote {
   name: string;
   image: Buffer;

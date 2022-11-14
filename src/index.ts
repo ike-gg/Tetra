@@ -15,6 +15,7 @@ import {
   DiscordBot,
   ExecutableButtonInteraction,
   ExecutableCommandInteraction,
+  ExecutableSelectMenu,
 } from "./types";
 import TaskManager from "./utils/managers/TaskManager";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
@@ -69,6 +70,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   if (interaction.isButton()) {
+    const feedback = new FeedbackManager(interaction);
+
+    const isDevCommand =
+      interaction.message.interaction?.commandName.startsWith("dev");
+
+    console.log("is dev command?", isDevCommand);
+
+    if (env === "development" && !isDevCommand) return;
+    if (env === "production" && isDevCommand) return;
+
     if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
       const error = errorEmbed(
         "You are not allowed **YET** to use another users interactions!"
@@ -76,17 +87,6 @@ client.on(Events.InteractionCreate, async (interaction) => {
       interaction.reply({ embeds: [error], ephemeral: true });
       return;
     }
-
-    if (
-      env === "development" &&
-      !interaction.message.interaction?.commandName.startsWith("dev")
-    )
-      return;
-    else if (
-      env === "production" &&
-      interaction.message.interaction?.commandName.startsWith("dev")
-    )
-      return;
 
     const interactionTaskId = interaction.customId.split(":")[0];
 
@@ -97,12 +97,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
         action: "cancelAction",
       };
     } else {
-      taskDetails =
-        client.tasks.getTask<TaskTypes.EmoteNavigator>(interactionTaskId);
+      taskDetails = client.tasks.getTask(interactionTaskId);
     }
 
     if (!taskDetails) {
-      const feedback = new FeedbackManager(interaction);
       await feedback.removeButtons();
       await feedback.error("Request timed out. Create new interaction.");
       return;
@@ -122,6 +120,34 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 
   if (interaction.isSelectMenu()) {
+    const feedback = new FeedbackManager(interaction);
+    if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
+      const error = errorEmbed(
+        "You are not allowed **YET** to use another users interactions!"
+      );
+      interaction.reply({ embeds: [error], ephemeral: true });
+      return;
+    }
+
+    const taskDetails = client.tasks.getTask(interaction.customId);
+
+    if (!taskDetails) {
+      await feedback.removeButtons();
+      await feedback.error("Request timed out. Create new interaction.");
+      return;
+    }
+
+    const selectMenuInteraction = client.selectMenu.get(
+      taskDetails.action
+    ) as ExecutableSelectMenu;
+
+    if (!selectMenuInteraction) return;
+
+    try {
+      selectMenuInteraction.execute(interaction, client);
+    } catch {
+      console.error;
+    }
   }
 });
 
