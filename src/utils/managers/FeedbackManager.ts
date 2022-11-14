@@ -18,6 +18,9 @@ import {
   InteractionReplyOptions,
   SelectMenuBuilder,
   SelectMenuInteraction,
+  MessageInteraction,
+  MessageContextMenuCommandInteraction,
+  InteractionUpdateOptions,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -63,32 +66,35 @@ export class FeedbackManager {
       });
     }
 
-    const messagePayload: InteractionReplyOptions = {
+    const messagePayload: InteractionReplyOptions | InteractionUpdateOptions = {
       embeds: embeds,
       components: components,
       ephemeral,
     };
 
-    if (this.interaction instanceof ButtonInteraction) {
-      const editPayload: BaseMessageOptions = {
-        embeds: embeds,
-        components: components,
-      };
-      this.interaction.message.edit(editPayload);
-      return;
+    // this.isReplied = this.interaction.replied;
+
+    if (this.isReplied) {
+      await this.interaction.editReply(messagePayload);
+    } else {
+      if (!(this.interaction instanceof CommandInteraction)) {
+        await this.interaction.update({ embeds, components });
+      } else {
+        await this.interaction.reply(messagePayload);
+      }
     }
 
-    this.isReplied = this.interaction.replied;
-
-    this.isReplied
-      ? await this.interaction.editReply(messagePayload)
-      : await this.interaction.reply(messagePayload);
+    this.isReplied = true;
   }
 
   async removeButtons() {
     if (this.interaction instanceof ButtonInteraction) {
-      await this.interaction.update({ components: [] });
+      await this.sendMessage({ components: [] });
     }
+  }
+
+  async removeSelectMenu() {
+    await this.sendMessage({ components: [] });
   }
 
   async info(title: string, message: string) {

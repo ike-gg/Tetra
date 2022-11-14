@@ -33,30 +33,31 @@ const debug = {
         )
     ),
   async execute(interaction: ChatInputCommandInteraction) {
-    const modal = new ModalBuilder().setCustomId("xd").setTitle("test");
+    console.log(interaction.memberPermissions);
+    // const modal = new ModalBuilder().setCustomId("xd").setTitle("test");
 
-    const first = new TextInputBuilder()
-      .setCustomId("XDD")
-      .setLabel("co tam?")
-      .setStyle(TextInputStyle.Short);
+    // const first = new TextInputBuilder()
+    //   .setCustomId("XDD")
+    //   .setLabel("co tam?")
+    //   .setStyle(TextInputStyle.Short);
 
-    const second = new TextInputBuilder()
-      .setCustomId("XDDDDD")
-      .setLabel("minimajk")
-      .setStyle(TextInputStyle.Paragraph);
+    // const second = new TextInputBuilder()
+    //   .setCustomId("XDDDDD")
+    //   .setLabel("minimajk")
+    //   .setStyle(TextInputStyle.Paragraph);
 
-    const firstRow =
-      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-        first
-      );
-    const thirdRow =
-      new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-        second
-      );
+    // const firstRow =
+    //   new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+    //     first
+    //   );
+    // const thirdRow =
+    //   new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
+    //     second
+    //   );
 
-    modal.addComponents(firstRow, thirdRow);
+    // modal.addComponents(firstRow, thirdRow);
 
-    await interaction.showModal(modal);
+    // await interaction.showModal(modal);
   },
 };
 

@@ -10,8 +10,12 @@ const navigatorPage = {
   data: { name: "navigatorPage" },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
-    await feedback.gotRequest();
+
     await feedback.removeButtons();
+    await feedback.gotRequest();
+
+    console.log("PASSED?");
+
     try {
       const interationArguments = interaction.customId.split(":");
       const [taskId, action] = interationArguments;

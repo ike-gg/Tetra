@@ -62,8 +62,9 @@ const ctxStealEmote = {
     }
 
     const taskId = client.tasks.addTask<TaskTypes.StealEmote>({
-      action: "stealEmote",
       id: "",
+      action: "stealEmote",
+      feedback,
       emote: emote,
     });
 

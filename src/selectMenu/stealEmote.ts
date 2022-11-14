@@ -1,4 +1,4 @@
-import { SelectMenuInteraction } from "discord.js";
+import { ChatInputCommandInteraction, SelectMenuInteraction } from "discord.js";
 import { DiscordBot, ExtractedEmote } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
@@ -9,7 +9,8 @@ const stealEmote = {
   async execute(interaction: SelectMenuInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
 
-    feedback.gotRequest();
+    await feedback.removeSelectMenu();
+    await feedback.gotRequest();
 
     const guildId = interaction.values[0];
     const guild = await client.guilds.fetch(guildId);
@@ -30,7 +31,7 @@ const stealEmote = {
       const addedEmote = await guild.emojis.create({ attachment: image, name });
       await feedback.success(
         `Success!`,
-        `Successfully added \`${addedEmote.name}\` emote! ${addedEmote}`,
+        `Successfully added \`${addedEmote.name}\` emote! ${addedEmote} in \`${guild.name}\``,
         extractedEmote.preview
       );
     } catch (error) {

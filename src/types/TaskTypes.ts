@@ -34,6 +34,7 @@ export interface EmotePicker extends Base {
 export interface StealEmote extends Base {
   action: "stealEmote";
   emote: FoundEmotesDiscord;
+  feedback: FeedbackManager;
 }
 
 export type Storeable = EmoteNavigator | EmotePicker | StealEmote | Base;
