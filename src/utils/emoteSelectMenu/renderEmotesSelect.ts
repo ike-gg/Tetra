@@ -26,7 +26,6 @@ const renderEmotesSelect = (
     animated ? (previewUrl += ".gif") : (previewUrl += ".webp");
 
     const taskId = client.tasks.addTask<TaskTypes.EmotePicker>({
-      id: "",
       action: "selectEmote",
       emoteReference: id,
     });

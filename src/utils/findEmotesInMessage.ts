@@ -9,7 +9,7 @@ const testRegex = (testing: string, expression: RegExp): string[] => {
   return [];
 };
 
-const findEmotesFromMessage = (message: string): FoundEmotesDiscord[] => {
+const findEmotesInMessage = (message: string): FoundEmotesDiscord[] => {
   const staticEmotes = testRegex(message, emoteRegex);
   const animatedEmotes = testRegex(message, animatedEmoteRegex);
 
@@ -40,4 +40,4 @@ const findEmotesFromMessage = (message: string): FoundEmotesDiscord[] => {
   return result;
 };
 
-export default findEmotesFromMessage;
+export default findEmotesInMessage;

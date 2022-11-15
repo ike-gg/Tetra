@@ -2,9 +2,10 @@ import {
   ButtonInteraction,
   CommandInteraction,
   ContextMenuCommandInteraction,
+  GuildEmoji,
   MessageComponentInteraction,
 } from "discord.js";
-import { FoundEmotesDiscord } from ".";
+import { ExtractedEmote, FoundEmotesDiscord } from ".";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 export interface Base {
@@ -37,4 +38,15 @@ export interface StealEmote extends Base {
   feedback: FeedbackManager;
 }
 
-export type Storeable = EmoteNavigator | EmotePicker | StealEmote | Base;
+export interface PostProcessEmote extends Base {
+  action: "postProcess";
+  emoteGuild: GuildEmoji;
+  emote: ExtractedEmote;
+}
+
+export type Storeable =
+  | EmoteNavigator
+  | EmotePicker
+  | StealEmote
+  | PostProcessEmote
+  | Base;

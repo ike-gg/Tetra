@@ -11,7 +11,7 @@ const emoteOptimise = async (
     animated: boolean;
     feedback?: FeedbackManager;
   }
-): Promise<Buffer> => {
+) => {
   const { animated, feedback } = options;
   let processedBuffer: Buffer = image;
   const imageData = sizeOf(processedBuffer);

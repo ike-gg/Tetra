@@ -1,20 +1,17 @@
 import {
-  ActionRowBuilder,
   ApplicationCommandType,
   ContextMenuCommandBuilder,
-  Guild,
   MessageContextMenuCommandInteraction,
-  SelectMenuBuilder,
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import findEmotesFromMessage from "../utils/findEmotesFromMessage";
+import findEmotesFromMessage from "../utils/findEmotesInMessage";
 import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
-import emoteDiscord from "../emotes/emoteDiscord";
 
-import { DiscordBot, ExtractedEmote } from "../types";
+import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
 import findCommonGuilds from "../utils/findCommonGuilds";
+import getSelectMenuServers from "../utils/elements/getSelectMenuServers";
 
 const ctxStealEmote = {
   data: new ContextMenuCommandBuilder()
@@ -31,14 +28,19 @@ const ctxStealEmote = {
     const emotes = findEmotesFromMessage(messageContent);
 
     if (emotes.length === 0) {
-      await feedback.error("No emotes found in message.");
+      await feedback.notFoundEmotes();
       return;
     }
 
     if (emotes.length > 1) {
-      await feedback.error(
-        "Messages includes more than 1 emote is not supported yet."
-      );
+      await feedback.moreThanOneEmote();
+      return;
+    }
+
+    const emote = emotes[0];
+
+    if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
+      await feedback.emoteSameServer();
       return;
     }
 
@@ -48,62 +50,20 @@ const ctxStealEmote = {
     );
 
     if (guildsWithUser.length === 0) {
-      feedback.error(
-        "I don't see our common servers, are you sure you invited me to the server you want to add emotes and have permissions to manage emotes?"
-      );
-      return;
-    }
-
-    const emote = emotes[0];
-
-    if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
-      await feedback.error("This emote is from this server.");
+      feedback.missingCommonGuilds();
       return;
     }
 
     const taskId = client.tasks.addTask<TaskTypes.StealEmote>({
-      id: "",
       action: "stealEmote",
       feedback,
       emote: emote,
     });
 
-    const row = new ActionRowBuilder<SelectMenuBuilder>();
-    const menu = new SelectMenuBuilder()
-      .setCustomId(taskId)
-      .setPlaceholder("Select server");
+    const selectMenuServer = await getSelectMenuServers(taskId, guildsWithUser);
 
-    guildsWithUser.forEach((guild) => {
-      menu.addOptions({
-        label: guild.name,
-        value: guild.id,
-      });
-    });
-
-    row.addComponents(menu);
-
-    await feedback.success(
-      "Success!",
-      "Select where you'd like to import emote!"
-    );
-    await feedback.sendMessage({ components: [row] });
-
-    // try {
-    //   const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
-
-    //   const addedEmote = await interaction.guild?.emojis.create({
-    //     attachment: extractedEmote.image,
-    //     name: extractedEmote.name,
-    //   });
-
-    //   await feedback.success(
-    //     `Success!`,
-    //     `Successfully added \`${addedEmote?.name}\` emote! ${addedEmote}`,
-    //     extractedEmote.preview
-    //   );
-    // } catch (error: any) {
-    //   await feedback.error(error);
-    // }
+    await feedback.selectServerSteal();
+    await feedback.updateComponents([selectMenuServer]);
   },
 };
 

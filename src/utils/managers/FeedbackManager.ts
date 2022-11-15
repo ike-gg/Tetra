@@ -13,14 +13,12 @@ import warningEmbed from "../embedMessages/warningEmbed";
 import {
   ButtonInteraction,
   CommandInteraction,
-  BaseMessageOptions,
   Client,
   InteractionReplyOptions,
   SelectMenuBuilder,
   SelectMenuInteraction,
-  MessageInteraction,
-  MessageContextMenuCommandInteraction,
   InteractionUpdateOptions,
+  GuildEmoji,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -87,16 +85,6 @@ export class FeedbackManager {
     this.isReplied = true;
   }
 
-  async removeButtons() {
-    if (this.interaction instanceof ButtonInteraction) {
-      await this.sendMessage({ components: [] });
-    }
-  }
-
-  async removeSelectMenu() {
-    await this.sendMessage({ components: [] });
-  }
-
   async info(title: string, message: string) {
     const embed = infoEmbed(title, message);
     await this.sendMessage({ embeds: [embed] });
@@ -117,8 +105,48 @@ export class FeedbackManager {
     await this.sendMessage({ embeds: [embed] });
   }
 
+  async updateComponents(
+    components: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[]
+  ) {
+    await this.sendMessage({ components: components });
+  }
+
+  async removeButtons() {
+    if (this.interaction instanceof ButtonInteraction) {
+      await this.sendMessage({ components: [] });
+    }
+  }
+
+  async removeSelectMenu() {
+    await this.sendMessage({ components: [] });
+  }
+
   async gotRequest() {
     await this.info("Got your request!", "Working on it... 🏗️");
+  }
+
+  async interactionTimeOut() {
+    await this.error(
+      "This interaction has expired, that means the time you have to repsond to bot has passed."
+    );
+  }
+
+  async notFoundEmotes() {
+    await this.error("I couldn't find emotes in this message.");
+  }
+
+  async notFoundEmotesQuery(query: string) {
+    await this.error(`I couldn't find any emotes with \`${query}\` query.`);
+  }
+
+  async moreThanOneEmote() {
+    await this.error(
+      "Messages contains more than one emotes is not supported yet."
+    );
+  }
+
+  async emoteSameServer() {
+    await this.error("This emote is from this server.");
   }
 
   async missingPermissions() {
@@ -126,8 +154,28 @@ export class FeedbackManager {
       "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
     );
   }
-
   async missingGuild() {
     await this.error("Ooops! I couldn't find the server, please try again.");
+  }
+
+  async missingCommonGuilds() {
+    await this.error(
+      "I couldn't find common servers where you have permissions to manage emotes."
+    );
+  }
+
+  async selectServerSteal() {
+    await this.success(
+      "Got it!",
+      "Now select server where you'd like to import emote.\n\nKeep in mind I must be on this server and YOU must have permission to add emotes there."
+    );
+  }
+
+  async successedAddedEmote(emote: GuildEmoji) {
+    await this.success(
+      "Success!",
+      `Successfully added \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
+      emote.url
+    );
   }
 }

@@ -4,6 +4,7 @@ import emote7tv from "../emotes/emote7tv";
 import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
+import emoteToGuild from "../emotes/emoteToGuild";
 
 const selectEmote = {
   data: { name: "selectEmote" },
@@ -11,6 +12,7 @@ const selectEmote = {
     const feedback = new FeedbackManager(interaction);
 
     const taskId = interaction.customId;
+
     const taskDetails = client.tasks.getTask<TaskTypes.EmotePicker>(taskId);
     const emoteReference = taskDetails.emoteReference;
 
@@ -19,18 +21,8 @@ const selectEmote = {
 
     try {
       const emote = await emote7tv(emoteReference, feedback);
-
-      const addedEmote = await interaction.guild?.emojis.create({
-        attachment: emote.image,
-        name: emote.name,
-      });
-
-      await feedback.success(
-        `Success!`,
-        `Successfully added \`${addedEmote?.name}\` emote! ${addedEmote}`,
-        emote.preview
-      );
-    } catch (error: any) {
+      emoteToGuild(emote, interaction.guild!, { client, feedback });
+    } catch (error) {
       feedback.error(String(error));
     }
   },

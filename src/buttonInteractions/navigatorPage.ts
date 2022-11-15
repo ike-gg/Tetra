@@ -2,7 +2,7 @@ import { ButtonInteraction } from "discord.js";
 import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import getNavigatorRow from "../utils/emoteSelectMenu/getNavigatorRow";
+import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
 
@@ -14,8 +14,6 @@ const navigatorPage = {
     await feedback.removeButtons();
     await feedback.gotRequest();
 
-    console.log("PASSED?");
-
     try {
       const interationArguments = interaction.customId.split(":");
       const [taskId, action] = interationArguments;
@@ -26,7 +24,7 @@ const navigatorPage = {
 
       let pageDirection: number;
       action === "previous" ? (pageDirection = -1) : (pageDirection = 1);
-      const newPage = currentPage! + pageDirection;
+      const newPage = currentPage + pageDirection;
 
       client.tasks.updateCurrentPage(taskId, newPage);
 
@@ -41,7 +39,7 @@ const navigatorPage = {
         previousDisabled = true;
       }
 
-      const emotePage = EmoteListManager.getEmotesInPages(storeId!, newPage)!;
+      const emotePage = EmoteListManager.getEmotesInPages(storeId, newPage)!;
 
       const emotesEmbedsPreview = renderEmotesSelect(emotePage, client);
       const navigatorRow = getNavigatorRow(taskId, client, {

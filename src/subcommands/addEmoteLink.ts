@@ -3,6 +3,7 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 import emote7tv from "../emotes/emote7tv";
 import { DiscordBot } from "../types";
+import emoteToGuild from "../emotes/emoteToGuild";
 
 const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,
@@ -13,17 +14,7 @@ const addEmoteLink = async (
 
   try {
     const emote = await emote7tv(emoteReference, feedback);
-
-    await interaction.guild?.emojis.create({
-      attachment: emote.image,
-      name: emote.name,
-    });
-
-    await feedback.success(
-      `Success!`,
-      `Successfully added \`${emote.name}\` emote! ${emote}`,
-      emote.preview
-    );
+    await emoteToGuild(emote, interaction.guild!, { client, feedback });
   } catch (error: any) {
     await feedback.error(error);
   }

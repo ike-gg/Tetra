@@ -3,11 +3,12 @@ import { DiscordBot, ExtractedEmote } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
 import emoteDiscord from "../emotes/emoteDiscord";
+import emoteToGuild from "../emotes/emoteToGuild";
 
 const stealEmote = {
   data: { name: "stealEmote" },
   async execute(interaction: SelectMenuInteraction, client: DiscordBot) {
-    const feedback = new FeedbackManager(interaction);
+    const feedback = new FeedbackManager(interaction, true);
 
     await feedback.removeSelectMenu();
     await feedback.gotRequest();
@@ -24,16 +25,9 @@ const stealEmote = {
     const taskDetails = client.tasks.getTask<TaskTypes.StealEmote>(taskId);
     const { emote } = taskDetails;
 
-    const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
-
     try {
-      const { image, name } = extractedEmote;
-      const addedEmote = await guild.emojis.create({ attachment: image, name });
-      await feedback.success(
-        `Success!`,
-        `Successfully added \`${addedEmote.name}\` emote! ${addedEmote} in \`${guild.name}\``,
-        extractedEmote.preview
-      );
+      const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
+      await emoteToGuild(extractedEmote, guild, { client, feedback });
     } catch (error) {
       feedback.error(String(error));
       return;

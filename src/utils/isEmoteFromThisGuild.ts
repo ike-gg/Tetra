@@ -1,9 +1,6 @@
 import { Guild } from "discord.js";
 
-const isEmoteFromThisGuild = async (
-  guild: Guild,
-  emoteId: string
-): Promise<boolean> => {
+const isEmoteFromThisGuild = async (guild: Guild, emoteId: string) => {
   return await guild.emojis
     .fetch(emoteId)
     .then(() => true)

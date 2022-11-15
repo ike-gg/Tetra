@@ -5,18 +5,23 @@ import {
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import findEmotesFromMessage from "../utils/findEmotesFromMessage";
+import findEmotesFromMessage from "../utils/findEmotesInMessage";
 import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 import emoteDiscord from "../emotes/emoteDiscord";
 
-import { ExtractedEmote } from "../types";
+import { DiscordBot, ExtractedEmote } from "../types";
+import emoteToGuild from "../emotes/emoteToGuild";
 
 const ctxStealEmoteHere = {
   data: new ContextMenuCommandBuilder()
     .setName("Steal emote here")
     .setType(ApplicationCommandType.Message),
-  async execute(interaction: MessageContextMenuCommandInteraction) {
+  async execute(
+    interaction: MessageContextMenuCommandInteraction,
+    client: DiscordBot
+  ) {
     const feedback = new FeedbackManager(interaction);
+
     await feedback.gotRequest();
 
     const messageContent = interaction.targetMessage.content;
@@ -28,37 +33,27 @@ const ctxStealEmoteHere = {
     }
 
     if (emotes.length === 0) {
-      await feedback.error("No emotes found in message.");
+      await feedback.notFoundEmotes();
       return;
     }
 
     if (emotes.length > 1) {
-      await feedback.error(
-        "Messages includes more than 1 emote is not supported yet."
-      );
+      await feedback.moreThanOneEmote();
       return;
     }
 
     const emote = emotes[0];
 
     if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
-      await feedback.error("This emote is from this server.");
+      await feedback.emoteSameServer();
       return;
     }
 
     try {
       const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
+      const { guild } = interaction;
 
-      const addedEmote = await interaction.guild?.emojis.create({
-        attachment: extractedEmote.image,
-        name: extractedEmote.name,
-      });
-
-      await feedback.success(
-        `Success!`,
-        `Successfully added \`${addedEmote?.name}\` emote! ${addedEmote}`,
-        extractedEmote.preview
-      );
+      await emoteToGuild(extractedEmote, guild!, { client, feedback });
     } catch (error: any) {
       await feedback.error(error);
     }

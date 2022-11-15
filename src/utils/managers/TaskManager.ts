@@ -1,13 +1,18 @@
 import { randomBytes } from "crypto";
 import * as TaskTypes from "../../types/TaskTypes";
 
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+type RequiredKey<Type, Key extends keyof Type> = Type & {
+  [Property in Key]-?: Type[Property];
+};
+
 class TaskManager {
   tasks: TaskTypes.Storeable[] = [];
 
-  addTask<T extends TaskTypes.Base>(taskBase: T) {
+  addTask<T extends TaskTypes.Base>(taskBase: Optional<T, "id">) {
     const identificator = randomBytes(8).toString("hex");
 
-    const newTask = taskBase;
+    const newTask = taskBase as TaskTypes.Storeable;
     newTask.id = identificator;
 
     this.tasks.push(newTask);

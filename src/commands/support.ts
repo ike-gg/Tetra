@@ -7,7 +7,7 @@ import {
   SlashCommandBuilder,
 } from "discord.js";
 import { DiscordBot } from "../types";
-import URLButton from "../utils/buttons/URLButton";
+import URLButton from "../utils/elements/URLButton";
 
 const support = {
   data: new SlashCommandBuilder()

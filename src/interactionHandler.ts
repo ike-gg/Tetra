@@ -10,7 +10,6 @@ import {
 } from "./types";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import errorEmbed from "./utils/embedMessages/errorEmbed";
-import * as TaskTypes from "./types/TaskTypes";
 
 const interactionHandler = async (
   interaction: Interaction,
@@ -32,7 +31,10 @@ const interactionHandler = async (
     }
   }
 
-  if (interaction.isButton()) {
+  const isButtonInteraction = interaction.isButton();
+  const isSelectMenuInteraction = interaction.isSelectMenu();
+
+  if (isButtonInteraction || isSelectMenuInteraction) {
     const feedback = new FeedbackManager(interaction);
 
     const isDevCommand =
@@ -63,67 +65,37 @@ const interactionHandler = async (
 
     if (!taskDetails) {
       await feedback.removeButtons();
-      await feedback.error("Request timed out. Create new interaction.");
+      await feedback.interactionTimeOut();
       return;
     }
 
-    const buttonInteraction = client.buttonInteractions.get(
-      taskDetails.action
-    ) as ExecutableButtonInteraction;
+    if (isButtonInteraction) {
+      const buttonInteraction = client.buttonInteractions.get(
+        taskDetails.action
+      ) as ExecutableButtonInteraction;
 
-    if (!buttonInteraction) return;
+      if (!buttonInteraction) return;
 
-    try {
-      if (taskDetails.feedback) {
+      try {
         buttonInteraction.execute(interaction, client);
-        return;
+      } catch {
+        console.error;
       }
-      buttonInteraction.execute(interaction, client);
-    } catch {
-      console.error;
-    }
-  }
-
-  if (interaction.isSelectMenu()) {
-    const feedback = new FeedbackManager(interaction);
-
-    const isDevCommand =
-      interaction.message.interaction?.commandName.startsWith("dev");
-
-    if (env === "development" && !isDevCommand) return;
-    if (env === "production" && isDevCommand) return;
-
-    if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
-      const error = errorEmbed(
-        "You are not allowed **YET** to use another users interactions!"
-      );
-      interaction.reply({ embeds: [error], ephemeral: true });
-      return;
     }
 
-    const taskDetails = client.tasks.getTask<TaskTypes.StealEmote>(
-      interaction.customId
-    );
+    if (isSelectMenuInteraction) {
+      const selectMenuInteraction = client.selectMenu.get(
+        taskDetails.action
+      ) as ExecutableSelectMenu;
 
-    const { action } = taskDetails;
+      if (!selectMenuInteraction) return;
 
-    if (!taskDetails) {
-      await feedback.removeButtons();
-      await feedback.error("Request timed out. Create new interaction.");
-      return;
-    }
-
-    const selectMenuInteraction = client.selectMenu.get(
-      taskDetails.action
-    ) as ExecutableSelectMenu;
-
-    if (!selectMenuInteraction) return;
-
-    try {
-      selectMenuInteraction.execute(interaction, client);
-      feedback.removeButtons();
-    } catch {
-      console.error;
+      try {
+        selectMenuInteraction.execute(interaction, client);
+        await feedback.removeButtons();
+      } catch {
+        console.error;
+      }
     }
   }
 };
