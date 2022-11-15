@@ -45,12 +45,3 @@ export interface EmoteResponseGQL {
     };
   };
 }
-
-export interface EmptyEmoteResponseGQL {
-  errors: {
-    message: string;
-    extensions: {
-      message: string;
-    };
-  }[];
-}

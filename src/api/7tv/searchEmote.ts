@@ -6,49 +6,48 @@ import {
 
 import fetch from "node-fetch";
 
-const searchEmote = async (
-  emote: string,
-  ignoreTags: boolean = false
-): Promise<EmoteGQL[]> => {
-  return await fetch("https://7tv.io/v3/gql", {
+const requestOptions = (query: string, ignoreTags: boolean = false) => {
+  return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       //filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}
-      //filter emotes
       query: `{
-        emotes(query: "${emote}", limit: 20000, filter: {ignore_tags: ${ignoreTags}}) {
-          count
-          items {
-            id
-            name
-            animated
-            owner {
-              display_name
-            }
-            host {
-              url
-            }
-          }
+    emotes(query: "${query}", limit: 20000, filter: {ignore_tags: ${ignoreTags}}) {
+      count
+      items {
+        id
+        name
+        animated
+        owner {
+          display_name
         }
-      }`,
-    }),
-  })
-    .then((response) => response.json())
-    .then((responseData) => {
-      const foundEmotes = responseData as EmoteResponseGQL;
-      if (foundEmotes.data?.emotes.items) {
-        return foundEmotes.data.emotes.items;
-      } else {
-        return [];
+        host {
+          url
+        }
       }
-    })
-    .catch((error) => {
-      console.error(error);
-      throw new Error("Emotes not found");
-    });
+    }
+  }`,
+    }),
+  };
+};
+
+const searchEmote = async (query: string, ignoreTags: boolean = false) => {
+  try {
+    const response = await fetch(
+      "https://7tv.io/v3/gql",
+      requestOptions(query, ignoreTags)
+    );
+    const responseData: EmoteResponseGQL = await response.json();
+    const emotes = responseData.data.emotes.items;
+
+    if (emotes) return emotes;
+    else return [];
+  } catch (error) {
+    throw new Error("Emotes not found");
+  }
 };
 
 export default searchEmote;

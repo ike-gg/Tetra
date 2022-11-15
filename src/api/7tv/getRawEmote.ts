@@ -6,17 +6,13 @@ const getURL = (hostURL: string, isAnimated: boolean): string => {
 };
 
 const getRawEmote = async (hostURL: string, isAnimated: boolean) => {
-  return await fetch(getURL(hostURL, isAnimated))
-    .then((data) => {
-      return data.arrayBuffer();
-    })
-    .then((image) => {
-      return image;
-    })
-    .catch((error) => {
-      console.error(error);
-      throw new Error("File not found");
-    });
+  try {
+    const rawEmote = await fetch(getURL(hostURL, isAnimated));
+    const bufferEmote = await rawEmote.arrayBuffer();
+    return bufferEmote;
+  } catch (error) {
+    throw new Error("File not found");
+  }
 };
 
 export default getRawEmote;
