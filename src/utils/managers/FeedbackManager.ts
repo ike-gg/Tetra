@@ -147,6 +147,12 @@ export class FeedbackManager {
     );
   }
 
+  async rateLimited() {
+    await this.warning(
+      "It seems that discord has limited the bot, it will automatically continue the process when possible."
+    );
+  }
+
   async notFoundEmotes() {
     await this.error("I couldn't find emotes in this message.");
   }

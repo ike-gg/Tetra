@@ -16,17 +16,20 @@ const PPtransform = async (
     taskId: string;
   }
 ) => {
-  const { feedback, transform, taskId } = details;
-
-  await feedback.removeButtons();
-  await feedback.gotRequest();
-
-  const taskDetails = client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
-
-  const { emote } = taskDetails;
-
   try {
-    await taskDetails.emoteGuild.delete();
+    const { feedback, transform, taskId } = details;
+
+    await feedback.removeButtons();
+    await feedback.gotRequest();
+
+    const taskDetails =
+      client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+
+    const { emote } = taskDetails;
+
+    const emoteResult = await taskDetails.emoteGuild.delete(
+      "replacing emote with edited one"
+    );
 
     if (emote.origin === "discord") {
       await feedback.discordEmotesPP();
@@ -50,9 +53,14 @@ const PPtransform = async (
       origin: rawEmote.origin,
     };
 
-    await emoteToGuild(newEmote, interaction.guild!, { client, feedback });
+    await emoteToGuild(newEmote, interaction.guild!, {
+      client,
+      feedback,
+      origin: "postProcess",
+    });
   } catch (error) {
-    await feedback.error(String(error));
+    console.error(error);
+    // await feedback.error(String(error));
   }
 };
 

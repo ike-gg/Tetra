@@ -10,15 +10,24 @@ const emoteToGuild = async (
   options: {
     client: DiscordBot;
     feedback: FeedbackManager;
+    origin?: "postProcess";
   }
 ) => {
+  let origin: "postProcess" | undefined;
+  if (options.origin === "postProcess") origin = "postProcess";
   const { feedback, client } = options;
   const { image, name } = emote;
   try {
+    const isRateLimited = setTimeout(() => {
+      feedback.rateLimited();
+    }, 5000);
+
     const addedEmote = await guild.emojis.create({
       attachment: image,
       name: name,
     });
+
+    clearTimeout(isRateLimited);
     await feedback.successedAddedEmote(addedEmote);
     const taskId = client.tasks.addTask<TaskTypes.PostProcessEmote>({
       action: "postProcess",
@@ -27,6 +36,7 @@ const emoteToGuild = async (
     });
     const postProcessRow = getPostProcessRow(taskId, {
       isEmoteAnimated: emote.animated,
+      origin,
     });
     await feedback.updateComponents([postProcessRow]);
   } catch (error) {

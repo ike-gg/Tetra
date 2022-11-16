@@ -46,7 +46,7 @@ const searchEmote = async (query: string, ignoreTags: boolean = false) => {
     if (emotes) return emotes;
     else return [];
   } catch (error) {
-    throw new Error("Emotes not found");
+    throw new Error(`Nothing found with \`${query}\` query`);
   }
 };
 

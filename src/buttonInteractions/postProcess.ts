@@ -10,7 +10,6 @@ const selectEmote = {
   data: { name: "postProcess" },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
-
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action] = interactionArguments;
 

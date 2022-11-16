@@ -52,12 +52,12 @@ const PPrename = async (
     if (!(interaction.customId === identificator)) return;
     try {
       await interaction.deferUpdate();
-
+      feedback.isReplied = true;
       await feedback.gotRequest();
 
-      const newName = interaction.fields.getTextInputValue("newname");
-      await emote.edit({ name: newName });
-      await feedback.successedEditedEmote(emote);
+      const newName = await interaction.fields.getTextInputValue("newname");
+      const newEmote = await emote.edit({ name: newName });
+      await feedback.successedEditedEmote(newEmote);
     } catch (error) {
       await feedback.error(String(error));
     }
