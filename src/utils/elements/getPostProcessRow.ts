@@ -13,17 +13,17 @@ const getPostProcessRow = (
       .setCustomId(`${taskId}:rename`)
       .setEmoji({ name: "✏️" })
       .setLabel("Rename emote")
-      .setStyle(ButtonStyle.Primary),
+      .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId(`${taskId}:square`)
       .setEmoji({ name: "⬜" })
-      .setLabel("Make emote square")
+      .setLabel("Stretch to fit")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(true),
     new ButtonBuilder()
-      .setCustomId(`${taskId}:split`)
-      .setEmoji({ name: "🪓" })
-      .setLabel("Split emote into parts")
+      .setCustomId(`${taskId}:center`)
+      .setEmoji({ name: "📦" })
+      .setLabel("Center and crop to fit")
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(true)
   );

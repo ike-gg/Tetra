@@ -48,6 +48,7 @@ const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
         name: emoteInfo.name,
         image: emoteBuffer,
         preview: emotePreview,
+        animated: emoteInfo.animated,
       });
     } catch (error) {
       reject("Emote not found.");

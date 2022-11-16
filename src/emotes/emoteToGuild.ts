@@ -1,4 +1,4 @@
-import { Guild } from "discord.js";
+import { Guild, GuildEmoji } from "discord.js";
 import { DiscordBot, ExtractedEmote } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
@@ -25,7 +25,9 @@ const emoteToGuild = async (
       emote,
       emoteGuild: addedEmote,
     });
-    const postProcessRow = getPostProcessRow(taskId);
+    const postProcessRow = getPostProcessRow(taskId, {
+      isEmoteAnimated: emote.animated,
+    });
     await feedback.updateComponents([postProcessRow]);
   } catch (error) {
     await feedback.error(String(error));

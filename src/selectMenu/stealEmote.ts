@@ -8,7 +8,7 @@ import emoteToGuild from "../emotes/emoteToGuild";
 const stealEmote = {
   data: { name: "stealEmote" },
   async execute(interaction: SelectMenuInteraction, client: DiscordBot) {
-    const feedback = new FeedbackManager(interaction, true);
+    const feedback = new FeedbackManager(interaction, { ephemeral: true });
 
     await feedback.removeSelectMenu();
     await feedback.gotRequest();

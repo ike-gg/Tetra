@@ -34,11 +34,21 @@ export class FeedbackManager {
 
   constructor(
     interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction,
-    ephemeral: boolean = false
+    options?: {
+      ephemeral?: boolean;
+      alredyReplied?: boolean;
+    }
   ) {
+    let ephemeral = false;
+    let alredyReplied = false;
+
+    if (options?.ephemeral) ephemeral = options.ephemeral;
+    if (options?.alredyReplied) alredyReplied = options.alredyReplied;
+
     this.interaction = interaction;
     this.client = interaction.client;
     this.ephemeral = ephemeral;
+    this.isReplied = alredyReplied;
   }
 
   async sendMessage(
@@ -175,6 +185,14 @@ export class FeedbackManager {
     await this.success(
       "Success!",
       `Successfully added \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
+      emote.url
+    );
+  }
+
+  async successedEditedEmote(emote: GuildEmoji) {
+    await this.success(
+      "Success!",
+      `Successfully edited \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
       emote.url
     );
   }

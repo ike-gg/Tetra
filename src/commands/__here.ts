@@ -10,7 +10,7 @@ const here = {
     .setName("here")
     .setDescription("Tell the bot that you're here"),
   async execute(interaction: ChatInputCommandInteraction) {
-    const feedback = new FeedbackManager(interaction, true);
+    const feedback = new FeedbackManager(interaction, { ephemeral: true });
 
     if (interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
       feedback.success(

@@ -21,7 +21,7 @@ const ctxStealEmote = {
     interaction: MessageContextMenuCommandInteraction,
     client: DiscordBot
   ) {
-    const feedback = new FeedbackManager(interaction, true);
+    const feedback = new FeedbackManager(interaction, { ephemeral: true });
     await feedback.gotRequest();
 
     const messageContent = interaction.targetMessage.content;

@@ -23,6 +23,7 @@ const emoteDiscord = async (emote: ExtractEmote) => {
           image: emoteBuffer,
           preview: emote.link,
           id: emote.id,
+          animated: emote.animated,
         });
       } catch (error) {
         console.error(error);
@@ -47,6 +48,7 @@ const emoteDiscord = async (emote: ExtractEmote) => {
               image: emoteBuffer,
               preview: singleEmote.link,
               id: singleEmote.id,
+              animated: singleEmote.animated,
             };
           })
         );
