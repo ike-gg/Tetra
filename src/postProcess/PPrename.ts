@@ -52,6 +52,7 @@ const PPrename = async (
     if (!(interaction.customId === identificator)) return;
     try {
       await interaction.deferUpdate();
+
       await feedback.gotRequest();
 
       const newName = interaction.fields.getTextInputValue("newname");

@@ -18,14 +18,12 @@ const getPostProcessRow = (
       .setCustomId(`${taskId}:square`)
       .setEmoji({ name: "⬜" })
       .setLabel("Stretch to fit")
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(true),
+      .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId(`${taskId}:center`)
       .setEmoji({ name: "📦" })
       .setLabel("Center and crop to fit")
       .setStyle(ButtonStyle.Secondary)
-      .setDisabled(true)
   );
 
   if (options?.isEmoteAnimated) {

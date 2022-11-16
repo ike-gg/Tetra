@@ -141,6 +141,12 @@ export class FeedbackManager {
     );
   }
 
+  async discordEmotesPP() {
+    await this.error(
+      "Currently you can only postprocess emotes that comes from 7TV.\nEmotes from discord should be supported in the future."
+    );
+  }
+
   async notFoundEmotes() {
     await this.error("I couldn't find emotes in this message.");
   }

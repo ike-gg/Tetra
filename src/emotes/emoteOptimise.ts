@@ -10,6 +10,7 @@ const emoteOptimise = async (
   options: {
     animated: boolean;
     feedback?: FeedbackManager;
+    transform?: "square" | "center";
   }
 ) => {
   const { animated, feedback } = options;
@@ -19,15 +20,21 @@ const emoteOptimise = async (
 
   const sharpOptions = { animated: options.animated };
 
-  //makes square
+  if (options.transform) {
+    const { transform } = options;
+    let option: "fill" | "cover";
 
-  // processedBuffer = await sharp(image, sharpOptions)
-  //   .resize({
-  //     width: dimensions[1],
-  //     height: dimensions[1],
-  //     fit: "fill",
-  //   })
-  //   .toBuffer();
+    if (transform === "square") option = "fill";
+    if (transform === "center") option = "cover";
+
+    processedBuffer = await sharp(image, sharpOptions)
+      .resize({
+        width: dimensions[1],
+        height: dimensions[1],
+        fit: option!,
+      })
+      .toBuffer();
+  }
 
   if (animated) {
     processedBuffer = await sharp(processedBuffer, sharpOptions)
