@@ -43,8 +43,11 @@ const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
         feedback: feedback,
       });
 
+      let authorNickname = emoteInfo.owner?.display_name;
+      if (!authorNickname) authorNickname = "DeletedUser";
+
       resolve({
-        author: emoteInfo.owner.display_name,
+        author: authorNickname,
         name: emoteInfo.name,
         data: rawEmoteBuffer,
         finalData: emoteBuffer,

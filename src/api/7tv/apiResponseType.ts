@@ -13,7 +13,7 @@ export interface EmoteResponseAPI {
   id: string;
   name: string;
   animated: boolean;
-  owner: {
+  owner?: {
     username: string;
     display_name: string;
   };
