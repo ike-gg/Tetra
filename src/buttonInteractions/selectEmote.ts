@@ -4,7 +4,7 @@ import emote7tv from "../emotes/emote7tv";
 import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
-import emoteToGuild from "../emotes/emoteToGuild";
+import editEmoteByUser from "../emotes/editEmoteByUser";
 
 const selectEmote = {
   data: { name: "selectEmote" },
@@ -21,7 +21,7 @@ const selectEmote = {
 
     try {
       const emote = await emote7tv(emoteReference, feedback);
-      emoteToGuild(emote, interaction.guild!, { client, feedback });
+      editEmoteByUser(emote, interaction.guild!, { client, feedback });
     } catch (error) {
       feedback.error(String(error));
     }

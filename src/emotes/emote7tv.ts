@@ -46,14 +46,15 @@ const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
       resolve({
         author: emoteInfo.owner.display_name,
         name: emoteInfo.name,
-        image: emoteBuffer,
+        data: rawEmoteBuffer,
+        finalData: emoteBuffer,
         preview: emotePreview,
         animated: emoteInfo.animated,
         origin: "7tv",
         id: emoteReference,
       });
     } catch (error) {
-      reject("Emote not found.");
+      reject(String(error));
     }
   });
 };

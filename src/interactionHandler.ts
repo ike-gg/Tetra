@@ -47,21 +47,13 @@ const interactionHandler = async (
       const error = errorEmbed(
         "You are not allowed **YET** to use another users interactions!"
       );
-      interaction.reply({ embeds: [error], ephemeral: true });
+      interaction.reply({ embeds: [error], ephemeral: true, files: [] });
       return;
     }
 
     const interactionTaskId = interaction.customId.split(":")[0];
 
-    let taskDetails;
-
-    if (interactionTaskId === "cancelAction") {
-      taskDetails = {
-        action: "cancelAction",
-      };
-    } else {
-      taskDetails = client.tasks.getTask(interactionTaskId);
-    }
+    const taskDetails = client.tasks.getTask(interactionTaskId);
 
     if (!taskDetails) {
       await feedback.removeButtons();

@@ -10,18 +10,19 @@ import {
 } from "discord.js";
 import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import * as TaskTypes from "../types/TaskTypes";
+import editEmoteByUser from "../emotes/editEmoteByUser";
 
 const PPrename = async (
   interaction: ButtonInteraction,
   client: DiscordBot,
-  details: {
-    feedback: FeedbackManager;
-    emote: GuildEmoji;
-  }
+  taskId: string
 ) => {
   const identificator = randomBytes(8).toString("hex");
 
-  const { emote, feedback } = details;
+  const taskDetails = client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+
+  const { emote, feedback, guild } = taskDetails;
 
   const modal = new ModalBuilder()
     .setCustomId(identificator)
@@ -53,11 +54,18 @@ const PPrename = async (
     try {
       await interaction.deferUpdate();
       feedback.isReplied = true;
+
+      await feedback.removeButtons();
       await feedback.gotRequest();
 
       const newName = await interaction.fields.getTextInputValue("newname");
-      const newEmote = await emote.edit({ name: newName });
-      await feedback.successedEditedEmote(newEmote);
+
+      emote.name = newName;
+
+      await editEmoteByUser(emote, guild, {
+        client,
+        feedback,
+      });
     } catch (error) {
       await feedback.error(String(error));
     }

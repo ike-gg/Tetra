@@ -5,58 +5,41 @@ import * as TaskTypes from "../types/TaskTypes";
 import emote7tv from "../emotes/emote7tv";
 import emoteDiscord from "../emotes/emoteDiscord";
 import emoteOptimise from "../emotes/emoteOptimise";
-import emoteToGuild from "../emotes/emoteToGuild";
+import editEmoteByUser from "../emotes/editEmoteByUser";
 
 const PPtransform = async (
   interaction: ButtonInteraction,
   client: DiscordBot,
-  details: {
-    feedback: FeedbackManager;
-    transform: "square" | "center";
-    taskId: string;
-  }
+  taskId: string,
+  transform: "square" | "center"
 ) => {
   try {
-    const { feedback, transform, taskId } = details;
-
-    await feedback.removeButtons();
-    await feedback.gotRequest();
+    await interaction.deferUpdate();
 
     const taskDetails =
       client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
 
-    const { emote } = taskDetails;
+    const { feedback } = taskDetails;
 
-    const emoteResult = await taskDetails.emoteGuild.delete(
-      "replacing emote with edited one"
-    );
+    await feedback.removeButtons();
+    await feedback.gotRequest();
+
+    const { emote } = taskDetails;
 
     if (emote.origin === "discord") {
       await feedback.discordEmotesPP();
       return;
     }
 
-    const rawEmote = await emote7tv(emote.id!, feedback);
-
-    const bufferEmote = await emoteOptimise(rawEmote.image, {
-      animated: rawEmote.animated,
+    emote.finalData = await emoteOptimise(emote.data, {
+      animated: emote.animated,
       feedback,
       transform,
     });
 
-    const newEmote = {
-      author: rawEmote.author,
-      name: rawEmote.name,
-      image: bufferEmote,
-      preview: rawEmote.preview,
-      animated: rawEmote.animated,
-      origin: rawEmote.origin,
-    };
-
-    await emoteToGuild(newEmote, interaction.guild!, {
+    await editEmoteByUser(emote, interaction.guild!, {
       client,
       feedback,
-      origin: "postProcess",
     });
   } catch (error) {
     console.error(error);

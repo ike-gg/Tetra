@@ -10,7 +10,7 @@ import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 import emoteDiscord from "../emotes/emoteDiscord";
 
 import { DiscordBot, ExtractedEmote } from "../types";
-import emoteToGuild from "../emotes/emoteToGuild";
+import editEmoteByUser from "../emotes/editEmoteByUser";
 
 const ctxStealEmoteHere = {
   data: new ContextMenuCommandBuilder()
@@ -53,7 +53,7 @@ const ctxStealEmoteHere = {
       const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
       const { guild } = interaction;
 
-      await emoteToGuild(extractedEmote, guild!, { client, feedback });
+      await editEmoteByUser(extractedEmote, guild!, { client, feedback });
     } catch (error: any) {
       await feedback.error(error);
     }

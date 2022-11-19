@@ -11,53 +11,22 @@ import {
 } from "discord.js";
 
 import { ModalActionRowComponentBuilder } from "discord.js";
+import { DiscordBot } from "../types";
+import findCommonGuilds from "../utils/findCommonGuilds";
 
 const debug = {
   data: new SlashCommandBuilder()
     .setName("debug")
     .setDescription("dev purposes")
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("userid")
-        .setDescription("get user id")
-        .addUserOption((option) =>
-          option.setName("target").setDescription("select user")
-        )
-    )
-    .addSubcommand((subcommand) =>
-      subcommand
-        .setName("guildid")
-        .setDescription("get guild id")
-        .addUserOption((option) =>
-          option.setName("guild").setDescription("select guild")
-        )
+    .addStringOption((option) =>
+      option.setName("userid").setDescription("userid")
     ),
-  async execute(interaction: ChatInputCommandInteraction) {
-    console.log(interaction.memberPermissions);
-    // const modal = new ModalBuilder().setCustomId("xd").setTitle("test");
-
-    // const first = new TextInputBuilder()
-    //   .setCustomId("XDD")
-    //   .setLabel("co tam?")
-    //   .setStyle(TextInputStyle.Short);
-
-    // const second = new TextInputBuilder()
-    //   .setCustomId("XDDDDD")
-    //   .setLabel("minimajk")
-    //   .setStyle(TextInputStyle.Paragraph);
-
-    // const firstRow =
-    //   new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-    //     first
-    //   );
-    // const thirdRow =
-    //   new ActionRowBuilder<ModalActionRowComponentBuilder>().addComponents(
-    //     second
-    //   );
-
-    // modal.addComponents(firstRow, thirdRow);
-
-    // await interaction.showModal(modal);
+  async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
+    const userid = interaction.options.getString("userid");
+    const found = await findCommonGuilds(client.guilds.cache, userid!);
+    const lol = found.map((guild) => guild.name);
+    const gowno = client.guilds.cache.map((guild) => guild.channels);
+    console.log(gowno);
   },
 };
 

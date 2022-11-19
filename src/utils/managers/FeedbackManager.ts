@@ -19,12 +19,17 @@ import {
   SelectMenuInteraction,
   InteractionUpdateOptions,
   GuildEmoji,
+  AttachmentPayload,
 } from "discord.js";
 import {
   ActionRowBuilder,
   EmbedBuilder,
   ButtonBuilder,
 } from "@discordjs/builders";
+
+import { ExtractedEmote } from "../../types";
+import interactionEmbed from "../embedMessages/interactionEmbed";
+import emoteBorder from "../../emotes/emoteBorder";
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
@@ -55,12 +60,14 @@ export class FeedbackManager {
     options: {
       embeds?: EmbedBuilder[];
       components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[];
+      files?: AttachmentPayload[];
+      imageInEmbed?: string;
     },
     ephemeral: boolean = false
   ) {
     if (this.ephemeral) ephemeral = true;
 
-    const { embeds, components } = options;
+    const { embeds, components, files } = options;
 
     if (embeds && embeds.length > 0) {
       const lastIndex = embeds.length - 1;
@@ -77,6 +84,7 @@ export class FeedbackManager {
     const messagePayload: InteractionReplyOptions | InteractionUpdateOptions = {
       embeds: embeds,
       components: components,
+      files,
       ephemeral,
     };
 
@@ -86,7 +94,7 @@ export class FeedbackManager {
       await this.interaction.editReply(messagePayload);
     } else {
       if (!(this.interaction instanceof CommandInteraction)) {
-        await this.interaction.update({ embeds, components });
+        await this.interaction.update({ embeds, components, files });
       } else {
         await this.interaction.reply(messagePayload);
       }
@@ -110,6 +118,11 @@ export class FeedbackManager {
     await this.sendMessage({ embeds: [embed] });
   }
 
+  async userInteraction(title: string, description: string, image?: string) {
+    const embed = interactionEmbed(title, description, image);
+    await this.sendMessage({ embeds: [embed] });
+  }
+
   async warning(message: string) {
     const embed = warningEmbed(message);
     await this.sendMessage({ embeds: [embed] });
@@ -123,8 +136,20 @@ export class FeedbackManager {
 
   async removeButtons() {
     if (this.interaction instanceof ButtonInteraction) {
-      await this.sendMessage({ components: [] });
+      await this.sendMessage({ components: [], files: [] });
     }
+  }
+
+  async editEmoteByUser(emote: ExtractedEmote, buffer: Buffer) {
+    const borderedBuffer = await emoteBorder(buffer);
+    await this.sendMessage({
+      files: [{ attachment: borderedBuffer, name: "preview.gif" }],
+    });
+    await this.userInteraction(
+      "Edit emote.",
+      "Now you can choose to rescale or rename your emote using buttons below.\nBorder on image will help you to imagine how the emote will looks like on chat.\n**Border will not be visible after emote is successfully uploaded!**",
+      "attachment://preview.gif"
+    );
   }
 
   async removeSelectMenu() {

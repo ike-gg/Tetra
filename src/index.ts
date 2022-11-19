@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { Client, GatewayIntentBits, Events } from "discord.js";
+import { Client, GatewayIntentBits, Events, EmbedBuilder } from "discord.js";
 
 import { DiscordBot } from "./types";
 import TaskManager from "./utils/managers/TaskManager";

@@ -53,13 +53,6 @@ const getNavigatorRow = (
       .setDisabled(nextDisabled)
   );
 
-  navigatorRow.addComponents(
-    new ButtonBuilder()
-      .setCustomId("cancelAction")
-      .setLabel("Cancel")
-      .setStyle(ButtonStyle.Danger)
-  );
-
   return navigatorRow;
 };
 

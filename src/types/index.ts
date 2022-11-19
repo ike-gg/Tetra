@@ -28,7 +28,8 @@ export interface ExecutableSelectMenu extends SelectMenuInteraction {
 
 export interface ExtractedEmote {
   name: string;
-  image: Buffer;
+  data: Buffer;
+  finalData: Buffer;
   animated: boolean;
   preview: string;
   author?: string;

@@ -17,7 +17,8 @@ const emoteDiscord = async (
 
     return {
       name: emote.name,
-      image: emoteBuffer,
+      data: rawEmoteBuffer,
+      finalData: emoteBuffer,
       preview: emote.link,
       id: emote.id,
       animated: emote.animated,

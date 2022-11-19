@@ -2,6 +2,7 @@ import {
   ButtonInteraction,
   CommandInteraction,
   ContextMenuCommandInteraction,
+  Guild,
   GuildEmoji,
   MessageComponentInteraction,
 } from "discord.js";
@@ -40,13 +41,9 @@ export interface StealEmote extends Base {
 
 export interface PostProcessEmote extends Base {
   action: "postProcess";
-  emoteGuild: GuildEmoji;
   emote: ExtractedEmote;
+  feedback: FeedbackManager;
+  guild: Guild;
 }
 
-export type Storeable =
-  | EmoteNavigator
-  | EmotePicker
-  | StealEmote
-  | PostProcessEmote
-  | Base;
+export type Storeable = EmoteNavigator | EmotePicker | StealEmote | Base;

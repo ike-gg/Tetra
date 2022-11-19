@@ -36,6 +36,11 @@ class TaskManager {
     }
   }
 
+  updateTask<T extends TaskTypes.Base>(id: string, newData: T) {
+    const taskIndex = this.tasks.findIndex((task) => task.id === id);
+    this.tasks[taskIndex] = newData;
+  }
+
   removeTask(id: string) {
     this.tasks = this.tasks.filter((task) => task.id !== id);
   }
