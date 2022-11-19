@@ -46,7 +46,9 @@ const searchEmote = async (query: string, ignoreTags: boolean = false) => {
     if (emotes) return emotes;
     else return [];
   } catch (error) {
-    throw new Error(`Nothing found with \`${query}\` query`);
+    throw new Error(
+      `Nothing found with \`${query}\` query\n\n**Some emotes are indexed as unlisted, which means that they can't be searched using this method, use \`/addemote bylink\` instead.** \n\n\n_HINT: If you want to add emote from chat, right click on it and select "Copy image address" and paste it as link value to \`/addemote bylink\` command._`
+    );
   }
 };
 

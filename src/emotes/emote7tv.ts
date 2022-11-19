@@ -29,6 +29,8 @@ const emote7tv = async (emoteReference: string, feedback?: FeedbackManager) => {
     try {
       const emoteInfo = (await getEmoteInfo(internalId)) as EmoteResponseAPI;
 
+      if (emoteInfo.error) reject(`Emote not found. ${emoteInfo.error}`);
+
       let emotePreview = `https:${emoteInfo.host.url}/2x`;
       emoteInfo.animated ? (emotePreview += ".gif") : (emotePreview += ".webp");
 
