@@ -21,6 +21,7 @@ export interface EmoteResponseAPI {
     url: string;
     files: EmoteFileAPI[];
   };
+  error?: string;
 }
 
 //types for searching via name
@@ -29,7 +30,7 @@ export interface EmoteGQL {
   id: string;
   name: string;
   animated: boolean;
-  owner: {
+  owner?: {
     display_name: string;
   };
   host: {
