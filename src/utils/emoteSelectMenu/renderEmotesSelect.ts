@@ -41,7 +41,7 @@ const renderEmotesSelect = (
     return emotePreviewEmbed({
       number,
       name,
-      author: owner.display_name,
+      author: owner?.display_name,
       preview: previewUrl,
     });
   });
