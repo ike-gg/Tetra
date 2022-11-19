@@ -17,8 +17,9 @@ const emoteToGuild = async (
   if (options.origin === "postProcess") origin = "postProcess";
   const { feedback, client } = options;
   const { image, name } = emote;
+  let isRateLimited: NodeJS.Timeout;
   try {
-    const isRateLimited = setTimeout(() => {
+    isRateLimited = setTimeout(() => {
       feedback.rateLimited();
     }, 5000);
 
@@ -40,6 +41,7 @@ const emoteToGuild = async (
     });
     await feedback.updateComponents([postProcessRow]);
   } catch (error) {
+    clearTimeout(isRateLimited!);
     await feedback.error(String(error));
   }
 };
