@@ -39,11 +39,6 @@ const ctxStealEmote = {
 
     const emote = emotes[0];
 
-    if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
-      await feedback.emoteSameServer();
-      return;
-    }
-
     const guildsWithUser = await findCommonGuilds(
       client.guilds.cache,
       interaction.user.id
