@@ -140,8 +140,8 @@ export class FeedbackManager {
     }
   }
 
-  async editEmoteByUser(emote: ExtractedEmote, buffer: Buffer) {
-    const borderedBuffer = await emoteBorder(buffer);
+  async editEmoteByUser(emote: ExtractedEmote) {
+    const borderedBuffer = await emoteBorder(emote.finalData, emote.animated);
     await this.sendMessage({
       files: [{ attachment: borderedBuffer, name: "preview.gif" }],
     });

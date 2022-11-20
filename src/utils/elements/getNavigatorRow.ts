@@ -45,12 +45,18 @@ const getNavigatorRow = (
 
   navigatorRow.addComponents(
     new ButtonBuilder()
-      .setCustomId("nextpage")
       .setLabel("Next")
       .setEmoji({ name: "➡️" })
       .setStyle(ButtonStyle.Primary)
       .setCustomId(`${navigatorTaskId}:next`)
       .setDisabled(nextDisabled)
+  );
+
+  navigatorRow.addComponents(
+    new ButtonBuilder()
+      .setLabel("Cancel")
+      .setStyle(ButtonStyle.Danger)
+      .setCustomId(`cancelAction`)
   );
 
   return navigatorRow;

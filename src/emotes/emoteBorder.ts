@@ -1,10 +1,11 @@
 import sharp from "sharp";
 
-const emoteBorder = async (emote: Buffer) => {
+const emoteBorder = async (emote: Buffer, isAnimated: boolean) => {
   let borderedEmote: Buffer = emote;
-  let meta = await sharp(borderedEmote).metadata();
 
-  borderedEmote = await sharp(emote)
+  const sharpOptions = { animated: isAnimated };
+
+  borderedEmote = await sharp(borderedEmote, sharpOptions)
     .extend({
       top: 5,
       bottom: 5,
@@ -12,15 +13,16 @@ const emoteBorder = async (emote: Buffer) => {
       right: 5,
       background: { r: 0, g: 0, b: 0, alpha: 0 },
     })
+    .gif()
     .toBuffer();
 
-  borderedEmote = await sharp(borderedEmote)
+  borderedEmote = await sharp(borderedEmote, sharpOptions)
     .extend({
       top: 3,
       bottom: 3,
       left: 3,
       right: 3,
-      background: { r: 255, g: 137, b: 18, alpha: 1 },
+      background: { r: 128, g: 128, b: 128, alpha: 1 },
     })
     .gif()
     .toBuffer();

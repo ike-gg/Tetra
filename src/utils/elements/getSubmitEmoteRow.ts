@@ -16,6 +16,12 @@ const getSubmitEmoteRow = (
       .setLabel(`Add emote as "${emoteName}"`)
       .setStyle(ButtonStyle.Success)
   );
+  row.addComponents(
+    new ButtonBuilder()
+      .setLabel("Cancel")
+      .setStyle(ButtonStyle.Danger)
+      .setCustomId(`cancelAction`)
+  );
   // row.addComponents(
   //   new ButtonBuilder()
   //     .setCustomId(`${taskId}:debug`)

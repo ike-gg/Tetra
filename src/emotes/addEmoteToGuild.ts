@@ -8,6 +8,7 @@ const addEmoteToGuild = async (
   feedback: FeedbackManager
 ) => {
   try {
+    await feedback.removeButtons();
     const addedEmote = await guild.emojis.create({
       attachment: emote.finalData,
       name: emote.name,

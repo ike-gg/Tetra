@@ -53,7 +53,15 @@ const interactionHandler = async (
 
     const interactionTaskId = interaction.customId.split(":")[0];
 
-    const taskDetails = client.tasks.getTask(interactionTaskId);
+    let taskDetails;
+
+    if (interactionTaskId === "cancelAction") {
+      taskDetails = {
+        action: "cancelAction",
+      };
+    } else {
+      taskDetails = client.tasks.getTask(interactionTaskId);
+    }
 
     if (!taskDetails) {
       await feedback.removeButtons();

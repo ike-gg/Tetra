@@ -19,27 +19,11 @@ const editEmoteByUser = async (
   if (options.origin === "postProcess") origin = "postProcess";
 
   const { feedback, client } = options;
-  let { data, name } = emote;
 
   emote.name = emote.name.slice(0, 28);
 
-  console.log(emote.name);
-  console.log(name);
-
   let isRateLimited: NodeJS.Timeout | undefined;
   try {
-    // isRateLimited = setTimeout(async () => {
-    //   await feedback.rateLimited();
-    // }, 7500);
-
-    // const addedEmote = await guild.emojis.create({
-    //   attachment: image,
-    //   name: name.slice(0, 25),
-    // });
-
-    // clearTimeout(isRateLimited);
-
-    // await feedback.successedAddedEmote(addedEmote);
     const taskId = client.tasks.addTask<TaskTypes.PostProcessEmote>({
       action: "postProcess",
       emote,
@@ -54,7 +38,7 @@ const editEmoteByUser = async (
 
     const submitRow = getSubmitEmoteRow(taskId, emote.name);
 
-    await feedback.editEmoteByUser(emote, emote.finalData);
+    await feedback.editEmoteByUser(emote);
     await feedback.updateComponents([postProcessRow, submitRow]);
   } catch (error) {
     if (isRateLimited) clearTimeout(isRateLimited);
