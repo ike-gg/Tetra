@@ -198,7 +198,8 @@ export class FeedbackManager {
 
   async missingPermissions() {
     await this.error(
-      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
+      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!",
+      true
     );
   }
   async missingGuild() {
