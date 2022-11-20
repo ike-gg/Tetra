@@ -34,6 +34,7 @@ const support = {
     await interaction.reply({
       embeds: [messagePayload],
       components: [actionRow],
+      ephemeral: true,
     });
   },
 };
