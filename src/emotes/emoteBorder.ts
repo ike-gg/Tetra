@@ -10,9 +10,8 @@ const emoteBorder = async (emote: Buffer) => {
       bottom: 5,
       left: 5,
       right: 5,
-      background: { r: 256, g: 0, b: 0, alpha: 0 },
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
     })
-
     .toBuffer();
 
   borderedEmote = await sharp(borderedEmote)

@@ -19,7 +19,12 @@ const editEmoteByUser = async (
   if (options.origin === "postProcess") origin = "postProcess";
 
   const { feedback, client } = options;
-  const { data, name } = emote;
+  let { data, name } = emote;
+
+  emote.name = emote.name.slice(0, 28);
+
+  console.log(emote.name);
+  console.log(name);
 
   let isRateLimited: NodeJS.Timeout | undefined;
   try {
