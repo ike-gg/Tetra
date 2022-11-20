@@ -14,8 +14,6 @@ const selectEmote = {
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action] = interactionArguments;
 
-    console.log(taskId, action);
-
     const taskDetails =
       client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
 
@@ -36,12 +34,6 @@ const selectEmote = {
       } catch (error) {
         await feedback.error(String(error));
       }
-    }
-
-    if (action === "debug") {
-      const DEDTAILS = client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
-
-      console.log(DEDTAILS);
     }
   },
 };

@@ -6,6 +6,10 @@ const emoteBorder = async (emote: Buffer, isAnimated: boolean) => {
   const sharpOptions = { animated: isAnimated };
 
   borderedEmote = await sharp(borderedEmote, sharpOptions)
+    .resize({
+      width: 64,
+      height: 64,
+    })
     .extend({
       top: 5,
       bottom: 5,

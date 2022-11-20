@@ -65,11 +65,14 @@ const emoteOptimise = async (
       while (processedBuffer.byteLength > maxEmoteSize) {
         const currentSize = prettyBytes(processedBuffer.byteLength);
         const maxSize = prettyBytes(maxEmoteSize);
-        feedback?.warning(
+        await feedback?.warning(
           `Now I optimize the image file of the emote so that it has the required size by discord, if the emote is long, it can badly affect its quality.\n ${currentSize} / ${maxSize}, `
         );
 
-        dimensions = dimensions.map((dimension) =>
+        const dmns = await sharp(processedBuffer).metadata();
+        const dimensionsNew = [dmns.width!, dmns.height!];
+
+        dimensions = dimensionsNew.map((dimension) =>
           Math.floor((dimension *= 0.9))
         ) as [number, number];
 
