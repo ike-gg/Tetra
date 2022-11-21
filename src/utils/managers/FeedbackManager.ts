@@ -41,19 +41,16 @@ export class FeedbackManager {
     interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction,
     options?: {
       ephemeral?: boolean;
-      alredyReplied?: boolean;
     }
   ) {
     let ephemeral = false;
-    let alredyReplied = false;
 
     if (options?.ephemeral) ephemeral = options.ephemeral;
-    if (options?.alredyReplied) alredyReplied = options.alredyReplied;
 
     this.interaction = interaction;
     this.client = interaction.client as DiscordBot;
     this.ephemeral = ephemeral;
-    this.isReplied = alredyReplied;
+    this.isReplied = interaction.replied;
   }
 
   async sendMessage(
@@ -135,9 +132,7 @@ export class FeedbackManager {
   }
 
   async removeButtons() {
-    if (this.interaction instanceof ButtonInteraction) {
-      await this.sendMessage({ components: [], files: [] });
-    }
+    await this.sendMessage({ components: [], files: [] });
   }
 
   async editEmoteByUser(emote: ExtractedEmote) {

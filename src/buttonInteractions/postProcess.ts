@@ -10,7 +10,6 @@ import addEmoteToGuild from "../emotes/addEmoteToGuild";
 const selectEmote = {
   data: { name: "postProcess" },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
-    const feedback = new FeedbackManager(interaction);
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action] = interactionArguments;
 
@@ -18,7 +17,7 @@ const selectEmote = {
       const taskDetails =
         client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
 
-      await feedback.removeButtons();
+      const { feedback } = taskDetails;
 
       if (!taskDetails) {
         await feedback.interactionTimeOut();
@@ -44,7 +43,7 @@ const selectEmote = {
         }
       }
     } catch (error) {
-      await feedback.error(String(error));
+      console.error(error);
     }
   },
 };
