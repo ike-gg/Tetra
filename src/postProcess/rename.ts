@@ -13,7 +13,7 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 
-const PPrename = async (
+const rename = async (
   interaction: ButtonInteraction,
   client: DiscordBot,
   taskId: string
@@ -74,4 +74,4 @@ const PPrename = async (
   });
 };
 
-export default PPrename;
+export default rename;

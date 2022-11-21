@@ -7,7 +7,7 @@ import emoteDiscord from "../emotes/emoteDiscord";
 import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 
-const PPtransform = async (
+const transform = async (
   interaction: ButtonInteraction,
   client: DiscordBot,
   taskId: string,
@@ -47,4 +47,4 @@ const PPtransform = async (
   }
 };
 
-export default PPtransform;
+export default transform;
