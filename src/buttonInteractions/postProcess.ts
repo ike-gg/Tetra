@@ -3,8 +3,8 @@ import { ButtonInteraction } from "discord.js";
 import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
-import PPrename from "../postProcess/PPrename";
-import PPtransform from "../postProcess/PPtransform";
+import PPrename from "../postProcess/rename";
+import PPtransform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
 
 const selectEmote = {
