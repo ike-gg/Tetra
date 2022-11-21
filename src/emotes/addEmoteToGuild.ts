@@ -14,6 +14,7 @@ const addEmoteToGuild = async (
       name: emote.name,
     });
     await feedback.successedAddedEmote(addedEmote);
+    await feedback.logsOfUses(addedEmote);
   } catch (error) {
     throw new Error(String(error));
   }

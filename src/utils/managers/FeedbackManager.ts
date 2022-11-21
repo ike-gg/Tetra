@@ -13,13 +13,13 @@ import warningEmbed from "../embedMessages/warningEmbed";
 import {
   ButtonInteraction,
   CommandInteraction,
-  Client,
   InteractionReplyOptions,
   SelectMenuBuilder,
   SelectMenuInteraction,
   InteractionUpdateOptions,
   GuildEmoji,
   AttachmentPayload,
+  TextChannel,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -27,13 +27,13 @@ import {
   ButtonBuilder,
 } from "@discordjs/builders";
 
-import { ExtractedEmote } from "../../types";
+import { DiscordBot, ExtractedEmote } from "../../types";
 import interactionEmbed from "../embedMessages/interactionEmbed";
 import emoteBorder from "../../emotes/emoteBorder";
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
-  client!: Client;
+  client!: DiscordBot;
   ephemeral: boolean;
   isReplied = false;
 
@@ -51,7 +51,7 @@ export class FeedbackManager {
     if (options?.alredyReplied) alredyReplied = options.alredyReplied;
 
     this.interaction = interaction;
-    this.client = interaction.client;
+    this.client = interaction.client as DiscordBot;
     this.ephemeral = ephemeral;
     this.isReplied = alredyReplied;
   }
@@ -225,6 +225,22 @@ export class FeedbackManager {
       `Successfully added \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
       emote.url
     );
+  }
+
+  async logsOfUses(emote: GuildEmoji) {
+    try {
+      const announceChannel = (await this.client.channels.fetch(
+        "1043721966726680657"
+      )) as TextChannel;
+
+      if (!announceChannel) return;
+
+      await announceChannel.send(
+        `Someone just added a emote ${emote} to their server!`
+      );
+    } catch (error) {
+      console.error("Cant reach announcement channel");
+    }
   }
 
   async successedEditedEmote(emote: GuildEmoji) {

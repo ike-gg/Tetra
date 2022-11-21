@@ -18,6 +18,9 @@ const interactionHandler = async (
   const env = process.env.env;
 
   if (interaction.isCommand()) {
+    console.log(
+      `New interaction: user: ${interaction.user.username}, guild: ${interaction.guild?.name}, command: ${interaction.commandName}`
+    );
     const command = client.commands.get(
       interaction.commandName
     ) as ExecutableCommandInteraction;

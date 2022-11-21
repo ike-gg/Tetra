@@ -21,7 +21,7 @@ const selectEmote = {
 
     try {
       const emote = await emote7tv(emoteReference, feedback);
-      editEmoteByUser(emote, interaction.guild!, { client, feedback });
+      await editEmoteByUser(emote, interaction.guild!, { client, feedback });
     } catch (error) {
       feedback.error(String(error));
     }

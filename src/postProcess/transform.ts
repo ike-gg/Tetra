@@ -1,9 +1,6 @@
 import { ButtonInteraction, GuildEmoji } from "discord.js";
 import { DiscordBot, ExtractedEmote } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
-import emote7tv from "../emotes/emote7tv";
-import emoteDiscord from "../emotes/emoteDiscord";
 import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 
@@ -42,8 +39,7 @@ const transform = async (
       feedback,
     });
   } catch (error) {
-    console.error(error);
-    // await feedback.error(String(error));
+    throw new Error(String(error));
   }
 };
 
