@@ -2,7 +2,7 @@
 
 # Tetra bot
 
-## todo list:
+# todo list:
 
 - [x] import emotes from 7tv
   - [x] by name
