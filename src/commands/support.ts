@@ -14,7 +14,7 @@ const support = {
     .setName("support")
     .setDescription("Get support from bot support server"),
   async execute(interaction: CommandInteraction, client: DiscordBot) {
-    const supportDiscordLink = "https://discord.gg/DXY4aPWwqd";
+    const supportDiscordLink = "https://discord.gg/XVysGJeKGe";
     const link = hyperlink("Click here!", supportDiscordLink);
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
