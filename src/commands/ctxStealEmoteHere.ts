@@ -22,15 +22,15 @@ const ctxStealEmoteHere = {
   ) {
     const feedback = new FeedbackManager(interaction);
 
-    await feedback.gotRequest();
-
-    const messageContent = interaction.targetMessage.content;
-    const emotes = findEmotesFromMessage(messageContent);
-
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
       await feedback.missingPermissions();
       return;
     }
+
+    await feedback.gotRequest();
+
+    const messageContent = interaction.targetMessage.content;
+    const emotes = findEmotesFromMessage(messageContent);
 
     if (emotes.length === 0) {
       await feedback.notFoundEmotes();
