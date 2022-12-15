@@ -27,8 +27,6 @@ const ctxStealEmoteHere = {
       return;
     }
 
-    await feedback.gotRequest();
-
     const messageContent = interaction.targetMessage.content;
     const emotes = findEmotesFromMessage(messageContent);
 
@@ -36,6 +34,8 @@ const ctxStealEmoteHere = {
       await feedback.notFoundEmotes();
       return;
     }
+
+    await feedback.gotRequest();
 
     if (emotes.length > 1) {
       await feedback.moreThanOneEmote();
