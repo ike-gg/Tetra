@@ -20,7 +20,9 @@ const ctxStealEmoteHere = {
     interaction: MessageContextMenuCommandInteraction,
     client: DiscordBot
   ) {
-    const feedback = new FeedbackManager(interaction);
+    const feedback = new FeedbackManager(interaction, { ephemeral: true });
+
+    await feedback.gotRequest();
 
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
       await feedback.missingPermissions();
@@ -34,8 +36,6 @@ const ctxStealEmoteHere = {
       await feedback.notFoundEmotes();
       return;
     }
-
-    await feedback.gotRequest();
 
     if (emotes.length > 1) {
       await feedback.moreThanOneEmote();
