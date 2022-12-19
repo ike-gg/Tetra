@@ -225,13 +225,13 @@ export class FeedbackManager {
   async logsOfUses(emote: GuildEmoji) {
     try {
       const announceChannel = (await this.client.channels.fetch(
-        "1043721966726680657"
+        "1054273914437648384"
       )) as TextChannel;
 
       if (!announceChannel) return;
 
       await announceChannel.send(
-        `Someone just added a emote ${emote} to their server!`
+        `Someone just added an emote ${emote} to their server!`
       );
     } catch (error) {
       console.error("Cant reach announcement channel");
