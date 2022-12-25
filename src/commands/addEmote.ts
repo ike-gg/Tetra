@@ -55,7 +55,7 @@ const importEmote = {
     const feedback = new FeedbackManager(interaction);
 
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
-      await feedback.missingPermissions();
+      await feedback.missingPermissionsWithRequest();
       return;
     }
 

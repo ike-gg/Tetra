@@ -45,7 +45,7 @@ const getPostProcessRow = (
   if (emoteOrigin === "discord") {
     row.addComponents(
       new ButtonBuilder()
-        .setCustomId(`${taskId}:kutas`)
+        .setCustomId(`${taskId}:__`)
         .setEmoji({ name: "💀" })
         .setLabel("Post process are available for emotes comes from 7tv.")
         .setStyle(ButtonStyle.Secondary)

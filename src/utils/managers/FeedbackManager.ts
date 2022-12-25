@@ -30,6 +30,7 @@ import {
 import { DiscordBot, ExtractedEmote } from "../../types";
 import interactionEmbed from "../embedMessages/interactionEmbed";
 import emoteBorder from "../../emotes/emoteBorder";
+import EmoteRequest from "../elements/emoteRequest";
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
@@ -120,9 +121,12 @@ export class FeedbackManager {
     await this.sendMessage({ embeds: [embed] });
   }
 
-  async warning(message: string) {
+  async warning(
+    message: string,
+    components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[]
+  ) {
     const embed = warningEmbed(message);
-    await this.sendMessage({ embeds: [embed] });
+    await this.sendMessage({ embeds: [embed], components });
   }
 
   async updateComponents(
@@ -197,6 +201,14 @@ export class FeedbackManager {
       true
     );
   }
+
+  async missingPermissionsWithRequest() {
+    await this.warning(
+      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!\n\nInstead you can create request for moderators to add emote, use button below.",
+      [EmoteRequest("xd")]
+    );
+  }
+
   async missingGuild() {
     await this.error("Ooops! I couldn't find the server, please try again.");
   }
