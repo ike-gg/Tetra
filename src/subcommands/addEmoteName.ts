@@ -20,8 +20,6 @@ const addEmoteName = async (
   try {
     const foundEmotes = await searchEmote(emoteReference, ignoreTags);
 
-    console.log(foundEmotes);
-
     if (foundEmotes.length === 0) {
       await feedback.notFoundEmotesQuery(emoteReference);
       return;

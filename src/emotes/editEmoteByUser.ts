@@ -1,4 +1,10 @@
-import { Guild, GuildEmoji } from "discord.js";
+import {
+  ButtonInteraction,
+  CommandInteraction,
+  Guild,
+  GuildEmoji,
+  SelectMenuInteraction,
+} from "discord.js";
 import { DiscordBot, ExtractedEmote } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
@@ -11,6 +17,7 @@ const editEmoteByUser = async (
   options: {
     client: DiscordBot;
     feedback: FeedbackManager;
+    interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
     origin?: "postProcess";
   }
 ) => {
@@ -23,6 +30,7 @@ const editEmoteByUser = async (
   emote.name = emote.name.slice(0, 28);
 
   let isRateLimited: NodeJS.Timeout | undefined;
+
   try {
     const taskId = client.tasks.addTask<TaskTypes.PostProcessEmote>({
       action: "postProcess",

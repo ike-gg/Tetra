@@ -14,7 +14,11 @@ const addEmoteLink = async (
 
   try {
     const emote = await emote7tv(emoteReference, feedback);
-    await editEmoteByUser(emote, interaction.guild!, { client, feedback });
+    await editEmoteByUser(emote, interaction.guild!, {
+      client,
+      feedback,
+      interaction,
+    });
   } catch (error: any) {
     await feedback.error(error);
   }

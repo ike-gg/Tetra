@@ -27,7 +27,11 @@ const stealEmote = {
 
     try {
       const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
-      await editEmoteByUser(extractedEmote, guild, { client, feedback });
+      await editEmoteByUser(extractedEmote, guild, {
+        client,
+        feedback,
+        interaction,
+      });
     } catch (error) {
       feedback.error(String(error));
       return;

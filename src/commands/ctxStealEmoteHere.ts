@@ -53,7 +53,11 @@ const ctxStealEmoteHere = {
       const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
       const { guild } = interaction;
 
-      await editEmoteByUser(extractedEmote, guild!, { client, feedback });
+      await editEmoteByUser(extractedEmote, guild!, {
+        client,
+        feedback,
+        interaction,
+      });
     } catch (error: any) {
       await feedback.error(error);
     }

@@ -52,14 +52,18 @@ const importEmote = {
         )
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
+    // const ephemeral = !interaction.memberPermissions!.has(
+    //   "ManageEmojisAndStickers"
+    // );
+    // const feedback = new FeedbackManager(interaction, { ephemeral });
+
     const feedback = new FeedbackManager(interaction);
 
-    if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
-      await feedback.missingPermissionsWithRequest();
+    await feedback.gotRequest();
+    if (!interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
+      await feedback.missingPermissions();
       return;
     }
-
-    await feedback.gotRequest();
 
     const subcommandUsed = interaction.options.getSubcommand();
 

@@ -37,6 +37,7 @@ const transform = async (
     await editEmoteByUser(emote, interaction.guild!, {
       client,
       feedback,
+      interaction,
     });
   } catch (error) {
     throw new Error(String(error));

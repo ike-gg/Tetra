@@ -24,6 +24,8 @@ const rename = async (
 
   const { emote, feedback, guild } = taskDetails;
 
+  const originalIntearction = interaction;
+
   const modal = new ModalBuilder()
     .setCustomId(identificator)
     .setTitle("Change name for emote");
@@ -65,6 +67,7 @@ const rename = async (
       await editEmoteByUser(emote, guild, {
         client,
         feedback,
+        interaction: originalIntearction,
       });
     } catch (error) {
       await feedback.error(String(error));
