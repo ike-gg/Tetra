@@ -27,14 +27,14 @@ class EmoteListManager {
     const identificator = randomBytes(8).toString("hex");
     const pages = Math.ceil(emotes.length / emotesPerPage);
 
-    const chunkedEmtoes = chunk(emotes, emotesPerPage);
+    const chunkedEmotes = chunk(emotes, emotesPerPage);
 
     this.emotes.push({
       id: identificator,
       pages: pages,
       amount: emotes.length,
       query: query,
-      emotes: chunkedEmtoes,
+      emotes: chunkedEmotes,
     });
 
     const timeoutTime = 1000 * 60 * 10; //10 minutes
