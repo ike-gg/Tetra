@@ -34,7 +34,7 @@ export interface ExtractedEmote {
   preview: string;
   author?: string;
   id?: string;
-  origin: "7tv" | "discord";
+  origin: "7tv" | "discord" | "twitch";
 }
 
 export interface FoundEmotesDiscord {

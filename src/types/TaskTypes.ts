@@ -30,7 +30,12 @@ export interface EmoteNavigator extends Base {
 
 export interface EmotePicker extends Base {
   action: "selectEmote";
+  origin: "7tv" | "discord" | "twitch";
   emoteReference: string;
+  name?: string;
+  animated?: boolean;
+  preview?: string;
+  url?: string;
 }
 
 export interface StealEmote extends Base {

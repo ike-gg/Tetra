@@ -3,7 +3,7 @@ import { ButtonStyle } from "discord.js";
 
 const getPostProcessRow = (
   taskId: string,
-  emoteOrigin: "7tv" | "discord",
+  emoteOrigin: "7tv" | "discord" | "twitch",
   options?: {
     isEmoteAnimated?: boolean;
     origin?: "postProcess";

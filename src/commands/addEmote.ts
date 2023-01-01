@@ -4,6 +4,7 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import addEmoteLink from "../subcommands/addEmoteLink";
 import addEmoteName from "../subcommands/addEmoteName";
 import { DiscordBot } from "../types";
+import addEmoteChannel from "../subcommands/addEmoteChannel";
 
 const importEmote = {
   data: new SlashCommandBuilder()
@@ -50,6 +51,17 @@ const importEmote = {
             )
             .setRequired(true)
         )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("bychannel")
+        .setDescription("Use Twitch Channel to fetch emotes from it.")
+        .addStringOption((option) =>
+          option
+            .setName("channelname")
+            .setDescription("Name of the twitch channel")
+            .setRequired(true)
+        )
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
     // const ephemeral = !interaction.memberPermissions!.has(
@@ -59,11 +71,12 @@ const importEmote = {
 
     const feedback = new FeedbackManager(interaction);
 
-    await feedback.gotRequest();
     if (!interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
       await feedback.missingPermissions();
       return;
     }
+
+    await feedback.gotRequest();
 
     const subcommandUsed = interaction.options.getSubcommand();
 
@@ -73,6 +86,9 @@ const importEmote = {
         break;
       case "byname":
         addEmoteName(interaction, client, feedback);
+        break;
+      case "bychannel":
+        addEmoteChannel(interaction, client, feedback);
         break;
       default:
         feedback.error("Subcommand not supported yet.");

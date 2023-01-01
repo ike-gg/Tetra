@@ -2,9 +2,6 @@ import { randomBytes } from "crypto";
 import * as TaskTypes from "../../types/TaskTypes";
 
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
-type RequiredKey<Type, Key extends keyof Type> = Type & {
-  [Property in Key]-?: Type[Property];
-};
 
 class TaskManager {
   tasks: TaskTypes.Storeable[] = [];

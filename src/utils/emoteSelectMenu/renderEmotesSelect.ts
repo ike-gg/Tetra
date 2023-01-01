@@ -22,12 +22,17 @@ const renderEmotesSelect = (
     const { host, name, owner, animated, id } = emote;
     const number = emojiNumbers[index];
 
-    let previewUrl = `https:${host.url}/2x`;
-    animated ? (previewUrl += ".gif") : (previewUrl += ".webp");
+    let previewUrl = host.preview;
+    // animated ? (previewUrl += ".gif") : (previewUrl += ".webp");
 
     const taskId = client.tasks.addTask<TaskTypes.EmotePicker>({
       action: "selectEmote",
       emoteReference: id,
+      origin: emote.origin,
+      animated: emote.animated,
+      name: emote.name,
+      preview: emote.host.preview,
+      url: emote.host.url,
     });
 
     selectEmoteActionRow.addComponents(

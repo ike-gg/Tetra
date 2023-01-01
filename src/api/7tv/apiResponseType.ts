@@ -30,11 +30,13 @@ export interface EmoteGQL {
   id: string;
   name: string;
   animated: boolean;
+  origin: "discord" | "7tv" | "twitch";
   owner?: {
     display_name: string;
   };
   host: {
     url: string;
+    preview: string;
   };
 }
 

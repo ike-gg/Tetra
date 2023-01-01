@@ -41,7 +41,24 @@ const searchEmote = async (query: string, ignoreTags: boolean = false) => {
       requestOptions(query, ignoreTags)
     );
     const responseData: EmoteResponseGQL = await response.json();
-    const emotes = responseData.data.emotes.items;
+    const emotes: EmoteGQL[] = responseData.data.emotes.items.map(
+      (emote): EmoteGQL => {
+        let previewUrl = `${emote.host.url.replace("//", "https://")}/2x.`;
+        let url = `${emote.host.url.replace("//", "https://")}/4x.`;
+
+        emote.animated ? (url += "gif") : (url += "webp");
+        emote.animated ? (previewUrl += "gif") : (previewUrl += "webp");
+
+        return {
+          ...emote,
+          origin: "7tv",
+          host: {
+            url: url,
+            preview: previewUrl,
+          },
+        };
+      }
+    );
 
     if (emotes) return emotes;
     else return [];
