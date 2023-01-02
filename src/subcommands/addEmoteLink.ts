@@ -19,8 +19,8 @@ const addEmoteLink = async (
       feedback,
       interaction,
     });
-  } catch (error: any) {
-    await feedback.error(error);
+  } catch (error) {
+    await feedback.error(String(error));
   }
 };
 
