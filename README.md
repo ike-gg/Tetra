@@ -8,6 +8,7 @@
   - [x] by name
     - [x] more complex emote searching module
   - [x] by id
+  - [x] by twitch channel (fetching sub emotes from it)
 - [x] emote file optimision so they can be uploaded
 - [ ] users without permission can make request to add emote
 - [x] context menu command to get unavailable emote from message and add it to server
