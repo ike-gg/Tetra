@@ -11,7 +11,7 @@ const emotePreviewEmbed = (options: {
   const embed = new EmbedBuilder()
     .setFields({ name: `${number} **${name}**`, value: authorValue })
     .setThumbnail(preview)
-    .setColor(0x5865f2);
+    .setColor(0x000000);
   return embed;
 };
 
