@@ -6,7 +6,7 @@
 
 - [x] import emotes from 7tv
   - [x] by name
-    - [x] more complex emote searching module
+    - [x] more complex emote searching module;
   - [x] by id
   - [x] by twitch channel (fetching sub emotes from it)
 - [x] emote file optimision so they can be uploaded
