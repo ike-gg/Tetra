@@ -6,14 +6,13 @@ const getURL = (emoteId: string): string => {
 };
 
 const getEmoteInfo = async (emoteId: string): Promise<EmoteResponseAPI> => {
-  return await fetch(getURL(emoteId))
-    .then((response) => response.json())
-    .then((data) => {
-      return data as EmoteResponseAPI;
-    })
-    .catch((error) => {
-      throw new Error("Emote not found");
-    });
+  try {
+    const request = await fetch(getURL(emoteId));
+    const data = await request.json();
+    return data as EmoteResponseAPI;
+  } catch (error) {
+    throw new Error("Emote not found");
+  }
 };
 
 export default getEmoteInfo;
