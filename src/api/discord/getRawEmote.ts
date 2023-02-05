@@ -1,17 +1,13 @@
 import fetch from "node-fetch";
 
 const getRawEmote = async (hostURL: string) => {
-  return await fetch(hostURL)
-    .then((data) => {
-      return data.arrayBuffer();
-    })
-    .then((image) => {
-      return image;
-    })
-    .catch((error) => {
-      console.error(error);
-      throw new Error("File not found");
-    });
+  try {
+    const response = await fetch(hostURL);
+    const emoteBuffer = await response.arrayBuffer();
+    return emoteBuffer;
+  } catch (error) {
+    throw new Error("File not found");
+  }
 };
 
 export default getRawEmote;
