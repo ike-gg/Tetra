@@ -1,6 +1,9 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 import prettyBytes from "pretty-bytes";
+import encode from "@wasm-codecs/gifsicle";
+//@ts-ignore
+import imageminGiflossy from "imagemin-giflossy";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
@@ -61,8 +64,12 @@ const emoteOptimise = async (
         .toBuffer();
     }
 
+    let predictOptimize: number | null = null;
+    let iterations = 0;
+
     if (processedBuffer.byteLength > maxEmoteSize) {
       while (processedBuffer.byteLength > maxEmoteSize) {
+        iterations++;
         const currentSize = prettyBytes(processedBuffer.byteLength);
         const maxSize = prettyBytes(maxEmoteSize);
         await feedback?.warning(
@@ -89,15 +96,38 @@ const emoteOptimise = async (
           if (transform === "center") resizeOptions.fit = "cover";
         }
 
-        animated
-          ? (processedBuffer = await sharp(processedBuffer, sharpOptions)
+        if (animated) {
+          if (iterations === 1) {
+            const optimizedDifference = await imageminGiflossy({
+              lossy: 200,
+              optimizationLevel: 3,
+            })(processedBuffer);
+            const optimizedSize = optimizedDifference.byteLength;
+            predictOptimize = processedBuffer.byteLength - optimizedSize;
+            predictOptimize = optimizedSize / processedBuffer.byteLength;
+          }
+
+          if (
+            predictOptimize &&
+            processedBuffer.byteLength * predictOptimize < maxEmoteSize
+          ) {
+            processedBuffer = await imageminGiflossy({
+              lossy: 200,
+              optimizationLevel: 3,
+            })(processedBuffer);
+          } else {
+            predictOptimize! *= 1.015;
+            processedBuffer = await sharp(processedBuffer, sharpOptions)
               .gif()
               .resize(resizeOptions)
-              .toBuffer())
-          : (processedBuffer = await sharp(processedBuffer, sharpOptions)
-              .jpeg()
-              .resize(resizeOptions)
-              .toBuffer());
+              .toBuffer();
+          }
+        } else {
+          processedBuffer = await sharp(processedBuffer, sharpOptions)
+            .jpeg()
+            .resize(resizeOptions)
+            .toBuffer();
+        }
       }
     }
 

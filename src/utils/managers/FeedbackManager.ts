@@ -242,9 +242,13 @@ export class FeedbackManager {
 
       if (!announceChannel) return;
 
-      await announceChannel.send(
-        `Someone just added an emote ${emote} to their server!`
-      );
+      await announceChannel.send({
+        embeds: [
+          {
+            description: `Someone just added an emote ${emote} to their server!`,
+          },
+        ],
+      });
     } catch (error) {
       console.error("Cant reach announcement channel");
     }
