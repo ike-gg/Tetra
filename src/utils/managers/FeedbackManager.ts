@@ -246,7 +246,7 @@ export class FeedbackManager {
         `Someone just added an emote ${emote} to their server! ${
           Math.random() > 0.8
             ? `\nTry to use \`steal\` command on this message to add emote to your server!`
-            : null
+            : ""
         }`
       );
     } catch (error) {
