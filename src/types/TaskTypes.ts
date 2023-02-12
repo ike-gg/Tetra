@@ -51,4 +51,4 @@ export interface PostProcessEmote extends Base {
   guild: Guild;
 }
 
-export type Storeable = EmoteNavigator | EmotePicker | StealEmote | Base;
+export type Storable = EmoteNavigator | EmotePicker | StealEmote | Base;

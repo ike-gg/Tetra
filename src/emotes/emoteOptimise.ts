@@ -1,7 +1,6 @@
 import sharp from "sharp";
 import sizeOf from "buffer-image-size";
 import prettyBytes from "pretty-bytes";
-import encode from "@wasm-codecs/gifsicle";
 //@ts-ignore
 import imageminGiflossy from "imagemin-giflossy";
 
@@ -80,7 +79,7 @@ const emoteOptimise = async (
         const dimensionsNew = [dmns.width!, dmns.height!];
 
         dimensions = dimensionsNew.map((dimension) =>
-          Math.floor((dimension *= 0.9))
+          Math.floor((dimension *= 0.95))
         ) as [number, number];
 
         const [x, y] = dimensions;
@@ -112,11 +111,12 @@ const emoteOptimise = async (
             processedBuffer.byteLength * predictOptimize < maxEmoteSize
           ) {
             processedBuffer = await imageminGiflossy({
-              lossy: 200,
+              lossy: 150,
               optimizationLevel: 3,
             })(processedBuffer);
+            predictOptimize = null;
           } else {
-            predictOptimize! *= 1.015;
+            predictOptimize! *= 1.012;
             processedBuffer = await sharp(processedBuffer, sharpOptions)
               .gif()
               .resize(resizeOptions)
@@ -130,7 +130,6 @@ const emoteOptimise = async (
         }
       }
     }
-
     return processedBuffer;
   } catch (error) {
     throw new Error(String(error));

@@ -246,6 +246,7 @@ export class FeedbackManager {
         embeds: [
           {
             description: `Someone just added an emote ${emote} to their server!`,
+            color: 0xff730f,
           },
         ],
       });

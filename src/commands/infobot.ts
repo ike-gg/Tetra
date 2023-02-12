@@ -23,6 +23,10 @@ const infobot = {
     const githubAuthor = "https://github.com/ike-gg";
     const discordAuthor = "https://discordapp.com/users/224978978362884096/";
     const activeGuilds = client.guilds.cache.size;
+    const reachableUsers = client.guilds.cache.reduce(
+      (a, g) => a + g.memberCount,
+      0
+    );
 
     const dcInvLink = hyperlink("Click here!", inviteLink);
     const ghRepoLink = hyperlink("@ike-gg/Tetra", githubRepo);
@@ -53,6 +57,11 @@ const infobot = {
     messagePayload.addFields({
       name: "Active servers",
       value: activeGuilds.toString(),
+      inline: true,
+    });
+    messagePayload.addFields({
+      name: "Users",
+      value: reachableUsers.toString(),
       inline: true,
     });
     messagePayload.addFields({

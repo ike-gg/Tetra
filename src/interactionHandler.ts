@@ -10,6 +10,7 @@ import {
 } from "./types";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import errorEmbed from "./utils/embedMessages/errorEmbed";
+import interactionLogger from "./utils/interactionLoggers";
 
 const interactionHandler = async (
   interaction: Interaction,
@@ -21,6 +22,9 @@ const interactionHandler = async (
     console.log(
       `New interaction: user: ${interaction.user.username}, guild: ${interaction.guild?.name}, command: ${interaction.commandName}`
     );
+
+    interactionLogger(interaction, client);
+
     const command = client.commands.get(
       interaction.commandName
     ) as ExecutableCommandInteraction;

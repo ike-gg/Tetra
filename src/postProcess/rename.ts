@@ -4,12 +4,10 @@ import {
   ActionRowBuilder,
   ButtonInteraction,
   Client,
-  GuildEmoji,
   InteractionCollector,
   TextInputStyle,
 } from "discord.js";
 import { DiscordBot } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 

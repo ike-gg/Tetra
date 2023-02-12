@@ -1,8 +1,4 @@
-import {
-  ChatInputCommandInteraction,
-  CommandInteraction,
-  SlashCommandBuilder,
-} from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const here = {
