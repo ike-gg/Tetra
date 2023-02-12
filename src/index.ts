@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { Client, GatewayIntentBits, Events, EmbedBuilder } from "discord.js";
+import { Client, GatewayIntentBits, Events } from "discord.js";
 
 import { DiscordBot } from "./types";
 import TaskManager from "./utils/managers/TaskManager";
@@ -32,7 +32,6 @@ client.tasks = new TaskManager();
 
 client.on("ready", () => {
   console.log("Bot ready");
-  console.log(client.guilds.cache.map((g) => g.name).join(", "));
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
