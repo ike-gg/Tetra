@@ -110,11 +110,19 @@ const emoteOptimise = async (
             predictOptimize &&
             processedBuffer.byteLength * predictOptimize < maxEmoteSize
           ) {
-            processedBuffer = await imageminGiflossy({
+            const confirmPredict = await imageminGiflossy({
               lossy: 150,
               optimizationLevel: 3,
             })(processedBuffer);
-            predictOptimize = null;
+
+            if (confirmPredict.byteLength > maxEmoteSize) {
+              processedBuffer = await sharp(processedBuffer, sharpOptions)
+                .gif()
+                .resize(resizeOptions)
+                .toBuffer();
+            } else {
+              processedBuffer = confirmPredict;
+            }
           } else {
             predictOptimize! *= 1.012;
             processedBuffer = await sharp(processedBuffer, sharpOptions)
