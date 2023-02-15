@@ -37,6 +37,18 @@ const selectEmote = {
           preview: taskDetails.preview!,
         };
       }
+      if (origin === "discord") {
+        const rawEmote = await getRawEmote(taskDetails.url!);
+        const emoteFile = Buffer.from(rawEmote);
+        emote = {
+          animated: taskDetails.animated!,
+          data: emoteFile,
+          finalData: emoteFile,
+          name: taskDetails.name!,
+          origin: "discord",
+          preview: taskDetails.preview!,
+        };
+      }
       await editEmoteByUser(emote!, interaction.guild!, {
         client,
         feedback,

@@ -44,6 +44,12 @@ export interface StealEmote extends Base {
   feedback: FeedbackManager;
 }
 
+export interface StealReaction extends Base {
+  action: "stealReaction";
+  emote: FoundEmotesDiscord[];
+  feedback: FeedbackManager;
+}
+
 export interface PostProcessEmote extends Base {
   action: "postProcess";
   emote: ExtractedEmote;
