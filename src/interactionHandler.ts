@@ -66,6 +66,10 @@ const interactionHandler = async (
       taskDetails = {
         action: "cancelAction",
       };
+    } else if (interactionTaskId === "errorlog") {
+      taskDetails = {
+        action: "errorLog",
+      };
     } else {
       taskDetails = client.tasks.getTask(interactionTaskId);
     }

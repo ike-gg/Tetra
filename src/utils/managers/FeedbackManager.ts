@@ -20,6 +20,7 @@ import {
   GuildEmoji,
   AttachmentPayload,
   TextChannel,
+  ButtonStyle,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -107,8 +108,18 @@ export class FeedbackManager {
   }
 
   async error(message: string, ephemeral: boolean = false) {
-    const embed = errorEmbed(message);
-    await this.sendMessage({ embeds: [embed] }, ephemeral);
+    const embed = errorEmbed(
+      `${message}\n\nSomething unexpected happened? Use button below to send developers a snapshot of error.`
+    );
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`errorlog`)
+        .setEmoji({ name: "📠" })
+        .setLabel(`Send developers log`)
+        .setStyle(ButtonStyle.Danger)
+    );
+    await this.sendMessage({ embeds: [embed], components: [row] }, ephemeral);
   }
 
   async success(title: string, description: string, image?: string) {
