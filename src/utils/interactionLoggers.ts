@@ -19,7 +19,10 @@ const interactionLogger = async (
         user.username
       })\`, guild: \`${guild?.name} counts ${
         guild?.memberCount
-      } users\`, \`\`\`${JSON.stringify(interaction.options)}\`\`\``
+      } users\`, \`\`\`${JSON.stringify(interaction.options).slice(
+        0,
+        1250
+      )}\`\`\``
     );
   }
 };

@@ -19,13 +19,14 @@ const errorLog = {
       errorSnapshotsChannel.send({
         content: `\`user ${username} (${id})\`, command: \`${
           originalInteraction?.commandName
-        }\` details: \`\`\`${JSON.stringify(
-          originalInteraction
+        }\` details: \`\`\`${JSON.stringify(originalInteraction).slice(
+          0,
+          1250
         )}\`\`\`received embed:`,
         embeds: [errorEmbedMessage],
       });
     } catch (error) {
-      console.error(error);
+      console.error("error with logging an snapshot of error", error);
     }
   },
 };
