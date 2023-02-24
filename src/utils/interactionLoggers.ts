@@ -11,13 +11,13 @@ const interactionLogger = async (
 
   if (!announceChannel) return;
 
-  const { guild, user } = interaction;
+  const { guild, user, id } = interaction;
 
   if (interaction.isCommand()) {
     announceChannel.send(
-      `new interaction \`${interaction.commandName}\`, user \`${user.id} (${
-        user.username
-      })\`, guild: \`${guild?.name} counts ${
+      `new interaction \`ID: ${id}\` \`${interaction.commandName}\`, user \`${
+        user.id
+      } (${user.username})\`, guild: \`${guild?.name} counts ${
         guild?.memberCount
       } users\`, \`\`\`${JSON.stringify(interaction.options).slice(
         0,

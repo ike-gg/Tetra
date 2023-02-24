@@ -2,7 +2,6 @@ import {
   ButtonInteraction,
   CommandInteraction,
   Guild,
-  GuildEmoji,
   SelectMenuInteraction,
 } from "discord.js";
 import { DiscordBot, ExtractedEmote } from "../types";
@@ -10,6 +9,7 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
 import getPostProcessRow from "../utils/elements/getPostProcessRow";
 import getSubmitEmoteRow from "../utils/elements/getSubmitEmoteRow";
+import parseDiscordRegexName from "../utils/parseDiscordRegexName";
 
 const editEmoteByUser = async (
   emote: ExtractedEmote,
@@ -27,7 +27,7 @@ const editEmoteByUser = async (
 
   const { feedback, client } = options;
 
-  emote.name = emote.name.slice(0, 28);
+  emote.name = parseDiscordRegexName(emote.name);
 
   let isRateLimited: NodeJS.Timeout | undefined;
 

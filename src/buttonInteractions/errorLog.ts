@@ -12,12 +12,13 @@ const errorLog = {
 
       if (!errorSnapshotsChannel) return;
 
+      const interactionId = interaction.message.interaction?.id;
       const { id, username } = interaction.user;
       const originalInteraction = interaction.message.interaction;
       const errorEmbedMessage = interaction.message.embeds[0];
 
       errorSnapshotsChannel.send({
-        content: `\`user ${username} (${id})\`, command: \`${
+        content: `\`interaction id ${interactionId}\`\`user ${username} (${id})\`, command: \`${
           originalInteraction?.commandName
         }\` details: \`\`\`${JSON.stringify(originalInteraction).slice(
           0,
