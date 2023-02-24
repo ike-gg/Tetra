@@ -7,6 +7,7 @@ import { DiscordBot } from "./types";
 import TaskManager from "./utils/managers/TaskManager";
 import importInteractions from "./importInteractions";
 import interactionHandler from "./interactionHandler";
+import findCommonGuilds from "./utils/findCommonGuilds";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
@@ -30,7 +31,7 @@ const client = new Client({
 importInteractions(client);
 client.tasks = new TaskManager();
 
-client.on("ready", () => {
+client.on("ready", async () => {
   console.log("Bot ready");
 });
 

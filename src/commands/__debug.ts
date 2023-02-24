@@ -1,16 +1,5 @@
-import {
-  SlashCommandBuilder,
-  ChatInputCommandInteraction,
-  ActionRow,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-} from "discord.js";
+import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js";
 
-import { ModalActionRowComponentBuilder } from "discord.js";
 import { DiscordBot } from "../types";
 import findCommonGuilds from "../utils/findCommonGuilds";
 
@@ -25,6 +14,7 @@ const debug = {
     const userid = interaction.options.getString("userid");
     const found = await findCommonGuilds(client.guilds.cache, userid!);
     const lol = found.map((guild) => guild.name);
+    console.log(lol);
   },
 };
 
