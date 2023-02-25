@@ -55,12 +55,20 @@ const importEmote = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("bychannel")
-        .setDescription("Use Twitch Channel to fetch emotes from it.")
+        .setDescription("Use Twitch Channel to fetch 7TV emotes from it.")
         .addStringOption((option) =>
           option
             .setName("channelname")
             .setDescription("Name of the twitch channel")
             .setRequired(true)
+        )
+        .addStringOption((option) =>
+          option
+            .setName("search")
+            .setDescription(
+              "Get emotes whose names contain the text from the search value"
+            )
+            .setRequired(false)
         )
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {

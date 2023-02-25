@@ -1,20 +1,20 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import searchEmote from "../api/7tv/searchEmote";
 import { DiscordBot } from "../types";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
 import checkChannel from "../api/twitch/checkChannel";
-import getEmotesFromChannel from "../api/7tv/getEmotesFromChannel";
+import getEmotes from "../api/twitch/getEmotes";
 
-const addEmoteChannel = async (
+const addSubEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
   client: DiscordBot,
   feedback: FeedbackManager
 ) => {
   const channelName = interaction.options.get("channelname")?.value as string;
-  const queryString = interaction.options.get("search")?.value as string;
 
   try {
     const channelInfo = await checkChannel(channelName);
@@ -30,12 +30,13 @@ const addEmoteChannel = async (
       return;
     }
 
-    let foundEmotes = await getEmotesFromChannel(channelInfo.id);
+    const foundEmotes = await getEmotes(channelInfo.id);
 
-    if (queryString)
-      foundEmotes = foundEmotes.filter((emote) =>
-        emote.name.includes(queryString)
-      );
+    if (typeof foundEmotes === "object" && "error" in foundEmotes) {
+      const { message } = foundEmotes;
+      await feedback.error(message);
+      return;
+    }
 
     if (foundEmotes.length === 0) {
       await feedback.notFoundEmotesQuery("to change");
@@ -72,4 +73,4 @@ const addEmoteChannel = async (
   }
 };
 
-export default addEmoteChannel;
+export default addSubEmoteChannel;
