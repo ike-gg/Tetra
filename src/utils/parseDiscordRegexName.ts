@@ -4,11 +4,11 @@ const parseDiscordRegexName = (emoteName: string) => {
   const regex = new RegExp(/^[a-zA-Z0-9_]$/g);
   const isValid = regex.test(name);
 
-  if (isValid) return name;
+  if (isValid && name.length >= 2) return name;
 
   const validTrimmedName = name.replace(/[^a-zA-Z0-9_]/g, "");
 
-  if (validTrimmedName.length > 0) return validTrimmedName;
+  if (validTrimmedName.length >= 2) return validTrimmedName;
 
   return "emotename";
 };
