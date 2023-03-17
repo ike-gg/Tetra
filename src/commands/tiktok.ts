@@ -20,10 +20,6 @@ const importEmote = {
       option.setName("url").setDescription("tiktok url").setRequired(true)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
-    // const ephemeral = !interaction.memberPermissions!.has(
-    //   "ManageEmojisAndStickers"
-    // );
-    // const feedback = new FeedbackManager(interaction, { ephemeral });
     try {
       await interaction.reply("<a:PepegaLoad:1085673146939621428>");
       const urlVideo = interaction.options.getString("url");
@@ -36,10 +32,10 @@ const importEmote = {
       const source = await fetch(data.video.url.no_wm);
       const video = await source.buffer();
 
-      const attachmnetOho = new AttachmentBuilder(video);
-      attachmnetOho.setName("video.mp4");
+      const videoAttachment = new AttachmentBuilder(video);
+      videoAttachment.setName("video.mp4");
       await interaction.editReply({
-        files: [attachmnetOho],
+        files: [videoAttachment],
         content: "",
       });
     } catch (error) {
