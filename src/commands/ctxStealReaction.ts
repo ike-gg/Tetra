@@ -14,7 +14,7 @@ import findCommonGuilds from "../utils/findCommonGuilds";
 import getSelectMenuServers from "../utils/elements/getSelectMenuServers";
 import emotesFromReactions from "../utils/emotesFromReactions";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
-import { EmoteGQL } from "../api/7tv/apiResponseType";
+import { EmoteGQL } from "../emotes/source/7tv/apiResponseType";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 

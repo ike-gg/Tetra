@@ -1,10 +1,10 @@
 import isValidURL from "../utils/isValidURL";
 
-import { EmoteResponseAPI } from "../api/7tv/apiResponseType";
+import { EmoteResponseAPI } from "./source/7tv/apiResponseType";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
-import getEmoteInfo from "../api/7tv/getEmoteInfo";
-import getRawEmote from "../api/7tv/getRawEmote";
+import getEmoteInfo from "./source/7tv/getEmoteInfo";
+import getRawEmote from "./source/7tv/getRawEmote";
 import emoteOptimise from "./emoteOptimise";
 
 import { ExtractedEmote } from "../types";

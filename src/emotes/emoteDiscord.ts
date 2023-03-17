@@ -1,5 +1,5 @@
 import { ExtractedEmote, FoundEmotesDiscord } from "../types";
-import getRawEmote from "../api/discord/getRawEmote";
+import getRawEmote from "./source/discord/getRawEmote";
 
 import emoteOptimise from "./emoteOptimise";
 

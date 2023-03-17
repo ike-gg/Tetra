@@ -5,8 +5,8 @@ import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
-import checkChannel from "../api/twitch/checkChannel";
-import getEmotesFromChannel from "../api/7tv/getEmotesFromChannel";
+import checkChannel from "../emotes/source/twitch/checkChannel";
+import getEmotesFromChannel from "../emotes/source/7tv/getEmotesFromChannel";
 
 const addEmoteChannel = async (
   interaction: ChatInputCommandInteraction,

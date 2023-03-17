@@ -5,7 +5,7 @@ import { DiscordBot, ExtractedEmote } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
 import editEmoteByUser from "../emotes/editEmoteByUser";
-import getRawEmote from "../api/discord/getRawEmote";
+import getRawEmote from "../emotes/source/discord/getRawEmote";
 
 const selectEmote = {
   data: { name: "selectEmote" },

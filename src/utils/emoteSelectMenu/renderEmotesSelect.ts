@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
-import { EmoteGQL } from "../../api/7tv/apiResponseType";
+import { EmoteGQL } from "../../emotes/source/7tv/apiResponseType";
 import { DiscordBot } from "../../types";
 import emotePreviewEmbed from "../embedMessages/emotePreviewEmbed";
 import * as TaskTypes from "../../types/TaskTypes";

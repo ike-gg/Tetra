@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import searchEmote from "../api/7tv/searchEmote";
+import searchEmote from "../emotes/source/7tv/searchEmote";
 import { DiscordBot } from "../types";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";

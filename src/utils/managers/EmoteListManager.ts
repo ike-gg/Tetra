@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import { EmoteGQL } from "../../api/7tv/apiResponseType";
+import { EmoteGQL } from "../../emotes/source/7tv/apiResponseType";
 import { chunk } from "lodash";
 
 class EmoteListManager {
