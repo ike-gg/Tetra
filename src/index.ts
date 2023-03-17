@@ -14,10 +14,13 @@ import apiv1 from "./api/v1/apiv1";
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
 
+const PORT = process.env.PORT || 443;
+console.log("got port", PORT);
+
 const app = express();
 app.use(bodyParser.json());
 app.use("/api/v1", apiv1);
-app.listen(env === "development" ? 3000 : 80);
+app.listen(PORT);
 
 if (!env) {
   console.error(
