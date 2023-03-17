@@ -1,5 +1,13 @@
 import dotenv from "dotenv";
 dotenv.config();
+import child_process from "child_process";
+
+let commitHash: string = "#";
+
+child_process.exec("git rev-parse HEAD", (err, stdout) => {
+  if (err) return;
+  commitHash += stdout.slice(0, 8);
+});
 
 let env = process.env.env as "development" | "production";
 if (!env) {
@@ -71,9 +79,13 @@ export class FeedbackManager {
     if (embeds && embeds.length > 0) {
       const lastIndex = embeds.length - 1;
       let lastEmbedText = this.client.user!.username;
+
       if (env === "development") {
         lastEmbedText += " | Development stage.";
+      } else {
+        lastEmbedText += commitHash;
       }
+
       embeds[lastIndex].setFooter({
         text: lastEmbedText,
         iconURL: this.client.user!.avatarURL()!,
