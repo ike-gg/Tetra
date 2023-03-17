@@ -41,6 +41,9 @@ const searchEmote = async (query: string, ignoreTags: boolean = false) => {
       requestOptions(query, ignoreTags)
     );
     const responseData: EmoteResponseGQL = await response.json();
+
+    console.log(responseData);
+
     const emotes: EmoteGQL[] = responseData.data.emotes.items.map(
       (emote): EmoteGQL => {
         let previewUrl = `${emote.host.url.replace("//", "https://")}/2x.`;
