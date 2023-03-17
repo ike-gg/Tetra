@@ -7,10 +7,17 @@ import { DiscordBot } from "./types";
 import TaskManager from "./utils/managers/TaskManager";
 import importInteractions from "./importInteractions";
 import interactionHandler from "./interactionHandler";
-import findCommonGuilds from "./utils/findCommonGuilds";
+import express from "express";
+import bodyParser from "body-parser";
+import apiv1 from "./api/v1/apiv1";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
+
+const app = express();
+app.use(bodyParser.json());
+app.use("/api/v1", apiv1);
+app.listen(env === "development" ? 3000 : 80);
 
 if (!env) {
   console.error(
