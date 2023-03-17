@@ -14,7 +14,6 @@ const debug = {
     const userid = interaction.options.getString("userid");
     const found = await findCommonGuilds(client.guilds.cache, userid!);
     const lol = found.map((guild) => guild.name);
-    console.log(lol);
   },
 };
 

@@ -85,12 +85,15 @@ const searchEmote = async (query: string, ignoreTags: boolean = false) => {
     );
 
     if (emotes) return emotes;
-    else return [];
+    else
+      throw new Error(
+        `Nothing found with \`${query}\` query\n\n**Some emotes are indexed as unlisted, which means that they can't be searched using this method, use \`/addemote bylink\` instead.** \n\n\n_HINT: If you want to add emote from chat, right click on it and select "Copy image address" and paste it as link value to \`/addemote bylink\` command._`
+      );
   } catch (error) {
     console.log("⚠️");
     console.log(error);
     throw new Error(
-      `Nothing found with \`${query}\` query\n\n**Some emotes are indexed as unlisted, which means that they can't be searched using this method, use \`/addemote bylink\` instead.** \n\n\n_HINT: If you want to add emote from chat, right click on it and select "Copy image address" and paste it as link value to \`/addemote bylink\` command._`
+      "There was an error fetching emotes, try again in a while."
     );
   }
 };
