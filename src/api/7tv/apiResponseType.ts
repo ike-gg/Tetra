@@ -47,4 +47,7 @@ export interface EmoteResponseGQL {
       items: EmoteGQL[];
     };
   };
+  errors: {
+    message: string;
+  }[];
 }

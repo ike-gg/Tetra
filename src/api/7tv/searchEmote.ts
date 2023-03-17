@@ -6,6 +6,10 @@ import {
 
 import fetch from "node-fetch";
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 const requestOptions = (query: string, ignoreTags: boolean = false) => {
   return {
     method: "POST",
@@ -36,15 +40,32 @@ const requestOptions = (query: string, ignoreTags: boolean = false) => {
 
 const searchEmote = async (query: string, ignoreTags: boolean = false) => {
   try {
-    const response = await fetch(
-      "https://7tv.io/v3/gql",
-      requestOptions(query, ignoreTags)
-    );
-    const responseData: EmoteResponseGQL = await response.json();
+    let tries: number = 0;
 
-    console.log(responseData);
+    const tryFetch = async () => {
+      tries++;
+      const response = await fetch(
+        "https://7tv.io/v3/gql",
+        requestOptions(query, ignoreTags)
+      );
+      const responseEmotesData: EmoteResponseGQL = await response.json();
 
-    const emotes: EmoteGQL[] = responseData.data.emotes.items.map(
+      return responseEmotesData;
+    };
+
+    let emoteData: EmoteResponseGQL = await tryFetch();
+
+    while (emoteData.errors) {
+      if (tries > 5) {
+        throw new Error(
+          "Could not fetch emotes, try to use `bylink` instead or try again in a while"
+        );
+      }
+      await sleep(2000);
+      emoteData = await tryFetch();
+    }
+
+    const emotes: EmoteGQL[] = emoteData.data.emotes.items.map(
       (emote): EmoteGQL => {
         let previewUrl = `${emote.host.url.replace("//", "https://")}/2x.`;
         let url = `${emote.host.url.replace("//", "https://")}/4x.`;
