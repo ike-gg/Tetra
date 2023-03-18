@@ -1,6 +1,7 @@
 import {
   ButtonInteraction,
   CommandInteraction,
+  ContextMenuCommandInteraction,
   Guild,
   SelectMenuInteraction,
 } from "discord.js";
@@ -17,7 +18,11 @@ const editEmoteByUser = async (
   options: {
     client: DiscordBot;
     feedback: FeedbackManager;
-    interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
+    interaction:
+      | CommandInteraction
+      | ButtonInteraction
+      | SelectMenuInteraction
+      | ContextMenuCommandInteraction;
     origin?: "postProcess";
   }
 ) => {
@@ -25,7 +30,7 @@ const editEmoteByUser = async (
 
   if (options.origin === "postProcess") origin = "postProcess";
 
-  const { feedback, client } = options;
+  const { feedback, client, interaction } = options;
 
   emote.name = parseDiscordRegexName(emote.name);
 
@@ -37,6 +42,7 @@ const editEmoteByUser = async (
       emote,
       feedback,
       guild,
+      interaction: interaction,
     });
 
     const postProcessRow = getPostProcessRow(taskId, emote.origin, {

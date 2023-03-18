@@ -4,10 +4,21 @@ import * as TaskTypes from "../../types/TaskTypes";
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 class TaskManager {
+  private static instance: TaskManager;
+
+  static getInstance() {
+    if (TaskManager.instance) {
+      return this.instance;
+    }
+    this.instance = new TaskManager();
+    return this.instance;
+  }
+
   tasks: TaskTypes.Storable[] = [];
 
   addTask<T extends TaskTypes.Base>(taskBase: Optional<T, "id">) {
     const identificator = randomBytes(8).toString("hex");
+    console.log(identificator);
 
     const newTask = taskBase as TaskTypes.Storable;
     newTask.id = identificator;

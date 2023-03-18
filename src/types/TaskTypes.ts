@@ -3,8 +3,8 @@ import {
   CommandInteraction,
   ContextMenuCommandInteraction,
   Guild,
-  GuildEmoji,
   MessageComponentInteraction,
+  SelectMenuInteraction,
 } from "discord.js";
 import { ExtractedEmote, FoundEmotesDiscord } from ".";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
@@ -15,7 +15,8 @@ export interface Base {
   interaction?:
     | CommandInteraction
     | ButtonInteraction
-    | ContextMenuCommandInteraction;
+    | ContextMenuCommandInteraction
+    | SelectMenuInteraction;
   feedback?: FeedbackManager;
   message?: MessageComponentInteraction;
 }
