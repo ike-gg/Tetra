@@ -9,17 +9,18 @@ import importInteractions from "./importInteractions";
 import interactionHandler from "./interactionHandler";
 import express from "express";
 import bodyParser from "body-parser";
-import apiv1 from "./api/v1/apiv1";
+import cors from "cors";
+import apiRouter from "./api/apiRouter";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
 
-const PORT = process.env.PORT || 443;
-console.log("got port", PORT);
+const PORT = process.env.PORT || 3000;
 
 const app = express();
 app.use(bodyParser.json());
-app.use("/api/v1", apiv1);
+app.use(cors());
+app.use("/", apiRouter);
 app.listen(PORT);
 
 if (!env) {
@@ -39,7 +40,7 @@ const client = new Client({
 }) as DiscordBot;
 
 importInteractions(client);
-client.tasks = new TaskManager();
+client.tasks = TaskManager.getInstance();
 
 client.on("ready", async () => {
   console.log("Bot ready");
@@ -63,3 +64,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
 });
 
 client.login(discordBotToken);
+
+export { client };
