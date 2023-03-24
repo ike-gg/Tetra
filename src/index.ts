@@ -18,8 +18,8 @@ let env = process.env.env as "production" | "development";
 const PORT = process.env.PORT || 3000;
 
 const app = express();
-app.use(bodyParser.json());
 app.use(cors());
+app.use(bodyParser.json({ limit: "10mb" }));
 app.use("/", apiRouter);
 app.listen(PORT);
 
