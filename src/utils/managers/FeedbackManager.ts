@@ -32,6 +32,7 @@ import { DiscordBot, ExtractedEmote } from "../../types";
 import interactionEmbed from "../embedMessages/interactionEmbed";
 import emoteBorder from "../../emotes/emoteBorder";
 import EmoteRequest from "../elements/emoteRequest";
+import URLButton from "../elements/URLButton";
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
@@ -45,9 +46,9 @@ export class FeedbackManager {
       ephemeral?: boolean;
     }
   ) {
-    let ephemeral = false;
+    let ephemeral = true;
 
-    if (options?.ephemeral) ephemeral = options.ephemeral;
+    // if (options?.ephemeral) ephemeral = options.ephemeral;
 
     this.interaction = interaction;
     this.client = interaction.client as DiscordBot;
@@ -89,7 +90,7 @@ export class FeedbackManager {
       ephemeral,
     };
 
-    // this.isReplied = this.interaction.replied;
+    this.isReplied = this.interaction.replied;
 
     if (this.isReplied) {
       await this.interaction.editReply(messagePayload);
@@ -272,6 +273,27 @@ export class FeedbackManager {
       "Success!",
       `Successfully edited \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
       emote.url
+    );
+  }
+
+  async manualAdjustment(taskId: string) {
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    const URL =
+      env === "development"
+        ? `http://localhost:3001/edit/${taskId}`
+        : `https://tetra.lol/edit/${taskId}`;
+    await this.removeButtons();
+    await this.sendMessage(
+      {
+        embeds: [
+          successfulEmbed(
+            "Manual adjustment",
+            `You can now manually adjust the emote visiting link below.\n${URL}`
+          ),
+        ],
+        components: [row.addComponents(URLButton("Manual adjustment", URL))],
+      },
+      true
     );
   }
 }
