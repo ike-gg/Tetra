@@ -4,6 +4,10 @@ import sharp from "sharp";
 import gifsicle from "../../utils/gifsicle";
 
 export default async (req: Request, res: Response) => {
+  console.log(new Date().toISOString(), "postProcess-request received");
+  const time = performance.now();
+  console.log("postProcess-received request at", time, "ms");
+
   if (!req.body.buffer) {
     res.sendStatus(400);
     return;
@@ -17,12 +21,12 @@ export default async (req: Request, res: Response) => {
 
     let postProceed: Buffer = buffer;
 
-    const { width, height, pages, delay } = await sharp(postProceed, {
-      animated: true,
-    }).metadata();
-    console.log(width, height, pages, delay);
-
-    console.log("cutting...");
+    const workingOnBufferTime = performance.now();
+    console.log(
+      "postProcess-working on buffer in",
+      workingOnBufferTime - time,
+      "ms"
+    );
 
     if (options.cut) {
       const { cut }: { cut: [[number, number], [number, number]] } = options;
@@ -42,14 +46,16 @@ export default async (req: Request, res: Response) => {
       options.cut = undefined;
     }
 
-    console.log("main schema...");
+    const cuttingTime = performance.now();
+    console.log("postProcess-cutting in", cuttingTime - time, "ms");
 
     postProceed = await gifsicle({
       ...options,
       optimizationLevel: 3,
     })(postProceed);
 
-    console.log("fitting...");
+    const mainProcessTime = performance.now();
+    console.log("postProcess-main process in", mainProcessTime - time, "ms");
 
     if (options.fitting) {
       const { pageHeight: nHeight } = await sharp(postProceed, {
@@ -71,11 +77,8 @@ export default async (req: Request, res: Response) => {
       })(postProceed);
     }
 
-    console.log(
-      "after on backend:",
-      postProceed.byteLength,
-      prettyBytes(postProceed.byteLength)
-    );
+    const endTime = performance.now();
+    console.log("postProcess-processed image in", endTime - time, "ms");
 
     res.json(postProceed);
   } catch (e) {
