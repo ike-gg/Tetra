@@ -42,6 +42,15 @@ const selectEmote = {
           await feedback.error(String(error));
         }
       }
+
+      if (action === "manual") {
+        try {
+          const { id } = taskDetails;
+          await feedback.manualAdjustment(id);
+        } catch (error) {
+          await feedback.error(String(error));
+        }
+      }
     } catch (error) {
       console.error(error);
     }

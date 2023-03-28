@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
+import sharp from "sharp";
 import { PostProcessEmote } from "../../types/TaskTypes";
 import TaskManager from "../../utils/managers/TaskManager";
 
-export default (req: Request, res: Response) => {
+export default async (req: Request, res: Response) => {
   if (!req.params.id) {
     res.status(400).json({ error: "missing id" });
     return;
   }
+
   const taskId = String(req.params.id);
 
   const tasks = TaskManager.getInstance();
@@ -28,7 +30,9 @@ export default (req: Request, res: Response) => {
   const { emote, guild, id, interaction } = taskDetails;
   const { name, icon, id: guildId } = guild;
 
-  console.log(taskDetails.interaction);
+  const { pages, delay } = await sharp(emote.data, {
+    animated: true,
+  }).metadata();
 
   let interactionDetails = {};
 
@@ -43,10 +47,14 @@ export default (req: Request, res: Response) => {
   }
 
   const responseData = {
-    emote,
+    emote: {
+      ...emote,
+      pages,
+      delay,
+    },
     guild: {
       name,
-      icon,
+      icon: `https://cdn.discordapp.com/icons/${guildId}/${icon}.png`,
       id: guildId,
     },
     taskId: id,

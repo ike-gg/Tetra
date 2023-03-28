@@ -11,6 +11,7 @@ import * as TaskTypes from "../types/TaskTypes";
 import getPostProcessRow from "../utils/elements/getPostProcessRow";
 import getSubmitEmoteRow from "../utils/elements/getSubmitEmoteRow";
 import parseDiscordRegexName from "../utils/parseDiscordRegexName";
+import getManualAdjustmentRow from "../utils/elements/getManualAdjustmentRow";
 
 const editEmoteByUser = async (
   emote: ExtractedEmote,
@@ -50,10 +51,12 @@ const editEmoteByUser = async (
       origin,
     });
 
+    const manualRow = getManualAdjustmentRow(taskId);
+
     const submitRow = getSubmitEmoteRow(taskId, emote.name);
 
     await feedback.editEmoteByUser(emote);
-    await feedback.updateComponents([postProcessRow, submitRow]);
+    await feedback.updateComponents([postProcessRow, manualRow, submitRow]);
   } catch (error) {
     if (isRateLimited) clearTimeout(isRateLimited);
     await feedback.error(String(error));

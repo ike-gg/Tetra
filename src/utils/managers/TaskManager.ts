@@ -33,6 +33,12 @@ class TaskManager {
     return identificator;
   }
 
+  verify(taskId: string, guildId: string) {
+    const desiredTask = this.tasks.find((task) => task.id === taskId);
+    if (!desiredTask || !desiredTask.interaction) return false;
+    return desiredTask.interaction.guildId === guildId;
+  }
+
   updateCurrentPage(id: string, newPage: number) {
     const taskIndex = this.tasks.findIndex((task) => task.id === id);
     const updatingTask = this.tasks[taskIndex];
