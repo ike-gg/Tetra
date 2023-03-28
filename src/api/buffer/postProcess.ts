@@ -82,7 +82,7 @@ export default async (req: Request, res: Response) => {
     console.log(e);
     res.status(500).json({
       message:
-        "Process completed not successfull. Please try again with different options or contact onwer.",
+        "Something went wrong while processing the image, please try again with different settings.",
     });
   }
 
