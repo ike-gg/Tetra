@@ -27,7 +27,11 @@ const limiter = rateLimit({
 
 app.use(
   cors({
-    origin: ["https://tetra.lol", "http://localhost:3001"],
+    origin: [
+      "https://tetra.lol",
+      "http://localhost:3001",
+      "https://www.tetra.lol",
+    ],
   })
 );
 app.use(limiter);
