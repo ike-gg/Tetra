@@ -6,6 +6,7 @@ import * as TaskTypes from "../types/TaskTypes";
 import rename from "../postProcess/rename";
 import transform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
+import interactionLogger, { manualLogger } from "../utils/interactionLoggers";
 
 const selectEmote = {
   data: { name: "postProcess" },
@@ -44,6 +45,8 @@ const selectEmote = {
       }
 
       if (action === "manual") {
+        const { id, username } = interaction.user;
+        manualLogger(`user (${id}) ${username} used manual adjustment!`);
         try {
           const { id } = taskDetails;
           await feedback.manualAdjustment(id);
