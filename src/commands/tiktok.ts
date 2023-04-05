@@ -20,6 +20,9 @@ const importEmote = {
       option.setName("url").setDescription("tiktok url").setRequired(true)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
+    interaction.reply({ content: "Command disabled", ephemeral: true });
+    return;
+
     try {
       await interaction.reply("<a:PepegaLoad:1085673146939621428>");
       const urlVideo = interaction.options.getString("url");
@@ -27,6 +30,7 @@ const importEmote = {
       if (!urlVideo) return;
 
       const data = await tiktok.getInfo(urlVideo);
+      console.log(data);
       // data.video.url.no_wm
 
       const source = await fetch(data.video.url.no_wm);
