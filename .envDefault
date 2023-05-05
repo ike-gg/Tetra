@@ -1,4 +1,11 @@
 discordBotToken=
 discordBotId=
+
+oauthClientId=
+oauthClientSecret=
+
 inviteLink=
-env=production | development
+twitchClientId=
+twitchSecretKey=
+env=
+secretPhrase=

@@ -133,3 +133,5 @@ dist
 **/.DS_Store
 
 config.json
+
+test.ts

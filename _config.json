@@ -1,12 +1,6 @@
 {
   "comment": {
-    "important": "dont forget to remove _ from the name of THIS file",
-    "discordBotToken": "token to your discord bot, string",
-    "discordBotId": "id of your discord profile, string",
-    "devGuilds": "guilds id where you'd like to push the slash commands, string[]"
+    "devGuilds": "guild ids where you'd like to push the slash commands, string[]"
   },
-  "discordBotToken": "put your token here",
-  "discordBotId": "123",
-  "devGuilds": ["123", "345"],
-  "inviteLink": "https://"
+  "devGuilds": ["123", "345"]
 }
