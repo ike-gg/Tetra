@@ -26,15 +26,32 @@ export interface ExecutableSelectMenu extends SelectMenuInteraction {
   execute(interaction: SelectMenuInteraction, client?: DiscordBot): void;
 }
 
-export interface ExtractedEmote {
+export type SupportedEmotesOrigin =
+  | "discord"
+  | "7tv"
+  | "twitch"
+  | "bttv"
+  | "ffz"
+  | "tenor"
+  | "giphy"
+  | "imgur"
+  | "source";
+
+export interface Emote {
+  id: string;
   name: string;
+  animated: boolean;
+  origin: SupportedEmotesOrigin;
+  author: string;
+  file: {
+    url: string;
+    preview: string;
+  };
+}
+
+export interface ExtractedEmote extends Emote {
   data: Buffer;
   finalData: Buffer;
-  animated: boolean;
-  preview: string;
-  author?: string;
-  id?: string;
-  origin: "7tv" | "discord" | "twitch";
 }
 
 export interface FoundEmotesDiscord {

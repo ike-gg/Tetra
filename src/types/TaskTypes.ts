@@ -6,7 +6,7 @@ import {
   MessageComponentInteraction,
   SelectMenuInteraction,
 } from "discord.js";
-import { ExtractedEmote, FoundEmotesDiscord } from ".";
+import { Emote, ExtractedEmote } from ".";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 export interface Base {
@@ -19,6 +19,7 @@ export interface Base {
     | SelectMenuInteraction;
   feedback?: FeedbackManager;
   message?: MessageComponentInteraction;
+  webAccess?: boolean;
 }
 
 export interface EmoteNavigator extends Base {
@@ -31,23 +32,18 @@ export interface EmoteNavigator extends Base {
 
 export interface EmotePicker extends Base {
   action: "selectEmote";
-  origin: "7tv" | "discord" | "twitch";
-  emoteReference: string;
-  name?: string;
-  animated?: boolean;
-  preview?: string;
-  url?: string;
+  emote: Emote;
 }
 
 export interface StealEmote extends Base {
   action: "stealEmote";
-  emote: FoundEmotesDiscord;
+  emote: Emote;
   feedback: FeedbackManager;
 }
 
 export interface StealReaction extends Base {
   action: "stealReaction";
-  emote: FoundEmotesDiscord[];
+  emote: Emote[];
   feedback: FeedbackManager;
 }
 
@@ -58,4 +54,10 @@ export interface PostProcessEmote extends Base {
   guild: Guild;
 }
 
-export type Storable = EmoteNavigator | EmotePicker | StealEmote | Base;
+export type Storable =
+  | EmoteNavigator
+  | EmotePicker
+  | StealEmote
+  | StealReaction
+  | PostProcessEmote
+  | Base;
