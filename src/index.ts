@@ -11,7 +11,7 @@ import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import apiRouter from "./api/apiRouter";
-import { rateLimit } from "express-rate-limit";
+import cookieParser from "cookie-parser";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
@@ -20,21 +20,24 @@ const PORT = process.env.PORT || 3000;
 
 const app = express();
 
-const limiter = rateLimit({
-  windowMs: 3000,
-  max: 1,
-});
+// const limiter = rateLimit({
+//   windowMs: 3000,
+//   max: 1,
+// });
 
+app.use(cookieParser());
 app.use(
   cors({
+    credentials: true,
     origin: [
       "https://tetra.lol",
       "http://localhost:3001",
+      "http://localhost:3000",
       "https://www.tetra.lol",
     ],
   })
 );
-app.use(limiter);
+// app.use(limiter);
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use("/", apiRouter);
 app.listen(PORT);
