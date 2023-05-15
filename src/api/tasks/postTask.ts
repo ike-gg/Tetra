@@ -5,25 +5,26 @@ import { TextChannel } from "discord.js";
 
 export default async (req: Request, res: Response) => {
   const { guildId, emote, name, taskId } = req.body;
+  const userId = res.locals.userId;
 
   console.log(req.body);
 
   if (!guildId || !emote || !name || !taskId) {
-    res.sendStatus(400);
+    res.status(400).json({ error: "Request missing required data." });
     return;
   }
 
   const tasks = TaskManager.getInstance();
 
-  const isVerified = tasks.verify(taskId, guildId);
+  const isVerified = tasks.verify(taskId, guildId, userId);
 
   if (!isVerified) {
-    res.sendStatus(401);
+    res.status(401).json({ error: "Task cant be verified." });
     return;
   }
 
   const emoteBuffer = Buffer.from(emote);
-  console.log(emoteBuffer.byteLength);
+
   try {
     const emote = await client.guilds.cache
       .get(guildId)
@@ -55,6 +56,6 @@ export default async (req: Request, res: Response) => {
     });
   } catch (e) {
     res.status(500);
-    res.json({ message: String(e) });
+    res.json({ error: String(e) });
   }
 };

@@ -5,25 +5,30 @@ import TaskManager from "../../utils/managers/TaskManager";
 
 export default async (req: Request, res: Response) => {
   if (!req.params.id) {
-    res.status(400).json({ error: "missing id" });
+    res.status(400).json({ error: "Missing id." });
     return;
   }
 
   const taskId = String(req.params.id);
+  const userId = res.locals.userId;
 
-  const tasks = TaskManager.getInstance();
+  const userTasks = TaskManager.getInstance().getUserTasks(userId);
 
-  const taskDetails = tasks.getTask(taskId) as PostProcessEmote;
+  const taskDetails = userTasks.find((task) => task.id === taskId) as
+    | PostProcessEmote
+    | undefined;
 
   if (!taskDetails) {
-    res.status(404).json({ error: "task not found" });
+    res
+      .status(404)
+      .json({ error: "Task not found, or user might not be authorised." });
     return;
   }
 
   if (taskDetails.action !== "postProcess") {
     res
-      .status(401)
-      .json({ error: "this type of task is not supported via browser" });
+      .status(400)
+      .json({ error: "This type of task is not supported via browser" });
     return;
   }
 
