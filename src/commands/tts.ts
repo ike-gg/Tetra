@@ -1,14 +1,11 @@
 import {
-  APIApplicationCommandOptionChoice,
-  Attachment,
   AttachmentBuilder,
   ChatInputCommandInteraction,
   SlashCommandBuilder,
 } from "discord.js";
 
-import fetch from "node-fetch";
 import { DiscordBot } from "../types";
-import { getAllAudioBase64, getAudioBase64 } from "google-tts-api";
+import { getAllAudioBase64 } from "google-tts-api";
 
 const importEmote = {
   data: new SlashCommandBuilder()

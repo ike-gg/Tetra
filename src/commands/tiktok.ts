@@ -25,7 +25,6 @@ const importEmote = {
       if (!urlVideo) return;
 
       const data = await getTikTokVideo(urlVideo);
-      console.log(data);
 
       if (!data.video.url.no_wm) {
         await interaction.editReply("Source URL not found.");

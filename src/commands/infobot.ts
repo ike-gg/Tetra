@@ -36,9 +36,9 @@ const infobot = {
     const componentsRow = new ActionRowBuilder<ButtonBuilder>();
     componentsRow.addComponents(
       URLButton("Invite link", inviteLink),
-      URLButton("Discord Author", discordAuthor),
+      URLButton("Discord Owner", discordAuthor),
       URLButton("GitHub Repo", githubRepo),
-      URLButton("GitHub Author", githubAuthor)
+      URLButton("GitHub Owner", githubAuthor)
     );
 
     const messagePayload = new EmbedBuilder();
@@ -65,7 +65,7 @@ const infobot = {
       inline: true,
     });
     messagePayload.addFields({
-      name: "Discord author",
+      name: "Discord Owner",
       value: dcAuthorLink,
       inline: true,
     });
@@ -75,7 +75,7 @@ const infobot = {
       inline: true,
     });
     messagePayload.addFields({
-      name: "GitHub author",
+      name: "GitHub Owner",
       value: ghAuthorLink,
       inline: true,
     });

@@ -15,7 +15,6 @@ const support = {
     .setDescription("Get support from bot support server"),
   async execute(interaction: CommandInteraction, client: DiscordBot) {
     const supportDiscordLink = "https://discord.gg/dNqBstzs4p";
-    const link = hyperlink("Click here!", supportDiscordLink);
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       URLButton("Invite to support server", supportDiscordLink)
@@ -23,7 +22,6 @@ const support = {
 
     const messagePayload = new EmbedBuilder();
     messagePayload.setTitle("Get support from bot support server!");
-    messagePayload.setDescription(link);
     messagePayload.setAuthor({
       name: client.user!.username,
       iconURL: client.user!.avatarURL()!,
