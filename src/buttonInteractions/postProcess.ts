@@ -1,16 +1,20 @@
 import { ButtonInteraction } from "discord.js";
 
 import { DiscordBot } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
 import rename from "../postProcess/rename";
 import transform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
 import interactionLogger, { manualLogger } from "../utils/interactionLoggers";
+import emoteOptimise from "../emotes/emoteOptimise";
+import editEmoteByUser from "../emotes/editEmoteByUser";
+import TaskManager from "../utils/managers/TaskManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const selectEmote = {
   data: { name: "postProcess" },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
+    const genericFeedbackManager = new FeedbackManager(interaction);
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action] = interactionArguments;
 
@@ -26,7 +30,7 @@ const selectEmote = {
       }
 
       if (action === "rename") {
-        await rename(interaction, client, taskId);
+        await rename(interaction, taskId);
         return;
       }
 
@@ -37,19 +41,36 @@ const selectEmote = {
 
       if (action === "submit") {
         try {
-          const { emote, guild, feedback } = taskDetails;
-          await addEmoteToGuild(emote, guild, feedback);
+          await addEmoteToGuild(taskId);
         } catch (error) {
           await feedback.error(String(error));
         }
       }
 
+      if (action === "auto") {
+        await genericFeedbackManager.removeButtons();
+        const { emote } = taskDetails;
+        const optimisedEmote = await emoteOptimise(emote.finalData, {
+          animated: emote.animated,
+          feedback: feedback,
+        });
+        client.tasks.updateTask<TaskTypes.PostProcessEmote>(taskId, {
+          ...taskDetails,
+          emote: {
+            ...taskDetails.emote,
+            finalData: optimisedEmote,
+          },
+        });
+        await editEmoteByUser(taskId);
+      }
+
       if (action === "manual") {
-        const { id, username } = interaction.user;
-        manualLogger(`user (${id}) ${username} used manual adjustment!`);
+        const { id: userId, username } = interaction.user;
+        manualLogger(`user (${userId}) ${username} used manual adjustment!`);
+
+        TaskManager.getInstance().webAccess(taskId);
         try {
-          const { id } = taskDetails;
-          await feedback.manualAdjustment(id);
+          await feedback.manualAdjustment();
         } catch (error) {
           await feedback.error(String(error));
         }
