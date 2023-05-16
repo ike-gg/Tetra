@@ -10,28 +10,29 @@ const importEmote = {
   data: new SlashCommandBuilder()
     .setName("addemote")
     .setDescription(
-      "Add emote using command, by provided value like name or reference (link to 7TV website to emote)."
+      "Add emote using various resources. (Supports 7TV, BTTV, FFZ, Twitch and source URLs)"
     )
     //subcommand byname
     .addSubcommand((subcommand) =>
       subcommand
         .setName("byname")
         .setDescription(
-          "Use name, it will show you emotes that matches with provided name."
+          "Search using emote name, select source of emotes, default 7TV."
         )
         .addStringOption((option) =>
           option
             .setName("name")
-            .setDescription(
-              "Name of emote that you looking for, keep in mind that name is case sensitive!"
-            )
+            .setDescription("Name of emote, keep in mind about case sensitive!")
             .setRequired(true)
         )
-        .addBooleanOption((option) =>
+        .addStringOption((option) =>
           option
-            .setName("ignoretags")
-            .setDescription(
-              "While searching bot will not look at tags, so results will be more adequate to name"
+            .setName("source")
+            .setDescription("Source of emotes, default 7TV")
+            .addChoices(
+              { name: "7TV", value: "7tv" },
+              { name: "BTTV", value: "bttv" },
+              { name: "FFZ", value: "ffz" }
             )
             .setRequired(false)
         )
@@ -41,21 +42,22 @@ const importEmote = {
       subcommand
         .setName("bylink")
         .setDescription(
-          "Use link, provide reference to emote like link to emote on 7TV website or its identificator"
+          "Add emote using URL. Supports 7TV, BTTV, FFZ and direct links to the image."
         )
         .addStringOption((option) =>
           option
             .setName("link")
             .setDescription(
-              "Reference to emote: link to emote on 7tv website or its identificator."
+              "Provide URL to the emote. Supports 7TV, BTTV, FFZ and direct links to the images."
             )
             .setRequired(true)
         )
     )
+    //subcommand bychannel
     .addSubcommand((subcommand) =>
       subcommand
         .setName("bychannel")
-        .setDescription("Use Twitch Channel to fetch 7TV emotes from it.")
+        .setDescription("Fetch 7TV emote set from Twitch channel.")
         .addStringOption((option) =>
           option
             .setName("channelname")
@@ -65,9 +67,7 @@ const importEmote = {
         .addStringOption((option) =>
           option
             .setName("search")
-            .setDescription(
-              "Get emotes whose names contain the text from the search value"
-            )
+            .setDescription("Filter emote names with this value")
             .setRequired(false)
         )
     ),

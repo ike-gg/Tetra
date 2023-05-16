@@ -8,13 +8,12 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import findEmotesFromMessage from "../utils/findEmotesInMessage";
 import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 
-import { DiscordBot } from "../types";
+import { DiscordBot, Emote } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
 import findCommonGuilds from "../utils/findCommonGuilds";
 import getSelectMenuServers from "../utils/elements/getSelectMenuServers";
 import emotesFromReactions from "../utils/emotesFromReactions";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
-import { EmoteGQL } from "../emotes/source/7tv/apiResponseType";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 
@@ -30,31 +29,15 @@ const ctxStealReaction = {
     await feedback.gotRequest();
 
     const { reactions } = interaction.targetMessage;
-    const emotes = emotesFromReactions(reactions);
+    const { username } = interaction.targetMessage.author;
+    const emotes = emotesFromReactions(reactions, username);
 
     if (emotes.length === 0) {
-      await feedback.notFoundEmotes();
+      await feedback.notFoundReactions();
       return;
     }
 
-    const emotesFormat: EmoteGQL[] = emotes.map((emote) => {
-      const { animated, id, link, name } = emote;
-      return {
-        animated,
-        host: {
-          preview: link,
-          url: link,
-        },
-        id,
-        name,
-        origin: "discord",
-      };
-    });
-
-    const storeId = EmoteListManager.storeEmotes(
-      "steal reaction",
-      emotesFormat
-    )!;
+    const storeId = EmoteListManager.storeEmotes("steal reaction", emotes)!;
 
     const pagesOfEmotes = EmoteListManager.getEmotesInPages(storeId, 1)!;
     const storeInfo = EmoteListManager.getStoredInfo(storeId)!;

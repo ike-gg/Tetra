@@ -11,6 +11,7 @@ import emoteDiscord from "../emotes/emoteDiscord";
 
 import { DiscordBot, ExtractedEmote } from "../types";
 import editEmoteByUser from "../emotes/editEmoteByUser";
+import prepareEmote from "../emotes/prepareEmote";
 
 const ctxStealEmoteHere = {
   data: new ContextMenuCommandBuilder()
@@ -30,7 +31,8 @@ const ctxStealEmoteHere = {
     }
 
     const messageContent = interaction.targetMessage.content;
-    const emotes = findEmotesFromMessage(messageContent);
+    const { username } = interaction.targetMessage.author;
+    const emotes = findEmotesFromMessage(messageContent, username);
 
     if (emotes.length === 0) {
       await feedback.notFoundEmotes();
@@ -49,18 +51,7 @@ const ctxStealEmoteHere = {
       return;
     }
 
-    try {
-      const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
-      const { guild } = interaction;
-
-      await editEmoteByUser(extractedEmote, guild!, {
-        client,
-        feedback,
-        interaction,
-      });
-    } catch (error: any) {
-      await feedback.error(error);
-    }
+    prepareEmote(emote, { feedback, interaction });
   },
 };
 

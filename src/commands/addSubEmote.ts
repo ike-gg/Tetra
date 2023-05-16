@@ -7,12 +7,12 @@ import addSubEmoteChannel from "../subcommands/addSubEmoteChannel";
 const importEmote = {
   data: new SlashCommandBuilder()
     .setName("addsubemote")
-    .setDescription("Add sub emote")
+    .setDescription("Add twitch sub emote")
     //subcommand byname
     .addSubcommand((subcommand) =>
       subcommand
         .setName("bychannel")
-        .setDescription("Use Twitch Channel to fetch emotes from it.")
+        .setDescription("Use Twitch Channel to fetch subemotes from it.")
         .addStringOption((option) =>
           option
             .setName("channelname")

@@ -6,7 +6,6 @@ import {
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import findEmotesFromMessage from "../utils/findEmotesInMessage";
-import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 
 import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
@@ -22,10 +21,13 @@ const ctxStealEmote = {
     client: DiscordBot
   ) {
     const feedback = new FeedbackManager(interaction, { ephemeral: true });
-    await feedback.gotRequest();
+    await feedback.warning(
+      "Indexing common guilds... it could take a while..."
+    );
 
     const messageContent = interaction.targetMessage.content;
-    const emotes = findEmotesFromMessage(messageContent);
+    const { username } = interaction.targetMessage.author;
+    const emotes = findEmotesFromMessage(messageContent, username);
 
     if (emotes.length === 0) {
       await feedback.notFoundEmotes();
@@ -52,7 +54,7 @@ const ctxStealEmote = {
     const taskId = client.tasks.addTask<TaskTypes.StealEmote>({
       action: "stealEmote",
       feedback,
-      emote: emote,
+      emote,
     });
 
     const selectMenuServer = await getSelectMenuServers(taskId, guildsWithUser);
