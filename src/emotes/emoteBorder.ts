@@ -9,6 +9,8 @@ const emoteBorder = async (emote: Buffer, isAnimated: boolean) => {
     .resize({
       width: 64,
       height: 64,
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
     })
     .extend({
       top: 5,

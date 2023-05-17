@@ -1,13 +1,12 @@
 import isValidURL from "../utils/isValidURL";
 
-import { EmoteResponseAPI } from "./source/7tv/apiResponseType";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
-import getEmoteInfo from "./source/7tv/getEmoteInfo";
-import getRawEmote from "./source/7tv/getRawEmote";
+import getRawEmote from "./source/getBufferFromUrl";
 import emoteOptimise from "./emoteOptimise";
 
 import { ExtractedEmote } from "../types";
+import stvGetEmoteById from "./source/7tv/stvGetEmoteById";
 const emote7tv = async (
   emoteReference: string,
   feedback?: FeedbackManager
@@ -21,39 +20,30 @@ const emote7tv = async (
     internalId = pathnamesArray.find((path) => path.length === 24)!;
   }
 
-  if (!internalId) {
-    throw new Error("Invalid emote reference or URL");
-  }
-
-  if (internalId === undefined || internalId.length !== 24) {
+  if (!internalId || internalId.length !== 24) {
     throw new Error("Invalid emote reference or URL");
   }
 
   try {
-    const emoteInfo = (await getEmoteInfo(internalId)) as EmoteResponseAPI;
+    const emoteInfo = await stvGetEmoteById(internalId);
 
-    if (emoteInfo.error) throw new Error(`Emote not found. ${emoteInfo.error}`);
-
-    let emotePreview = `https:${emoteInfo.host.url}/2x`;
-    emoteInfo.animated ? (emotePreview += ".gif") : (emotePreview += ".webp");
-
-    const rawEmote = await getRawEmote(emoteInfo.host.url, emoteInfo.animated);
-    const rawEmoteBuffer = Buffer.from(rawEmote!);
+    const rawEmote = await getRawEmote(emoteInfo.file.url);
+    const rawEmoteBuffer = Buffer.from(rawEmote);
 
     const emoteBuffer = await emoteOptimise(rawEmoteBuffer, {
       animated: emoteInfo.animated,
       feedback: feedback,
     });
 
-    let authorNickname = emoteInfo.owner?.display_name;
-    if (!authorNickname) authorNickname = "DeletedUser";
-
     return {
-      author: authorNickname,
+      author: emoteInfo.author,
       name: emoteInfo.name,
       data: rawEmoteBuffer,
       finalData: emoteBuffer,
-      preview: emotePreview,
+      file: {
+        preview: emoteInfo.file.preview,
+        url: emoteInfo.file.url,
+      },
       animated: emoteInfo.animated,
       origin: "7tv",
       id: emoteReference,

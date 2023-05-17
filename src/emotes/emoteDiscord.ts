@@ -19,7 +19,11 @@ const emoteDiscord = async (
       name: emote.name,
       data: rawEmoteBuffer,
       finalData: emoteBuffer,
-      preview: emote.link,
+      author: "Discord",
+      file: {
+        url: emote.link,
+        preview: emote.link,
+      },
       id: emote.id,
       animated: emote.animated,
       origin: "discord",

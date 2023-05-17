@@ -140,6 +140,9 @@ const emoteOptimise = async (
     }
     return processedBuffer;
   } catch (error) {
+    if (options.feedback) {
+      await options.feedback.error(String(error));
+    }
     throw new Error(String(error));
   }
 };
