@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import { endpoints, authHeaders } from "./base";
 import type { ErrorResponse } from "./base";
-import { EmoteGQL } from "../7tv/apiResponseType";
+import { Emote } from "../../../types";
 
 interface EmoteResponse {
   data: {
@@ -18,7 +18,7 @@ interface EmoteResponse {
 
 const getEmotes = async (
   channelId: string
-): Promise<ErrorResponse | EmoteGQL[]> => {
+): Promise<ErrorResponse | Emote[]> => {
   const request = await fetch(endpoints.fetchEmotes(channelId), {
     headers: authHeaders,
   });
@@ -27,7 +27,7 @@ const getEmotes = async (
   if ("error" in response) return response;
   if (response.data.length === 0) return [];
 
-  const emotes = response.data.map((emote): EmoteGQL => {
+  const emotes: Emote[] = response.data.map((emote): Emote => {
     const isAnimated = emote.format.includes("animated");
     let hostUrl = emote.images.url_4x;
 
@@ -38,11 +38,12 @@ const getEmotes = async (
     }
 
     return {
+      author: ".",
       id: emote.id,
       name: emote.name,
       animated: isAnimated,
       origin: "twitch",
-      host: {
+      file: {
         url: hostUrl,
         preview: emote.images.url_2x,
       },
