@@ -7,22 +7,26 @@ import {
   InteractionCollector,
   TextInputStyle,
 } from "discord.js";
-import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
 import editEmoteByUser from "../emotes/editEmoteByUser";
+import TaskManager from "../utils/managers/TaskManager";
+import { client } from "..";
 
-const rename = async (
-  interaction: ButtonInteraction,
-  client: DiscordBot,
-  taskId: string
-) => {
+const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
   const identificator = randomBytes(8).toString("hex");
 
-  const taskDetails = client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+  const taskDetails =
+    TaskManager.getInstance().getTask<TaskTypes.PostProcessEmote>(taskId);
 
-  const { emote, feedback, guild } = taskDetails;
+  const { emote, feedback } = taskDetails;
+  const { interaction } = feedback;
 
-  const originalIntearction = interaction;
+  if (!interaction) {
+    await feedback.error(
+      "Something went wrong. Please try again. `INTERACTION_OBJECT_MISSING`"
+    );
+    return;
+  }
 
   const modal = new ModalBuilder()
     .setCustomId(identificator)
@@ -41,32 +45,39 @@ const rename = async (
     new ActionRowBuilder<TextInputBuilder>().addComponents(newNameField)
   );
 
-  await interaction.showModal(modal);
+  await buttonInteraction.showModal(modal);
 
   const collector = new InteractionCollector(client as Client, {
     time: 1000 * 60 * 10,
     filter: (i) => i.user.id === interaction.user.id,
   });
 
-  collector.on("collect", async (interaction) => {
-    if (!interaction.isModalSubmit()) return;
-    if (!(interaction.customId === identificator)) return;
+  collector.on("collect", async (collectedInteraction) => {
+    if (!collectedInteraction.isModalSubmit()) return;
+    if (!(collectedInteraction.customId === identificator)) return;
     try {
-      await interaction.deferUpdate();
+      await collectedInteraction.deferUpdate();
       feedback.isReplied = true;
 
       await feedback.removeButtons();
       await feedback.gotRequest();
 
-      const newName = await interaction.fields.getTextInputValue("newname");
+      const newName = await collectedInteraction.fields.getTextInputValue(
+        "newname"
+      );
 
-      emote.name = newName;
+      await TaskManager.getInstance().updateTask<TaskTypes.PostProcessEmote>(
+        taskId,
+        {
+          ...taskDetails,
+          emote: {
+            ...taskDetails.emote,
+            name: newName,
+          },
+        }
+      );
 
-      await editEmoteByUser(emote, guild, {
-        client,
-        feedback,
-        interaction: originalIntearction,
-      });
+      await editEmoteByUser(taskId);
     } catch (error) {
       await feedback.error(String(error));
     }

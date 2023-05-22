@@ -23,22 +23,21 @@ const transform = async (
 
     const { emote } = taskDetails;
 
-    if (emote.origin === "discord") {
-      await feedback.discordEmotesPP();
-      return;
-    }
-
-    emote.finalData = await emoteOptimise(emote.data, {
+    const editedEmote = await emoteOptimise(emote.data, {
       animated: emote.animated,
       feedback,
       transform,
     });
 
-    await editEmoteByUser(emote, interaction.guild!, {
-      client,
-      feedback,
-      interaction,
+    client.tasks.updateTask<TaskTypes.PostProcessEmote>(taskId, {
+      ...taskDetails,
+      emote: {
+        ...taskDetails.emote,
+        finalData: editedEmote,
+      },
     });
+
+    editEmoteByUser(taskId);
   } catch (error) {
     throw new Error(String(error));
   }
