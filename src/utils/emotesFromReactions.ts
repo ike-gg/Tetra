@@ -1,12 +1,14 @@
-import { GuildEmoji, ReactionEmoji, ReactionManager } from "discord.js";
-import { FoundEmotesDiscord } from "../types";
+import { ReactionManager } from "discord.js";
+import { Emote, FoundEmotesDiscord } from "../types";
 
 const emotesFromReactions = (
-  reactions: ReactionManager
-): FoundEmotesDiscord[] => {
+  reactions: ReactionManager,
+  username: string
+): Emote[] => {
   const reactionEmotes = reactions.cache.map((reaction) => reaction.emoji);
   const filteredEmotes = reactionEmotes.filter((emote) => emote.id);
-  const emotes = filteredEmotes.map((emote) => {
+
+  const emotes = filteredEmotes.map((emote): Emote => {
     const { animated, id, name } = emote as {
       id: string;
       name: string;
@@ -19,7 +21,12 @@ const emotesFromReactions = (
     return {
       name,
       animated,
-      link,
+      author: username,
+      file: {
+        preview: link,
+        url: link,
+      },
+      origin: "discord",
       id,
     };
   });
