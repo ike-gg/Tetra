@@ -1,9 +1,8 @@
-import { ChatInputCommandInteraction, SelectMenuInteraction } from "discord.js";
-import { DiscordBot, ExtractedEmote } from "../types";
+import { SelectMenuInteraction } from "discord.js";
+import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import * as TaskTypes from "../types/TaskTypes";
-import emoteDiscord from "../emotes/emoteDiscord";
-import editEmoteByUser from "../emotes/editEmoteByUser";
+import prepareEmote from "../emotes/prepareEmote";
 
 const stealEmote = {
   data: { name: "stealEmote" },
@@ -25,17 +24,7 @@ const stealEmote = {
     const taskDetails = client.tasks.getTask<TaskTypes.StealEmote>(taskId);
     const { emote } = taskDetails;
 
-    try {
-      const extractedEmote = (await emoteDiscord(emote)) as ExtractedEmote;
-      await editEmoteByUser(extractedEmote, guild, {
-        client,
-        feedback,
-        interaction,
-      });
-    } catch (error) {
-      feedback.error(String(error));
-      return;
-    }
+    prepareEmote(emote, { feedback, interaction });
   },
 };
 

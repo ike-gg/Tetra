@@ -6,7 +6,7 @@ import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
 import checkChannel from "../emotes/source/twitch/checkChannel";
-import getEmotesFromChannel from "../emotes/source/7tv/getEmotesFromChannel";
+import getEmotesFromChannel from "../emotes/source/7tv/stvGetEmotesFromChannel";
 
 const addEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
@@ -34,7 +34,7 @@ const addEmoteChannel = async (
 
     if (queryString)
       foundEmotes = foundEmotes.filter((emote) =>
-        emote.name.includes(queryString)
+        emote.name.toLowerCase().includes(queryString.toLowerCase())
       );
 
     if (foundEmotes.length === 0) {

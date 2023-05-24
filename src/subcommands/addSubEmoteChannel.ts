@@ -1,6 +1,5 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import searchEmote from "../emotes/source/7tv/searchEmote";
 import { DiscordBot } from "../types";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
@@ -14,7 +13,11 @@ const addSubEmoteChannel = async (
   client: DiscordBot,
   feedback: FeedbackManager
 ) => {
-  const channelName = interaction.options.get("channelname")?.value as string;
+  const channelName = interaction.options.getString("channelname");
+
+  if (!channelName) {
+    return;
+  }
 
   try {
     const channelInfo = await checkChannel(channelName);

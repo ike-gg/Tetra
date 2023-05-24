@@ -1,31 +1,44 @@
 import { ChatInputCommandInteraction } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import searchEmote from "../emotes/source/7tv/searchEmote";
-import { DiscordBot } from "../types";
+import searchEmote from "../emotes/source/7tv/stvGetEmotesByQuery";
+import { DiscordBot, Emote } from "../types";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
+import stvGetEmotesByQuery from "../emotes/source/7tv/stvGetEmotesByQuery";
+import bttvGetEmotesByQuery from "../emotes/source/bttv/bttvGetEmotesByQuery";
+import ffzGetEmotesByQuery from "../emotes/source/ffz/ffzGetEmotesByQuery";
 
 const addEmoteName = async (
   interaction: ChatInputCommandInteraction,
   client: DiscordBot,
   feedback: FeedbackManager
 ) => {
-  const emoteReference = interaction.options.get("name")?.value as string;
-  let ignoreTags = interaction.options.get("ignoretags")?.value as boolean;
+  const emoteQuery = interaction.options.getString("name");
+  const source = interaction.options.getString("source");
 
-  if (!ignoreTags) ignoreTags = false;
+  if (!emoteQuery) {
+    return;
+  }
 
   try {
-    const foundEmotes = await searchEmote(emoteReference, ignoreTags);
+    let foundEmotes: Emote[];
+
+    if (source === "bttv") {
+      foundEmotes = await bttvGetEmotesByQuery(emoteQuery);
+    } else if (source === "ffz") {
+      foundEmotes = await ffzGetEmotesByQuery(emoteQuery);
+    } else {
+      foundEmotes = await stvGetEmotesByQuery(emoteQuery);
+    }
 
     if (foundEmotes.length === 0) {
-      await feedback.notFoundEmotesQuery(emoteReference);
+      await feedback.notFoundEmotesQuery(emoteQuery);
       return;
     }
 
-    const storeId = EmoteListManager.storeEmotes(emoteReference, foundEmotes)!;
+    const storeId = EmoteListManager.storeEmotes(emoteQuery, foundEmotes)!;
     const pagesOfEmotes = EmoteListManager.getEmotesInPages(storeId, 1)!;
     const storeInfo = EmoteListManager.getStoredInfo(storeId)!;
 
