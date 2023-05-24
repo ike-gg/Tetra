@@ -6,9 +6,10 @@ const getManualAdjustmentRow = (taskId: string) => {
   row.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:manual`)
-      .setEmoji({ name: "🖋️" })
-      .setLabel("ALPHA: Manual adjustment (better results)")
+      .setEmoji({ name: "🦖" })
+      .setLabel("Manual adjustment (release soon)")
       .setStyle(ButtonStyle.Primary)
+      .setDisabled(true)
   );
   return row;
 };

@@ -22,13 +22,6 @@ const getSubmitEmoteRow = (
       .setStyle(ButtonStyle.Danger)
       .setCustomId(`cancelAction`)
   );
-  // row.addComponents(
-  //   new ButtonBuilder()
-  //     .setCustomId(`${taskId}:debug`)
-  //     .setEmoji({ name: "💩" })
-  //     .setLabel(`zesraj sie`)
-  //     .setStyle(ButtonStyle.Danger)
-  // );
   return row;
 };
 
