@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
-import { EmoteGQL } from "../../emotes/source/7tv/apiResponseType";
 import { chunk } from "lodash";
+import { Emote } from "../../types";
 
 class EmoteListManager {
   private static instance: EmoteListManager;
@@ -9,7 +9,7 @@ class EmoteListManager {
     pages: number;
     query: string;
     amount: number;
-    emotes: EmoteGQL[][];
+    emotes: Emote[][];
   }[] = [];
 
   private constructor() {}
@@ -22,7 +22,7 @@ class EmoteListManager {
     return this.instance;
   }
 
-  static storeEmotes(query: string, emotes: EmoteGQL[]) {
+  static storeEmotes(query: string, emotes: Emote[]) {
     const emotesPerPage = 5;
     const identificator = randomBytes(8).toString("hex");
     const pages = Math.ceil(emotes.length / emotesPerPage);

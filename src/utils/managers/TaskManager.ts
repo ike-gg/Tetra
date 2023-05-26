@@ -18,12 +18,13 @@ class TaskManager {
 
   addTask<T extends TaskTypes.Base>(taskBase: Optional<T, "id">) {
     const identificator = randomBytes(8).toString("hex");
-    console.log(identificator);
 
     const newTask = taskBase as TaskTypes.Storable;
     newTask.id = identificator;
 
     this.tasks.push(newTask);
+
+    console.log(newTask.action, identificator);
 
     const timeoutTime = 1000 * 60 * 10; //10 minutes
     setTimeout(() => {
@@ -33,10 +34,28 @@ class TaskManager {
     return identificator;
   }
 
-  verify(taskId: string, guildId: string) {
+  getUserTasks(userId: string) {
+    const userTasks = this.tasks.filter(
+      (task) => task.interaction?.user.id === userId
+    );
+    const available = userTasks.filter((task) => task.webAccess === true);
+    return available;
+  }
+
+  webAccess(id: string) {
+    const taskIndex = this.tasks.findIndex((task) => task.id === id);
+    if (taskIndex === -1) return false;
+    this.tasks[taskIndex].webAccess = true;
+    return true;
+  }
+
+  verify(taskId: string, guildId: string, userId: string) {
     const desiredTask = this.tasks.find((task) => task.id === taskId);
     if (!desiredTask || !desiredTask.interaction) return false;
-    return desiredTask.interaction.guildId === guildId;
+    return (
+      desiredTask.interaction.guildId === guildId &&
+      desiredTask.interaction.user.id === userId
+    );
   }
 
   updateCurrentPage(id: string, newPage: number) {
@@ -52,6 +71,7 @@ class TaskManager {
 
   updateTask<T extends TaskTypes.Base>(id: string, newData: T) {
     const taskIndex = this.tasks.findIndex((task) => task.id === id);
+    if (taskIndex === -1) return false;
     this.tasks[taskIndex] = newData;
   }
 

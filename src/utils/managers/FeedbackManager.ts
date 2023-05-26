@@ -1,11 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-let env = process.env.env as "development" | "production";
-if (!env) {
-  env = "production";
-}
-
+let env = (process.env.env as "development" | "production") || "production";
 import errorEmbed from "../embedMessages/errorEmbed";
 import infoEmbed from "../embedMessages/infoEmbed";
 import successfulEmbed from "../embedMessages/successfulEmbed";
@@ -33,6 +29,8 @@ import interactionEmbed from "../embedMessages/interactionEmbed";
 import emoteBorder from "../../emotes/emoteBorder";
 import EmoteRequest from "../elements/emoteRequest";
 import URLButton from "../elements/URLButton";
+import { maxEmoteSize } from "../../constants";
+import prettyBytes from "pretty-bytes";
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
@@ -46,9 +44,7 @@ export class FeedbackManager {
       ephemeral?: boolean;
     }
   ) {
-    let ephemeral = true;
-
-    // if (options?.ephemeral) ephemeral = options.ephemeral;
+    let ephemeral = options?.ephemeral || false;
 
     this.interaction = interaction;
     this.client = interaction.client as DiscordBot;
@@ -56,17 +52,12 @@ export class FeedbackManager {
     this.isReplied = interaction.replied;
   }
 
-  async sendMessage(
-    options: {
-      embeds?: EmbedBuilder[];
-      components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[];
-      files?: AttachmentPayload[];
-      imageInEmbed?: string;
-    },
-    ephemeral: boolean = false
-  ) {
-    if (this.ephemeral) ephemeral = true;
-
+  async sendMessage(options: {
+    embeds?: EmbedBuilder[];
+    components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[];
+    files?: AttachmentPayload[];
+    imageInEmbed?: string;
+  }) {
     const { embeds, components, files } = options;
 
     if (embeds && embeds.length > 0) {
@@ -87,7 +78,7 @@ export class FeedbackManager {
       embeds: embeds,
       components: components,
       files,
-      ephemeral,
+      ephemeral: this.ephemeral,
     };
 
     this.isReplied = this.interaction.replied;
@@ -122,7 +113,7 @@ export class FeedbackManager {
         .setLabel(`Send developers log`)
         .setStyle(ButtonStyle.Danger)
     );
-    await this.sendMessage({ embeds: [embed], components: [row] }, ephemeral);
+    await this.sendMessage({ embeds: [embed], components: [row] });
   }
 
   async success(title: string, description: string, image?: string) {
@@ -159,8 +150,8 @@ export class FeedbackManager {
       files: [{ attachment: borderedBuffer, name: "preview.gif" }],
     });
     await this.userInteraction(
-      "Edit emote.",
-      "Now you can choose to rescale or rename your emote using buttons below.\nBorder on image will help you to imagine how the emote will looks like on chat.\n**Border will not be visible after emote is successfully uploaded!**",
+      "Edit emote",
+      "Now you can choose to rescale or rename your emote using buttons below.\nBorder on image will help you to imagine how the emote will looks like on chat.\n**Border wont be visible once the emote has been successfully uploaded!**",
       "attachment://preview.gif"
     );
   }
@@ -195,13 +186,17 @@ export class FeedbackManager {
     await this.error("I couldn't find emotes in this message.");
   }
 
+  async notFoundReactions() {
+    await this.error("I couldn't find reactions to this message.");
+  }
+
   async notFoundEmotesQuery(query: string) {
     await this.error(`I couldn't find any emotes with \`${query}\` query.`);
   }
 
   async moreThanOneEmote() {
     await this.error(
-      "Messages contains more than one emotes is not supported yet."
+      "Messages contains more than one emotes are not supported yet."
     );
   }
 
@@ -248,6 +243,10 @@ export class FeedbackManager {
     );
   }
 
+  async invalidReference() {
+    await this.error("Invalid URL.");
+  }
+
   async logsOfUses(emote: GuildEmoji) {
     try {
       const announceChannel = (await this.client.channels.fetch(
@@ -276,24 +275,35 @@ export class FeedbackManager {
     );
   }
 
-  async manualAdjustment(taskId: string) {
+  async exceededEmoteSize(size: number) {
+    const maxSize = prettyBytes(maxEmoteSize);
+    const emoteSize = prettyBytes(size);
+    const differenceSize = prettyBytes(size - maxEmoteSize);
+    await this.warning(`Emote exceeded maximum size.
+    **${emoteSize}** / ${maxSize} *(exceeds by ${differenceSize})*
+
+    Choose the file optimization option. If the file is large, manual correction may yield better results. However, for smaller files, automatic optimization should work well.`);
+  }
+
+  async manualAdjustment() {
     const row = new ActionRowBuilder<ButtonBuilder>();
     const URL =
       env === "development"
-        ? `http://localhost:3001/edit/${taskId}`
-        : `https://tetra.lol/edit/${taskId}`;
+        ? `http://localhost:3001/dashboard`
+        : `https://tetra.lol/dashboard`;
     await this.removeButtons();
-    await this.sendMessage(
-      {
-        embeds: [
-          successfulEmbed(
-            "Manual adjustment",
-            `You can now manually adjust the emote visiting link below.\n${URL}`
-          ),
-        ],
-        components: [row.addComponents(URLButton("Manual adjustment", URL))],
-      },
-      true
-    );
+    await this.sendMessage({
+      embeds: [
+        successfulEmbed(
+          "Manual adjustment",
+          `You can now manually adjust the emote visiting dashboard page and authorising yourself.\n${URL}`
+        ),
+      ],
+      components: [row.addComponents(URLButton("Manual adjustment", URL))],
+    });
+  }
+
+  async notFoundFile() {
+    await this.error("Not found any files in message.");
   }
 }
