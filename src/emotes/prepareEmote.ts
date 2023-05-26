@@ -28,8 +28,10 @@ const prepareEmote = async (
   const { feedback, interaction } = details;
   const emoteBuffer = await getBufferFromUrl(emote.file.url);
 
-  if (emoteBuffer.byteLength >= maxEmoteSize * 18) {
-    await feedback.error("Emote exceeded maximum size supported by Tetra.");
+  if (emoteBuffer.byteLength >= maxEmoteSize * 10) {
+    await feedback.error(
+      "Emote exceeded maximum size supported currently with custom files (2.5MB) by Tetra."
+    );
     return;
   }
 
