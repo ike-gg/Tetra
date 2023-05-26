@@ -1,4 +1,5 @@
 import { Emote } from "../../../types";
+import fetch from "node-fetch";
 
 const getSourceFile = async (sourceUrl: string): Promise<Emote> => {
   try {

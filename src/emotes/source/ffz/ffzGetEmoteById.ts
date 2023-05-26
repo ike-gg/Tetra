@@ -1,6 +1,7 @@
 import { Emote } from "../../../types";
 import { FFZResponseById } from "../../../types/ffz";
 import { ffzGetUrlById } from "./helpers/constants";
+import fetch from "node-fetch";
 
 const ffzGetEmoteById = async (emoteId: string): Promise<Emote> => {
   const response = await fetch(ffzGetUrlById(emoteId));

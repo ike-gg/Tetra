@@ -1,5 +1,6 @@
 import { imgurClientId } from "../../../constants";
 import { Emote } from "../../../types";
+import fetch from "node-fetch";
 
 interface ImgurImageProperty {
   link: string;

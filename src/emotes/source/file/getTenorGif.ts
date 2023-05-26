@@ -1,5 +1,6 @@
 import { tenorApiKey } from "../../../constants";
 import { Emote } from "../../../types";
+import fetch from "node-fetch";
 
 interface TenorResponseObject {
   results: {
