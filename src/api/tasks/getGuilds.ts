@@ -6,7 +6,6 @@ import { client } from "../..";
 
 export default async (req: Request, res: Response) => {
   const userDetails = parseToken(req.cookies.token);
-  console.log(userDetails);
   try {
     const response = await fetch("https://discord.com/api/users/@me/guilds", {
       headers: {
