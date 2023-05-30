@@ -2,6 +2,7 @@ import {
   ButtonInteraction,
   ChatInputCommandInteraction,
   CommandInteraction,
+  Guild,
   SelectMenuInteraction,
 } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
@@ -23,9 +24,10 @@ const prepareEmote = async (
       | CommandInteraction
       | ButtonInteraction
       | SelectMenuInteraction;
+    guild?: Guild;
   }
 ) => {
-  const { feedback, interaction } = details;
+  const { feedback, interaction, guild } = details;
   const emoteBuffer = await getBufferFromUrl(emote.file.url);
 
   if (emoteBuffer.byteLength >= maxEmoteSize * 10) {
@@ -44,7 +46,7 @@ const prepareEmote = async (
       name: parseDiscordRegexName(emote.name),
     },
     feedback,
-    guild: interaction.guild!,
+    guild: guild || interaction.guild!,
     interaction,
   });
 

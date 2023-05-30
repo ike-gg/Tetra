@@ -24,7 +24,7 @@ const stealEmote = {
     const taskDetails = client.tasks.getTask<TaskTypes.StealEmote>(taskId);
     const { emote } = taskDetails;
 
-    prepareEmote(emote, { feedback, interaction });
+    prepareEmote(emote, { feedback, interaction, guild });
   },
 };
 
