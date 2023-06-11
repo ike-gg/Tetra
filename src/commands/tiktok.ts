@@ -6,8 +6,6 @@ import {
 
 import fetch from "node-fetch";
 import { DiscordBot } from "../types";
-//@ts-ignore
-import * as tiktok from "tiktok-video-downloader";
 import getTikTokVideo from "../utils/getTikTokVideo";
 
 const importEmote = {
