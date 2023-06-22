@@ -25,8 +25,6 @@ const importEmote = {
 
       const data = await TwitterDL(urlVideo);
 
-      console.log(data);
-
       if (!data || !data.result || data.status === "error") {
         await interaction.editReply(`cant reach post ||${data.message}||`);
         return;
