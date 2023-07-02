@@ -17,22 +17,11 @@ const support = {
     const supportDiscordLink = "https://discord.gg/dNqBstzs4p";
 
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      URLButton("Invite to support server", supportDiscordLink)
+      URLButton("Join support server!", supportDiscordLink)
     );
 
-    const messagePayload = new EmbedBuilder();
-    messagePayload.setTitle("Get support from bot support server!");
-    messagePayload.setAuthor({
-      name: client.user!.username,
-      iconURL: client.user!.avatarURL()!,
-      url: supportDiscordLink,
-    });
-    messagePayload.setColor(0x000000);
-
     await interaction.reply({
-      embeds: [messagePayload],
       components: [actionRow],
-      ephemeral: true,
     });
   },
 };
