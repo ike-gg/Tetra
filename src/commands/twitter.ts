@@ -12,15 +12,77 @@ import isValidURL from "../utils/isValidURL";
 const importEmote = {
   data: new SlashCommandBuilder()
     .setName("twitter")
-    .setDescription("🦦")
+    .setDescription("May stop working 🦦")
     .addStringOption((option) =>
       option.setName("url").setDescription("twitter url").setRequired(true)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
-    await interaction.reply(
-      "Command temporarily disabled due to recent changes in Twitter's policies."
-    );
-    return;
+    // await interaction.reply(
+    //   "Command temporarily disabled due to recent changes in Twitter's policies."
+    // );
+
+    try {
+      await interaction.reply("<a:PepegaLoad:1085673146939621428>");
+      const urlTweet = interaction.options.getString("url");
+
+      if (!urlTweet) return;
+
+      const id = urlTweet.match(/\/([\d]+)/);
+
+      if (!id) {
+        await interaction.editReply(`cant find tweet ID`);
+        return;
+      }
+
+      const tweetId = id[1];
+      const vxLink = `https://vxtwitter.com/i/status/${tweetId}`;
+
+      const vxMsg = await interaction.editReply(vxLink);
+      const msgEmbed = vxMsg.embeds[0];
+      console.log(msgEmbed);
+
+      const {
+        data: { title, description, video, thumbnail },
+      } = msgEmbed;
+
+      if (!video && !thumbnail) {
+        await interaction.editReply(`tweet type not supported.`);
+        return;
+      }
+
+      let mediaBuffer: Buffer;
+
+      if (video) {
+        const source = await fetch(video.url!);
+        mediaBuffer = await source.buffer();
+      }
+
+      if (thumbnail) {
+        const source = await fetch(thumbnail.url!);
+        mediaBuffer = await source.buffer();
+      }
+
+      if (!mediaBuffer!) {
+        await interaction.editReply(
+          "media unavailable or not supported file type"
+        );
+        return;
+      }
+
+      const mediaAttachment = new AttachmentBuilder(mediaBuffer);
+
+      video && mediaAttachment.setName("video.mp4");
+      thumbnail && mediaAttachment.setName("image.jpg");
+
+      await interaction.editReply({
+        files: [mediaAttachment],
+        content: `${title ?? "Tweet author"}: ${description}`,
+      });
+    } catch (error) {
+      console.log(error);
+      await interaction.editReply(`cos jeblo! ${String(error)}`);
+    }
+
     // try {
     //   await interaction.reply("<a:PepegaLoad:1085673146939621428>");
 
