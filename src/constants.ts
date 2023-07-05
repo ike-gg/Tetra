@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+import { tmpdir } from "os";
+import * as fs from "fs";
 dotenv.config();
 
 export const enviroment =
@@ -25,3 +27,17 @@ export const dashboardUrl =
   enviroment === "development"
     ? "https://localhost:3001/dashboard"
     : "https://tetra.lol/dashboard";
+
+export const tetraTempDirectory = (subPath: string) => {
+  const basePath = `${tmpdir()}/tetra`;
+  if (!fs.existsSync(basePath)) {
+    fs.mkdirSync(basePath);
+  }
+
+  const tempPath = `${basePath}/${subPath}`;
+  if (!fs.existsSync(tempPath)) {
+    fs.mkdirSync(tempPath);
+  }
+
+  return tempPath;
+};

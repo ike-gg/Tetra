@@ -15,6 +15,13 @@ export default async (link: string) => {
         profile: $("div a").attr("href"),
         username: $("div a.font-extrabold.text-blue-400.text-xl.mb-2").text(),
       },
+      slides: {
+        images: $("div#button-download-ready")
+          .find("img")
+          .toArray()
+          .map((e) => $(e).attr("src")?.toString())
+          .filter((e) => e) as string[],
+      },
       video: {
         thumbnail: $("div.hidden.flex-col.text-center a:nth-child(5)").attr(
           "href"
