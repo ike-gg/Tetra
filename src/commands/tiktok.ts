@@ -74,6 +74,7 @@ const importEmote = {
             console.log("ffmpeg process started:", command);
           })
           .on("error", async function (err: any, stdout: any, stderr: any) {
+            console.log(err, stdout, stderr);
             await interaction.editReply("jeblo cos xd");
           })
           .on("end", async function () {
