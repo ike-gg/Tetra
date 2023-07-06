@@ -18,78 +18,80 @@ const importEmote = {
       option.setName("url").setDescription("twitter url").setRequired(true)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
-    await interaction.reply(
-      "Command temporarily disabled due to recent changes in Twitter's policies."
-    );
+    // await interaction.reply(
+    //   "Command temporarily disabled due to recent changes in Twitter's policies."
+    // );
 
-    // try {
-    //   await interaction.reply("<a:PepegaLoad:1085673146939621428>");
+    try {
+      await interaction.reply("<a:PepegaLoad:1085673146939621428>");
 
-    //   const urlVideo = interaction.options.getString("url");
+      const urlVideo = interaction.options.getString("url");
 
-    //   if (!urlVideo) return;
+      if (!urlVideo) return;
 
-    //   const data = await TwitterDL(urlVideo);
+      const data = await TwitterDL(urlVideo);
 
-    //   if (!data || !data.result || data.status === "error") {
-    //     await interaction.editReply(`cant reach post ||${data.message}||`);
-    //     return;
-    //   }
+      console.log(data);
 
-    //   const {
-    //     caption,
-    //     author: { username },
-    //   } = data.result;
-    //   const media = data.result?.media[0];
+      if (!data || !data.result || data.status === "error") {
+        await interaction.editReply(`cant reach post ||${data.message}||`);
+        return;
+      }
 
-    //   const twitterLink = caption.split(" ").at(-1);
-    //   const description = caption
-    //     .split(" ")
-    //     .slice(0, -1)
-    //     .filter((word) => !isValidURL(word))
-    //     .join(" ");
+      const {
+        caption,
+        author: { username },
+      } = data.result;
+      const media = data.result?.media[0];
 
-    //   if (!media) {
-    //     await interaction.editReply(`post without media`);
-    //     return;
-    //   }
+      const twitterLink = caption.split(" ").at(-1);
+      const description = caption
+        .split(" ")
+        .slice(0, -1)
+        .filter((word) => !isValidURL(word))
+        .join(" ");
 
-    //   let mediaBuffer: Buffer;
+      if (!media) {
+        await interaction.editReply(`post without media`);
+        return;
+      }
 
-    //   if (media.type === "video" && Array.isArray(media.result)) {
-    //     const bestQuality = media.result.sort((a, b) => {
-    //       const valueA = Number(a.bitrate);
-    //       const valueB = Number(b.bitrate);
-    //       return valueB - valueA;
-    //     })[0];
+      let mediaBuffer: Buffer;
 
-    //     const source = await fetch(bestQuality.url);
-    //     mediaBuffer = await source.buffer();
-    //   } else if (media.type === "photo" && typeof media.result === "string") {
-    //     const source = await fetch(media.result);
-    //     mediaBuffer = await source.buffer();
-    //   }
+      if (media.type === "video" && Array.isArray(media.result)) {
+        const bestQuality = media.result.sort((a, b) => {
+          const valueA = Number(a.bitrate);
+          const valueB = Number(b.bitrate);
+          return valueB - valueA;
+        })[0];
 
-    //   if (!mediaBuffer!) {
-    //     await interaction.editReply(
-    //       "media unavailable or not supported file type"
-    //     );
-    //     return;
-    //   }
+        const source = await fetch(bestQuality.url);
+        mediaBuffer = await source.buffer();
+      } else if (media.type === "photo" && typeof media.result === "string") {
+        const source = await fetch(media.result);
+        mediaBuffer = await source.buffer();
+      }
 
-    //   const videoAttachment = new AttachmentBuilder(mediaBuffer);
+      if (!mediaBuffer!) {
+        await interaction.editReply(
+          "media unavailable or not supported file type"
+        );
+        return;
+      }
 
-    //   media.type === "video" && videoAttachment.setName("video.mp4");
-    //   media.type === "photo" && videoAttachment.setName("image.jpg");
+      const videoAttachment = new AttachmentBuilder(mediaBuffer);
 
-    //   await interaction.editReply({
-    //     files: [videoAttachment],
-    //     content: `${username}: ${description} *<${twitterLink}>*`,
-    //   });
-    // } catch (error) {
-    //   console.log(error);
-    //   await interaction.editReply(`cos jeblo! ${String(error)}`);
-    // }
+      media.type === "video" && videoAttachment.setName("video.mp4");
+      media.type === "photo" && videoAttachment.setName("image.jpg");
+
+      await interaction.editReply({
+        files: [videoAttachment],
+        content: `${username}: ${description} *<${twitterLink}>*`,
+      });
+    } catch (error) {
+      console.log(error);
+      await interaction.editReply(`cos jeblo! ${String(error)}`);
+    }
   },
 };
 
