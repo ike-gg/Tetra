@@ -14,6 +14,7 @@ import getBufferFromUrl from "../emotes/source/getBufferFromUrl";
 import { cwd } from "process";
 import { tmpdir } from "os";
 import { tetraTempDirectory } from "../constants";
+import sharp from "sharp";
 
 const importEmote = {
   data: new SlashCommandBuilder()
@@ -42,8 +43,12 @@ const importEmote = {
         const imgPaths = await Promise.all(
           imageSlides.map(async (imageURL, index) => {
             const fileBuffer = await getBufferFromUrl(imageURL);
+            const imageTransformedBuffer = await sharp(fileBuffer)
+              .jpeg()
+              .resize({ height: 960, width: 540, fit: "contain" })
+              .toBuffer();
             const path = `${tempDirPath}/${index}.jpg`;
-            fs.writeFileSync(path, fileBuffer);
+            fs.writeFileSync(path, imageTransformedBuffer);
             return path;
           })
         );
@@ -56,26 +61,31 @@ const importEmote = {
 
         console.log(tempDirPath);
         videoshow(imgPaths, {
-          fps: 25,
-          loop: 5, // seconds
-          transition: true,
-          transitionDuration: 1, // seconds
-          videoBitrate: 1024,
+          fps: 15,
+          loop: 3, // seconds
+          videoBitrate: 512,
+          transition: false,
+          // transitionDuration: 1, // seconds
           videoCodec: "libx264",
-          size: "640x?",
-          audioBitrate: "128k",
-          audioChannels: 2,
+          size: "540x960",
+          audioBitrate: "64k",
+          audioChannels: 1,
           format: "mp4",
           pixelFormat: "yuv420p",
         })
           .audio(`${tempDirPath}/audio.mp3`)
           .save(`${tempDirPath}/final.mp4`)
-          .on("start", function (command: any) {
+          .on("start", async function (command: any) {
+            await interaction.editReply(
+              "<a:jasperDance:1126152484340121620> rendering slideshow"
+            );
             console.log("ffmpeg process started:", command);
           })
           .on("error", async function (err: any, stdout: any, stderr: any) {
             console.log(err, stdout, stderr);
-            await interaction.editReply("jeblo cos xd");
+            await interaction.editReply(
+              "<a:beka:1091924091495260222> jeblo cos xd"
+            );
           })
           .on("end", async function () {
             const moviePath = `${tempDirPath}/final.mp4`;
