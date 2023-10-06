@@ -11,12 +11,24 @@ import {
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import errorEmbed from "./utils/embedMessages/errorEmbed";
 import interactionLogger from "./utils/interactionLoggers";
+import { BANNEDLIST } from "./bannedusers";
 
 const interactionHandler = async (
   interaction: Interaction,
   client: DiscordBot
 ) => {
   const env = process.env.env;
+
+  if (
+    BANNEDLIST.some((bannedUser) => bannedUser.userId === interaction.user.id)
+  ) {
+    if (!interaction.isRepliable()) {
+      return;
+    }
+    const reason = BANNEDLIST.find((e) => e.userId === interaction.user.id);
+    interaction.reply(`banned reason: ${reason?.reason || "-"}`);
+    return;
+  }
 
   if (interaction.isCommand()) {
     console.log(
