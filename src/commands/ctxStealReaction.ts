@@ -5,13 +5,9 @@ import {
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import findEmotesFromMessage from "../utils/findEmotesInMessage";
-import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
 
-import { DiscordBot, Emote } from "../types";
+import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
-import findCommonGuilds from "../utils/findCommonGuilds";
-import getSelectMenuServers from "../utils/elements/getSelectMenuServers";
 import emotesFromReactions from "../utils/emotesFromReactions";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
