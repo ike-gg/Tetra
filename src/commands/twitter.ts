@@ -57,7 +57,7 @@ const importEmote = {
 
       const { media, text } = twitterData;
       const firstMedia = media[0];
-      const isVideo = firstMedia.url.endsWith("mp4");
+      const isVideo = firstMedia.url.includes("mp4");
 
       const twitterLink = text?.split(" ").at(-1) || "-";
 
