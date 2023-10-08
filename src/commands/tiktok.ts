@@ -11,8 +11,6 @@ import * as fs from "fs";
 //@ts-ignore
 import videoshow from "videoshow";
 import getBufferFromUrl from "../emotes/source/getBufferFromUrl";
-import { cwd } from "process";
-import { tmpdir } from "os";
 import { tetraTempDirectory } from "../constants";
 import sharp from "sharp";
 
@@ -22,19 +20,26 @@ const importEmote = {
     .setDescription("tiktacz")
     .addStringOption((option) =>
       option.setName("url").setDescription("tiktok url").setRequired(true)
+    )
+    .addIntegerOption((option) =>
+      option
+        .setName("time")
+        .setDescription(
+          "set time for each slide in seconds, default 3, not required"
+        )
+        .setRequired(false)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
     try {
       await interaction.reply("<a:PepegaLoad:1085673146939621428>");
       const urlVideo = interaction.options.getString("url");
+      const loopValue = interaction.options.getInteger("time") || 3;
 
       const tempDirPath = tetraTempDirectory(interaction.id);
 
       if (!urlVideo) return;
 
       const data = await getTikTokVideo(urlVideo);
-
-      console.log(data);
 
       if (data.slides.images.length > 1) {
         const imageSlides = data.slides.images;
@@ -59,13 +64,12 @@ const importEmote = {
           fs.writeFileSync(audioPath, audioBuffer);
         }
 
-        console.log(tempDirPath);
         videoshow(imgPaths, {
           fps: 15,
-          loop: 3, // seconds
+          loop: loopValue,
           videoBitrate: 512,
           transition: false,
-          // transitionDuration: 1, // seconds
+          transitionDuration: 0.2, // seconds
           videoCodec: "libx264",
           size: "540x960",
           audioBitrate: "64k",
