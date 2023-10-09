@@ -53,6 +53,7 @@ const importEmote = {
         await interaction.editReply(
           `${twitterData.error || "error description not available"}`
         );
+        return;
       }
 
       const { media, text } = twitterData;
