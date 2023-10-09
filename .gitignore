@@ -135,3 +135,7 @@ dist
 config.json
 
 test.ts
+
+
+#testing gifsicle purposes
+*.gif
