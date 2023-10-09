@@ -1,3 +1,4 @@
+import prettyBytes from "pretty-bytes";
 import sharp from "sharp";
 
 const isGif = require("is-gif");
@@ -10,14 +11,19 @@ type CroppingPoints = { x1: number; y1: number; x2: number; y2: number };
 
 export class xGifsicle {
   public fileBuffer: Buffer;
-  public size: number;
+
+  get size() {
+    return this.fileBuffer.byteLength;
+  }
+  get prettySize() {
+    return prettyBytes(this.size);
+  }
 
   constructor(gifBuffer: Buffer) {
     if (!Buffer.isBuffer(gifBuffer) || !isGif(gifBuffer)) {
       throw new Error("Invalid input");
     }
     this.fileBuffer = gifBuffer;
-    this.size = this.fileBuffer.byteLength;
   }
 
   async resizeToFit(width: number, height: number) {
@@ -140,7 +146,6 @@ export class xGifsicle {
         bin: xgifsicle,
         args,
       });
-      this.size = this.fileBuffer.byteLength;
     } catch (err: any) {
       err.message = err.stderr || err.message;
       throw new Error(err);
