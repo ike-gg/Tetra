@@ -101,16 +101,17 @@ export class xGifsicle {
     return this;
   }
 
-  async frameRate(delayFactor: number) {
+  async frameRate(_delayFactor: number) {
+    const delayFactor = Math.floor(_delayFactor);
     const { frames, delay } = await this.metadata();
 
     const args: Arguments = ["-U"];
 
-    const newDelay = Math.floor(delay * delayFactor);
+    const newDelay = delay * delayFactor;
     for (let x = 0; x <= frames; x += delayFactor) {
       args.push(`--delay`);
       args.push(newDelay);
-      args.push(`#${Math.floor(x)}`);
+      args.push(`#${x}`);
     }
 
     await this.process(args, ["-U"]);
@@ -140,6 +141,7 @@ export class xGifsicle {
       "-o",
       execBuffer.output,
     ];
+    console.log(`running:`, _args);
     try {
       this.fileBuffer = await execBuffer({
         input: this.fileBuffer,
