@@ -12,6 +12,8 @@ type CroppingPoints = { x1: number; y1: number; x2: number; y2: number };
 export class xGifsicle {
   public fileBuffer: Buffer;
 
+  private staticArgs: Arguments = [];
+
   get size() {
     return this.fileBuffer.byteLength;
   }
@@ -39,8 +41,9 @@ export class xGifsicle {
   }
 
   async colors(colorsFactor: number) {
-    const args: Arguments = ["--colors", colorsFactor];
-    await this.process(args);
+    // const args: Arguments = ["--colors", colorsFactor];
+    this.staticArgs = ["--colors", colorsFactor];
+    await this.process([]);
     return this;
   }
 
@@ -102,7 +105,7 @@ export class xGifsicle {
   }
 
   async frameRate(_delayFactor: number) {
-    const delayFactor = Math.floor(_delayFactor);
+    const delayFactor = Math.round(_delayFactor);
     const { frames, delay } = await this.metadata();
 
     const args: Arguments = ["-U"];
@@ -127,8 +130,9 @@ export class xGifsicle {
     const frames = metadata.pages!;
     const height = metadata.height! / frames;
     const width = metadata.width!;
+    const duration = frames * delay;
 
-    return { delay, frames, height, width };
+    return { delay, frames, height, width, duration };
   }
 
   private async process(_args: Arguments, _argsBeforeInput: Arguments = []) {
@@ -137,10 +141,12 @@ export class xGifsicle {
       ..._argsBeforeInput,
       execBuffer.input,
       ..._args,
+      ...this.staticArgs,
       "-O3",
       "-o",
       execBuffer.output,
     ];
+    console.log(`static args:`, this.staticArgs);
     console.log(`running:`, _args);
     try {
       this.fileBuffer = await execBuffer({
