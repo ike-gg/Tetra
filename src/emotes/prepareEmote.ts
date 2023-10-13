@@ -10,10 +10,11 @@ import { Emote } from "../types";
 import getBufferFromUrl from "./source/getBufferFromUrl";
 import TaskManager from "../utils/managers/TaskManager";
 import * as TaskTypes from "../types/TaskTypes";
-import { maxEmoteSize } from "../constants";
+import { maxEmoteSize, maxSupportedSize } from "../constants";
 import editEmoteByUser from "./editEmoteByUser";
 import getChoiceOptimizeRow from "../utils/elements/getChoiceOptimizeRow";
 import parseDiscordRegexName from "../utils/parseDiscordRegexName";
+import prettyBytes from "pretty-bytes";
 
 const prepareEmote = async (
   emote: Emote,
@@ -30,9 +31,11 @@ const prepareEmote = async (
   const { feedback, interaction, guild } = details;
   const emoteBuffer = await getBufferFromUrl(emote.file.url);
 
-  if (emoteBuffer.byteLength >= maxEmoteSize * 10) {
+  if (emoteBuffer.byteLength >= maxSupportedSize) {
     await feedback.error(
-      "Emote exceeded maximum size supported currently with custom files (2.5MB) by Tetra."
+      `Emote exceeded maximum size supported currently with custom files (${prettyBytes(
+        maxSupportedSize
+      )}) by Tetra.`
     );
     return;
   }

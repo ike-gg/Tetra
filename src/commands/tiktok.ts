@@ -28,6 +28,7 @@ const importEmote = {
           "set time for each slide in seconds, default 3, not required"
         )
         .setRequired(false)
+        .setMaxValue(15)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
     try {

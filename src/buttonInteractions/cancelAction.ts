@@ -9,11 +9,7 @@ const cancelAction = {
       await interaction.message.delete();
     } catch {
       await interaction.editReply({
-        embeds: [
-          errorEmbed(
-            "Cannot entirely delete my message because im missing permissions on this channel."
-          ),
-        ],
+        embeds: [errorEmbed("Missing permissions to delete this message.")],
       });
     }
   },

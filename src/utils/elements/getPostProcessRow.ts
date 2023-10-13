@@ -9,14 +9,6 @@ const getPostProcessRow = (
   }
 ) => {
   const row = new ActionRowBuilder<ButtonBuilder>();
-  // row.addComponents(
-  //   new ButtonBuilder()
-  //     .setCustomId(`${taskId}:huj`)
-  //     .setEmoji({ name: "💀" })
-  //     .setLabel("post process options are not available during maintance")
-  //     .setStyle(ButtonStyle.Secondary)
-  //     .setDisabled(true)
-  // );
   row.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:rename`)

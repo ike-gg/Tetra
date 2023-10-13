@@ -1,3 +1,5 @@
+//unused currently
+
 import sharp from "sharp";
 
 const emoteBorder = async (emote: Buffer, isAnimated: boolean) => {

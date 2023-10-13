@@ -38,9 +38,11 @@ const importEmote = {
     try {
       await interaction.reply("<a:PepegaLoad:1085673146939621428>");
 
-      const urlVideo = interaction.options.getString("url");
+      const _urlVideo = interaction.options.getString("url");
 
-      if (!urlVideo) return;
+      if (!_urlVideo) return;
+
+      const urlVideo = _urlVideo.replace("x.com", "twitter.com");
 
       const twitterData = await getTwitterMedia(urlVideo, {
         buffer: true,
@@ -49,10 +51,11 @@ const importEmote = {
 
       console.log(twitterData);
 
-      if (!twitterData.found) {
+      if (!twitterData.found || twitterData.error) {
         await interaction.editReply(
           `${twitterData.error || "error description not available"}`
         );
+        return;
       }
 
       const { media, text } = twitterData;
