@@ -7,6 +7,7 @@ export const enviroment =
   process.env.env === "development" ? "development" : "production";
 
 export const maxEmoteSize = 262144;
+export const maxSupportedSize = maxEmoteSize * 16;
 
 export const clientId = process.env.oauthClientId;
 export const clientSecret = process.env.oauthClientSecret;
