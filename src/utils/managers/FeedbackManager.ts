@@ -31,10 +31,11 @@ import EmoteRequest from "../elements/emoteRequest";
 import URLButton from "../elements/URLButton";
 import { maxEmoteSize } from "../../constants";
 import prettyBytes from "pretty-bytes";
+import sharp from "sharp";
 
 export class FeedbackManager {
   interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
-  client!: DiscordBot;
+  client: DiscordBot;
   ephemeral: boolean;
   isReplied = false;
 
@@ -96,7 +97,7 @@ export class FeedbackManager {
     this.isReplied = true;
   }
 
-  async info(title: string, message: string) {
+  async info(title: string, message?: string) {
     const embed = infoEmbed(title, message);
     await this.sendMessage({ embeds: [embed] });
   }
@@ -145,13 +146,40 @@ export class FeedbackManager {
   }
 
   async editEmoteByUser(emote: ExtractedEmote) {
-    const borderedBuffer = await emoteBorder(emote.finalData, emote.animated);
+    let aspectRatio: number = 1;
+
+    const emoteSharp = await sharp(emote.finalData, {
+      animated: emote.animated,
+    });
+    const { width, height, format, pages } = await emoteSharp.metadata();
+
+    if (format === "gif") {
+      const gifHeight = (height || 1) / (pages || 1);
+      aspectRatio = (width || 1) / gifHeight;
+    } else {
+      aspectRatio = (width || 1) / (height || 1);
+    }
+
+    const emoteBufferPreview = await emoteSharp
+      .gif()
+      .resize({
+        width: 64,
+        height: 64,
+        fit: "contain",
+        background: { alpha: 0.05, r: 0, g: 0, b: 0 },
+      })
+      .toBuffer();
+
     await this.sendMessage({
-      files: [{ attachment: borderedBuffer, name: "preview.gif" }],
+      files: [{ attachment: emoteBufferPreview, name: "preview.gif" }],
     });
     await this.userInteraction(
       "Edit emote",
-      "Now you can choose to rescale or rename your emote using buttons below.\nBorder on image will help you to imagine how the emote will looks like on chat.\n**Border wont be visible once the emote has been successfully uploaded!**",
+      `Rescale or rename your emote now.${
+        aspectRatio >= 1.5 || aspectRatio <= 0.5
+          ? "\n\n> It seems like your emote is a bit too wide, consider using scaling options to get best results."
+          : ""
+      }`,
       "attachment://preview.gif"
     );
   }
@@ -161,7 +189,7 @@ export class FeedbackManager {
   }
 
   async gotRequest() {
-    await this.info("Got your request!", "Working on it... 🏗️");
+    await this.info("Working on it", "<a:tetraLoading:1162518404557721620>");
   }
 
   async interactionTimeOut() {
