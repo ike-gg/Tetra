@@ -1,22 +1,15 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 let env = (process.env.env as "development" | "production") || "production";
-import errorEmbed from "../embedMessages/errorEmbed";
-import infoEmbed from "../embedMessages/infoEmbed";
-import successfulEmbed from "../embedMessages/successfulEmbed";
-import warningEmbed from "../embedMessages/warningEmbed";
+
 import {
   ButtonInteraction,
   CommandInteraction,
-  InteractionReplyOptions,
   SelectMenuBuilder,
   SelectMenuInteraction,
-  InteractionUpdateOptions,
   GuildEmoji,
-  AttachmentPayload,
   TextChannel,
   ButtonStyle,
+  BaseMessageOptions,
+  isJSONEncodable,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -25,41 +18,32 @@ import {
 } from "@discordjs/builders";
 
 import { DiscordBot, ExtractedEmote } from "../../types";
-import interactionEmbed from "../embedMessages/interactionEmbed";
-import emoteBorder from "../../emotes/emoteBorder";
-import EmoteRequest from "../elements/emoteRequest";
-import URLButton from "../elements/URLButton";
 import { maxEmoteSize } from "../../constants";
 import prettyBytes from "pretty-bytes";
 import sharp from "sharp";
+import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 
 export class FeedbackManager {
-  interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
   client: DiscordBot;
   ephemeral: boolean;
-  isReplied = false;
 
   constructor(
-    interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction,
+    public interaction:
+      | CommandInteraction
+      | ButtonInteraction
+      | SelectMenuInteraction,
     options?: {
       ephemeral?: boolean;
     }
   ) {
     let ephemeral = options?.ephemeral || false;
 
-    this.interaction = interaction;
     this.client = interaction.client as DiscordBot;
     this.ephemeral = ephemeral;
-    this.isReplied = interaction.replied;
   }
 
-  async sendMessage(options: {
-    embeds?: EmbedBuilder[];
-    components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[];
-    files?: AttachmentPayload[];
-    imageInEmbed?: string;
-  }) {
-    const { embeds, components, files } = options;
+  async sendMessage(content: BaseMessageOptions) {
+    const { embeds } = content;
 
     if (embeds && embeds.length > 0) {
       const lastIndex = embeds.length - 1;
@@ -69,43 +53,48 @@ export class FeedbackManager {
         lastEmbedText += " | Development stage.";
       }
 
-      embeds[lastIndex].setFooter({
+      let lastEmbedData = embeds[lastIndex];
+      if (!lastEmbedData) return;
+      if (isJSONEncodable(lastEmbedData))
+        lastEmbedData = lastEmbedData.toJSON();
+
+      const lastEmbedBuilder = new EmbedBuilder(lastEmbedData);
+      lastEmbedBuilder.setFooter({
         text: lastEmbedText,
         iconURL: this.client.user!.avatarURL()!,
       });
+
+      embeds[lastIndex] = lastEmbedBuilder.toJSON();
     }
 
-    const messagePayload: InteractionReplyOptions | InteractionUpdateOptions = {
-      embeds: embeds,
-      components: components,
-      files,
-      ephemeral: this.ephemeral,
-    };
-
-    this.isReplied = this.interaction.replied;
-
-    if (this.isReplied) {
-      await this.interaction.editReply(messagePayload);
+    if (this.interaction.replied) {
+      await this.interaction.editReply(content);
     } else {
       if (!(this.interaction instanceof CommandInteraction)) {
-        await this.interaction.update({ embeds, components, files });
+        await this.interaction.update(content);
       } else {
-        await this.interaction.reply(messagePayload);
+        await this.interaction.reply(content);
       }
     }
-
-    this.isReplied = true;
   }
 
-  async info(title: string, message?: string) {
-    const embed = infoEmbed(title, message);
-    await this.sendMessage({ embeds: [embed] });
+  async info(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.info(content)] });
   }
 
-  async error(message: string, ephemeral: boolean = false) {
-    const embed = errorEmbed(
-      `${message}\n\nSomething unexpected happened? Use button below to send developers a snapshot of error.`
-    );
+  async success(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.success(content)] });
+  }
+
+  async attention(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.attention(content)] });
+  }
+
+  async warning(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.warning(content)] });
+  }
+
+  async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
     row.addComponents(
       new ButtonBuilder()
@@ -114,25 +103,10 @@ export class FeedbackManager {
         .setLabel(`Send developers log`)
         .setStyle(ButtonStyle.Danger)
     );
-    await this.sendMessage({ embeds: [embed], components: [row] });
-  }
-
-  async success(title: string, description: string, image?: string) {
-    const embed = successfulEmbed(title, description, image);
-    await this.sendMessage({ embeds: [embed] });
-  }
-
-  async userInteraction(title: string, description: string, image?: string) {
-    const embed = interactionEmbed(title, description, image);
-    await this.sendMessage({ embeds: [embed] });
-  }
-
-  async warning(
-    message: string,
-    components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[]
-  ) {
-    const embed = warningEmbed(message);
-    await this.sendMessage({ embeds: [embed], components });
+    await this.sendMessage({
+      embeds: [TetraEmbed.error(content)],
+      components: [row],
+    });
   }
 
   async updateComponents(
@@ -141,8 +115,23 @@ export class FeedbackManager {
     await this.sendMessage({ components: components });
   }
 
-  async removeButtons() {
-    await this.sendMessage({ components: [], files: [] });
+  async removeComponents() {
+    await this.sendMessage({ components: [] });
+  }
+
+  async debug() {
+    const randomTexts = [
+      "Abbott, Hickle and Ratke",
+      "Sawayn and Sons",
+      "Aufderhar - Ondricka",
+      "Rutherford and Sons",
+      "Mitchell, Schmitt and Balistreri",
+      "Koss, Lakin and Miller",
+    ];
+
+    await this.error({
+      description: randomTexts[Math.floor(Math.random() * randomTexts.length)],
+    });
   }
 
   async editEmoteByUser(emote: ExtractedEmote) {
@@ -173,23 +162,24 @@ export class FeedbackManager {
     await this.sendMessage({
       files: [{ attachment: emoteBufferPreview, name: "preview.gif" }],
     });
-    await this.userInteraction(
-      "Edit emote",
-      `Rescale or rename your emote now.${
+    await this.attention({
+      title: "Edit emote",
+      description: `Rescale or rename your emote now.${
         aspectRatio >= 1.5 || aspectRatio <= 0.5
           ? "\n\n> It seems like your emote is a bit too wide, consider using scaling options to get best results."
           : ""
       }`,
-      "attachment://preview.gif"
-    );
-  }
-
-  async removeSelectMenu() {
-    await this.sendMessage({ components: [] });
+      image: {
+        url: "attachment://preview.gif",
+      },
+    });
   }
 
   async gotRequest() {
-    await this.info("Working on it", "<a:tetraLoading:1162518404557721620>");
+    await this.info({
+      title: "Working on it",
+      description: "<a:tetraLoading:1162518404557721620>",
+    });
   }
 
   async interactionTimeOut() {
@@ -234,17 +224,16 @@ export class FeedbackManager {
 
   async missingPermissions() {
     await this.error(
-      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!",
-      true
+      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
     );
   }
 
-  async missingPermissionsWithRequest() {
-    await this.warning(
-      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!\n\nInstead you can create request for moderators to add emote, use button below.",
-      [EmoteRequest("xd")]
-    );
-  }
+  // async missingPermissionsWithRequest() {
+  //   await this.warning(
+  //     "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!\n\nInstead you can create request for moderators to add emote, use button below.",
+  //     [EmoteRequest("xd")]
+  //   );
+  // }
 
   async missingGuild() {
     await this.error("Ooops! I couldn't find the server, please try again.");
@@ -257,18 +246,21 @@ export class FeedbackManager {
   }
 
   async selectServerSteal() {
-    await this.success(
-      "Got it!",
-      "Now select server where you'd like to import emote.\n\nKeep in mind I must be on this server and YOU must have permission to add emotes there."
-    );
+    await this.success({
+      title: "Got it!",
+      description:
+        "Now select server where you'd like to import emote.\n\nKeep in mind I must be on this server and YOU must have permission to add emotes there.",
+    });
   }
 
   async successedAddedEmote(emote: GuildEmoji) {
-    await this.success(
-      "Success!",
-      `Successfully added \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
-      emote.url
-    );
+    await this.success({
+      title: "Success!",
+      description: `Successfully added \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
+      image: {
+        url: emote.url,
+      },
+    });
   }
 
   async invalidReference() {
@@ -295,14 +287,6 @@ export class FeedbackManager {
     }
   }
 
-  async successedEditedEmote(emote: GuildEmoji) {
-    await this.success(
-      "Success!",
-      `Successfully edited \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
-      emote.url
-    );
-  }
-
   async exceededEmoteSize(size: number) {
     const maxSize = prettyBytes(maxEmoteSize);
     const emoteSize = prettyBytes(size);
@@ -313,23 +297,23 @@ export class FeedbackManager {
     Choose the file optimization option. If the file is large, manual correction may yield better results. However, for smaller files, automatic optimization should work well.`);
   }
 
-  async manualAdjustment() {
-    const row = new ActionRowBuilder<ButtonBuilder>();
-    const URL =
-      env === "development"
-        ? `http://localhost:3001/dashboard`
-        : `https://tetra.lol/dashboard`;
-    await this.removeButtons();
-    await this.sendMessage({
-      embeds: [
-        successfulEmbed(
-          "Manual adjustment",
-          `You can now manually adjust the emote visiting dashboard page and authorising yourself.\n${URL}`
-        ),
-      ],
-      components: [row.addComponents(URLButton("Manual adjustment", URL))],
-    });
-  }
+  // async manualAdjustment() {
+  //   const row = new ActionRowBuilder<ButtonBuilder>();
+  //   const URL =
+  //     env === "development"
+  //       ? `http://localhost:3001/dashboard`
+  //       : `https://tetra.lol/dashboard`;
+  //   await this.removeButtons();
+  //   await this.sendMessage({
+  //     embeds: [
+  //       successfulEmbed(
+  //         "Manual adjustment",
+  //         `You can now manually adjust the emote visiting dashboard page and authorising yourself.\n${URL}`
+  //       ),
+  //     ],
+  //     components: [row.addComponents(URLButton("Manual adjustment", URL))],
+  //   });
+  // }
 
   async notFoundFile() {
     await this.error("Not found any files in message.");
