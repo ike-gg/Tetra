@@ -1,5 +1,5 @@
 import { ButtonInteraction } from "discord.js";
-import errorEmbed from "../utils/embedMessages/errorEmbed";
+import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
 
 const cancelAction = {
   data: { name: "cancelAction" },
@@ -9,7 +9,9 @@ const cancelAction = {
       await interaction.message.delete();
     } catch {
       await interaction.editReply({
-        embeds: [errorEmbed("Missing permissions to delete this message.")],
+        embeds: [
+          TetraEmbed.error("Missing permissions to delete this message."),
+        ],
       });
     }
   },

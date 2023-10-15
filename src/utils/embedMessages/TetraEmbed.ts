@@ -12,6 +12,18 @@ export class TetraEmbed {
     return content;
   }
 
+  private stack: EmbedBuilder[] = [];
+
+  constructor() {}
+
+  append(embed: EmbedBuilder) {
+    this.stack.push(embed);
+  }
+
+  get embeds() {
+    return this.stack;
+  }
+
   static success(content: TetraEmbedContent) {
     const details = this.__transform(content);
     const embedTitle = getEmojiTitle("✅", details.title || "Success");

@@ -48,7 +48,7 @@ const selectEmote = {
       }
 
       if (action === "auto") {
-        await genericFeedbackManager.removeButtons();
+        await genericFeedbackManager.removeComponents();
         const { emote } = taskDetails;
         const optimisedEmote = await emoteOptimise(emote.finalData, {
           animated: emote.animated,
@@ -70,7 +70,8 @@ const selectEmote = {
 
         TaskManager.getInstance().webAccess(taskId);
         try {
-          await feedback.manualAdjustment();
+          // await feedback.manualAdjustment();
+          await feedback.warning("Not available right now.");
         } catch (error) {
           await feedback.error(String(error));
         }

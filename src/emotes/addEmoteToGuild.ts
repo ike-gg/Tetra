@@ -11,7 +11,7 @@ const addEmoteToGuild = async (taskId: string) => {
   const { feedback, emote, guild } = taskDetails;
 
   try {
-    await feedback.removeButtons();
+    await feedback.removeComponents();
     const addedEmote = await guild.emojis.create({
       attachment: emote.finalData,
       name: emote.name,

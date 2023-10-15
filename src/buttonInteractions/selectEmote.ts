@@ -16,7 +16,7 @@ const selectEmote = {
 
     const { emote } = taskDetails;
 
-    await feedback.removeButtons();
+    await feedback.removeComponents();
     await feedback.gotRequest();
 
     prepareEmote(emote, {

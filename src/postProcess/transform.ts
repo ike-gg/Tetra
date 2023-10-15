@@ -18,7 +18,7 @@ const transform = async (
 
     const { feedback } = taskDetails;
 
-    await feedback.removeButtons();
+    await feedback.removeComponents();
     await feedback.gotRequest();
 
     const { emote } = taskDetails;

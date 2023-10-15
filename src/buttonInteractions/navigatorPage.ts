@@ -11,7 +11,7 @@ const navigatorPage = {
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
 
-    await feedback.removeButtons();
+    await feedback.removeComponents();
     await feedback.gotRequest();
 
     try {

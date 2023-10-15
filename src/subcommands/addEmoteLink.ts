@@ -1,4 +1,3 @@
-import { ChatInputCommandInteraction } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 import { DiscordBot, Emote } from "../types";
@@ -8,6 +7,7 @@ import stvGetEmoteById from "../emotes/source/7tv/stvGetEmoteById";
 import bttvGetEmoteById from "../emotes/source/bttv/bttvGetEmoteById";
 import prepareEmote from "../emotes/prepareEmote";
 import getSourceFile from "../emotes/source/file/getSourceFile";
+import { ChatInputCommandInteraction } from "discord.js";
 
 const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,

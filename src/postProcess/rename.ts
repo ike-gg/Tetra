@@ -57,9 +57,8 @@ const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
     if (!(collectedInteraction.customId === identificator)) return;
     try {
       await collectedInteraction.deferUpdate();
-      feedback.isReplied = true;
 
-      await feedback.removeButtons();
+      await feedback.removeComponents();
       await feedback.gotRequest();
 
       const newName = await collectedInteraction.fields.getTextInputValue(

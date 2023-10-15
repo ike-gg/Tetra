@@ -9,7 +9,7 @@ const stealEmote = {
   async execute(interaction: SelectMenuInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction, { ephemeral: true });
 
-    await feedback.removeSelectMenu();
+    await feedback.removeComponents();
     await feedback.gotRequest();
 
     const guildId = interaction.values[0];
