@@ -19,14 +19,26 @@ const interactionHandler = async (
 ) => {
   const env = process.env.env;
 
-  if (
-    BANNEDLIST.some((bannedUser) => bannedUser.userId === interaction.user.id)
-  ) {
+  const banDetails = BANNEDLIST.find(
+    (bannedUser) => bannedUser.userId === interaction.user.id
+  );
+
+  if (banDetails) {
     if (!interaction.isRepliable()) {
       return;
     }
-    const reason = BANNEDLIST.find((e) => e.userId === interaction.user.id);
-    interaction.reply(`banned reason: ${reason?.reason || "-"}`);
+    if (interaction.isContextMenuCommand()) {
+      interaction.deferReply();
+      return;
+    }
+    interaction.reply({
+      embeds: [
+        TetraEmbed.error({
+          title: "Banned",
+          description: `Reason: ${banDetails.reason || "-"}`,
+        }),
+      ],
+    });
     return;
   }
 
@@ -65,12 +77,6 @@ const interactionHandler = async (
     if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
       interaction.deferUpdate();
       return;
-      // interaction.reply({
-      //   embeds: [TetraEmbed.error("😶")],
-      //   ephemeral: true,
-      //   files: [],
-      // });
-      // return;
     }
 
     const interactionTaskId = interaction.customId.split(":")[0];
