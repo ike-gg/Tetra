@@ -24,11 +24,7 @@ const interactionHandler = async (
   );
 
   if (banDetails) {
-    if (!interaction.isRepliable()) {
-      return;
-    }
-    if (interaction.isContextMenuCommand()) {
-      interaction.deferReply();
+    if (!interaction.isRepliable() || !interaction.isChatInputCommand()) {
       return;
     }
     interaction.reply({
