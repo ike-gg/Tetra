@@ -9,9 +9,9 @@ import {
   ExecutableSelectMenu,
 } from "./types";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
-import errorEmbed from "./utils/embedMessages/errorEmbed";
 import interactionLogger from "./utils/interactionLoggers";
 import { BANNEDLIST } from "./bannedusers";
+import { TetraEmbed } from "./utils/embedMessages/TetraEmbed";
 
 const interactionHandler = async (
   interaction: Interaction,
@@ -63,11 +63,14 @@ const interactionHandler = async (
     if (env === "production" && isDevCommand) return;
 
     if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
-      const error = errorEmbed(
-        "You are not allowed **YET** to use another users interactions!"
-      );
-      interaction.reply({ embeds: [error], ephemeral: true, files: [] });
+      interaction.deferUpdate();
       return;
+      // interaction.reply({
+      //   embeds: [TetraEmbed.error("😶")],
+      //   ephemeral: true,
+      //   files: [],
+      // });
+      // return;
     }
 
     const interactionTaskId = interaction.customId.split(":")[0];
@@ -87,7 +90,7 @@ const interactionHandler = async (
     }
 
     if (!taskDetails) {
-      await feedback.removeButtons();
+      await feedback.removeComponents();
       await feedback.interactionTimeOut();
       return;
     }
@@ -115,7 +118,7 @@ const interactionHandler = async (
 
       try {
         selectMenuInteraction.execute(interaction, client);
-        await feedback.removeButtons();
+        await feedback.removeComponents();
       } catch {
         console.error;
       }
