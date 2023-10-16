@@ -26,7 +26,6 @@ const emoteOptimise = async (
       };
 
       const side = Math.min(Math.max(_height, _width), 128);
-      console.log(side);
 
       transform === "center" &&
         buffer.resize({ fit: "cover", width: side, height: side });

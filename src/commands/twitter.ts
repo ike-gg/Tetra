@@ -49,8 +49,6 @@ const importEmote = {
         text: true,
       });
 
-      console.log(twitterData);
-
       if (!twitterData.found || twitterData.error) {
         await interaction.editReply(
           `${twitterData.error || "error description not available"}`
