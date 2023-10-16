@@ -59,7 +59,7 @@ const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
       await collectedInteraction.deferUpdate();
 
       await feedback.removeComponents();
-      await feedback.gotRequest();
+      await feedback.working();
 
       const newName = await collectedInteraction.fields.getTextInputValue(
         "newname"

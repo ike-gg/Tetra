@@ -12,6 +12,7 @@ import emoteDiscord from "../emotes/emoteDiscord";
 import { DiscordBot, ExtractedEmote } from "../types";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import prepareEmote from "../emotes/prepareEmote";
+import { Messages } from "../constants/messages";
 
 const ctxStealEmoteHere = {
   data: new ContextMenuCommandBuilder()
@@ -23,7 +24,7 @@ const ctxStealEmoteHere = {
   ) {
     const feedback = new FeedbackManager(interaction, { ephemeral: true });
 
-    await feedback.gotRequest();
+    await feedback.working();
 
     if (!interaction.memberPermissions!.has("ManageEmojisAndStickers")) {
       await feedback.missingPermissions();
@@ -40,16 +41,11 @@ const ctxStealEmoteHere = {
     }
 
     if (emotes.length > 1) {
-      await feedback.moreThanOneEmote();
+      await feedback.error(Messages.MULTIPLE_EMOTES_NOT_SUPPORTED);
       return;
     }
 
     const emote = emotes[0];
-
-    if (await isEmoteFromThisGuild(interaction.guild!, emote.id)) {
-      await feedback.emoteSameServer();
-      return;
-    }
 
     prepareEmote(emote, { feedback, interaction });
   },

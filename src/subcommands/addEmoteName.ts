@@ -9,6 +9,7 @@ import * as TaskTypes from "../types/TaskTypes";
 import stvGetEmotesByQuery from "../emotes/source/7tv/stvGetEmotesByQuery";
 import bttvGetEmotesByQuery from "../emotes/source/bttv/bttvGetEmotesByQuery";
 import ffzGetEmotesByQuery from "../emotes/source/ffz/ffzGetEmotesByQuery";
+import { Messages } from "../constants/messages";
 
 const addEmoteName = async (
   interaction: ChatInputCommandInteraction,
@@ -34,7 +35,7 @@ const addEmoteName = async (
     }
 
     if (foundEmotes.length === 0) {
-      await feedback.notFoundEmotesQuery(emoteQuery);
+      await feedback.error(Messages.EMOTE_NOT_FOUND);
       return;
     }
 

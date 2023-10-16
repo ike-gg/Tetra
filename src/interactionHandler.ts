@@ -93,7 +93,7 @@ const interactionHandler = async (
 
     if (!taskDetails) {
       await feedback.removeComponents();
-      await feedback.interactionTimeOut();
+      await feedback.interactionTimeout();
       return;
     }
 

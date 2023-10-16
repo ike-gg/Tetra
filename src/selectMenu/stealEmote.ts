@@ -10,13 +10,13 @@ const stealEmote = {
     const feedback = new FeedbackManager(interaction, { ephemeral: true });
 
     await feedback.removeComponents();
-    await feedback.gotRequest();
+    await feedback.working();
 
     const guildId = interaction.values[0];
     const guild = await client.guilds.fetch(guildId);
 
     if (!guild) {
-      feedback.missingGuild();
+      feedback.error({ description: "Cant access this guild." });
       return;
     }
 

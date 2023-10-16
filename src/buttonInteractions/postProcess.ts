@@ -25,7 +25,7 @@ const selectEmote = {
       const { feedback } = taskDetails;
 
       if (!taskDetails) {
-        await feedback.interactionTimeOut();
+        await feedback.interactionTimeout();
         return;
       }
 

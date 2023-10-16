@@ -11,6 +11,7 @@ import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
 import findCommonGuilds from "../utils/findCommonGuilds";
 import getSelectMenuServers from "../utils/elements/getSelectMenuServers";
+import { Messages } from "../constants/messages";
 
 const ctxStealEmote = {
   data: new ContextMenuCommandBuilder()
@@ -30,12 +31,12 @@ const ctxStealEmote = {
     const emotes = findEmotesFromMessage(messageContent, username);
 
     if (emotes.length === 0) {
-      await feedback.notFoundEmotes();
+      await feedback.error(Messages.EMOTE_NOT_FOUND);
       return;
     }
 
     if (emotes.length > 1) {
-      await feedback.moreThanOneEmote();
+      await feedback.error(Messages.MULTIPLE_EMOTES_NOT_SUPPORTED);
       return;
     }
 
@@ -47,7 +48,7 @@ const ctxStealEmote = {
     );
 
     if (guildsWithUser.length === 0) {
-      feedback.missingCommonGuilds();
+      feedback.error(Messages.NO_COMMON_SERVERS_PERMISSIONS);
       return;
     }
 
@@ -59,7 +60,11 @@ const ctxStealEmote = {
 
     const selectMenuServer = await getSelectMenuServers(taskId, guildsWithUser);
 
-    await feedback.selectServerSteal();
+    await feedback.success({
+      title: "Got it!",
+      description:
+        "Now select server where you'd like to import emote.\n\nKeep in mind I must be on this server and YOU must have permission to add emotes there.",
+    });
     await feedback.updateComponents([selectMenuServer]);
   },
 };

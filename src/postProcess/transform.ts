@@ -19,7 +19,7 @@ const transform = async (
     const { feedback } = taskDetails;
 
     await feedback.removeComponents();
-    await feedback.gotRequest();
+    await feedback.working();
 
     const { emote } = taskDetails;
 

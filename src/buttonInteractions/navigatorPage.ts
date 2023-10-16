@@ -12,7 +12,7 @@ const navigatorPage = {
     const feedback = new FeedbackManager(interaction);
 
     await feedback.removeComponents();
-    await feedback.gotRequest();
+    await feedback.working();
 
     try {
       const interationArguments = interaction.customId.split(":");
