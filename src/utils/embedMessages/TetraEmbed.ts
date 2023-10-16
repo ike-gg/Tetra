@@ -76,7 +76,6 @@ export class TetraEmbed {
     const embedTitle = getEmojiTitle("ℹ️", details.title || "Information");
 
     return new EmbedBuilder({
-      color: 0xf0f0f0,
       ...details,
       title: embedTitle,
     });
