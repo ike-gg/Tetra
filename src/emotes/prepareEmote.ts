@@ -15,6 +15,7 @@ import editEmoteByUser from "./editEmoteByUser";
 import getChoiceOptimizeRow from "../utils/elements/getChoiceOptimizeRow";
 import parseDiscordRegexName from "../utils/parseDiscordRegexName";
 import prettyBytes from "pretty-bytes";
+import { Messages } from "../constants/messages";
 
 const prepareEmote = async (
   emote: Emote,
@@ -54,7 +55,9 @@ const prepareEmote = async (
   });
 
   if (emoteBuffer.byteLength > maxEmoteSize) {
-    await feedback.exceededEmoteSize(emoteBuffer.byteLength);
+    await feedback.attention(
+      Messages.EXCEEDED_EMOTE_SIZE(emoteBuffer.byteLength)
+    );
     const optimizeChoiceRow = getChoiceOptimizeRow(taskId);
     await feedback.updateComponents([optimizeChoiceRow]);
     return;

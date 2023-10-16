@@ -2,8 +2,6 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   CommandInteraction,
-  EmbedBuilder,
-  hyperlink,
   SlashCommandBuilder,
 } from "discord.js";
 import { DiscordBot } from "../types";

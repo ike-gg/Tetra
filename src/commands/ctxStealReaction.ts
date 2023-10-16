@@ -12,6 +12,7 @@ import emotesFromReactions from "../utils/emotesFromReactions";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
+import { Messages } from "../constants/messages";
 
 const ctxStealReaction = {
   data: new ContextMenuCommandBuilder()
@@ -22,14 +23,14 @@ const ctxStealReaction = {
     client: DiscordBot
   ) {
     const feedback = new FeedbackManager(interaction, { ephemeral: true });
-    await feedback.gotRequest();
+    await feedback.working();
 
     const { reactions } = interaction.targetMessage;
     const { username } = interaction.targetMessage.author;
     const emotes = emotesFromReactions(reactions, username);
 
     if (emotes.length === 0) {
-      await feedback.notFoundReactions();
+      await feedback.error(Messages.EMOTE_NOT_FOUND);
       return;
     }
 

@@ -7,6 +7,7 @@ import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
 import checkChannel from "../emotes/source/twitch/checkChannel";
 import getEmotes from "../emotes/source/twitch/getEmotes";
+import { Messages } from "../constants/messages";
 
 const addSubEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
@@ -42,7 +43,7 @@ const addSubEmoteChannel = async (
     }
 
     if (foundEmotes.length === 0) {
-      await feedback.notFoundEmotesQuery("to change");
+      await feedback.error(Messages.EMOTE_NOT_FOUND);
       return;
     }
 

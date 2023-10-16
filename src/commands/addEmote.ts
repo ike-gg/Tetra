@@ -72,11 +72,6 @@ const importEmote = {
         )
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
-    // const ephemeral = !interaction.memberPermissions!.has(
-    //   "ManageEmojisAndStickers"
-    // );
-    // const feedback = new FeedbackManager(interaction, { ephemeral });
-
     const feedback = new FeedbackManager(interaction);
 
     if (!interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
@@ -84,7 +79,7 @@ const importEmote = {
       return;
     }
 
-    await feedback.gotRequest();
+    await feedback.working();
 
     const subcommandUsed = interaction.options.getSubcommand();
 

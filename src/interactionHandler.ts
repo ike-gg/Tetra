@@ -9,9 +9,9 @@ import {
   ExecutableSelectMenu,
 } from "./types";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
-import errorEmbed from "./utils/embedMessages/errorEmbed";
 import interactionLogger from "./utils/interactionLoggers";
 import { BANNEDLIST } from "./bannedusers";
+import { TetraEmbed } from "./utils/embedMessages/TetraEmbed";
 
 const interactionHandler = async (
   interaction: Interaction,
@@ -19,14 +19,22 @@ const interactionHandler = async (
 ) => {
   const env = process.env.env;
 
-  if (
-    BANNEDLIST.some((bannedUser) => bannedUser.userId === interaction.user.id)
-  ) {
-    if (!interaction.isRepliable()) {
+  const banDetails = BANNEDLIST.find(
+    (bannedUser) => bannedUser.userId === interaction.user.id
+  );
+
+  if (banDetails) {
+    if (!interaction.isRepliable() || !interaction.isChatInputCommand()) {
       return;
     }
-    const reason = BANNEDLIST.find((e) => e.userId === interaction.user.id);
-    interaction.reply(`banned reason: ${reason?.reason || "-"}`);
+    interaction.reply({
+      embeds: [
+        TetraEmbed.error({
+          title: "Banned",
+          description: `Reason: ${banDetails.reason || "-"}`,
+        }),
+      ],
+    });
     return;
   }
 
@@ -63,10 +71,7 @@ const interactionHandler = async (
     if (env === "production" && isDevCommand) return;
 
     if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
-      const error = errorEmbed(
-        "You are not allowed **YET** to use another users interactions!"
-      );
-      interaction.reply({ embeds: [error], ephemeral: true, files: [] });
+      interaction.deferUpdate();
       return;
     }
 
@@ -87,8 +92,8 @@ const interactionHandler = async (
     }
 
     if (!taskDetails) {
-      await feedback.removeButtons();
-      await feedback.interactionTimeOut();
+      await feedback.removeComponents();
+      await feedback.interactionTimeout();
       return;
     }
 
@@ -115,7 +120,7 @@ const interactionHandler = async (
 
       try {
         selectMenuInteraction.execute(interaction, client);
-        await feedback.removeButtons();
+        await feedback.removeComponents();
       } catch {
         console.error;
       }

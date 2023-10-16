@@ -2,8 +2,7 @@ import sharp from "sharp";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import { AutoXGifsicle } from "../utils/AutoXGifsicle";
-
-const maxEmoteSize = 262144;
+import { maxEmoteSize } from "../constants";
 
 const emoteOptimise = async (
   emoteBuffer: Buffer,
@@ -27,7 +26,6 @@ const emoteOptimise = async (
       };
 
       const side = Math.min(Math.max(_height, _width), 128);
-      console.log(side);
 
       transform === "center" &&
         buffer.resize({ fit: "cover", width: side, height: side });

@@ -23,7 +23,7 @@ const ctxStealReaction = {
   ) {
     const feedback = new FeedbackManager(interaction);
 
-    await feedback.gotRequest();
+    await feedback.working();
 
     if (!interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
       await feedback.missingPermissions();

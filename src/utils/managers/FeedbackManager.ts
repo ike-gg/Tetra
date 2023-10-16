@@ -1,22 +1,15 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 let env = (process.env.env as "development" | "production") || "production";
-import errorEmbed from "../embedMessages/errorEmbed";
-import infoEmbed from "../embedMessages/infoEmbed";
-import successfulEmbed from "../embedMessages/successfulEmbed";
-import warningEmbed from "../embedMessages/warningEmbed";
+
 import {
   ButtonInteraction,
   CommandInteraction,
-  InteractionReplyOptions,
   SelectMenuBuilder,
   SelectMenuInteraction,
-  InteractionUpdateOptions,
   GuildEmoji,
-  AttachmentPayload,
   TextChannel,
   ButtonStyle,
+  BaseMessageOptions,
+  isJSONEncodable,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -24,88 +17,82 @@ import {
   ButtonBuilder,
 } from "@discordjs/builders";
 
-import { DiscordBot, ExtractedEmote } from "../../types";
-import interactionEmbed from "../embedMessages/interactionEmbed";
-import emoteBorder from "../../emotes/emoteBorder";
-import EmoteRequest from "../elements/emoteRequest";
-import URLButton from "../elements/URLButton";
-import { maxEmoteSize } from "../../constants";
-import prettyBytes from "pretty-bytes";
-import sharp from "sharp";
+import { DiscordBot } from "../../types";
+import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
+import { Messages } from "../../constants/messages";
 
 export class FeedbackManager {
-  interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction;
   client: DiscordBot;
   ephemeral: boolean;
-  isReplied = false;
 
   constructor(
-    interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction,
+    public interaction:
+      | CommandInteraction
+      | ButtonInteraction
+      | SelectMenuInteraction,
     options?: {
       ephemeral?: boolean;
     }
   ) {
     let ephemeral = options?.ephemeral || false;
 
-    this.interaction = interaction;
     this.client = interaction.client as DiscordBot;
     this.ephemeral = ephemeral;
-    this.isReplied = interaction.replied;
   }
 
-  async sendMessage(options: {
-    embeds?: EmbedBuilder[];
-    components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[];
-    files?: AttachmentPayload[];
-    imageInEmbed?: string;
-  }) {
-    const { embeds, components, files } = options;
+  async sendMessage(content: BaseMessageOptions) {
+    const { embeds } = content;
 
     if (embeds && embeds.length > 0) {
       const lastIndex = embeds.length - 1;
       let lastEmbedText = this.client.user!.username;
 
       if (env === "development") {
-        lastEmbedText += " | Development stage.";
+        lastEmbedText += " | dev";
       }
 
-      embeds[lastIndex].setFooter({
+      let lastEmbedData = embeds[lastIndex];
+      if (!lastEmbedData) return;
+      if (isJSONEncodable(lastEmbedData))
+        lastEmbedData = lastEmbedData.toJSON();
+
+      const lastEmbedBuilder = new EmbedBuilder(lastEmbedData);
+      lastEmbedBuilder.setFooter({
         text: lastEmbedText,
         iconURL: this.client.user!.avatarURL()!,
       });
+
+      embeds[lastIndex] = lastEmbedBuilder.toJSON();
     }
 
-    const messagePayload: InteractionReplyOptions | InteractionUpdateOptions = {
-      embeds: embeds,
-      components: components,
-      files,
-      ephemeral: this.ephemeral,
-    };
-
-    this.isReplied = this.interaction.replied;
-
-    if (this.isReplied) {
-      await this.interaction.editReply(messagePayload);
+    if (this.interaction.replied) {
+      await this.interaction.editReply(content);
     } else {
       if (!(this.interaction instanceof CommandInteraction)) {
-        await this.interaction.update({ embeds, components, files });
+        await this.interaction.update(content);
       } else {
-        await this.interaction.reply(messagePayload);
+        await this.interaction.reply(content);
       }
     }
-
-    this.isReplied = true;
   }
 
-  async info(title: string, message?: string) {
-    const embed = infoEmbed(title, message);
-    await this.sendMessage({ embeds: [embed] });
+  async info(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.info(content)] });
   }
 
-  async error(message: string, ephemeral: boolean = false) {
-    const embed = errorEmbed(
-      `${message}\n\nSomething unexpected happened? Use button below to send developers a snapshot of error.`
-    );
+  async success(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.success(content)] });
+  }
+
+  async attention(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.attention(content)] });
+  }
+
+  async warning(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.warning(content)] });
+  }
+
+  async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
     row.addComponents(
       new ButtonBuilder()
@@ -114,25 +101,10 @@ export class FeedbackManager {
         .setLabel(`Send developers log`)
         .setStyle(ButtonStyle.Danger)
     );
-    await this.sendMessage({ embeds: [embed], components: [row] });
-  }
-
-  async success(title: string, description: string, image?: string) {
-    const embed = successfulEmbed(title, description, image);
-    await this.sendMessage({ embeds: [embed] });
-  }
-
-  async userInteraction(title: string, description: string, image?: string) {
-    const embed = interactionEmbed(title, description, image);
-    await this.sendMessage({ embeds: [embed] });
-  }
-
-  async warning(
-    message: string,
-    components?: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[]
-  ) {
-    const embed = warningEmbed(message);
-    await this.sendMessage({ embeds: [embed], components });
+    await this.sendMessage({
+      embeds: [TetraEmbed.error(content)],
+      components: [row],
+    });
   }
 
   async updateComponents(
@@ -141,140 +113,39 @@ export class FeedbackManager {
     await this.sendMessage({ components: components });
   }
 
-  async removeButtons() {
+  async removeComponents() {
     await this.sendMessage({ components: [], files: [] });
   }
 
-  async editEmoteByUser(emote: ExtractedEmote) {
-    let aspectRatio: number = 1;
-
-    const emoteSharp = await sharp(emote.finalData, {
-      animated: emote.animated,
-    });
-    const { width, height, format, pages } = await emoteSharp.metadata();
-
-    if (format === "gif") {
-      const gifHeight = (height || 1) / (pages || 1);
-      aspectRatio = (width || 1) / gifHeight;
-    } else {
-      aspectRatio = (width || 1) / (height || 1);
-    }
-
-    const emoteBufferPreview = await emoteSharp
-      .gif()
-      .resize({
-        width: 64,
-        height: 64,
-        fit: "contain",
-        background: { alpha: 0.05, r: 0, g: 0, b: 0 },
-      })
-      .toBuffer();
-
-    await this.sendMessage({
-      files: [{ attachment: emoteBufferPreview, name: "preview.gif" }],
-    });
-    await this.userInteraction(
-      "Edit emote",
-      `Rescale or rename your emote now.${
-        aspectRatio >= 1.5 || aspectRatio <= 0.5
-          ? "\n\n> It seems like your emote is a bit too wide, consider using scaling options to get best results."
-          : ""
-      }`,
-      "attachment://preview.gif"
-    );
+  async updateFiles(files: BaseMessageOptions["files"]) {
+    await this.sendMessage({ files: files });
   }
 
-  async removeSelectMenu() {
-    await this.sendMessage({ components: [] });
+  async working() {
+    await this.info(Messages.WORKING);
   }
 
-  async gotRequest() {
-    await this.info("Working on it", "<a:tetraLoading:1162518404557721620>");
-  }
-
-  async interactionTimeOut() {
-    await this.error(
-      "This interaction has expired, that means the time you have to repsond to bot has passed."
-    );
-  }
-
-  async discordEmotesPP() {
-    await this.error(
-      "Currently you can only postprocess emotes that comes from 7TV.\nEmotes from discord should be supported in the future."
-    );
+  async interactionTimeout() {
+    await this.error(Messages.INTERACTION_TIMEOUT);
   }
 
   async rateLimited() {
-    await this.warning(
-      "It seems that discord has limited the bot, it will automatically continue the process when possible."
-    );
+    await this.warning(Messages.RATE_LIMIT_EXCEEDED);
   }
 
   async notFoundEmotes() {
-    await this.error("I couldn't find emotes in this message.");
-  }
-
-  async notFoundReactions() {
-    await this.error("I couldn't find reactions to this message.");
-  }
-
-  async notFoundEmotesQuery(query: string) {
-    await this.error(`I couldn't find any emotes with \`${query}\` query.`);
-  }
-
-  async moreThanOneEmote() {
-    await this.error(
-      "Messages contains more than one emotes are not supported yet."
-    );
-  }
-
-  async emoteSameServer() {
-    await this.error("This emote is from this server.");
+    await this.error(Messages.EMOTE_NOT_FOUND);
   }
 
   async missingPermissions() {
-    await this.error(
-      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!",
-      true
-    );
-  }
-
-  async missingPermissionsWithRequest() {
-    await this.warning(
-      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!\n\nInstead you can create request for moderators to add emote, use button below.",
-      [EmoteRequest("xd")]
-    );
-  }
-
-  async missingGuild() {
-    await this.error("Ooops! I couldn't find the server, please try again.");
-  }
-
-  async missingCommonGuilds() {
-    await this.error(
-      "I couldn't find common servers where you have permissions to manage emotes."
-    );
-  }
-
-  async selectServerSteal() {
-    await this.success(
-      "Got it!",
-      "Now select server where you'd like to import emote.\n\nKeep in mind I must be on this server and YOU must have permission to add emotes there."
-    );
-  }
-
-  async successedAddedEmote(emote: GuildEmoji) {
-    await this.success(
-      "Success!",
-      `Successfully added \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
-      emote.url
-    );
+    await this.error(Messages.MISSING_PERMISSIONS);
   }
 
   async invalidReference() {
-    await this.error("Invalid URL.");
+    await this.error(Messages.INVALID_REFERENCE);
   }
 
+  //special for logging
   async logsOfUses(emote: GuildEmoji) {
     try {
       const announceChannel = (await this.client.channels.fetch(
@@ -293,42 +164,6 @@ export class FeedbackManager {
     } catch (error) {
       console.error("Cant reach announcement channel");
     }
-  }
-
-  async successedEditedEmote(emote: GuildEmoji) {
-    await this.success(
-      "Success!",
-      `Successfully edited \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
-      emote.url
-    );
-  }
-
-  async exceededEmoteSize(size: number) {
-    const maxSize = prettyBytes(maxEmoteSize);
-    const emoteSize = prettyBytes(size);
-    const differenceSize = prettyBytes(size - maxEmoteSize);
-    await this.warning(`Emote exceeded maximum size.
-    **${emoteSize}** / ${maxSize} *(exceeds by ${differenceSize})*
-
-    Choose the file optimization option. If the file is large, manual correction may yield better results. However, for smaller files, automatic optimization should work well.`);
-  }
-
-  async manualAdjustment() {
-    const row = new ActionRowBuilder<ButtonBuilder>();
-    const URL =
-      env === "development"
-        ? `http://localhost:3001/dashboard`
-        : `https://tetra.lol/dashboard`;
-    await this.removeButtons();
-    await this.sendMessage({
-      embeds: [
-        successfulEmbed(
-          "Manual adjustment",
-          `You can now manually adjust the emote visiting dashboard page and authorising yourself.\n${URL}`
-        ),
-      ],
-      components: [row.addComponents(URLButton("Manual adjustment", URL))],
-    });
   }
 
   async notFoundFile() {

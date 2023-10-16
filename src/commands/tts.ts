@@ -10,7 +10,7 @@ import { getAllAudioBase64 } from "google-tts-api";
 const importEmote = {
   data: new SlashCommandBuilder()
     .setName("tts")
-    .setDescription("true tts")
+    .setDescription("TTS mp3")
     .addStringOption((option) =>
       option
         .setName("lang")

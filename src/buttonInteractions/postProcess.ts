@@ -5,7 +5,7 @@ import * as TaskTypes from "../types/TaskTypes";
 import rename from "../postProcess/rename";
 import transform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
-import interactionLogger, { manualLogger } from "../utils/interactionLoggers";
+import { manualLogger } from "../utils/interactionLoggers";
 import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
@@ -25,7 +25,7 @@ const selectEmote = {
       const { feedback } = taskDetails;
 
       if (!taskDetails) {
-        await feedback.interactionTimeOut();
+        await feedback.interactionTimeout();
         return;
       }
 
@@ -48,7 +48,7 @@ const selectEmote = {
       }
 
       if (action === "auto") {
-        await genericFeedbackManager.removeButtons();
+        await genericFeedbackManager.removeComponents();
         const { emote } = taskDetails;
         const optimisedEmote = await emoteOptimise(emote.finalData, {
           animated: emote.animated,
@@ -70,7 +70,8 @@ const selectEmote = {
 
         TaskManager.getInstance().webAccess(taskId);
         try {
-          await feedback.manualAdjustment();
+          // await feedback.manualAdjustment();
+          await feedback.warning("Not available right now.");
         } catch (error) {
           await feedback.error(String(error));
         }
