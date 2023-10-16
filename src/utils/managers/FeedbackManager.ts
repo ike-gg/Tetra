@@ -17,11 +17,9 @@ import {
   ButtonBuilder,
 } from "@discordjs/builders";
 
-import { DiscordBot, ExtractedEmote } from "../../types";
-import { maxEmoteSize } from "../../constants";
-import prettyBytes from "pretty-bytes";
-import sharp from "sharp";
+import { DiscordBot } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
+import { Messages } from "../../constants/messages";
 
 export class FeedbackManager {
   client: DiscordBot;
@@ -50,7 +48,7 @@ export class FeedbackManager {
       let lastEmbedText = this.client.user!.username;
 
       if (env === "development") {
-        lastEmbedText += " | Development stage.";
+        lastEmbedText += " | dev";
       }
 
       let lastEmbedData = embeds[lastIndex];
@@ -116,157 +114,38 @@ export class FeedbackManager {
   }
 
   async removeComponents() {
-    await this.sendMessage({ components: [] });
+    await this.sendMessage({ components: [], files: [] });
   }
 
-  async debug() {
-    const randomTexts = [
-      "Abbott, Hickle and Ratke",
-      "Sawayn and Sons",
-      "Aufderhar - Ondricka",
-      "Rutherford and Sons",
-      "Mitchell, Schmitt and Balistreri",
-      "Koss, Lakin and Miller",
-    ];
-
-    await this.error({
-      description: randomTexts[Math.floor(Math.random() * randomTexts.length)],
-    });
+  async updateFiles(files: BaseMessageOptions["files"]) {
+    await this.sendMessage({ files: files });
   }
 
-  async editEmoteByUser(emote: ExtractedEmote) {
-    let aspectRatio: number = 1;
-
-    const emoteSharp = await sharp(emote.finalData, {
-      animated: emote.animated,
-    });
-    const { width, height, format, pages } = await emoteSharp.metadata();
-
-    if (format === "gif") {
-      const gifHeight = (height || 1) / (pages || 1);
-      aspectRatio = (width || 1) / gifHeight;
-    } else {
-      aspectRatio = (width || 1) / (height || 1);
-    }
-
-    const emoteBufferPreview = await emoteSharp
-      .gif()
-      .resize({
-        width: 64,
-        height: 64,
-        fit: "contain",
-        background: { alpha: 0.05, r: 0, g: 0, b: 0 },
-      })
-      .toBuffer();
-
-    await this.sendMessage({
-      files: [{ attachment: emoteBufferPreview, name: "preview.gif" }],
-    });
-    await this.attention({
-      title: "Edit emote",
-      description: `Rescale or rename your emote now.${
-        aspectRatio >= 1.5 || aspectRatio <= 0.5
-          ? "\n\n> It seems like your emote is a bit too wide, consider using scaling options to get best results."
-          : ""
-      }`,
-      image: {
-        url: "attachment://preview.gif",
-      },
-    });
+  async working() {
+    await this.info(Messages.WORKING);
   }
 
-  async gotRequest() {
-    await this.info({
-      title: "Working on it",
-      description: "<a:tetraLoading:1162518404557721620>",
-    });
-  }
-
-  async interactionTimeOut() {
-    await this.error(
-      "This interaction has expired, that means the time you have to repsond to bot has passed."
-    );
-  }
-
-  async discordEmotesPP() {
-    await this.error(
-      "Currently you can only postprocess emotes that comes from 7TV.\nEmotes from discord should be supported in the future."
-    );
+  async interactionTimeout() {
+    await this.error(Messages.INTERACTION_TIMEOUT);
   }
 
   async rateLimited() {
-    await this.warning(
-      "It seems that discord has limited the bot, it will automatically continue the process when possible."
-    );
+    await this.warning(Messages.RATE_LIMIT_EXCEEDED);
   }
 
   async notFoundEmotes() {
-    await this.error("I couldn't find emotes in this message.");
-  }
-
-  async notFoundReactions() {
-    await this.error("I couldn't find reactions to this message.");
-  }
-
-  async notFoundEmotesQuery(query: string) {
-    await this.error(`I couldn't find any emotes with \`${query}\` query.`);
-  }
-
-  async moreThanOneEmote() {
-    await this.error(
-      "Messages contains more than one emotes are not supported yet."
-    );
-  }
-
-  async emoteSameServer() {
-    await this.error("This emote is from this server.");
+    await this.error(Messages.EMOTE_NOT_FOUND);
   }
 
   async missingPermissions() {
-    await this.error(
-      "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!"
-    );
-  }
-
-  // async missingPermissionsWithRequest() {
-  //   await this.warning(
-  //     "Ooops! It look's like you dont have permissions to manage emojis and stickers on this server!\n\nInstead you can create request for moderators to add emote, use button below.",
-  //     [EmoteRequest("xd")]
-  //   );
-  // }
-
-  async missingGuild() {
-    await this.error("Ooops! I couldn't find the server, please try again.");
-  }
-
-  async missingCommonGuilds() {
-    await this.error(
-      "I couldn't find common servers where you have permissions to manage emotes."
-    );
-  }
-
-  async selectServerSteal() {
-    await this.success({
-      title: "Got it!",
-      description:
-        "Now select server where you'd like to import emote.\n\nKeep in mind I must be on this server and YOU must have permission to add emotes there.",
-    });
-  }
-
-  async successedAddedEmote(emote: GuildEmoji) {
-    await this.success({
-      title: "Success!",
-      description: `Successfully added \`${emote.name}\` emote! ${emote} in \`${emote.guild.name}\``,
-      image: {
-        url: emote.url,
-      },
-    });
+    await this.error(Messages.MISSING_PERMISSIONS);
   }
 
   async invalidReference() {
-    await this.error("Invalid URL.");
+    await this.error(Messages.INVALID_REFERENCE);
   }
 
+  //special for logging
   async logsOfUses(emote: GuildEmoji) {
     try {
       const announceChannel = (await this.client.channels.fetch(
@@ -286,34 +165,6 @@ export class FeedbackManager {
       console.error("Cant reach announcement channel");
     }
   }
-
-  async exceededEmoteSize(size: number) {
-    const maxSize = prettyBytes(maxEmoteSize);
-    const emoteSize = prettyBytes(size);
-    const differenceSize = prettyBytes(size - maxEmoteSize);
-    await this.warning(`Emote exceeded maximum size.
-    **${emoteSize}** / ${maxSize} *(exceeds by ${differenceSize})*
-
-    Choose the file optimization option. If the file is large, manual correction may yield better results. However, for smaller files, automatic optimization should work well.`);
-  }
-
-  // async manualAdjustment() {
-  //   const row = new ActionRowBuilder<ButtonBuilder>();
-  //   const URL =
-  //     env === "development"
-  //       ? `http://localhost:3001/dashboard`
-  //       : `https://tetra.lol/dashboard`;
-  //   await this.removeButtons();
-  //   await this.sendMessage({
-  //     embeds: [
-  //       successfulEmbed(
-  //         "Manual adjustment",
-  //         `You can now manually adjust the emote visiting dashboard page and authorising yourself.\n${URL}`
-  //       ),
-  //     ],
-  //     components: [row.addComponents(URLButton("Manual adjustment", URL))],
-  //   });
-  // }
 
   async notFoundFile() {
     await this.error("Not found any files in message.");
