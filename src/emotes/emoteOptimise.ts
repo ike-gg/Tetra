@@ -2,8 +2,7 @@ import sharp from "sharp";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import { AutoXGifsicle } from "../utils/AutoXGifsicle";
-
-const maxEmoteSize = 262144;
+import { maxEmoteSize } from "../constants";
 
 const emoteOptimise = async (
   emoteBuffer: Buffer,

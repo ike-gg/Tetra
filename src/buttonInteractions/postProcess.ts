@@ -5,7 +5,7 @@ import * as TaskTypes from "../types/TaskTypes";
 import rename from "../postProcess/rename";
 import transform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
-import interactionLogger, { manualLogger } from "../utils/interactionLoggers";
+import { manualLogger } from "../utils/interactionLoggers";
 import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";

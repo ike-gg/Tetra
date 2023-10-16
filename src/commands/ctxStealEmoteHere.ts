@@ -6,11 +6,8 @@ import {
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import findEmotesFromMessage from "../utils/findEmotesInMessage";
-import isEmoteFromThisGuild from "../utils/isEmoteFromThisGuild";
-import emoteDiscord from "../emotes/emoteDiscord";
 
-import { DiscordBot, ExtractedEmote } from "../types";
-import editEmoteByUser from "../emotes/editEmoteByUser";
+import { DiscordBot } from "../types";
 import prepareEmote from "../emotes/prepareEmote";
 import { Messages } from "../constants/messages";
 

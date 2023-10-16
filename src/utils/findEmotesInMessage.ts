@@ -1,4 +1,4 @@
-import { Emote, FoundEmotesDiscord } from "../types";
+import { Emote } from "../types";
 
 const emoteRegex = /((?<!\\)<:[^:]+:(\d+)>)/gmu;
 const animatedEmoteRegex = /((?<!\\)<a:[^:]+:(\d+)>)/gmu;

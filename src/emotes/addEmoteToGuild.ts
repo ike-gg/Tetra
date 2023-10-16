@@ -1,6 +1,3 @@
-import { Guild } from "discord.js";
-import { ExtractedEmote } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import TaskManager from "../utils/managers/TaskManager";
 import * as TaskTypes from "../types/TaskTypes";
 import { Messages } from "../constants/messages";

@@ -1,6 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord.js";
-import { SupportedEmotesOrigin } from "../../types";
 
 const getPostProcessRow = (
   taskId: string,

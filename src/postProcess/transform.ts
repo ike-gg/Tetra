@@ -1,5 +1,5 @@
-import { ButtonInteraction, GuildEmoji } from "discord.js";
-import { DiscordBot, ExtractedEmote } from "../types";
+import { ButtonInteraction } from "discord.js";
+import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
 import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
