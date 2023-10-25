@@ -1,16 +1,9 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
     provider = "mysql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
     relationMode = "prisma"
 }
@@ -23,6 +16,19 @@ model ManualAdjustment {
     emoteName String
     emoteUrl String
     expiresOn DateTime
+    accountId String
+    account Account? @relation(fields: [accountId], references: [providerAccountId])
+
+    @@index([accountId])
+}
+
+model Emotes {
+    id String @id @default(cuid())
+    emoteName String
+    emoteUrl String
+    reference String
+    expiresOn DateTime
+    origin EmoteOrigin
     accountId String
     account Account? @relation(fields: [accountId], references: [providerAccountId])
 
@@ -44,7 +50,8 @@ model Account {
     id_token          String? @db.Text
     session_state     String?
     user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    manualAdjustment ManualAdjustment[]
+    manualAdjustment  ManualAdjustment[]
+    emotes            Emotes[]
 
     @@unique([provider, providerAccountId])
     @@index([userId])
@@ -76,4 +83,13 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+enum EmoteOrigin {
+    DISCORD
+    SEVENTV
+    BTTV
+    FFZ
+    TWITCH
+    CUSTOM
 }
