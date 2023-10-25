@@ -58,7 +58,7 @@ const prepareEmote = async (
     await feedback.attention(
       Messages.EXCEEDED_EMOTE_SIZE(emoteBuffer.byteLength)
     );
-    const optimizeChoiceRow = getChoiceOptimizeRow(taskId);
+    const optimizeChoiceRow = getChoiceOptimizeRow(taskId, emote.animated);
     await feedback.updateComponents([optimizeChoiceRow]);
     return;
   }

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord.js";
 
-const getChoiceOptimizeRow = (taskId: string) => {
+const getChoiceOptimizeRow = (taskId: string, isAnimated: boolean) => {
   const row = new ActionRowBuilder<ButtonBuilder>();
   row.addComponents(
     new ButtonBuilder()
@@ -10,14 +10,14 @@ const getChoiceOptimizeRow = (taskId: string) => {
       .setLabel("Auto optimization")
       .setStyle(ButtonStyle.Secondary)
   );
-  row.addComponents(
-    new ButtonBuilder()
-      .setCustomId(`${taskId}:manual`)
-      .setEmoji({ name: "🦦" })
-      .setLabel("Manual adjustment")
-      .setStyle(ButtonStyle.Primary)
-      .setDisabled(true)
-  );
+  isAnimated &&
+    row.addComponents(
+      new ButtonBuilder()
+        .setCustomId(`${taskId}:manual`)
+        .setEmoji({ name: "🦦" })
+        .setLabel("Manual adjustment")
+        .setStyle(ButtonStyle.Primary)
+    );
   return row;
 };
 

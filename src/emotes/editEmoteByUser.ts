@@ -4,6 +4,11 @@ import getPostProcessRow from "../utils/elements/getPostProcessRow";
 import getSubmitEmoteRow from "../utils/elements/getSubmitEmoteRow";
 import getManualAdjustmentRow from "../utils/elements/getManualAdjustmentRow";
 import sharp from "sharp";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  StringSelectMenuBuilder,
+} from "discord.js";
 
 const editEmoteByUser = async (taskId: string) => {
   // let origin: "postProcess" | undefined;
@@ -16,19 +21,29 @@ const editEmoteByUser = async (taskId: string) => {
   let isRateLimited: NodeJS.Timeout | undefined;
 
   try {
+    const messageComponents: ActionRowBuilder<
+      ButtonBuilder | StringSelectMenuBuilder
+    >[] = [];
+
     const postProcessRow = getPostProcessRow(taskId, {
       isEmoteAnimated: emote.animated,
     });
+    messageComponents.push(postProcessRow);
 
-    const manualRow = getManualAdjustmentRow(taskId);
+    if (emote.animated) {
+      const manualRow = getManualAdjustmentRow(taskId);
+      messageComponents.push(manualRow);
+    }
 
     const submitRow = getSubmitEmoteRow(taskId, emote.name);
+    messageComponents.push(submitRow);
 
     let aspectRatio: number = 1;
 
     const emoteSharp = await sharp(emote.finalData, {
       animated: emote.animated,
     });
+
     const { width, height, format, pages } = await emoteSharp.metadata();
 
     if (format === "gif") {
@@ -64,7 +79,7 @@ const editEmoteByUser = async (taskId: string) => {
       },
     });
 
-    await feedback.updateComponents([postProcessRow, manualRow, submitRow]);
+    await feedback.updateComponents(messageComponents);
   } catch (error) {
     if (isRateLimited) clearTimeout(isRateLimited);
     await feedback.error(String(error));
