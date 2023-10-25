@@ -84,6 +84,20 @@ export class FeedbackManager {
     await this.sendMessage({ embeds: [TetraEmbed.success(content)] });
   }
 
+  async panel(content: TetraEmbedContent) {
+    const row = new ActionRowBuilder<ButtonBuilder>();
+    row.addComponents(
+      new ButtonBuilder()
+        .setStyle(ButtonStyle.Link)
+        .setLabel(`Open Tetra Panel`)
+        .setURL("https://panel.tetra.lol")
+    );
+    await this.sendMessage({
+      embeds: [TetraEmbed.panel(content)],
+      components: [row],
+    });
+  }
+
   async attention(content: TetraEmbedContent) {
     await this.sendMessage({ embeds: [TetraEmbed.attention(content)] });
   }
@@ -122,7 +136,7 @@ export class FeedbackManager {
   }
 
   async working() {
-    await this.info(Messages.WORKING);
+    await this.info(Messages.WORKING());
   }
 
   async interactionTimeout() {
