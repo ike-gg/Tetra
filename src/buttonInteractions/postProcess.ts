@@ -1,4 +1,9 @@
-import { ButtonInteraction } from "discord.js";
+import {
+  ActionRow,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+} from "discord.js";
 
 import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
@@ -10,6 +15,7 @@ import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import URLButton from "../utils/elements/URLButton";
 
 const selectEmote = {
   data: { name: "postProcess" },
@@ -69,9 +75,10 @@ const selectEmote = {
         manualLogger(`user (${userId}) ${username} used manual adjustment!`);
 
         TaskManager.getInstance().webAccess(taskId);
+
         try {
-          // await feedback.manualAdjustment();
-          await feedback.warning("Not available right now.");
+          await feedback.removeComponents();
+          await feedback.panel("Manual adjustment available on Panel.");
         } catch (error) {
           await feedback.error(String(error));
         }

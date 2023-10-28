@@ -1,7 +1,8 @@
 import { randomBytes } from "crypto";
 import * as TaskTypes from "../../types/TaskTypes";
+import { PrismaClient } from "@prisma/client";
 
-type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 class TaskManager {
   private static instance: TaskManager;
@@ -42,11 +43,40 @@ class TaskManager {
     return available;
   }
 
-  webAccess(id: string) {
-    const taskIndex = this.tasks.findIndex((task) => task.id === id);
-    if (taskIndex === -1) return false;
-    this.tasks[taskIndex].webAccess = true;
-    return true;
+  async webAccess(id: string) {
+    const _task = this.tasks.find((t) => t.id === id);
+    if (!_task) return;
+    if (_task.action !== "postProcess") return;
+
+    const webTaskExpireTime = 1000 * 60 * 30;
+    const currentTime = new Date();
+
+    const { emote, guild, interaction } = _task as TaskTypes.PostProcessEmote;
+    const prisma = new PrismaClient();
+    try {
+      await prisma.manualAdjustment.create({
+        data: {
+          guildIcon: guild.iconURL() ?? undefined,
+          guildName: guild.name,
+          emoteName: emote.name,
+          emoteUrl: emote.file.url,
+          expiresOn: new Date(currentTime.getTime() + webTaskExpireTime),
+          guildId: guild.id,
+          accountId: interaction!.user.id,
+        },
+        include: {
+          account: { where: { id: interaction!.user.id } },
+        },
+      });
+      this.removeTask(id);
+    } catch (e) {
+      console.error(e);
+    }
+
+    // const taskIndex = this.tasks.findIndex((task) => task.id === id);
+    // if (taskIndex === -1) return false;
+    // this.tasks[taskIndex].webAccess = true;
+    // return true;
   }
 
   verify(taskId: string, guildId: string, userId: string) {
