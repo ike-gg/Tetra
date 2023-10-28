@@ -4,43 +4,45 @@ dotenv.config();
 import { Client, GatewayIntentBits, Events } from "discord.js";
 
 import { DiscordBot } from "./types";
+import DiscordOauth2 from "discord-oauth2";
 import TaskManager from "./utils/managers/TaskManager";
 import importInteractions from "./importInteractions";
 import interactionHandler from "./interactionHandler";
-// import express from "express";
-// import bodyParser from "body-parser";
-// import cors from "cors";
-// import apiRouter from "./api/apiRouter";
-// import cookieParser from "cookie-parser";
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import apiRouter from "./api/apiRouter";
+import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
 
-// const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 
-// const app = express();
+const app = express();
 
-// const limiter = rateLimit({
-//   windowMs: 3000,
-//   max: 1,
-// });
+const limiter = rateLimit({
+  windowMs: 30000,
+  max: 20,
+});
 
-// app.use(cookieParser());
-// app.use(
-//   cors({
-//     credentials: true,
-//     origin: [
-//       "https://tetra.lol",
-//       "http://localhost:3001",
-//       "http://localhost:3000",
-//       "https://www.tetra.lol",
-//     ],
-//   })
-// );
-// app.use(limiter);
-// app.use(bodyParser.json({ limit: "10mb" }));
-// app.use("/", apiRouter);
-// app.listen(PORT);
+app.use(cookieParser());
+app.use(
+  cors({
+    credentials: true,
+    origin: [
+      "https://tetra.lol",
+      "http://localhost:3001",
+      "http://localhost:3000",
+      "https://www.tetra.lol",
+    ],
+  })
+);
+app.use(limiter);
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use("/", apiRouter);
+app.listen(PORT);
 
 if (!env) {
   console.error(
@@ -63,6 +65,13 @@ client.tasks = TaskManager.getInstance();
 
 client.on("ready", async () => {
   console.log("Bot ready");
+  const guilds = client.guilds.cache
+    .map((e) => ({
+      name: e.name,
+      count: e.memberCount,
+    }))
+    .sort((a, b) => a.count - b.count);
+  console.table(guilds);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -84,4 +93,9 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 client.login(discordBotToken);
 
-export { client };
+const discordOauth = new DiscordOauth2({
+  clientId: process.env.oauthClientId,
+  clientSecret: process.env.oauthClientSecret,
+});
+
+export { client, discordOauth };
