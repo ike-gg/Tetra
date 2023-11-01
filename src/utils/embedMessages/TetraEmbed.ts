@@ -26,7 +26,7 @@ export class TetraEmbed {
 
   static success(content: TetraEmbedContent) {
     const details = this.__transform(content);
-    const embedTitle = getEmojiTitle("✅", details.title || "Success");
+    const embedTitle = getEmojiTitle("🟩", details.title || "Success");
 
     return new EmbedBuilder({
       color: 0x3acf38,
@@ -38,7 +38,7 @@ export class TetraEmbed {
   static error(content: TetraEmbedContent) {
     const details = this.__transform(content);
     const embedTitle = getEmojiTitle(
-      "❌",
+      "🟥",
       details.title || "Something went wrong"
     );
 
@@ -60,9 +60,20 @@ export class TetraEmbed {
     });
   }
 
+  static panel(content: TetraEmbedContent) {
+    const details = this.__transform(content);
+    const embedTitle = getEmojiTitle("⬜", details.title || "Tetra Panel");
+
+    return new EmbedBuilder({
+      color: 0xffffff,
+      ...details,
+      title: embedTitle,
+    });
+  }
+
   static warning(content: TetraEmbedContent) {
     const details = this.__transform(content);
-    const embedTitle = getEmojiTitle("⚠️", details.title || "Warning");
+    const embedTitle = getEmojiTitle("🟨", details.title || "Warning");
 
     return new EmbedBuilder({
       color: 0xf7e139,
@@ -73,9 +84,10 @@ export class TetraEmbed {
 
   static info(content: TetraEmbedContent) {
     const details = this.__transform(content);
-    const embedTitle = getEmojiTitle("ℹ️", details.title || "Information");
+    const embedTitle = getEmojiTitle("🟦", details.title || "Information");
 
     return new EmbedBuilder({
+      color: 0x0096ff,
       ...details,
       title: embedTitle,
     });

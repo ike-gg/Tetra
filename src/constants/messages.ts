@@ -7,14 +7,27 @@ import { maxEmoteSize } from ".";
 
 type T = TetraEmbedContent;
 
+const loadingEmotes = [
+  "<a:tetraLoading:1165905111432839171>",
+  "<a:tetraLoading:1165904467120627723>",
+  "<a:tetraLoading:1165904251252391997>",
+  "<a:tetraLoading:1165904242997985311>",
+  "<a:tetraLoading:1165904168205156372>",
+  "<a:tetraLoading:1165904037800050788>",
+];
+const getRandomLoadingEmote = () =>
+  loadingEmotes[Math.floor(Math.random() * loadingEmotes.length)];
+
 export class Messages {
   //generic
   static readonly INTERACTION_TIMEOUT: T =
     "This interaction has timed out. Please create a new one.";
-  static readonly WORKING: T = {
-    title: "Working on it...",
-    description: "<a:tetraLoading:1162518404557721620>",
-  };
+  static WORKING(): T {
+    return {
+      title: "Working on it...",
+      description: getRandomLoadingEmote(),
+    };
+  }
   static readonly RATE_LIMIT_EXCEEDED: T =
     "The bot is rate limited. The action will be automatically carried out once the limit expires.";
   static readonly EMOTE_NOT_FOUND: T = "Emote(s) not found.";
