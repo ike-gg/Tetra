@@ -36,6 +36,7 @@ app.use(
       "http://localhost:3001",
       "http://localhost:3000",
       "https://www.tetra.lol",
+      "https://panel.tetra.lol",
     ],
   })
 );
