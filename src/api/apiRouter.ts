@@ -8,8 +8,9 @@ const apiRouter = Router();
 apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
   console.log(`request`, req.path, req.method);
   const nextAuthSession = req.cookies["__Secure-next-auth.session-token"];
+
   if (!nextAuthSession) {
-    res.status(401).json({ error: "Unauthorized." });
+    res.status(401).json({ error: "Unauthorized. missing auth" });
     return;
   }
 
@@ -21,7 +22,7 @@ apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
 
   if (!currentSession) {
     await prisma.$disconnect();
-    res.status(401).json({ error: "Unauthorized." });
+    res.status(401).json({ error: "Unauthorized. missing session" });
     return;
   }
 
@@ -31,7 +32,7 @@ apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
 
   if (!currentAccount || !currentAccount.access_token) {
     await prisma.$disconnect();
-    res.status(401).json({ error: "Unauthorized." });
+    res.status(401).json({ error: "Unauthorized. missing acc or tkn" });
     return;
   }
 
