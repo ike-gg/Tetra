@@ -71,6 +71,8 @@ class TaskManager {
       this.removeTask(id);
     } catch (e) {
       console.error(e);
+    } finally {
+      await prisma.$disconnect();
     }
 
     // const taskIndex = this.tasks.findIndex((task) => task.id === id);

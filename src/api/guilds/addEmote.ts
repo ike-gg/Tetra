@@ -79,9 +79,10 @@ export default async (req: Request, res: Response) => {
           accountId: user.id,
         },
       });
+      await prisma.$disconnect();
       res.status(500).json({
         error:
-          "Emote is too large, but Manual Adjustment task was asigned to your Panel. Check it now.",
+          "Emote is too large. Manual Adjustment has been assigned to your account. Refresh the page.",
       });
       return;
     }

@@ -53,6 +53,7 @@ const ctxStealEmote = {
           reference: emote.id,
         })),
       });
+      await prisma.$disconnect();
       await feedback.panel("Emote(s) saved to Panel.");
     } catch (error) {
       await feedback.error(String(error));

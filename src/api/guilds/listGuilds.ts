@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
-import DiscordOauth2 from "discord-oauth2";
 import { client, discordOauth } from "../..";
 import { PermissionsBitField } from "discord.js";
-import { bigint } from "zod";
 
 export default async (req: Request, res: Response) => {
   const accessToken = res.locals.accessToken as string;

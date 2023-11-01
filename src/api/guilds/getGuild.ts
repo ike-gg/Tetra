@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { client } from "../..";
+import { client, discordOauth } from "../..";
 
 export default async (req: Request, res: Response) => {
   const accessToken = res.locals.accessToken as string;
@@ -11,6 +11,15 @@ export default async (req: Request, res: Response) => {
   }
 
   try {
+    const userGuilds = await discordOauth.getUserGuilds(accessToken);
+
+    const isUserInGuild = userGuilds.some((guild) => guild.id === guildid);
+
+    if (!isUserInGuild) {
+      res.status(401).json({ error: "Not authorized." });
+      return;
+    }
+
     const guild = await client.guilds.fetch(guildid);
 
     if (!guild) {

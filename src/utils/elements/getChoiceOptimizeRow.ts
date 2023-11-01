@@ -14,7 +14,7 @@ const getChoiceOptimizeRow = (taskId: string, isAnimated: boolean) => {
     row.addComponents(
       new ButtonBuilder()
         .setCustomId(`${taskId}:manual`)
-        .setEmoji({ name: "🦦" })
+        .setEmoji({ name: "✨" })
         .setLabel("Manual adjustment")
         .setStyle(ButtonStyle.Primary)
     );

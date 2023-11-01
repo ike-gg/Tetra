@@ -6,7 +6,7 @@ import tasksRouter from "./tasks/tasksRouter";
 const apiRouter = Router();
 
 apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
-  console.log(`request`, req.route, req.method);
+  console.log(`request`, req.path, req.method);
   const nextAuthSession = req.cookies["next-auth.session-token"];
   if (!nextAuthSession) {
     res.status(401).json({ error: "Unauthorized." });

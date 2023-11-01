@@ -71,6 +71,7 @@ const selectEmote = {
       }
 
       if (action === "manual") {
+        interaction.deferUpdate();
         const { id: userId, username } = interaction.user;
         manualLogger(`user (${userId}) ${username} used manual adjustment!`);
 
