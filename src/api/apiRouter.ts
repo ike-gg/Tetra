@@ -7,7 +7,7 @@ const apiRouter = Router();
 
 apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
   console.log(`request`, req.path, req.method);
-  const nextAuthSession = req.cookies["__Secure-next-auth.session-token"];
+  const nextAuthSession = req.cookies["session"];
 
   if (!nextAuthSession) {
     res.status(401).json({ error: "Unauthorized. missing auth" });
