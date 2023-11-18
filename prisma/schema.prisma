@@ -14,7 +14,7 @@ model ManualAdjustment {
     guildName String
     guildIcon String?
     emoteName String
-    emoteUrl String
+    emoteUrl String @db.Text
     expiresOn DateTime
     accountId String
     account Account? @relation(fields: [accountId], references: [providerAccountId])
