@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@prisma/client": "^5.4.2",
+    "@sasmeee/igdl": "^1.0.0",
     "@types/lodash": "^4.14.187",
     "body-parser": "^1.20.2",
     "buffer-image-size": "^0.6.4",
