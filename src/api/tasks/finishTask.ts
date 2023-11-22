@@ -1,55 +1,79 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { client, discordOauth } from "../..";
 import { PrismaClient } from "@prisma/client";
+import * as z from "zod";
+import { TetraAPIError } from "../TetraAPIError";
+import isBase64 from "is-base64";
 
-export default async (req: Request, res: Response) => {
-  const accessToken = res.locals.accessToken as string;
-  const taskId = req.params.taskid;
+const schema = z.object({
+  emote: z.string().refine((value) => isBase64(value, { allowMime: true })),
+  guildId: z.string().optional(),
+  name: z
+    .string()
+    .refine(
+      (value) => /^[a-zA-Z0-9_]{2,35}$/.test(value),
+      "Emote names can only contain alphanumeric characters and underscores."
+    )
+    .optional(),
+});
 
-  if (!taskId) {
-    res.status(400).json({ error: "Bad request" });
-    return;
-  }
-
+export default async (req: Request, res: Response, next: NextFunction) => {
   const prisma = new PrismaClient();
-  const taskDetails = await prisma.manualAdjustment.findFirst({
-    where: { id: taskId },
-  });
-
-  if (!taskDetails) {
-    res.status(400).json({ error: "Bad request" });
-    return;
-  }
-
-  const { accountId, emoteName, guildId } = taskDetails;
-
-  const currentUser = await discordOauth.getUser(accessToken);
-
-  if (currentUser.id !== accountId) {
-    res.status(401).json({ error: "Not authorized." });
-    return;
-  }
-
-  const emoteBase64 = req.body.emote as string;
-
-  if (!emoteBase64) {
-    res.status(400).json({ error: "Emote missing." });
-    return;
-  }
-
   try {
-    const guild = await client.guilds.fetch(guildId);
+    const accessToken = res.locals.accessToken as string;
+    const taskId = req.params.taskid;
+
+    if (!taskId) throw new TetraAPIError(400, "Bad request, task missing.");
+
+    const body = schema.safeParse(req.body);
+
+    if (!body.success)
+      throw new TetraAPIError(400, "Bad request, payload verification failed.");
+
+    const { emote: emoteBase64, guildId, name } = body.data;
+
+    const taskDetails = await prisma.manualAdjustment.findFirst({
+      where: { id: taskId },
+    });
+
+    if (!taskDetails)
+      throw new TetraAPIError(400, "Bad request. Task not found.");
+
+    const { accountId } = taskDetails;
+
+    const currentUser = await discordOauth.getUser(accessToken);
+
+    if (currentUser.id !== accountId)
+      throw new TetraAPIError(401, "Not authorized. Mismatching user ids.");
+
+    const guild = await client.guilds.fetch(guildId || taskDetails.guildId);
+
+    const userInGuild = await guild.members.fetch(accountId);
+
+    if (!userInGuild)
+      throw new TetraAPIError(401, "Not authorized. Not found user in guild.");
+
+    const hasPermissions = userInGuild.permissions.has(
+      "ManageEmojisAndStickers"
+    );
+
+    if (!hasPermissions)
+      throw new TetraAPIError(
+        401,
+        "Not authorized. Missing permissions in guild."
+      );
+
     const addedEmote = await guild.emojis.create({
       attachment: emoteBase64,
-      name: emoteName,
+      name: name || taskDetails.emoteName,
     });
     await prisma.manualAdjustment.delete({ where: { id: taskId } });
-    res
-      .status(200)
-      .json({ message: `Sucessfully added ${addedEmote.name} emote.` });
+
+    res.status(200).json({
+      message: `Sucessfully added ${addedEmote.name} emote in ${guild.name}.`,
+    });
   } catch (error) {
-    res.status(500).json({ error: String(error) });
-    return;
+    next(error);
   } finally {
     await prisma.$disconnect();
   }

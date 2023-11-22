@@ -1,13 +1,12 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { client, discordOauth } from "../..";
 import getBufferFromUrl from "../../emotes/source/getBufferFromUrl";
 import { DiscordAPIError } from "discord.js";
 import { PrismaClient } from "@prisma/client";
+import { TetraAPIError } from "../TetraAPIError";
 
-export default async (req: Request, res: Response) => {
+export default async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = res.locals.accessToken as string;
-
-  console.log(req.body);
 
   const { guildid } = req.params;
   const { emoteUrl, emoteName } = req.body as {
@@ -15,49 +14,39 @@ export default async (req: Request, res: Response) => {
     emoteName: string;
   };
 
-  if (!guildid || !emoteUrl || !emoteName) {
-    console.log(guildid, emoteName, emoteUrl);
-    res.status(400).json({ error: "Bad request." });
-    return;
-  }
+  if (!guildid || !emoteUrl || !emoteName)
+    throw new TetraAPIError(400, "Bad request.");
 
   try {
     const user = await discordOauth.getUser(accessToken);
 
-    if (!user) {
-      res.status(401).json({ error: "Not authorized." });
-      return;
-    }
+    if (!user) throw new TetraAPIError(401, "Not authorized.");
 
     const guild = await client.guilds.fetch(guildid);
 
-    if (!guild) {
-      res.status(403).json({ error: "Forbidden." });
-      return;
-    }
-
     const userInGuild = await guild.members.fetch(user.id);
 
-    if (!userInGuild) {
-      res.status(401).json({ error: "Not authorized." });
-      return;
-    }
+    if (!userInGuild)
+      throw new TetraAPIError(401, "Not authorized. Not found user in guild.");
 
     const hasPermissions = userInGuild.permissions.has(
       "ManageEmojisAndStickers"
     );
 
-    if (!hasPermissions) {
-      res.status(401).json({ error: "Not authorized." });
-      return;
-    }
+    if (!hasPermissions)
+      throw new TetraAPIError(
+        401,
+        "Not authorized. Missing permissions in guild."
+      );
 
     const emoteBuffer = await getBufferFromUrl(emoteUrl);
-    const removedEmote = await guild.emojis.create({
+    const addedEmote = await guild.emojis.create({
       attachment: emoteBuffer,
       name: emoteName,
     });
-    res.status(200).json({ message: `Added ${removedEmote.name} emote.` });
+    res
+      .status(200)
+      .json({ message: `Added ${addedEmote.name} emote to ${guild.name}` });
   } catch (e) {
     if (e instanceof DiscordAPIError && e.code === 50138) {
       const prisma = new PrismaClient();
@@ -75,16 +64,18 @@ export default async (req: Request, res: Response) => {
           expiresOn: new Date(currentTime.getTime() + webTaskExpireTime),
           guildId: guild.id,
           guildName: guild.name,
-          guildIcon: guild.iconURL(),
+          guildIcon: guild.icon,
           accountId: user.id,
         },
       });
       await prisma.$disconnect();
-      res.status(500).json({
+      res.status(406).json({
         error:
           "Emote is too large. Manual Adjustment has been assigned to your account. Refresh the page.",
       });
       return;
+    } else {
+      next(e);
     }
     res.status(500).json({ error: String(e) });
   }

@@ -2,13 +2,14 @@ import { NextFunction, Request, Response, Router } from "express";
 import { PrismaClient } from "@prisma/client";
 import guildsRouter from "./guilds/guildsRouter";
 import tasksRouter from "./tasks/tasksRouter";
+import { TetraAPIError } from "./TetraAPIError";
+import { DiscordAPIError } from "discord.js";
 
 const apiRouter = Router();
 
 apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
-  console.log(`request`, req.path, req.method);
+  console.log(`${req.method} url:: ${req.url}`);
   const nextAuthSession = req.cookies["session"];
-  console.log(req.cookies);
 
   if (!nextAuthSession) {
     res.status(401).json({ error: "Unauthorized. missing auth" });
@@ -45,5 +46,27 @@ apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
 
 apiRouter.use("/guilds", guildsRouter);
 apiRouter.use("/tasks", tasksRouter);
+
+apiRouter.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(`error for: ${req.method} url:: ${req.url}`);
+  console.error(String(err).slice(0, 256));
+
+  if (err instanceof TetraAPIError) {
+    res.status(err.code).json({ error: err.message });
+    return;
+  }
+
+  if (err instanceof DiscordAPIError) {
+    res.status(409).json({ error: `Discord Error: ${err.message}` });
+    return;
+  }
+
+  let errorMessage = err instanceof Error ? err.message : String(err);
+  if (errorMessage.length > 96) {
+    errorMessage = errorMessage.slice(0, 96) + "...";
+  }
+  res.status(500).json({ error: errorMessage });
+  return;
+});
 
 export default apiRouter;

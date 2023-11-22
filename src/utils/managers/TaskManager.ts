@@ -56,7 +56,7 @@ class TaskManager {
     try {
       await prisma.manualAdjustment.create({
         data: {
-          guildIcon: guild.iconURL() ?? undefined,
+          guildIcon: guild.icon,
           guildName: guild.name,
           emoteName: emote.name,
           emoteUrl: emote.file.url,
