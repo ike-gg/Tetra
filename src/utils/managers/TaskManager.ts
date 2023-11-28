@@ -53,6 +53,9 @@ class TaskManager {
 
     const { emote, guild, interaction } = _task as TaskTypes.PostProcessEmote;
     const prisma = new PrismaClient();
+
+    const interactionReply = await interaction?.fetchReply();
+
     try {
       await prisma.manualAdjustment.create({
         data: {
@@ -63,6 +66,8 @@ class TaskManager {
           expiresOn: new Date(currentTime.getTime() + webTaskExpireTime),
           guildId: guild.id,
           accountId: interaction!.user.id,
+          channelId: interactionReply?.channelId ?? null,
+          messageId: interactionReply?.id ?? null,
         },
         include: {
           account: { where: { id: interaction!.user.id } },

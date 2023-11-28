@@ -7,7 +7,8 @@
     "start": "npx ts-node src/index.ts",
     "deployCommands": "npx ts-node src/deploy-commands-global.ts",
     "dev": "nodemon",
-    "devdeploy": "ts-node src/deploy-commands-dev.ts && nodemon"
+    "devdeploy": "ts-node src/deploy-commands-dev.ts && nodemon",
+    "db:push": "prisma db push"
   },
   "author": "ike",
   "license": "ISC",

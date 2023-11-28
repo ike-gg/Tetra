@@ -3,15 +3,16 @@ import { client, discordOauth } from "../..";
 import { PrismaClient } from "@prisma/client";
 import * as z from "zod";
 import { TetraAPIError } from "../TetraAPIError";
-import isBase64 from "is-base64";
+import { TetraEmbed } from "../../utils/embedMessages/TetraEmbed";
+import { Messages } from "../../constants/messages";
 
 const schema = z.object({
-  emote: z.string().refine((value) => isBase64(value, { allowMime: true })),
+  emote: z.string().refine((value) => value.length % 4),
   guildId: z.string().optional(),
   name: z
     .string()
     .refine(
-      (value) => /^[a-zA-Z0-9_]{2,35}$/.test(value),
+      (value) => /^[a-zA-Z0-9_]{2,32}$/.test(value),
       "Emote names can only contain alphanumeric characters and underscores."
     )
     .optional(),
@@ -28,7 +29,10 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     const body = schema.safeParse(req.body);
 
     if (!body.success)
-      throw new TetraAPIError(400, "Bad request, payload verification failed.");
+      throw new TetraAPIError(
+        400,
+        "Bad request, payload verification failed." + body.error.toString()
+      );
 
     const { emote: emoteBase64, guildId, name } = body.data;
 
@@ -39,7 +43,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (!taskDetails)
       throw new TetraAPIError(400, "Bad request. Task not found.");
 
-    const { accountId } = taskDetails;
+    const { accountId, channelId, messageId } = taskDetails;
 
     const currentUser = await discordOauth.getUser(accessToken);
 
@@ -69,9 +73,24 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     });
     await prisma.manualAdjustment.delete({ where: { id: taskId } });
 
+    if (messageId && channelId) {
+      try {
+        const channel = await client.channels.fetch(channelId);
+        if (channel?.isDMBased() || !channel?.isTextBased()) return;
+        const message = await channel.messages.fetch(messageId);
+        await message.edit({
+          embeds: [TetraEmbed.success(Messages.ADDED_EMOTE(addedEmote))],
+          components: [],
+        });
+      } catch (error) {
+        console.error("updating message failed", error);
+      }
+    }
+
     res.status(200).json({
       message: `Sucessfully added ${addedEmote.name} emote in ${guild.name}.`,
     });
+    // throw new TetraAPIError(500, "FAKE ERROR");
   } catch (error) {
     next(error);
   } finally {

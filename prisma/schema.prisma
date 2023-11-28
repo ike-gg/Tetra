@@ -17,6 +17,8 @@ model ManualAdjustment {
     emoteUrl String @db.Text
     expiresOn DateTime
     accountId String
+    channelId String?
+    messageId String?
     account Account? @relation(fields: [accountId], references: [providerAccountId])
 
     @@index([accountId])
