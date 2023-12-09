@@ -57,7 +57,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       const guild = await client.guilds.fetch(guildid);
       const user = await discordOauth.getUser(accessToken);
 
-      await prisma.manualAdjustment.create({
+      const { id } = await prisma.manualAdjustment.create({
         data: {
           emoteName,
           emoteUrl,
@@ -69,9 +69,10 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         },
       });
       await prisma.$disconnect();
-      res.status(406).json({
-        error:
-          "Emote is too large. Manual Adjustment has been assigned to your account. Refresh the page.",
+      res.status(301).json({
+        message:
+          "Emote has exceeded the file limit. Manual adjustment has been created.",
+        taskId: id,
       });
       return;
     } else {
