@@ -10,8 +10,8 @@ datasource db {
 
 model ManualAdjustment {
     id String @id @default(cuid())
-    guildId String
-    guildName String
+    guildId String?
+    guildName String?
     guildIcon String?
     emoteName String
     emoteUrl String @db.Text
@@ -30,6 +30,7 @@ model Emotes {
     emoteUrl String
     reference String
     expiresOn DateTime
+    animated Boolean
     origin EmoteOrigin
     accountId String
     account Account? @relation(fields: [accountId], references: [providerAccountId])

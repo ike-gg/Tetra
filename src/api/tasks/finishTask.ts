@@ -8,14 +8,13 @@ import { Messages } from "../../constants/messages";
 
 const schema = z.object({
   emote: z.string().refine((value) => value.length % 4),
-  guildId: z.string().optional(),
+  guildId: z.string(),
   name: z
     .string()
     .refine(
       (value) => /^[a-zA-Z0-9_]{2,32}$/.test(value),
       "Emote names can only contain alphanumeric characters and underscores."
-    )
-    .optional(),
+    ),
 });
 
 export default async (req: Request, res: Response, next: NextFunction) => {
@@ -50,7 +49,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (currentUser.id !== accountId)
       throw new TetraAPIError(401, "Not authorized. Mismatching user ids.");
 
-    const guild = await client.guilds.fetch(guildId || taskDetails.guildId);
+    const guild = await client.guilds.fetch(guildId);
 
     const userInGuild = await guild.members.fetch(accountId);
 
@@ -69,7 +68,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
     const addedEmote = await guild.emojis.create({
       attachment: emoteBase64,
-      name: name || taskDetails.emoteName,
+      name: name,
     });
     await prisma.manualAdjustment.delete({ where: { id: taskId } });
 

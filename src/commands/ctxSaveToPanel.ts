@@ -51,6 +51,7 @@ const ctxStealEmote = {
           expiresOn: new Date(currentTime.getTime() + savedEmoteExpireTime),
           origin: "DISCORD",
           reference: emote.id,
+          animated: emote.animated,
         })),
       });
       await prisma.$disconnect();
