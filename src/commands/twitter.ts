@@ -1,6 +1,8 @@
 import {
+  APIEmbed,
   AttachmentBuilder,
   ChatInputCommandInteraction,
+  EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -49,6 +51,8 @@ const importEmote = {
         text: true,
       });
 
+      console.log(twitterData);
+
       if (!twitterData.found || twitterData.error) {
         await interaction.editReply(
           `${twitterData.error || "error description not available"}`
@@ -57,8 +61,6 @@ const importEmote = {
       }
 
       const { media, text } = twitterData;
-      const firstMedia = media[0];
-      const isVideo = firstMedia.url.includes("mp4");
 
       const twitterLink = text?.split(" ").at(-1) || "-";
 
@@ -74,22 +76,8 @@ const importEmote = {
         return;
       }
 
-      let source = await fetch(firstMedia.url);
-      let mediaBuffer = await source.buffer();
-
-      if (!mediaBuffer) {
-        await interaction.editReply(
-          "media unavailable or not supported file type"
-        );
-        return;
-      }
-
-      const fileAttachment = new AttachmentBuilder(mediaBuffer);
-      isVideo && fileAttachment.setName("video.mp4");
-      !isVideo && fileAttachment.setName("image.jpg");
-
       await interaction.editReply({
-        files: [fileAttachment],
+        files: media.map((element) => new AttachmentBuilder(element.url)),
         content: `${description} *<${twitterLink}>*`,
       });
     } catch (error) {
