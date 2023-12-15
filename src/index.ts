@@ -86,8 +86,10 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const isCommand = interaction.isCommand();
   const isButton = interaction.isButton();
   const isSelectMenu = interaction.isSelectMenu();
+  const isAutocomplete = interaction.isAutocomplete();
 
-  const supportedInteraction = isCommand || isButton || isSelectMenu;
+  const supportedInteraction =
+    isCommand || isButton || isSelectMenu || isAutocomplete;
 
   if (supportedInteraction) {
     interactionHandler(interaction, client);

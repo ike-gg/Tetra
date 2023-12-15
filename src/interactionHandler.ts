@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import { Interaction } from "discord.js";
+import { AutocompleteInteraction, Interaction } from "discord.js";
 import {
   DiscordBot,
   ExecutableButtonInteraction,
@@ -36,6 +36,20 @@ const interactionHandler = async (
       ],
     });
     return;
+  }
+
+  if (interaction.isAutocomplete()) {
+    const command = client.commands.get(
+      interaction.commandName
+    ) as ExecutableCommandInteraction;
+
+    if (!command) return;
+
+    try {
+      command.autocomplete(interaction, client);
+    } catch {
+      console.error("not found autocomplete function for this.");
+    }
   }
 
   if (interaction.isCommand()) {
