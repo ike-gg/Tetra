@@ -14,6 +14,8 @@ import cors from "cors";
 import apiRouter from "./api/apiRouter";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import cron from "node-cron";
+import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
 
 const discordBotToken = process.env.discordBotToken as string;
 let env = process.env.env as "production" | "development";
@@ -95,6 +97,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
     interactionHandler(interaction, client);
     return;
   }
+});
+
+const CRON_EVERY_3_HOUR = "0 */3 * * *";
+cron.schedule(CRON_EVERY_3_HOUR, () => {
+  refreshUsersTokens();
 });
 
 client.login(discordBotToken);
