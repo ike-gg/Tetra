@@ -28,10 +28,6 @@ export interface ExecutableSelectMenu extends SelectMenuInteraction {
   execute(interaction: SelectMenuInteraction, client?: DiscordBot): void;
 }
 
-export interface ExecutableAutocomplete extends AutocompleteInteraction {
-  execute(interaction: AutocompleteInteraction, client?: DiscordBot): void;
-}
-
 export type SupportedEmotesOrigin =
   | "discord"
   | "7tv"

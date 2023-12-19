@@ -5,9 +5,8 @@ import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
-import checkChannel from "../emotes/source/twitch/checkChannel";
-import getEmotes from "../emotes/source/twitch/getEmotes";
 import { Messages } from "../constants/messages";
+import { TwitchManager } from "../utils/managers/TwitchManager";
 
 const addSubEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
@@ -16,31 +15,17 @@ const addSubEmoteChannel = async (
 ) => {
   const channelName = interaction.options.getString("channelname");
 
-  if (!channelName) {
-    return;
-  }
+  if (!channelName) return;
 
   try {
-    const channelInfo = await checkChannel(channelName);
+    const channelInfo = await TwitchManager.getChannel(channelName);
 
     if (!channelInfo) {
-      await feedback.error("channel not found.");
+      await feedback.error(Messages.CHANNEL_NOT_FOUND);
       return;
     }
 
-    if (typeof channelInfo === "object" && "error" in channelInfo) {
-      const { message } = channelInfo;
-      await feedback.error(message);
-      return;
-    }
-
-    const foundEmotes = await getEmotes(channelInfo.id);
-
-    if (typeof foundEmotes === "object" && "error" in foundEmotes) {
-      const { message } = foundEmotes;
-      await feedback.error(message);
-      return;
-    }
+    const foundEmotes = await TwitchManager.getChannelEmotes(channelInfo.id);
 
     if (foundEmotes.length === 0) {
       await feedback.error(Messages.EMOTE_NOT_FOUND);
@@ -73,7 +58,11 @@ const addSubEmoteChannel = async (
       embeds: emotesEmbedsPreview.embeds,
     });
   } catch (error) {
-    await feedback.error(String(error));
+    if (error instanceof Error) {
+      await feedback.error(error.message);
+    } else {
+      await feedback.unhandledError(error);
+    }
   }
 };
 
