@@ -1,4 +1,5 @@
 import Discord, {
+  AutocompleteInteraction,
   ButtonInteraction,
   Collection,
   CommandInteraction,
@@ -16,6 +17,7 @@ export interface DiscordBot extends Discord.Client {
 
 export interface ExecutableCommandInteraction extends CommandInteraction {
   execute(interaction: CommandInteraction, client?: DiscordBot): void;
+  autocomplete(interaction: AutocompleteInteraction, client?: DiscordBot): void;
 }
 
 export interface ExecutableButtonInteraction extends ButtonInteraction {

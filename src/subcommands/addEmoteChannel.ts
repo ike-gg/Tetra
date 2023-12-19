@@ -5,9 +5,9 @@ import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
-import checkChannel from "../emotes/source/twitch/checkChannel";
 import getEmotesFromChannel from "../emotes/source/7tv/stvGetEmotesFromChannel";
 import { Messages } from "../constants/messages";
+import { TwitchManager } from "../utils/managers/TwitchManager";
 
 const addEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
@@ -18,16 +18,10 @@ const addEmoteChannel = async (
   const queryString = interaction.options.get("search")?.value as string;
 
   try {
-    const channelInfo = await checkChannel(channelName);
+    const channelInfo = await TwitchManager.getChannel(channelName);
 
     if (!channelInfo) {
-      await feedback.error("channel not found.");
-      return;
-    }
-
-    if (typeof channelInfo === "object" && "error" in channelInfo) {
-      const { message } = channelInfo;
-      await feedback.error(message);
+      await feedback.error(Messages.CHANNEL_NOT_FOUND);
       return;
     }
 
@@ -69,7 +63,11 @@ const addEmoteChannel = async (
       embeds: emotesEmbedsPreview.embeds,
     });
   } catch (error) {
-    await feedback.error(String(error));
+    if (error instanceof Error) {
+      await feedback.error(error.message);
+    } else {
+      await feedback.unhandledError(error);
+    }
   }
 };
 

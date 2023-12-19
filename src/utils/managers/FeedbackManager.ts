@@ -121,6 +121,17 @@ export class FeedbackManager {
     });
   }
 
+  async unhandledError(error: any) {
+    const trackingId = crypto.randomUUID();
+    console.error(`[ ${trackingId} ]`, error);
+    await this.error({
+      title: "Unhandled error",
+      description:
+        "An unhandled error has occurred. Please report this to the developers.",
+      fields: [{ name: "Tracking ID", value: trackingId }],
+    });
+  }
+
   async updateComponents(
     components: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[]
   ) {
