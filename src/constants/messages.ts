@@ -48,6 +48,9 @@ export class Messages {
   static readonly NO_COMMON_SERVERS_PERMISSIONS: T =
     "No common servers found where you have permissions";
 
+  //twitch case
+  static readonly CHANNEL_NOT_FOUND: T = "Channel not found.";
+
   //interactive
   static ADDED_EMOTE(emote: GuildEmoji): T {
     return {
