@@ -10,10 +10,12 @@ import getBufferFromUrl from "../emotes/source/getBufferFromUrl";
 import instagramDl from "@sasmeee/igdl";
 import { z } from "zod";
 
-const instagramReelSchema = z.object({
+const instagramPiece = z.object({
   download_link: z.string().url(),
   thumbnail_link: z.string().optional(),
 });
+
+const instagramReelSchema = z.array(instagramPiece);
 
 const importEmote = {
   data: new SlashCommandBuilder()
@@ -36,20 +38,21 @@ const importEmote = {
         return;
       }
 
-      const reelsData = instagramReelSchema.safeParse(reelsDetails[0]);
+      console.log(reelsDetails);
+
+      const reelsData = instagramReelSchema.safeParse(reelsDetails);
 
       if (!reelsData.success) {
         await interaction.editReply("invalid url/unauthorized/invalid schema");
         return;
       }
 
-      const video = await getBufferFromUrl(reelsData.data.download_link);
-
-      const videoAttachment = new AttachmentBuilder(video);
-      videoAttachment.setName("video.mp4");
       await interaction.editReply({
-        files: [videoAttachment],
-        content: "",
+        files: reelsData.data.map(
+          (element) =>
+            new AttachmentBuilder(element.download_link, { name: "GOWNO.mp4" })
+        ),
+        content: ``,
       });
     } catch (error) {
       await interaction.editReply(`cos jeblo! ${String(error)}`);
