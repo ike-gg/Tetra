@@ -1,6 +1,5 @@
 import {
   ActionRowBuilder,
-  Attachment,
   AttachmentBuilder,
   AttachmentData,
   ButtonBuilder,
