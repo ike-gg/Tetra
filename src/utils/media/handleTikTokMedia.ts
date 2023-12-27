@@ -78,6 +78,7 @@ export const handleTikTokMedia = async (
         resolve({
           description: "",
           media: video,
+          data: { name: `tetra_${feedback.interaction.id}.mp4` },
         });
       } else {
         reject(new Error("Tiktok not found."));
