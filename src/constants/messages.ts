@@ -48,6 +48,15 @@ export class Messages {
   static readonly NO_COMMON_SERVERS_PERMISSIONS: T =
     "No common servers found where you have permissions";
 
+  //special
+  static readonly NEW_MEDIA_COMMAND: T = {
+    title: "Command deprecated.",
+    description: `Use \`/media\` command instead.
+    
+    \`/media\` command combines multiple commands (\`/instagram\`, \`/tiktok\`, \`/twitter\` etc.) into one.
+    `,
+  };
+
   //twitch case
   static readonly CHANNEL_NOT_FOUND: T = "Channel not found.";
 
