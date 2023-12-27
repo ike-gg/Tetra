@@ -47,7 +47,8 @@ const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
 
   await buttonInteraction.showModal(modal);
 
-  const collector = new InteractionCollector(client as Client, {
+  //@ts-ignore
+  const collector = new InteractionCollector(client, {
     time: 1000 * 60 * 10,
     filter: (i) => i.user.id === interaction.user.id,
   });
