@@ -3,6 +3,7 @@ import {
   AttachmentBuilder,
   AttachmentData,
   ButtonBuilder,
+  ButtonStyle,
   ChatInputCommandInteraction,
   SlashCommandBuilder,
 } from "discord.js";
@@ -111,6 +112,12 @@ export default {
         files,
         components: [
           new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setStyle(ButtonStyle.Secondary)
+              .setDisabled(true)
+              .setEmoji({ name: "ℹ️" })
+              .setLabel(platform.name)
+              .setCustomId(interaction.id),
             URLButton("Open", itemUrl)
           ),
         ],
