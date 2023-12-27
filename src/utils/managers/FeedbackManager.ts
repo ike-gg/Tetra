@@ -106,6 +106,14 @@ export class FeedbackManager {
     await this.sendMessage({ embeds: [TetraEmbed.warning(content)] });
   }
 
+  async media(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.media(content)] });
+  }
+
+  async premium(content: TetraEmbedContent) {
+    await this.sendMessage({ embeds: [TetraEmbed.premium(content)] });
+  }
+
   async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
     row.addComponents(

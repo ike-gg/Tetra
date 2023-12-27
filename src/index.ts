@@ -69,15 +69,6 @@ client.tasks = TaskManager.getInstance();
 
 client.on("ready", async () => {
   console.log("Bot ready");
-  if (env === "development") {
-    const guilds = client.guilds.cache
-      .map((e) => ({
-        name: e.name,
-        count: e.memberCount,
-      }))
-      .sort((a, b) => a.count - b.count);
-    console.table(guilds);
-  }
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

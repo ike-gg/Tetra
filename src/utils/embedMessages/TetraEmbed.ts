@@ -92,4 +92,26 @@ export class TetraEmbed {
       title: embedTitle,
     });
   }
+
+  static media(content: TetraEmbedContent) {
+    const details = this.__transform(content);
+    const embedTitle = getEmojiTitle("🔹", details.title || "Media");
+
+    return new EmbedBuilder({
+      color: 0x40c6ff,
+      ...details,
+      title: embedTitle,
+    });
+  }
+
+  static premium(content: TetraEmbedContent) {
+    const details = this.__transform(content);
+    const embedTitle = getEmojiTitle("🟪", details.title || "Tetra Premium");
+
+    return new EmbedBuilder({
+      color: 0x9538ff,
+      ...details,
+      title: embedTitle,
+    });
+  }
 }
