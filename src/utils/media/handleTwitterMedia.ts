@@ -6,6 +6,7 @@ import type {
   MediaOptions,
   Output,
 } from "get-twitter-media";
+import { FeedbackManager } from "../managers/FeedbackManager";
 
 interface OutputTwitterFn extends Output {
   error?: String;
@@ -19,7 +20,8 @@ type TwitterFn = (
 const getTwitterMedia: TwitterFn = require("get-twitter-media");
 
 export const handleTwitterMedia = async (
-  _url: string
+  _url: string,
+  feedback: FeedbackManager
 ): Promise<PlatformResult> => {
   try {
     const urlVideo = _url
@@ -31,8 +33,6 @@ export const handleTwitterMedia = async (
     });
 
     const { media, text } = twitterData;
-
-    const twitterLink = text?.split(" ").at(-1) || "-";
 
     const description =
       text
