@@ -9,6 +9,7 @@ const here = {
       option
         .setName("deletemode")
         .setDescription("false- add entitlement, true- remove entitlement")
+        .setRequired(true)
     )
     .addStringOption((option) =>
       option
@@ -24,10 +25,14 @@ const here = {
       const guildId =
         interaction.options.getString("guildid") ?? interaction.guildId;
 
+      const deleteMode = interaction.options.getBoolean("deletemode")!;
+
       if (!guildId) {
         await feedback.error("No guild id provided");
         return;
       }
+
+      // interaction.client.application.entitlements.deleteTest()
 
       const skus = await interaction.client.application.fetchSKUs();
 
