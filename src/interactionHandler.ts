@@ -24,9 +24,7 @@ const interactionHandler = async (
   );
 
   if (banDetails) {
-    if (!interaction.isRepliable() || !interaction.isChatInputCommand()) {
-      return;
-    }
+    if (!interaction.isRepliable()) return;
     interaction.reply({
       embeds: [
         TetraEmbed.error({
