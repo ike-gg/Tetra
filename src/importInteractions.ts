@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 let env = process.env.env;
+
 import {
   ButtonInteraction,
   Collection,
@@ -29,11 +30,22 @@ const importCommands = (
   const commandsPath = path.join(__dirname, "commands");
   const commandFiles = fs
     .readdirSync(commandsPath)
-    .filter((file) => file.endsWith(".ts"));
+    .filter((file) => file.endsWith(".ts"))
+    .map((file) => path.join(commandsPath, file));
 
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    import(filePath).then((command) => {
+  const internalCommandsPath = path.join(__dirname, "commands_internal");
+  const internalCommandFiles = fs
+    .readdirSync(internalCommandsPath)
+    .filter((file) => file.endsWith(".ts"))
+    .map((file) => path.join(internalCommandsPath, file));
+
+  const commandsToLoad =
+    env === "development"
+      ? [...internalCommandFiles, ...commandFiles]
+      : commandFiles;
+
+  for (const file of commandsToLoad) {
+    import(file).then((command) => {
       const commandData = command.default.data as SlashCommandBuilder;
 
       if (env === "development") {
