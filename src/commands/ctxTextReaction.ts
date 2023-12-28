@@ -12,6 +12,7 @@ import {
 } from "discord.js";
 
 import { DiscordBot } from "../types";
+import { parseEntitlementsData } from "../utils/parseEntitlementsData";
 
 const stringEmotes = (text: string) => {
   const letterEmotes: Record<string, string> = {
@@ -60,6 +61,13 @@ const ctxStealReaction = {
     interaction: MessageContextMenuCommandInteraction,
     client: DiscordBot
   ) {
+    const { purchasedEntitlement } = parseEntitlementsData(interaction);
+
+    if (!purchasedEntitlement) {
+      await interaction.sendPremiumRequired();
+      return;
+    }
+
     const { targetMessage } = interaction;
 
     const modal = new ModalBuilder()
