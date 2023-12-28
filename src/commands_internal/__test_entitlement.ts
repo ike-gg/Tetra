@@ -5,6 +5,11 @@ const here = {
   data: new SlashCommandBuilder()
     .setName("testentitlement")
     .setDescription("internal tetra tooling for testing entitlements")
+    .addBooleanOption((option) =>
+      option
+        .setName("deletemode")
+        .setDescription("false- add entitlement, true- remove entitlement")
+    )
     .addStringOption((option) =>
       option
         .setName("guildid")
@@ -26,16 +31,12 @@ const here = {
 
       const skus = await interaction.client.application.fetchSKUs();
 
-      console.log("skus", skus);
-
       const sku = skus.find((sku) => sku.type === 5);
 
       if (!sku) {
         await feedback.error("No premium sku found");
         return;
       }
-
-      console.log("creating test entitlement from:", sku);
 
       const testEntitlement =
         await interaction.client.application.entitlements.createTest({
