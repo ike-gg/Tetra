@@ -3,7 +3,7 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const here = {
   data: new SlashCommandBuilder()
-    .setName("testentitlement")
+    .setName("entitlement")
     .setDescription("internal tetra tooling for testing entitlements")
     .addBooleanOption((option) =>
       option
@@ -32,10 +32,26 @@ const here = {
         return;
       }
 
-      // interaction.client.application.entitlements.deleteTest()
+      if (deleteMode) {
+        const testEntitlement = interaction.entitlements.find(
+          (e) => e.startsTimestamp === null && e.endsTimestamp === null
+        );
+
+        if (!testEntitlement) {
+          await feedback.error("No test entitlement found");
+          return;
+        }
+
+        await interaction.client.application.entitlements.deleteTest(
+          testEntitlement
+        );
+
+        await feedback.success(`Test entitlement deleted successfully.`);
+
+        return;
+      }
 
       const skus = await interaction.client.application.fetchSKUs();
-
       const sku = skus.find((sku) => sku.type === 5);
 
       if (!sku) {
