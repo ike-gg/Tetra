@@ -4,11 +4,12 @@ import Discord, {
   Collection,
   CommandInteraction,
   SelectMenuInteraction,
+  Client,
 } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import TaskManager from "../utils/managers/TaskManager";
 
-export interface DiscordBot extends Discord.Client {
+export interface DiscordBot extends Client {
   commands: Collection<string, CommandInteraction>;
   buttonInteractions: Collection<string, ButtonInteraction>;
   selectMenu: Collection<string, SelectMenuInteraction>;
