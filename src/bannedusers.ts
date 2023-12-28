@@ -5,4 +5,5 @@ interface BanDetails {
 
 export const BANNEDLIST: BanDetails[] = [
   { userId: "388315180854935552", reason: "idiota" },
+  { userId: "436891078327664650", reason: "nastepny idiota" },
 ];
