@@ -3,13 +3,21 @@ import { Interaction } from "discord.js";
 export const parseEntitlementsData = (interaction: Interaction) => {
   const entitlements = interaction.entitlements;
 
-  const hasTestEntitlement = entitlements.some(
+  const testEntitlement = entitlements.find(
     (ent) => ent.startsTimestamp === null && ent.endsTimestamp === null
   );
 
-  const hasPurchaseEntitlement = entitlements.some(
+  const purchasedEntitlement = entitlements.find(
     (ent) => ent.startsTimestamp !== null && ent.endsTimestamp !== null
   );
 
-  return { hasTestEntitlement, hasPurchaseEntitlement };
+  const hasPremium = entitlements.size > 0;
+
+  return {
+    testEntitlement,
+    purchasedEntitlement,
+    hasPremium,
+    hasTestEntitlement: !!testEntitlement,
+    hasPurchaseEntitlement: !!purchasedEntitlement,
+  };
 };
