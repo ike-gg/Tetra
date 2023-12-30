@@ -4,6 +4,8 @@ import getBufferFromUrl from "../../emotes/source/getBufferFromUrl";
 import { DiscordAPIError } from "discord.js";
 import { PrismaClient } from "@prisma/client";
 import { TetraAPIError } from "../TetraAPIError";
+import { announceUse } from "../../utils/managers/FeedbackManager";
+import { Messages } from "../../constants/messages";
 
 export default async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = res.locals.accessToken as string;
@@ -47,6 +49,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     res
       .status(200)
       .json({ message: `Added ${addedEmote.name} emote to ${guild.name}` });
+
+    await announceUse(Messages.ANNOUNCE_ADDED_EMOTE_PANEL(addedEmote));
   } catch (e) {
     if (e instanceof DiscordAPIError && e.code === 50138) {
       const prisma = new PrismaClient();
@@ -78,6 +82,5 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     } else {
       next(e);
     }
-    res.status(500).json({ error: String(e) });
   }
 };
