@@ -20,6 +20,7 @@ import {
 import { DiscordBot } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
+import { client } from "../..";
 
 export class FeedbackManager {
   client: DiscordBot;
@@ -178,28 +179,21 @@ export class FeedbackManager {
     await this.error(Messages.INVALID_REFERENCE);
   }
 
-  //special for logging
-  async logsOfUses(emote: GuildEmoji) {
-    try {
-      const announceChannel = (await this.client.channels.fetch(
-        "1054273914437648384"
-      )) as TextChannel;
-
-      if (!announceChannel) return;
-
-      await announceChannel.send(
-        `Someone just added an emote ${emote} to their server! ${
-          Math.random() > 0.8
-            ? `\nTry to use \`steal\` command on this message to add emote to your server!`
-            : ""
-        }`
-      );
-    } catch (error) {
-      console.error("Cant reach announcement channel");
-    }
-  }
-
   async notFoundFile() {
     await this.error("Not found any files in message.");
   }
 }
+
+export const announceUse = async (text: string) => {
+  try {
+    const announceChannel = (await client.channels.fetch(
+      "1054273914437648384"
+    )) as TextChannel;
+
+    if (!announceChannel) return;
+
+    await announceChannel.send(text);
+  } catch (error) {
+    console.error("Cant reach announcement channel");
+  }
+};

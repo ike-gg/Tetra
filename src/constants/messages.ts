@@ -85,4 +85,12 @@ export class Messages {
       ),
     };
   }
+
+  static ANNOUNCE_ADDED_EMOTE(emote: GuildEmoji): string {
+    return `Someone just added an emote ${emote} to their server!`;
+  }
+
+  static ANNOUNCE_ADDED_EMOTE_PANEL(emote: GuildEmoji): string {
+    return `> Someone just added an emote ${emote} to their server using **Tetra Panel**!`;
+  }
 }

@@ -1,6 +1,7 @@
 import TaskManager from "../utils/managers/TaskManager";
 import * as TaskTypes from "../types/TaskTypes";
 import { Messages } from "../constants/messages";
+import { announceUse } from "../utils/managers/FeedbackManager";
 
 const addEmoteToGuild = async (taskId: string) => {
   const taskDetails =
@@ -15,7 +16,7 @@ const addEmoteToGuild = async (taskId: string) => {
       name: emote.name,
     });
     await feedback.success(Messages.ADDED_EMOTE(addedEmote));
-    await feedback.logsOfUses(addedEmote);
+    await announceUse(Messages.ANNOUNCE_ADDED_EMOTE(addedEmote));
   } catch (error) {
     throw new Error(String(error));
   }
