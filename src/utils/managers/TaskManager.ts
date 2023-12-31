@@ -25,8 +25,6 @@ class TaskManager {
 
     this.tasks.push(newTask);
 
-    console.log(newTask.action, identificator);
-
     const timeoutTime = 1000 * 60 * 10; //10 minutes
     setTimeout(() => {
       this.removeTask(identificator);
