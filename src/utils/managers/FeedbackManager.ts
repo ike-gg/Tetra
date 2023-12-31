@@ -14,6 +14,7 @@ import {
   ButtonBuilder,
 } from "@discordjs/builders";
 
+import { randomUUID } from "crypto";
 import { DiscordBot } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
@@ -144,7 +145,7 @@ export class FeedbackManager {
   }
 
   async unhandledError(error: any) {
-    const trackingId = crypto.randomUUID();
+    const trackingId = randomUUID();
     console.error(`[ ${trackingId} ]`, error);
     await this.error({
       title: "Unhandled error",
