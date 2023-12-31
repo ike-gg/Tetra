@@ -54,8 +54,8 @@ const client = new Client({
 importInteractions(client);
 client.tasks = TaskManager.getInstance();
 
-client.on("ready", async () => {
-  console.log("Bot ready");
+client.on(Events.ClientReady, async (client) => {
+  console.info(`${client.user.username} connected. Bot ready.`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -77,8 +77,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-const CRON_EVERY_3_HOUR = "0 */3 * * *";
-cron.schedule(CRON_EVERY_3_HOUR, () => {
+const CRON_EVERY_3_HOURS = "0 */3 * * *";
+cron.schedule(CRON_EVERY_3_HOURS, () => {
   refreshUsersTokens();
 });
 
