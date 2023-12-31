@@ -10,7 +10,6 @@ import * as TaskTypes from "../types/TaskTypes";
 import rename from "../postProcess/rename";
 import transform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
-import { manualLogger } from "../utils/interactionLoggers";
 import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
@@ -72,8 +71,6 @@ const selectEmote = {
 
       if (action === "manual") {
         interaction.deferUpdate();
-        const { id: userId, username } = interaction.user;
-        manualLogger(`user (${userId}) ${username} used manual adjustment!`);
 
         TaskManager.getInstance().webAccess(taskId);
 

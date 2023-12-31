@@ -3,8 +3,6 @@ import { z } from "zod";
 import dotenv from "dotenv";
 dotenv.config();
 
-console.log("running from env.ts");
-
 const envSchema = z.object({
   node_env: z.enum(["development", "production"]).default("development"),
 

@@ -57,9 +57,7 @@ const interactionHandler = async (
 
     try {
       command.execute(interaction, client);
-    } catch {
-      console.error;
-    }
+    } catch {}
   }
 
   const isButtonInteraction = interaction.isButton();
