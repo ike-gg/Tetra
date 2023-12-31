@@ -24,7 +24,7 @@ const interactionLogger = async (
     });
 
     if (env.node_env === "development") {
-      console.log(`${id}
+      console.log(`${id} by ${user.username} ${user.id} in
 guild: ${guild?.id} - ${guild?.name} - ${guild?.memberCount}
 ${commandName} - ${JSON.stringify(options)}`);
     }
