@@ -5,6 +5,7 @@ import * as z from "zod";
 import { TetraAPIError } from "../TetraAPIError";
 import { TetraEmbed } from "../../utils/embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
+import { announceUse } from "../../utils/managers/FeedbackManager";
 
 const schema = z.object({
   emote: z.string().refine((value) => value.length % 4),
@@ -72,6 +73,8 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     });
     await prisma.manualAdjustment.delete({ where: { id: taskId } });
 
+    await announceUse(Messages.ANNOUNCE_ADDED_EMOTE_PANEL(addedEmote));
+
     if (messageId && channelId) {
       try {
         const channel = await client.channels.fetch(channelId);
@@ -89,7 +92,6 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({
       message: `Sucessfully added ${addedEmote.name} emote in ${guild.name}.`,
     });
-    // throw new TetraAPIError(500, "FAKE ERROR");
   } catch (error) {
     next(error);
   } finally {
