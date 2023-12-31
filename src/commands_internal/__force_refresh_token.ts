@@ -14,7 +14,7 @@ const here = {
     try {
       refreshUsersTokens();
     } catch (error) {
-      await feedback.error(String(error));
+      await feedback.handleError(error);
     }
   },
 };

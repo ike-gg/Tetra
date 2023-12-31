@@ -83,7 +83,7 @@ const ctxStealReaction = {
           return;
       }
     } catch (error) {
-      await feedback.error(String(error));
+      await feedback.handleError(error);
       return;
     }
 

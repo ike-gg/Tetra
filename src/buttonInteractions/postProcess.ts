@@ -22,12 +22,12 @@ const selectEmote = {
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action] = interactionArguments;
 
+    const taskDetails =
+      client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+
+    const { feedback } = taskDetails;
+
     try {
-      const taskDetails =
-        client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
-
-      const { feedback } = taskDetails;
-
       if (!taskDetails) {
         await feedback.interactionTimeout();
         return;
@@ -77,7 +77,7 @@ const selectEmote = {
         }
       }
     } catch (error) {
-      console.error(error);
+      await feedback.handleError(error);
     }
   },
 };

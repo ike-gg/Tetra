@@ -82,7 +82,7 @@ const editEmoteByUser = async (taskId: string) => {
     await feedback.updateComponents(messageComponents);
   } catch (error) {
     if (isRateLimited) clearTimeout(isRateLimited);
-    await feedback.error(String(error));
+    await feedback.handleError(error);
   }
 };
 
