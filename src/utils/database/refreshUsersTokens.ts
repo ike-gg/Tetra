@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { env } from "../../env";
 
 interface RefreshTokenResponse {
   access_token: string;
@@ -25,8 +26,8 @@ export const refreshUsersTokens = async () => {
       if (!refresh_token) return;
 
       const urlForm = {
-        client_id: process.env.oauthClientId!,
-        client_secret: process.env.oauthClientSecret!,
+        client_id: env.oauthClientId,
+        client_secret: env.oauthClientSecret,
         grant_type: "refresh_token",
         refresh_token: refresh_token!,
       };

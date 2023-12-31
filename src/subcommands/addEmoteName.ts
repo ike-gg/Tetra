@@ -64,7 +64,7 @@ const addEmoteName = async (
       embeds: emotesEmbedsPreview.embeds,
     });
   } catch (error) {
-    await feedback.error(String(error));
+    await feedback.handleError(error);
   }
 };
 

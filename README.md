@@ -32,6 +32,7 @@ Additionally Tetra offers a few other smaller but equally exciting features, suc
 ![nodejs](https://img.shields.io/badge/nodejs-000000?style=for-the-badge&logo=nodedotjs&logoColor=FFFFFF)
 ![typescript](https://img.shields.io/badge/typescript-000000?style=for-the-badge&logo=typescript&logoColor=FFFFFF)
 ![sharpjs](https://img.shields.io/badge/sharp-000000?style=for-the-badge&logo=sharp&logoColor=FFFFFF)
+![zod](https://img.shields.io/badge/zod-000000?style=for-the-badge&logo=sharp&logoColor=FFFFFF)
 
 ---
 
@@ -52,23 +53,33 @@ npm install
 3. Create .env file and fill it with your credentials
 
 ```go
-discordBotToken=
-discordBotId=
+  node_env: z.enum(["development", "production"]).default("development"),
 
-oauthClientId=
-oauthClientSecret=
+  discordBotToken: z.string(),
+  discordBotId: z.string(),
+  oauthClientId: z.string(),
+  oauthClientSecret: z.string(),
 
-inviteLink=
-twitchClientId=
-twitchSecretKey=
-env=
-secretPhrase=
+  inviteLink: z.string().url(),
+
+  twitchClientId: z.string(),
+  twitchSecretKey: z.string(),
+
+  secretPhrase: z.string(),
+
+  tenorApiKey: z.string(),
+
+  imgurClientId: z.string(),
+
+  DATABASE_URL: z.string().url(),
+
+  PORT: z.number().optional(),
 ```
 
-4. Deploy global commands
+4. Deploy global commands and push prisma schema
 
 ```
-npm run deploy
+npm run deploy && npm run prisma:push
 ```
 
 5. Run bot
@@ -83,16 +94,20 @@ npm run start
 
 - [x] Import emotes from 7TV, FFZ, BTTV
   - [x] by name
-  - [x] by link
+  - [x] by link (even with direct link to source)
   - [x] by channel emote set (limited to 7TV)
 - [x] Automatically emote optimization
 - [x] Optional emote scaling option
 - [x] Context Commands for "stealing" emotes from messages and reactions
-- [ ] Importing emotes directly from sources
-- [ ] Fully integrated [Tetra Web](https://github.com/ike-gg/Tetra-web)
-  - [ ] Dashboard feature (mass import, emote management, etc.)
-  - [ ] Manual adjustment
-- [ ] Users without permission can make request to add emote
+- [x] Media command to extract media files from various socialmedia platform posts (Twitter, Instagram, Tiktok)
+- [ ] Fully integrated ~~[Tetra Web](https://github.com/ike-gg/Tetra-web)~~ [Tetra Panel](https://github.com/ike-gg/Tetra-panel)
+  - [x] Emote search engine using 7TV, BTTV and FZZ apis
+  - [x] Server scope emote managmenet from panel level
+  - [x] Manual adjustment
+  - [ ] Mass import / emote queue (dealing with discord api limits)
+  - [ ] Sync Twitch channel with you discord server
+- [ ] Tetra Premium 🤭
+- [ ] ~~Users without permission can make request to add emote~~ (?)
 
 ---
 

@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { Client, GatewayIntentBits, Events } from "discord.js";
 
 import { DiscordBot } from "./types";
@@ -16,11 +13,15 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import cron from "node-cron";
 import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
+import { env } from "./env";
 
-const discordBotToken = process.env.discordBotToken as string;
-let env = process.env.env as "production" | "development";
+if (env.node_env === "development") {
+  console.log("---- Running in development mode ----");
+} else if (env.node_env === "production") {
+  console.log("---- RUNNING IN PRODUCTION ----");
+}
 
-const PORT = process.env.PORT || 3002;
+const PORT = env.PORT;
 
 const app = express();
 
@@ -48,14 +49,6 @@ app.use(bodyParser.json({ limit: "10mb" }));
 app.use("/", apiRouter);
 app.listen(PORT);
 
-if (!env) {
-  console.error(
-    "enviroment is not defined in .env file, running in production enviroment instead."
-  );
-  process.env.env = "production";
-  env = "production";
-}
-
 const client = new Client({
   intents: [
     GatewayIntentBits.GuildEmojisAndStickers,
@@ -67,8 +60,8 @@ const client = new Client({
 importInteractions(client);
 client.tasks = TaskManager.getInstance();
 
-client.on("ready", async () => {
-  console.log("Bot ready");
+client.on(Events.ClientReady, async (client) => {
+  console.info(`${client.user.username} connected. Bot ready.`);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -90,16 +83,16 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
-const CRON_EVERY_3_HOUR = "0 */3 * * *";
-cron.schedule(CRON_EVERY_3_HOUR, () => {
+const CRON_EVERY_3_HOURS = "0 */3 * * *";
+cron.schedule(CRON_EVERY_3_HOURS, () => {
   refreshUsersTokens();
 });
 
-client.login(discordBotToken);
+client.login(env.discordBotToken);
 
 const discordOauth = new DiscordOauth2({
-  clientId: process.env.oauthClientId,
-  clientSecret: process.env.oauthClientSecret,
+  clientId: env.oauthClientId,
+  clientSecret: env.oauthClientSecret,
 });
 
 export { client, discordOauth };

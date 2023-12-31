@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -11,8 +8,7 @@ import {
 } from "discord.js";
 import { DiscordBot } from "../types";
 import URLButton from "../utils/elements/URLButton";
-
-const inviteLink = process.env.inviteLink as string;
+import { env } from "../env";
 
 const infobot = {
   data: new SlashCommandBuilder()
@@ -28,14 +24,14 @@ const infobot = {
       0
     );
 
-    const dcInvLink = hyperlink("Click here!", inviteLink);
+    const dcInvLink = hyperlink("Click here!", env.inviteLink);
     const ghRepoLink = hyperlink("@ike-gg/Tetra", githubRepo);
     const ghAuthorLink = hyperlink("@ike-gg", githubAuthor);
     const dcAuthorLink = hyperlink("ike", discordAuthor);
 
     const componentsRow = new ActionRowBuilder<ButtonBuilder>();
     componentsRow.addComponents(
-      URLButton("Invite link", inviteLink),
+      URLButton("Invite link", env.inviteLink),
       URLButton("Discord Owner", discordAuthor),
       URLButton("GitHub Repo", githubRepo),
       URLButton("GitHub Owner", githubAuthor)

@@ -58,11 +58,7 @@ const addSubEmoteChannel = async (
       embeds: emotesEmbedsPreview.embeds,
     });
   } catch (error) {
-    if (error instanceof Error) {
-      await feedback.error(error.message);
-    } else {
-      await feedback.unhandledError(error);
-    }
+    await feedback.handleError(error);
   }
 };
 

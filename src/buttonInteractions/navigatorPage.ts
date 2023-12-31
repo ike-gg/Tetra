@@ -52,7 +52,7 @@ const navigatorPage = {
         components: [emotesEmbedsPreview.components, navigatorRow],
       });
     } catch (error) {
-      feedback.error(String(error));
+      await feedback.handleError(error);
     }
   },
 };

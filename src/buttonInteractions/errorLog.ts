@@ -1,5 +1,6 @@
 import { ButtonInteraction, TextChannel } from "discord.js";
 import { DiscordBot } from "../types";
+import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
 
 const errorLog = {
   data: { name: "errorLog" },
@@ -12,19 +13,30 @@ const errorLog = {
 
       if (!errorSnapshotsChannel) return;
 
-      const interactionId = interaction.message.interaction?.id;
-      const { id, username } = interaction.user;
+      const { user, guild } = interaction;
       const originalInteraction = interaction.message.interaction;
       const errorEmbedMessage = interaction.message.embeds[0];
 
-      errorSnapshotsChannel.send({
-        content: `\`interaction id ${interactionId}\`\`user ${username} (${id})\`, command: \`${
-          originalInteraction?.commandName
-        }\` details: \`\`\`${JSON.stringify(originalInteraction).slice(
-          0,
-          1250
-        )}\`\`\`received embed:`,
-        embeds: [errorEmbedMessage],
+      await errorSnapshotsChannel.send({
+        embeds: [
+          TetraEmbed.attention({
+            title:
+              originalInteraction?.id ?? "undefined initial interaction id",
+            description:
+              originalInteraction?.commandName ??
+              "undefined initial command name",
+            author: {
+              name: user.username,
+              iconURL: user.avatarURL() ?? "",
+            },
+            footer: {
+              text: `${guild?.name} - ${guild?.id} (${guild?.memberCount})`,
+              iconURL: guild?.iconURL() ?? "",
+            },
+            timestamp: new Date(),
+          }),
+          errorEmbedMessage,
+        ],
       });
     } catch (error) {
       console.error("error with logging an snapshot of error", error);

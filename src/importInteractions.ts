@@ -1,7 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-let env = process.env.env;
-
 import {
   ButtonInteraction,
   Collection,
@@ -12,6 +8,7 @@ import {
 import path from "path";
 import fs from "fs";
 import { DiscordBot } from "./types";
+import { env } from "./env";
 
 const importInteractions = (client: DiscordBot) => {
   client.commands = new Collection();
@@ -40,7 +37,7 @@ const importCommands = (
     .map((file) => path.join(internalCommandsPath, file));
 
   const commandsToLoad =
-    env === "development"
+    env.node_env === "development"
       ? [...internalCommandFiles, ...commandFiles]
       : commandFiles;
 
@@ -48,7 +45,7 @@ const importCommands = (
     import(file).then((command) => {
       const commandData = command.default.data as SlashCommandBuilder;
 
-      if (env === "development") {
+      if (env.node_env === "development") {
         commandData.setName(`dev${commandData.name}`);
       }
 

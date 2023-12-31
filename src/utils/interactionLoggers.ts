@@ -1,44 +1,66 @@
-import { Interaction, TextChannel } from "discord.js";
-import { client } from "..";
+import { CommandInteraction, TextChannel } from "discord.js";
 import { DiscordBot } from "../types";
+import { TetraEmbed } from "./embedMessages/TetraEmbed";
+import { env } from "../env";
 
 const interactionLogger = async (
-  interaction: Interaction,
+  interaction: CommandInteraction,
   client: DiscordBot
 ) => {
-  const announceChannel = (await client.channels.fetch(
-    "1074256923119063123"
-  )) as TextChannel;
-
-  if (!announceChannel) return;
-
-  const { guild, user, id } = interaction;
-
-  if (interaction.isCommand()) {
-    announceChannel.send(
-      `new interaction \`ID: ${id}\` \`${interaction.commandName}\`, user \`${
-        user.id
-      } (${user.username})\`, guild: \`${guild?.name} counts ${
-        guild?.memberCount
-      } users\`, \`\`\`${JSON.stringify(interaction.options).slice(
-        0,
-        1250
-      )}\`\`\``
-    );
-  }
-};
-
-export const manualLogger = async (text: string) => {
   try {
+    const { guild, user, id, commandName } = interaction;
+
+    const options = interaction.options.data.map(({ name, value, options }) => {
+      if (options) {
+        return {
+          [name]: options.map(({ name, value }) => ({
+            [name]: value,
+          })),
+        };
+      }
+      return {
+        [name]: value,
+      };
+    });
+
+    if (env.node_env === "development") {
+      console.log(`${id} by ${user.username} ${user.id} in
+guild: ${guild?.id} - ${guild?.name} - ${guild?.memberCount}
+${commandName} - ${JSON.stringify(options)}`);
+    }
+
     const announceChannel = (await client.channels.fetch(
       "1074256923119063123"
     )) as TextChannel;
 
     if (!announceChannel) return;
 
-    announceChannel.send(text);
+    announceChannel.send({
+      embeds: [
+        TetraEmbed.info({
+          title: id,
+          description: `${commandName}`,
+          author: {
+            name: user.username,
+            iconURL: user.avatarURL() ?? "",
+          },
+          fields: [
+            {
+              name: "args",
+              value: `\`\`\`json
+${JSON.stringify(options)}\`\`\``,
+            },
+          ],
+          footer: {
+            text: `${guild?.name} - ${guild?.id} (${guild?.memberCount})`,
+            iconURL: guild?.iconURL() ?? "",
+          },
+          timestamp: new Date(),
+        }),
+      ],
+    });
   } catch (e) {
-    console.error(e);
+    console.error("Error occured while logging interaction.", e);
   }
 };
 

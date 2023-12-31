@@ -1,4 +1,4 @@
-import { imgurClientId } from "../../../constants";
+import { env } from "../../../env";
 import { Emote } from "../../../types";
 import fetch from "node-fetch";
 
@@ -38,7 +38,7 @@ const getImgurFile = async (imgurUrl: string): Promise<Emote> => {
     `https://api.imgur.com/3/${imgurObject}/${fileId}`,
     {
       headers: {
-        Authorization: `Client-ID ${imgurClientId}`,
+        Authorization: `Client-ID ${env.imgurClientId}`,
       },
     }
   );

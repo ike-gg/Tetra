@@ -1,5 +1,5 @@
 import { ReactionManager } from "discord.js";
-import { Emote } from "../types";
+import { Emote } from "../../types";
 
 const emotesFromReactions = (
   reactions: ReactionManager,

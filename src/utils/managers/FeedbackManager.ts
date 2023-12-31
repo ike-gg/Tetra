@@ -1,11 +1,8 @@
-let env = (process.env.env as "development" | "production") || "production";
-
 import {
   ButtonInteraction,
   CommandInteraction,
   SelectMenuBuilder,
   SelectMenuInteraction,
-  GuildEmoji,
   TextChannel,
   ButtonStyle,
   BaseMessageOptions,
@@ -20,6 +17,8 @@ import {
 import { DiscordBot } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
+import { client } from "../..";
+import { env } from "../../env";
 
 export class FeedbackManager {
   client: DiscordBot;
@@ -47,7 +46,7 @@ export class FeedbackManager {
       const lastIndex = embeds.length - 1;
       let lastEmbedText = this.client.user!.username;
 
-      if (env === "development") {
+      if (env.node_env === "development") {
         lastEmbedText += " | dev";
       }
 
@@ -114,6 +113,21 @@ export class FeedbackManager {
     await this.sendMessage({ embeds: [TetraEmbed.premium(content)] });
   }
 
+  async handleError(error: any) {
+    if (
+      error instanceof TypeError ||
+      error instanceof SyntaxError ||
+      error instanceof ReferenceError ||
+      error instanceof RangeError
+    ) {
+      await this.unhandledError(error);
+    } else if (error instanceof Error) {
+      await this.error(error.message);
+    } else {
+      await this.unhandledError(error);
+    }
+  }
+
   async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
     row.addComponents(
@@ -178,28 +192,21 @@ export class FeedbackManager {
     await this.error(Messages.INVALID_REFERENCE);
   }
 
-  //special for logging
-  async logsOfUses(emote: GuildEmoji) {
-    try {
-      const announceChannel = (await this.client.channels.fetch(
-        "1054273914437648384"
-      )) as TextChannel;
-
-      if (!announceChannel) return;
-
-      await announceChannel.send(
-        `Someone just added an emote ${emote} to their server! ${
-          Math.random() > 0.8
-            ? `\nTry to use \`steal\` command on this message to add emote to your server!`
-            : ""
-        }`
-      );
-    } catch (error) {
-      console.error("Cant reach announcement channel");
-    }
-  }
-
   async notFoundFile() {
     await this.error("Not found any files in message.");
   }
 }
+
+export const announceUse = async (text: string) => {
+  try {
+    const announceChannel = (await client.channels.fetch(
+      "1054273914437648384"
+    )) as TextChannel;
+
+    if (!announceChannel) return;
+
+    await announceChannel.send(text);
+  } catch (error) {
+    console.error("Cant reach announcement channel");
+  }
+};

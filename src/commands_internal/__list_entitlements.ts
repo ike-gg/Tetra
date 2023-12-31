@@ -14,11 +14,7 @@ const here = {
       await feedback.info(`Found ${entitlements.size} entitlements, logged.`);
       console.log(entitlements);
     } catch (error) {
-      if (error instanceof Error) {
-        await feedback.error(error.message);
-      } else {
-        await feedback.unhandledError(error);
-      }
+      await feedback.handleError(error);
     }
   },
 };

@@ -1,18 +1,12 @@
-import {
-  AttachmentBuilder,
-  ChatInputCommandInteraction,
-  SlashCommandBuilder,
-} from "discord.js";
+// -------------------
+//
+// command deprecated
+//
+// -------------------
 
-import fetch from "node-fetch";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+
 import { DiscordBot } from "../types";
-import getTikTokVideo from "../utils/getTikTokVideo";
-import * as fs from "fs";
-//@ts-ignore
-import videoshow from "videoshow";
-import getBufferFromUrl from "../emotes/source/getBufferFromUrl";
-import { tetraTempDirectory } from "../constants";
-import sharp from "sharp";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import { Messages } from "../constants/messages";
 

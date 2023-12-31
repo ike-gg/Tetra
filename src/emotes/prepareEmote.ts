@@ -13,7 +13,7 @@ import * as TaskTypes from "../types/TaskTypes";
 import { maxEmoteSize, maxSupportedSize } from "../constants";
 import editEmoteByUser from "./editEmoteByUser";
 import getChoiceOptimizeRow from "../utils/elements/getChoiceOptimizeRow";
-import parseDiscordRegexName from "../utils/parseDiscordRegexName";
+import parseDiscordRegexName from "../utils/discord/parseDiscordRegexName";
 import prettyBytes from "pretty-bytes";
 import { Messages } from "../constants/messages";
 

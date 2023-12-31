@@ -10,12 +10,10 @@ import * as TaskTypes from "../types/TaskTypes";
 import rename from "../postProcess/rename";
 import transform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
-import { manualLogger } from "../utils/interactionLoggers";
 import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import URLButton from "../utils/elements/URLButton";
 
 const selectEmote = {
   data: { name: "postProcess" },
@@ -24,12 +22,12 @@ const selectEmote = {
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action] = interactionArguments;
 
+    const taskDetails =
+      client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+
+    const { feedback } = taskDetails;
+
     try {
-      const taskDetails =
-        client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
-
-      const { feedback } = taskDetails;
-
       if (!taskDetails) {
         await feedback.interactionTimeout();
         return;
@@ -46,11 +44,7 @@ const selectEmote = {
       }
 
       if (action === "submit") {
-        try {
-          await addEmoteToGuild(taskId);
-        } catch (error) {
-          await feedback.error(String(error));
-        }
+        await addEmoteToGuild(taskId);
       }
 
       if (action === "auto") {
@@ -72,20 +66,18 @@ const selectEmote = {
 
       if (action === "manual") {
         interaction.deferUpdate();
-        const { id: userId, username } = interaction.user;
-        manualLogger(`user (${userId}) ${username} used manual adjustment!`);
-
-        TaskManager.getInstance().webAccess(taskId);
 
         try {
+          TaskManager.getInstance().webAccess(taskId);
+
           await feedback.removeComponents();
           await feedback.panel("Manual adjustment available on Panel.");
         } catch (error) {
-          await feedback.error(String(error));
+          await feedback.handleError(error);
         }
       }
     } catch (error) {
-      console.error(error);
+      await feedback.handleError(error);
     }
   },
 };

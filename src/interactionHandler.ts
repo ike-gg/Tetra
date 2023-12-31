@@ -1,7 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-import { AutocompleteInteraction, Interaction } from "discord.js";
+import { Interaction } from "discord.js";
 import {
   DiscordBot,
   ExecutableButtonInteraction,
@@ -12,13 +9,12 @@ import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import interactionLogger from "./utils/interactionLoggers";
 import { BANNEDLIST } from "./bannedusers";
 import { TetraEmbed } from "./utils/embedMessages/TetraEmbed";
+import { env } from "./env";
 
 const interactionHandler = async (
   interaction: Interaction,
   client: DiscordBot
 ) => {
-  const env = process.env.env;
-
   const banDetails = BANNEDLIST.find(
     (bannedUser) => bannedUser.userId === interaction.user.id
   );
@@ -51,10 +47,6 @@ const interactionHandler = async (
   }
 
   if (interaction.isCommand()) {
-    console.log(
-      `New interaction: user: ${interaction.user.username}, guild: ${interaction.guild?.name}, command: ${interaction.commandName}`
-    );
-
     interactionLogger(interaction, client);
 
     const command = client.commands.get(
@@ -65,9 +57,7 @@ const interactionHandler = async (
 
     try {
       command.execute(interaction, client);
-    } catch {
-      console.error;
-    }
+    } catch {}
   }
 
   const isButtonInteraction = interaction.isButton();
@@ -79,8 +69,8 @@ const interactionHandler = async (
     const isDevCommand =
       interaction.message.interaction?.commandName.startsWith("dev");
 
-    if (env === "development" && !isDevCommand) return;
-    if (env === "production" && isDevCommand) return;
+    if (env.node_env === "development" && !isDevCommand) return;
+    if (env.node_env === "production" && isDevCommand) return;
 
     if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
       interaction.deferUpdate();

@@ -5,12 +5,11 @@ import {
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import findEmotesFromMessage from "../utils/findEmotesInMessage";
+import findEmotesFromMessage from "../utils/discord/findEmotesInMessage";
 
 import { DiscordBot } from "../types";
 import { Messages } from "../constants/messages";
 import { PrismaClient, Emotes } from "@prisma/client";
-import { Optional } from "../utils/managers/TaskManager";
 
 const ctxStealEmote = {
   data: new ContextMenuCommandBuilder()
@@ -57,7 +56,7 @@ const ctxStealEmote = {
       await prisma.$disconnect();
       await feedback.panel("Emote(s) saved to Panel.");
     } catch (error) {
-      await feedback.error(String(error));
+      await feedback.error("Saving emote to panel failed.");
     }
   },
 };

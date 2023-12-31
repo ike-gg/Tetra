@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import findEmotesFromMessage from "../utils/findEmotesInMessage";
+import findEmotesFromMessage from "../utils/discord/findEmotesInMessage";
 
 import { DiscordBot } from "../types";
 import prepareEmote from "../emotes/prepareEmote";

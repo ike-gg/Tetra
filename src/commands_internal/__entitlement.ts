@@ -71,11 +71,7 @@ const here = {
         `Test entitlement created successfully, more details in the console.`
       );
     } catch (error) {
-      if (error instanceof Error) {
-        await feedback.error(error.message);
-      } else {
-        await feedback.unhandledError(error);
-      }
+      await feedback.handleError(error);
     }
   },
 };

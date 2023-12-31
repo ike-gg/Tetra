@@ -12,7 +12,7 @@ import {
 } from "discord.js";
 
 import { DiscordBot } from "../types";
-import { parseEntitlementsData } from "../utils/parseEntitlementsData";
+import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 
 const stringEmotes = (text: string) => {
   const letterEmotes: Record<string, string> = {

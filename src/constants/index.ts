@@ -1,23 +1,11 @@
-import dotenv from "dotenv";
 import { tmpdir } from "os";
 import * as fs from "fs";
-dotenv.config();
 
 export const enviroment =
   process.env.env === "development" ? "development" : "production";
 
 export const maxEmoteSize = 262144;
 export const maxSupportedSize = maxEmoteSize * 16;
-
-export const clientId = process.env.oauthClientId;
-export const clientSecret = process.env.oauthClientSecret;
-
-export const secretPhrase = process.env.secretPhrase;
-
-export const tenorApiKey = process.env.tenorApiKey;
-export const imgurClientId = process.env.imgurClientId;
-
-export const inviteLink = process.env.inviteLink;
 
 export const redirect_uri =
   enviroment === "development"
