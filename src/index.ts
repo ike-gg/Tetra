@@ -15,6 +15,12 @@ import cron from "node-cron";
 import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
 import { env } from "./env";
 
+if (env.node_env === "development") {
+  console.log("---- Running in development mode ----");
+} else if (env.node_env === "production") {
+  console.log("---- RUNNING IN PRODUCTION ----");
+}
+
 const PORT = env.PORT;
 
 const app = express();
