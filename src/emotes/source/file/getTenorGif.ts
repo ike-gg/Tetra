@@ -1,4 +1,4 @@
-import { tenorApiKey } from "../../../constants";
+import { env } from "../../../env";
 import { Emote } from "../../../types";
 import fetch from "node-fetch";
 
@@ -13,10 +13,6 @@ interface TenorResponseObject {
 }
 
 const getTenorGif = async (tenorGifUrl: string): Promise<Emote> => {
-  if (!tenorApiKey) {
-    throw new Error("Tenor API key missing.");
-  }
-
   const gifPaths = tenorGifUrl.split("/").at(-1);
 
   if (!gifPaths) throw new Error("Wrong gif id.");
@@ -26,7 +22,7 @@ const getTenorGif = async (tenorGifUrl: string): Promise<Emote> => {
   if (!gifId || !Number(gifId)) throw new Error("Wrong gif id.");
 
   const params = new URLSearchParams({
-    key: tenorApiKey,
+    key: env.tenorApiKey,
     ids: gifId,
     media_filter: "tinygif",
   });

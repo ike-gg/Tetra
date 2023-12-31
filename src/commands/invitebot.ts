@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import { DiscordBot } from "../types";
 import URLButton from "../utils/elements/URLButton";
-import { inviteLink } from "../constants";
+import { env } from "../env";
 
 const invitebot = {
   data: new SlashCommandBuilder()
@@ -16,7 +16,7 @@ const invitebot = {
     ),
   async execute(interaction: CommandInteraction, client: DiscordBot) {
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      URLButton("Invite link", inviteLink || "https://tetra.lol")
+      URLButton("Invite link", env.inviteLink)
     );
 
     await interaction.reply({

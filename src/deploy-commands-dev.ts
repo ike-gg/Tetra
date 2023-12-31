@@ -1,15 +1,10 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import fs from "node:fs";
 import path from "path";
+import { env } from "./env";
 
 import { REST, Routes, SlashCommandBuilder } from "discord.js";
 
 import { devGuilds } from "../config.json";
-
-const discordBotToken = process.env.discordBotToken as string;
-const discordBotId = process.env.discordBotId as string;
 
 const commands: any[] = [];
 
@@ -46,11 +41,11 @@ for (const file of internalCommandFiles) {
 console.log("loaded commands:" + commandFiles.join(", "));
 console.log("loaded internal commands:" + internalCommandFiles.join(", "));
 
-const rest = new REST({ version: "10" }).setToken(discordBotToken);
+const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
 
 devGuilds.forEach((guildId) => {
   rest
-    .put(Routes.applicationGuildCommands(discordBotId, guildId), {
+    .put(Routes.applicationGuildCommands(env.discordBotId, guildId), {
       body: commands,
     })
     .then((data) => console.log(`successfully registered to guild ${guildId}`))

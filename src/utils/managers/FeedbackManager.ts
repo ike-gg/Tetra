@@ -1,11 +1,8 @@
-let env = (process.env.env as "development" | "production") || "production";
-
 import {
   ButtonInteraction,
   CommandInteraction,
   SelectMenuBuilder,
   SelectMenuInteraction,
-  GuildEmoji,
   TextChannel,
   ButtonStyle,
   BaseMessageOptions,
@@ -21,6 +18,7 @@ import { DiscordBot } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
 import { client } from "../..";
+import { env } from "../../env";
 
 export class FeedbackManager {
   client: DiscordBot;
@@ -48,7 +46,7 @@ export class FeedbackManager {
       const lastIndex = embeds.length - 1;
       let lastEmbedText = this.client.user!.username;
 
-      if (env === "development") {
+      if (env.node_env === "development") {
         lastEmbedText += " | dev";
       }
 

@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
 import { tmpdir } from "os";
 import * as fs from "fs";
-dotenv.config();
 
 export const enviroment =
   process.env.env === "development" ? "development" : "production";

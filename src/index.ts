@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { Client, GatewayIntentBits, Events } from "discord.js";
 
 import { DiscordBot } from "./types";
@@ -16,11 +13,9 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import cron from "node-cron";
 import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
+import { env } from "./env";
 
-const discordBotToken = process.env.discordBotToken as string;
-let env = process.env.env as "production" | "development";
-
-const PORT = process.env.PORT || 3002;
+const PORT = env.PORT || 3002;
 
 const app = express();
 
@@ -47,14 +42,6 @@ app.use(limiter);
 app.use(bodyParser.json({ limit: "10mb" }));
 app.use("/", apiRouter);
 app.listen(PORT);
-
-if (!env) {
-  console.error(
-    "enviroment is not defined in .env file, running in production enviroment instead."
-  );
-  process.env.env = "production";
-  env = "production";
-}
 
 const client = new Client({
   intents: [
@@ -95,11 +82,11 @@ cron.schedule(CRON_EVERY_3_HOUR, () => {
   refreshUsersTokens();
 });
 
-client.login(discordBotToken);
+client.login(env.discordBotToken);
 
 const discordOauth = new DiscordOauth2({
-  clientId: process.env.oauthClientId,
-  clientSecret: process.env.oauthClientSecret,
+  clientId: env.oauthClientId,
+  clientSecret: env.oauthClientSecret,
 });
 
 export { client, discordOauth };

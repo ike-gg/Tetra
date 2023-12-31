@@ -1,17 +1,13 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import fs from "node:fs";
 import path from "path";
+
+import { env } from "./env";
 
 import {
   REST,
   RESTPostAPIChatInputApplicationCommandsJSONBody,
   Routes,
 } from "discord.js";
-
-const discordBotToken = process.env.discordBotToken as string;
-const discordBotId = process.env.discordBotId as string;
 
 const commands: RESTPostAPIChatInputApplicationCommandsJSONBody[] = [];
 const commandsPath = path.join(__dirname, "commands");
@@ -29,13 +25,13 @@ for (const file of commandFiles) {
   commands.push(command.default.data.toJSON());
 }
 
-const rest = new REST({ version: "10" }).setToken(discordBotToken);
+const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
 
 (async () => {
   try {
     console.log(`started refreshing ${commands.length} applications commands`);
 
-    const data = await rest.put(Routes.applicationCommands(discordBotId), {
+    const data = await rest.put(Routes.applicationCommands(env.discordBotId), {
       body: commands,
     });
 
