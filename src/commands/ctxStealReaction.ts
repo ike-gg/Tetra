@@ -8,7 +8,7 @@ import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 import { DiscordBot } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
-import emotesFromReactions from "../utils/emotesFromReactions";
+import emotesFromReactions from "../utils/discord/emotesFromReactions";
 import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";

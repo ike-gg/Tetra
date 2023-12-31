@@ -75,7 +75,7 @@ class TaskManager {
       });
       this.removeTask(id);
     } catch (e) {
-      console.error(e);
+      throw e;
     } finally {
       await prisma.$disconnect();
     }

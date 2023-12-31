@@ -113,6 +113,21 @@ export class FeedbackManager {
     await this.sendMessage({ embeds: [TetraEmbed.premium(content)] });
   }
 
+  async handleError(error: any) {
+    if (
+      error instanceof TypeError ||
+      error instanceof SyntaxError ||
+      error instanceof ReferenceError ||
+      error instanceof RangeError
+    ) {
+      await this.unhandledError(error);
+    } else if (error instanceof Error) {
+      await this.error(error.message);
+    } else {
+      await this.unhandledError(error);
+    }
+  }
+
   async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
     row.addComponents(

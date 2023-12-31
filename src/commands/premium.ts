@@ -6,7 +6,7 @@ import {
 
 import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { parseEntitlementsData } from "../utils/parseEntitlementsData";
+import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 
 const importEmote = {
   data: new SlashCommandBuilder()

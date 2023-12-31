@@ -11,9 +11,7 @@ import { env } from "../env";
 const invitebot = {
   data: new SlashCommandBuilder()
     .setName("invitebot")
-    .setDescription(
-      "Invite bot to your discord server and easily import emotes from 7tv."
-    ),
+    .setDescription("Invite bot to your discord server"),
   async execute(interaction: CommandInteraction, client: DiscordBot) {
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       URLButton("Invite link", env.inviteLink)

@@ -1,3 +1,9 @@
+// -------------------
+//
+// command deprecated
+//
+// -------------------
+
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 import { DiscordBot } from "../types";

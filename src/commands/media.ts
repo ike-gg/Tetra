@@ -123,11 +123,7 @@ export default {
         ],
       });
     } catch (error) {
-      if (error instanceof Error) {
-        feedback.error(error.message);
-      } else {
-        feedback.unhandledError(error);
-      }
+      await feedback.handleError(error);
     }
   },
 };

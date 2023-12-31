@@ -18,7 +18,7 @@ const addEmoteToGuild = async (taskId: string) => {
     await feedback.success(Messages.ADDED_EMOTE(addedEmote));
     await announceUse(Messages.ANNOUNCE_ADDED_EMOTE(addedEmote));
   } catch (error) {
-    throw new Error(String(error));
+    await feedback.handleError(error);
   }
 };
 
