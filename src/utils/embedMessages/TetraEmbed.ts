@@ -5,7 +5,7 @@ export type TetraEmbedContent = EmbedData | string;
 const getEmojiTitle = (emoji: String, title: string) => `${emoji}  ${title}`;
 
 export class TetraEmbed {
-  static __transform(content: TetraEmbedContent): EmbedData {
+  static _transform(content: TetraEmbedContent): EmbedData {
     if (typeof content === "string") {
       return { description: content };
     }
@@ -25,7 +25,7 @@ export class TetraEmbed {
   }
 
   static success(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle("🟩", details.title || "Success");
 
     return new EmbedBuilder({
@@ -36,7 +36,7 @@ export class TetraEmbed {
   }
 
   static error(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle(
       "🟥",
       details.title || "Something went wrong"
@@ -50,7 +50,7 @@ export class TetraEmbed {
   }
 
   static attention(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle("🟧", details.title || "Attention");
 
     return new EmbedBuilder({
@@ -61,7 +61,7 @@ export class TetraEmbed {
   }
 
   static panel(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle("⬜", details.title || "Tetra Panel");
 
     return new EmbedBuilder({
@@ -72,7 +72,7 @@ export class TetraEmbed {
   }
 
   static warning(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle("🟨", details.title || "Warning");
 
     return new EmbedBuilder({
@@ -83,7 +83,7 @@ export class TetraEmbed {
   }
 
   static info(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle("🟦", details.title || "Information");
 
     return new EmbedBuilder({
@@ -94,7 +94,7 @@ export class TetraEmbed {
   }
 
   static media(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle("🔹", details.title || "Media");
 
     return new EmbedBuilder({
@@ -105,7 +105,7 @@ export class TetraEmbed {
   }
 
   static premium(content: TetraEmbedContent) {
-    const details = this.__transform(content);
+    const details = this._transform(content);
     const embedTitle = getEmojiTitle("🟪", details.title || "Tetra Premium");
 
     return new EmbedBuilder({
