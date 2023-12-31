@@ -25,7 +25,7 @@ const envSchema = z.object({
 
   DATABASE_URL: z.string().url(),
 
-  PORT: z.number().optional(),
+  PORT: z.number().default(3002),
 });
 
 export const env = envSchema.parse(process.env);

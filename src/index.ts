@@ -15,7 +15,7 @@ import cron from "node-cron";
 import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
 import { env } from "./env";
 
-const PORT = env.PORT || 3002;
+const PORT = env.PORT;
 
 const app = express();
 
