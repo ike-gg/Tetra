@@ -14,6 +14,7 @@ import { handleTwitterMedia } from "../utils/media/handleTwitterMedia";
 import URLButton from "../utils/elements/URLButton";
 import { handleInstagramMedia } from "../utils/media/handleInstagramMedia";
 import { handleTikTokMedia } from "../utils/media/handleTikTokMedia";
+import { removeQueryFromUrl } from "../utils/removeQueryFromUrl";
 
 export interface PlatformResult {
   description: string;
@@ -118,7 +119,7 @@ export default {
               .setEmoji({ name: "ℹ️" })
               .setLabel(platform.name)
               .setCustomId(interaction.id),
-            URLButton("Open", itemUrl)
+            URLButton("Open", removeQueryFromUrl(itemUrl))
           ),
         ],
       });
