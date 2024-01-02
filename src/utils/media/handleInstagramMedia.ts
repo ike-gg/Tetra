@@ -27,7 +27,7 @@ export const handleInstagramMedia = async (
 
     return {
       media: reelsData.data.map((e) => e.download_link),
-      description: "Instagram",
+      description: "",
     };
   } catch (error) {
     throw error;
