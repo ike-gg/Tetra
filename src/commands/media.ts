@@ -92,7 +92,7 @@ export default {
       );
 
       if (media.length === 0) {
-        await feedback.error("No media found");
+        await feedback.error(description || "No media found");
         return;
       }
 

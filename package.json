@@ -37,6 +37,7 @@
     "@remotion/bundler": "^4.0.83",
     "@remotion/renderer": "^4.0.83",
     "@sasmeee/igdl": "^1.0.0",
+    "@tobyg74/tiktok-api-dl": "^1.0.13",
     "@twurple/api": "^7.0.6",
     "@twurple/auth": "^7.0.6",
     "@types/lodash": "^4.14.187",

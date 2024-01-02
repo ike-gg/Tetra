@@ -1,13 +1,15 @@
 import sharp from "sharp";
 import { PlatformResult } from "../../commands/media";
 import { tetraTempDirectory } from "../../constants";
-import getTikTokVideo from "../getTikTokVideo";
+// import getTikTokVideo from "../getTikTokVideo";
 import getBufferFromUrl from "../../emotes/source/getBufferFromUrl";
 //@ts-ignore
 import videoshow from "videoshow";
 import * as fs from "fs";
 import { FeedbackManager } from "../managers/FeedbackManager";
 import fetch from "node-fetch";
+import { getTikTokVideo } from "../getTikTokVideo";
+import { error } from "console";
 
 export const handleTikTokMedia = async (
   _url: string,
@@ -17,11 +19,18 @@ export const handleTikTokMedia = async (
     try {
       const tempDirPath = tetraTempDirectory(feedback.interaction.id);
 
-      const data = await getTikTokVideo(_url);
+      const { result } = await getTikTokVideo(_url);
 
-      if (data.slides.images.length > 1) {
-        const imageSlides = data.slides.images;
-        const audioURL = data.backsound.url;
+      if (!result)
+        reject(new Error("Tiktok not found. (Results object empty))"));
+
+      if (
+        result?.type === "image" &&
+        result.images &&
+        result.images?.length > 0
+      ) {
+        const imageSlides = result.images;
+        const audioURL = result.music;
 
         const imgPaths = await Promise.all(
           imageSlides.map(async (imageURL, index) => {
@@ -35,13 +44,11 @@ export const handleTikTokMedia = async (
             return path;
           })
         );
-
         if (audioURL) {
           const audioPath = `${tempDirPath}/audio.mp3`;
-          const audioBuffer = await getBufferFromUrl(audioURL);
+          const audioBuffer = await getBufferFromUrl(audioURL as string);
           fs.writeFileSync(audioPath, audioBuffer);
         }
-
         videoshow(imgPaths, {
           fps: 15,
           loop: 3,
@@ -72,8 +79,14 @@ export const handleTikTokMedia = async (
               data: { name: `tetra_${feedback.interaction.id}.mp4` },
             });
           });
-      } else if (data.video.url.no_wm) {
-        const source = await fetch(data.video.url.no_wm);
+      } else if (result?.type === "video" && (result.video1 || result.video2)) {
+        const videoUrl = result.video1 || result.video2;
+
+        if (!videoUrl) {
+          throw new Error("Tiktok video url not found.");
+        }
+
+        const source = await fetch(videoUrl);
         const video = await source.buffer();
         resolve({
           description: "",
@@ -81,7 +94,7 @@ export const handleTikTokMedia = async (
           data: { name: `tetra_${feedback.interaction.id}.mp4` },
         });
       } else {
-        reject(new Error("Tiktok not found."));
+        reject(new Error("Tiktok not found. Media empty?"));
       }
     } catch (error) {
       reject(error);
