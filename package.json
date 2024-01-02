@@ -34,6 +34,8 @@
   },
   "dependencies": {
     "@prisma/client": "^5.4.2",
+    "@remotion/bundler": "^4.0.83",
+    "@remotion/renderer": "^4.0.83",
     "@sasmeee/igdl": "^1.0.0",
     "@twurple/api": "^7.0.6",
     "@twurple/auth": "^7.0.6",
@@ -51,6 +53,7 @@
     "express": "^4.18.2",
     "express-rate-limit": "^6.7.0",
     "fastify": "^4.24.2",
+    "ffprobe-client": "^1.1.6",
     "fluent-ffmpeg": "^2.1.2",
     "get-twitter-media": "^2.0.7",
     "gifsicle": "^5.3.0",
