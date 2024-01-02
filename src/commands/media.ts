@@ -15,6 +15,7 @@ import URLButton from "../utils/elements/URLButton";
 import { handleInstagramMedia } from "../utils/media/handleInstagramMedia";
 import { handleTikTokMedia } from "../utils/media/handleTikTokMedia";
 import { removeQueryFromUrl } from "../utils/removeQueryFromUrl";
+import { watermarkVideo } from "../utils/media/watermarkVideo";
 
 export interface PlatformResult {
   description: string;
@@ -95,22 +96,40 @@ export default {
         return;
       }
 
-      const files = Array.isArray(media)
-        ? media.map((m) => {
-            if (platform.name === "Instagram") {
-              return new AttachmentBuilder(m, {
-                ...data,
-                name: `tetra_${interaction.id}.mp4`,
-              });
-            }
-            return new AttachmentBuilder(m);
-          })
-        : [new AttachmentBuilder(media, data)];
+      // const files = Array.isArray(media)
+      //   ? media.map((m) => {
+      //       if (platform.name === "Instagram") {
+      //         return new AttachmentBuilder(m, {
+      //           ...data,
+      //           name: `tetra_${interaction.id}.mp4`,
+      //         });
+      //       }
+      //       return new AttachmentBuilder(m);
+      //     })
+      //   : [new AttachmentBuilder(media, data)];
+
+      const file = Array.isArray(media) ? media.at(0) : media;
+
+      if (typeof file !== "string") {
+        await feedback.error("for now only url supported.");
+        return;
+      }
+
+      const watermarkedBuffer = await watermarkVideo(file);
+
+      if (!watermarkedBuffer) {
+        await feedback.error("FAILED RENDERING");
+        return;
+      }
+
+      const attachment = new AttachmentBuilder(watermarkedBuffer, {
+        name: `tetra_${interaction.id}.mp4`,
+      });
 
       feedback.sendMessage({
         embeds: [],
         content: description.replace("\n\n", "\n"),
-        files,
+        files: [attachment],
         components: [
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
@@ -124,6 +143,7 @@ export default {
         ],
       });
     } catch (error) {
+      console.log(error);
       await feedback.handleError(error);
     }
   },
