@@ -5,6 +5,7 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChatInputCommandInteraction,
+  GuildPremiumTier,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -17,6 +18,8 @@ import { handleTikTokMedia } from "../utils/media/handleTikTokMedia";
 import { removeQueryFromUrl } from "../utils/removeQueryFromUrl";
 import { watermarkVideo } from "../utils/media/watermarkVideo";
 import fetch from "node-fetch";
+import { guildParsePremium } from "../utils/discord/guildParsePremium";
+import { watermarkImage } from "../utils/media/watermarkImage";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -77,6 +80,7 @@ export default {
 
     if (!itemUrl) return;
 
+    const { fileLimit } = guildParsePremium(interaction.guild!);
     const feedback = new FeedbackManager(interaction);
 
     try {
@@ -103,45 +107,48 @@ export default {
         return;
       }
 
-      console.log(media);
+      const totalFilesSize = media.reduce(
+        (curr, acc) => curr + (acc.size ?? 0),
+        0
+      );
 
-      // const files = Array.isArray(media)
-      //   ? media.map((m) => {
-      //       if (platform.name === "Instagram") {
-      //         return new AttachmentBuilder(m, {
-      //           ...data,
-      //           name: `tetra_${interaction.id}.mp4`,
-      //         });
-      //       }
-      //       return new AttachmentBuilder(m);
-      //     })
-      //   : [new AttachmentBuilder(media, data)];
-
-      const file = Array.isArray(media) ? media.at(0) : media;
-
-      if (typeof file !== "string") {
-        await feedback.error("for now only url supported.");
+      if (totalFilesSize > fileLimit) {
+        await feedback.fileLimitExceeded();
         return;
       }
 
-      const response = await fetch(file);
-      const buffer = await response.buffer();
+      let mediaToUpload: AttachmentBuilder[] = [];
 
-      const watermarkedBuffer = await watermarkVideo(buffer, interaction.id);
+      await Promise.all(
+        media.map(async (m) => {
+          // soon: check if guild is subscribed to premium
 
-      if (!watermarkedBuffer) {
-        await feedback.error("FAILED RENDERING");
-        return;
-      }
+          let mediaBuffer: Buffer;
 
-      const attachment = new AttachmentBuilder(watermarkedBuffer, {
-        name: `tetra_${interaction.id}.mp4`,
-      });
+          if (typeof m.source === "string") {
+            const response = await fetch(m.source);
+            mediaBuffer = await response.buffer();
+          } else {
+            mediaBuffer = m.source;
+          }
+
+          let watermarkedBuffer =
+            m.type === "mp4"
+              ? await watermarkVideo(mediaBuffer, interaction.id)
+              : await watermarkImage(mediaBuffer);
+
+          mediaToUpload.push(
+            new AttachmentBuilder(watermarkedBuffer, {
+              name: `tetra_${interaction.id}.${m.type}`,
+            })
+          );
+        })
+      );
 
       feedback.sendMessage({
         embeds: [],
         content: description.replace("\n\n", "\n"),
-        files: [attachment],
+        files: mediaToUpload,
         components: [
           new ActionRowBuilder<ButtonBuilder>().addComponents(
             new ButtonBuilder()
