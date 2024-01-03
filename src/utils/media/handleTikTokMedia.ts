@@ -9,7 +9,6 @@ import * as fs from "fs";
 import { FeedbackManager } from "../managers/FeedbackManager";
 import fetch from "node-fetch";
 import { getTikTokVideo } from "../getTikTokVideo";
-import { error } from "console";
 
 export const handleTikTokMedia = async (
   _url: string,
@@ -75,7 +74,13 @@ export const handleTikTokMedia = async (
             const movie = fs.readFileSync(moviePath);
             resolve({
               description: "",
-              media: movie,
+              media: [
+                {
+                  source: movie,
+                  type: "mp4",
+                  size: movie.length,
+                },
+              ],
               data: { name: `tetra_${feedback.interaction.id}.mp4` },
             });
           });
@@ -86,11 +91,19 @@ export const handleTikTokMedia = async (
           throw new Error("Tiktok video url not found.");
         }
 
-        const source = await fetch(videoUrl);
-        const video = await source.buffer();
+        const request = await fetch(videoUrl, { method: "HEAD" });
+        const headers = request.headers;
+        const size = Number(headers.get("content-length"));
+
         resolve({
           description: "",
-          media: video,
+          media: [
+            {
+              source: videoUrl,
+              type: "mp4",
+              size,
+            },
+          ],
           data: { name: `tetra_${feedback.interaction.id}.mp4` },
         });
       } else {

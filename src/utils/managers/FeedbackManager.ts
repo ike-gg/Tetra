@@ -196,6 +196,12 @@ export class FeedbackManager {
   async notFoundFile() {
     await this.error("Not found any files in message.");
   }
+
+  async fileLimitExceeded() {
+    await this.error(
+      "File limit exceeded. Boost your server using Nitro Boosting to increase the file limit."
+    );
+  }
 }
 
 export const announceUse = async (text: string) => {
