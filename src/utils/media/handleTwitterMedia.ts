@@ -1,4 +1,4 @@
-import { PlatformResult } from "../../commands/media";
+import { MediaOutput, PlatformResult } from "../../commands/media";
 import isValidURL from "../isValidURL";
 
 import type {
@@ -34,6 +34,23 @@ export const handleTwitterMedia = async (
 
     const { media, text } = twitterData;
 
+    const parsedMedia: MediaOutput[] = await Promise.all(
+      media.map(async (item): Promise<MediaOutput> => {
+        const request = await fetch(item.url, { method: "HEAD" });
+        const headers = request.headers;
+
+        const contentType = headers.get("content-type");
+        const contentSize = headers.get("content-length");
+
+        const isVideo = contentType?.includes("video");
+        return {
+          source: item.url,
+          type: isVideo ? "mp4" : "jpg",
+          size: Number(contentSize),
+        };
+      })
+    );
+
     const description =
       text
         ?.split(" ")
@@ -43,7 +60,7 @@ export const handleTwitterMedia = async (
 
     return {
       description,
-      media: media.map((element) => element.url),
+      media: parsedMedia,
     };
   } catch (error) {
     throw error;

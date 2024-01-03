@@ -16,10 +16,17 @@ import { handleInstagramMedia } from "../utils/media/handleInstagramMedia";
 import { handleTikTokMedia } from "../utils/media/handleTikTokMedia";
 import { removeQueryFromUrl } from "../utils/removeQueryFromUrl";
 import { watermarkVideo } from "../utils/media/watermarkVideo";
+import fetch from "node-fetch";
+
+export interface MediaOutput {
+  type: "mp4" | "png" | "jpg";
+  source: Buffer | string;
+  size?: number;
+}
 
 export interface PlatformResult {
   description: string;
-  media: string[] | Buffer;
+  media: MediaOutput[];
   data?: AttachmentData;
 }
 
@@ -96,6 +103,8 @@ export default {
         return;
       }
 
+      console.log(media);
+
       // const files = Array.isArray(media)
       //   ? media.map((m) => {
       //       if (platform.name === "Instagram") {
@@ -115,7 +124,10 @@ export default {
         return;
       }
 
-      const watermarkedBuffer = await watermarkVideo(file);
+      const response = await fetch(file);
+      const buffer = await response.buffer();
+
+      const watermarkedBuffer = await watermarkVideo(buffer, interaction.id);
 
       if (!watermarkedBuffer) {
         await feedback.error("FAILED RENDERING");
