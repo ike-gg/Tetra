@@ -164,8 +164,11 @@ export default {
 
       const actionRow = new ActionRowBuilder<ButtonBuilder>();
 
+      const trimmedUrl = removeQueryFromUrl(removeQueryFromUrl(itemUrl));
+      console.log(itemUrl, trimmedUrl);
+
       actionRow.addComponents(
-        URLButton("Open", removeQueryFromUrl(itemUrl)),
+        URLButton("Open", trimmedUrl),
         new ButtonBuilder()
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true)
