@@ -20,6 +20,7 @@ import { watermarkVideo } from "../utils/media/watermarkVideo";
 import fetch from "node-fetch";
 import { guildParsePremium } from "../utils/discord/guildParsePremium";
 import { watermarkImage } from "../utils/media/watermarkImage";
+import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -81,6 +82,7 @@ export default {
     if (!itemUrl) return;
 
     const { fileLimit } = guildParsePremium(interaction.guild!);
+    const { hasPremium } = parseEntitlementsData(interaction);
     const feedback = new FeedbackManager(interaction);
 
     try {
@@ -119,9 +121,24 @@ export default {
 
       let mediaToUpload: AttachmentBuilder[] = [];
 
+      if (!hasPremium) {
+        await feedback.media({
+          title: `Fetching ${platform.name}...`,
+          description:
+            "Buy Tetra Premium to remove watermark and speed up processing media.",
+        });
+      }
+
       await Promise.all(
         media.map(async (m) => {
-          // soon: check if guild is subscribed to premium
+          if (hasPremium) {
+            mediaToUpload.push(
+              new AttachmentBuilder(m.source, {
+                name: `tetra_${interaction.id}.${m.type}`,
+              })
+            );
+            return;
+          }
 
           let mediaBuffer: Buffer;
 
@@ -145,21 +162,32 @@ export default {
         })
       );
 
-      feedback.sendMessage({
+      const actionRow = new ActionRowBuilder<ButtonBuilder>();
+
+      actionRow.addComponents(
+        URLButton("Open", removeQueryFromUrl(itemUrl)),
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true)
+          .setEmoji({ name: "ℹ️" })
+          .setLabel(platform.name)
+          .setCustomId(interaction.id)
+      );
+
+      !hasPremium &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Primary)
+            .setCustomId("premiumoffering")
+            .setEmoji({ name: "⭐" })
+            .setLabel("Remove watermark")
+        );
+
+      await feedback.sendMessage({
         embeds: [],
         content: description.replace("\n\n", "\n"),
         files: mediaToUpload,
-        components: [
-          new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder()
-              .setStyle(ButtonStyle.Secondary)
-              .setDisabled(true)
-              .setEmoji({ name: "ℹ️" })
-              .setLabel(platform.name)
-              .setCustomId(interaction.id),
-            URLButton("Open", removeQueryFromUrl(itemUrl))
-          ),
-        ],
+        components: [actionRow],
       });
     } catch (error) {
       console.log(error);
