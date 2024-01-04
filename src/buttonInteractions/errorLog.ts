@@ -1,11 +1,28 @@
-import { ButtonInteraction, TextChannel } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  TextChannel,
+} from "discord.js";
 import { DiscordBot } from "../types";
 import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
 
 const errorLog = {
   data: { name: "errorLog" },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
-    await interaction.update({ components: [] });
+    await interaction.update({
+      components: [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`errorlogreceived`)
+            .setEmoji({ name: "📨" })
+            .setLabel(`Log received!`)
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(true)
+        ),
+      ],
+    });
     try {
       const errorSnapshotsChannel = (await client.channels.fetch(
         "1075586205070151710"

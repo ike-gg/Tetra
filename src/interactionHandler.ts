@@ -89,6 +89,10 @@ const interactionHandler = async (
       taskDetails = {
         action: "errorLog",
       };
+    } else if (interactionTaskId === "premiumoffering") {
+      taskDetails = {
+        action: "premiumoffering",
+      };
     } else {
       taskDetails = client.tasks.getTask(interactionTaskId);
     }

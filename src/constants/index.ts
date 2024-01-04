@@ -29,7 +29,7 @@ export const tetraTempDirectory = (subPath: string) => {
   }
 
   setTimeout(() => {
-    fs.rmdirSync(tempPath);
+    fs.rmSync(tempPath, { recursive: true, force: true });
   }, 1000 * 60 * 60);
 
   return tempPath;
