@@ -68,10 +68,18 @@ const selectEmote = {
         interaction.deferUpdate();
 
         try {
-          TaskManager.getInstance().webAccess(taskId);
+          const newTaskId = await TaskManager.getInstance().webAccess(taskId);
 
           await feedback.removeComponents();
-          await feedback.panel("Manual adjustment available on Panel.");
+
+          if (!newTaskId) {
+            await feedback.panel("Manual adjustment available on Panel.");
+            return;
+          }
+          await feedback.sendMessage({
+            content: `https://panel.tetra.lol/r/${newTaskId}`,
+            embeds: [],
+          });
         } catch (error) {
           await feedback.handleError(error);
         }

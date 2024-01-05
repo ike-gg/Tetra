@@ -54,29 +54,26 @@ class TaskManager {
 
     const interactionReply = await interaction?.fetchReply();
 
-    try {
-      await prisma.manualAdjustment.create({
-        data: {
-          guildIcon: guild.icon,
-          guildName: guild.name,
-          emoteName: emote.name,
-          emoteUrl: emote.file.url,
-          expiresOn: new Date(currentTime.getTime() + webTaskExpireTime),
-          guildId: guild.id,
-          accountId: interaction!.user.id,
-          channelId: interactionReply?.channelId ?? null,
-          messageId: interactionReply?.id ?? null,
-        },
-        include: {
-          account: { where: { id: interaction!.user.id } },
-        },
-      });
-      this.removeTask(id);
-    } catch (e) {
-      throw e;
-    } finally {
-      await prisma.$disconnect();
-    }
+    const newTask = await prisma.manualAdjustment.create({
+      data: {
+        guildIcon: guild.icon,
+        guildName: guild.name,
+        emoteName: emote.name,
+        emoteUrl: emote.file.url,
+        expiresOn: new Date(currentTime.getTime() + webTaskExpireTime),
+        guildId: guild.id,
+        accountId: interaction!.user.id,
+        channelId: interactionReply?.channelId ?? null,
+        messageId: interactionReply?.id ?? null,
+      },
+      include: {
+        account: { where: { id: interaction!.user.id } },
+      },
+    });
+    this.removeTask(id);
+    await prisma.$disconnect();
+
+    return newTask.id;
 
     // const taskIndex = this.tasks.findIndex((task) => task.id === id);
     // if (taskIndex === -1) return false;
