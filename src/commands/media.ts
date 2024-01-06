@@ -5,7 +5,6 @@ import {
   ButtonBuilder,
   ButtonStyle,
   ChatInputCommandInteraction,
-  GuildPremiumTier,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -21,6 +20,7 @@ import fetch from "node-fetch";
 import { guildParsePremium } from "../utils/discord/guildParsePremium";
 import { watermarkImage } from "../utils/media/watermarkImage";
 import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
+import { handleTwitchClip } from "../utils/media/handleTwitchClip";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -55,6 +55,11 @@ const supportedPlatforms: PlatformHandler[] = [
     name: "TikTok",
     handler: handleTikTokMedia,
     hostnames: ["tiktok.com"],
+  },
+  {
+    name: "Twitch",
+    handler: handleTwitchClip,
+    hostnames: ["twitch.tv"],
   },
 ];
 
@@ -99,10 +104,7 @@ export default {
 
       await feedback.media({ title: `Fetching ${platform.name}...` });
 
-      const { description, media, data } = await platform.handler(
-        itemUrl,
-        feedback
-      );
+      const { description, media } = await platform.handler(itemUrl, feedback);
 
       if (media.length === 0) {
         await feedback.error(description || "No media found");
@@ -165,7 +167,6 @@ export default {
       const actionRow = new ActionRowBuilder<ButtonBuilder>();
 
       const trimmedUrl = removeQueryFromUrl(removeQueryFromUrl(itemUrl));
-      console.log(itemUrl, trimmedUrl);
 
       actionRow.addComponents(
         URLButton("Open", trimmedUrl),
@@ -193,7 +194,6 @@ export default {
         components: [actionRow],
       });
     } catch (error) {
-      console.log(error);
       await feedback.handleError(error);
     }
   },
