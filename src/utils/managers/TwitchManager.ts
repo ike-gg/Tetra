@@ -2,6 +2,7 @@ import { ApiClient } from "@twurple/api";
 import { RefreshingAuthProvider } from "@twurple/auth";
 import { Emote } from "../../types";
 import { env } from "../../env";
+import { rawDataSymbol } from "@twurple/common";
 
 const authProvider = new RefreshingAuthProvider({
   clientId: env.twitchClientId!,
@@ -11,7 +12,7 @@ const authProvider = new RefreshingAuthProvider({
 const twitchApi = new ApiClient({ authProvider });
 
 export class TwitchManager {
-  private client = twitchApi;
+  public client = twitchApi;
 
   static async getLiveChannels(query: string) {
     try {
@@ -92,5 +93,36 @@ export class TwitchManager {
         throw new Error("Uncaught error while fetching emotes from channel.");
       }
     }
+  }
+
+  static async getClip(clipId: string) {
+    const clip = await twitchApi.clips.getClipById(clipId);
+
+    if (!clip) return null;
+
+    const { thumbnailUrl } = clip;
+
+    const url = new URL(thumbnailUrl);
+    const sourceUrl = url.pathname.split("/").slice(1, -1);
+    const segmentedClip = url.pathname.split("/").pop()?.split("-");
+
+    if (!segmentedClip) return null;
+
+    const previewIndex = segmentedClip.findIndex((s) => s === "preview");
+    const clipInternalId = segmentedClip.slice(0, previewIndex).join("-");
+
+    const clipSource = new URL(url.origin);
+    clipSource.pathname = `${sourceUrl}/${clipInternalId}`;
+
+    const clipSourceUrl = clipSource.toString();
+
+    const clipData = { ...clip };
+
+    return {
+      ...clipData[rawDataSymbol],
+      fullhd: clipSourceUrl + ".mp4",
+      hd: clipSourceUrl + "-720.mp4",
+      sd: clipSourceUrl + "-480.mp4",
+    };
   }
 }
