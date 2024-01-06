@@ -78,8 +78,11 @@ client.on(Events.InteractionCreate, async (interaction) => {
     isCommand || isButton || isSelectMenu || isAutocomplete;
 
   if (supportedInteraction) {
-    interactionHandler(interaction, client);
-    return;
+    try {
+      interactionHandler(interaction, client);
+    } catch (error) {
+      console.error("Failed to handle interaction: ", error);
+    }
   }
 });
 
