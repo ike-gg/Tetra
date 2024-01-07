@@ -1,12 +1,5 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonInteraction,
-  ButtonStyle,
-  TextChannel,
-} from "discord.js";
+import { ButtonInteraction } from "discord.js";
 import { DiscordBot } from "../types";
-import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
 import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
