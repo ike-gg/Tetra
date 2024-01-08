@@ -5,6 +5,7 @@ import { STVResponseGQL } from "../../../types/7tv";
 import sleep from "../../../utils/sleep";
 import stvGetGraphqlRequestOptions from "./helpers/stvGetGraphqlRequestOptions";
 import stvTransformSourceUrl from "./helpers/stvTransformSourceUrl";
+import { Messages } from "../../../constants/messages";
 
 const stvGetEmotesByQuery = async (query: string): Promise<Emote[]> => {
   let data: STVResponseGQL;
@@ -17,6 +18,10 @@ const stvGetEmotesByQuery = async (query: string): Promise<Emote[]> => {
     );
 
     data = await response.json();
+
+    if (data.errors?.at(0)?.message.includes("70429")) {
+      throw new Error(Messages.EMOTE_NOT_FOUND.toString());
+    }
 
     if (data.errors) {
       tries++;
