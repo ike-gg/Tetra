@@ -6,6 +6,7 @@ import {
 
 import { DiscordBot } from "../types";
 import { TwitchManager } from "../utils/managers/TwitchManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const importEmote = {
   data: new SlashCommandBuilder()
@@ -26,28 +27,30 @@ const importEmote = {
     const channels = await TwitchManager.getLiveChannels(channelName);
     await interaction.respond(
       channels.map((stream) => {
-        const { displayName, name } = stream;
+        const { displayName, name, gameName } = stream;
         return {
-          name: displayName,
+          name: `${displayName} (playing ${gameName})`,
           value: name,
         };
       })
     );
   },
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
+    const feedback = new FeedbackManager(interaction);
     const channelName = interaction.options.getString("channel");
 
     if (!channelName) return;
 
+    const twitch = new TwitchManager();
+
+    await feedback.working();
+
     try {
-      // const user = await twitchApi.users.getUserByName(channelName);
-      // if (!user) throw "Not found userid.";
-      // const clipid = await twitchApi.clips.createClip({ channel: user.id });
-      // interaction.reply(clipid);
+      const user = await twitch.client.users.getUserByName(channelName);
+      if (!user) throw "Not found userid.";
+      const streamInfo = await twitch.client.streams.getStreamByUserId(user.id);
     } catch (error) {
-      console.error("throwed!", error);
-    } finally {
-      interaction.reply("TBA");
+      await feedback.handleError(error);
     }
   },
 };
