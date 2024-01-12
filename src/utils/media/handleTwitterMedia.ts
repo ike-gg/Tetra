@@ -1,23 +1,20 @@
 import { MediaOutput, PlatformResult } from "../../commands/media";
 import isValidURL from "../isValidURL";
-
-import type {
-  MediaOptionsWithUrl,
-  MediaOptions,
-  Output,
-} from "get-twitter-media";
 import { FeedbackManager } from "../managers/FeedbackManager";
 
-interface OutputTwitterFn extends Output {
-  error?: String;
-}
+// interface OutputTwitterFn extends Output {
+//   error?: String;
+// }
 
-type TwitterFn = (
-  url: string | MediaOptionsWithUrl,
-  options?: MediaOptions
-) => Promise<OutputTwitterFn>;
+// type TwitterFn = (
+//   url: string | MediaOptionsWithUrl,
+//   options?: MediaOptions
+// ) => Promise<OutputTwitterFn>;
 
-const getTwitterMedia: TwitterFn = require("get-twitter-media");
+// const getTwitterMedia: TwitterFn = require("get-twitter-media");
+
+//@ts-ignore
+import { ndown } from "nayan-media-downloader";
 
 export const handleTwitterMedia = async (
   _url: string,
@@ -28,39 +25,43 @@ export const handleTwitterMedia = async (
       .replace("x.com", "twitter.com")
       .replace("fxtwitter.com", "twitter.com");
 
-    const twitterData = await getTwitterMedia(urlVideo, {
-      text: true,
-    });
+    return {
+      description: "Twitter temporarily disabled",
+      media: [],
+    };
 
-    const { media, text } = twitterData;
+    // if ("error" in twitterData) {
+    //   console.log(twitterData);
+    //   return { description: "", media: [] };
+    // }
 
-    const parsedMedia: MediaOutput[] = await Promise.all(
-      media.map(async (item): Promise<MediaOutput> => {
-        const request = await fetch(item.url, { method: "HEAD" });
-        const headers = request.headers;
+    // const parsedMedia: MediaOutput[] = await Promise.all(
+    //   media.map(async (item): Promise<MediaOutput> => {
+    //     const request = await fetch(item.url, { method: "HEAD" });
+    //     const headers = request.headers;
 
-        const contentType = headers.get("content-type");
-        const contentSize = headers.get("content-length");
+    //     const contentType = headers.get("content-type");
+    //     const contentSize = headers.get("content-length");
 
-        const isVideo = contentType?.includes("video");
-        return {
-          source: item.url,
-          type: isVideo ? "mp4" : "jpg",
-          size: Number(contentSize),
-        };
-      })
-    );
+    //     const isVideo = contentType?.includes("video");
+    //     return {
+    //       source: item.url,
+    //       type: isVideo ? "mp4" : "jpg",
+    //       size: Number(contentSize),
+    //     };
+    //   })
+    // );
 
-    const description =
-      text
-        ?.split(" ")
-        .slice(0, -1)
-        .filter((block) => !isValidURL(block))
-        .join(" ") || "-";
+    // const description =
+    //   text
+    //     ?.split(" ")
+    //     .slice(0, -1)
+    //     .filter((block) => !isValidURL(block))
+    //     .join(" ") || "-";
 
     return {
-      description,
-      media: parsedMedia,
+      description: "",
+      media: [],
     };
   } catch (error) {
     throw error;

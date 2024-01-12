@@ -107,7 +107,7 @@ export default {
       const { description, media } = await platform.handler(itemUrl, feedback);
 
       if (media.length === 0) {
-        await feedback.error(description || "No media found");
+        await feedback.warning(description || "No media found");
         return;
       }
 
