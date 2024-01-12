@@ -4,10 +4,10 @@
   "description": "Fun-utility bot that focuses primarly on managing emotes with seamless import from platforms such like 7TV, BTTV, FFZ and Twitch.",
   "main": "src/index.ts",
   "scripts": {
+    "deployGlobalCommands": "npx ts-node src/deploy-commands-global.ts",
+    "deployDevCommands": "ts-node src/deploy-commands-dev.ts",
     "start": "npx ts-node src/index.ts",
-    "deployCommands": "npx ts-node src/deploy-commands-global.ts",
     "dev": "nodemon",
-    "devdeploy": "ts-node src/deploy-commands-dev.ts",
     "db:push": "prisma db push"
   },
   "author": "ike",
