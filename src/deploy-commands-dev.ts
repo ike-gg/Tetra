@@ -38,8 +38,8 @@ for (const file of internalCommandFiles) {
   commands.push(commandData.toJSON());
 }
 
-console.log("loaded commands:" + commandFiles.join(", "));
-console.log("loaded internal commands:" + internalCommandFiles.join(", "));
+console.log("D> loaded commands:" + commandFiles.join(", "));
+console.log("D> loaded internal commands:" + internalCommandFiles.join(", "));
 
 const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
 
