@@ -1,3 +1,5 @@
+//todo
+
 export class TetraAPIError extends Error {
   constructor(public code: number, public message: string) {
     if (message.length > 128) {
