@@ -21,6 +21,7 @@ import { guildParsePremium } from "../utils/discord/guildParsePremium";
 import { watermarkImage } from "../utils/media/watermarkImage";
 import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 import { handleTwitchClip } from "../utils/media/handleTwitchClip";
+import { handleYoutubeMedia } from "../utils/media/handleYoutubeMedia";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -60,6 +61,11 @@ const supportedPlatforms: PlatformHandler[] = [
     name: "Twitch",
     handler: handleTwitchClip,
     hostnames: ["twitch.tv"],
+  },
+  {
+    name: "YouTube",
+    handler: handleYoutubeMedia,
+    hostnames: ["youtube.com", "youtu.be"],
   },
 ];
 

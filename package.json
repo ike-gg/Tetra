@@ -69,6 +69,7 @@
     "sharp": "^0.31.1",
     "twitter-downloader": "^1.0.0",
     "videoshow": "^0.1.12",
+    "youtube-dl-exec": "^2.5.6",
     "zod": "^3.21.4"
   }
 }
