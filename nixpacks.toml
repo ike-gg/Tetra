@@ -1,2 +1,2 @@
 [phases.setup]
-nixPkgs = ["...", "ffmpeg", "python"]
+nixPkgs = ["...", "ffmpeg", "python3"]
