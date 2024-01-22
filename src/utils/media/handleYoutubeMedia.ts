@@ -25,9 +25,8 @@ export const handleYoutubeMedia = async (
 
     const selectedFormat = formats
       .filter((format) => {
-        const { format_note, ext } = format;
-        const formatQuality = String(format_note);
-        return ext === "mp4" && supportedQualities.includes(formatQuality);
+        const { ext, acodec } = format;
+        return acodec?.includes("mp4") && ext === "mp4";
       })
       .filter((f) => f.filesize)
       .sort((a, b) => b.filesize! - a.filesize!)
@@ -48,6 +47,7 @@ export const handleYoutubeMedia = async (
       ],
     };
   } catch (error) {
+    console.log(error);
     throw new Error("Youtube fetching failed");
   }
 };
