@@ -1,7 +1,7 @@
 import { PlatformResult } from "../../commands/media";
 import { guildParsePremium } from "../discord/guildParsePremium";
 import { FeedbackManager } from "../managers/FeedbackManager";
-import yt from "youtube-dl-exec";
+import yt, { type Format } from "youtube-dl-exec";
 
 const supportedQualities = ["240p", "360p", "480p", "720p"];
 const supportedLengthVideos = 60 * 3;
@@ -10,44 +10,53 @@ export const handleYoutubeMedia = async (
   _url: string,
   feedback: FeedbackManager
 ): Promise<PlatformResult> => {
-  try {
-    const { fileLimit } = guildParsePremium(feedback.interaction.guild!);
+  const { fileLimit } = guildParsePremium(feedback.interaction.guild!);
 
-    const { formats, duration } = await yt(_url, {
-      dumpSingleJson: true,
-      noWarnings: true,
-      preferFreeFormats: true,
-    });
+  const { formats, duration } = await yt(_url, {
+    dumpSingleJson: true,
+    noWarnings: true,
+    preferFreeFormats: true,
+  });
 
-    if (duration > supportedLengthVideos) {
-      throw new Error("For now, only videos up to 3 minutes are supported");
-    }
-
-    const selectedFormat = formats
-      .filter((format) => {
-        const { ext, acodec } = format;
-        return acodec?.includes("mp4") && ext === "mp4";
-      })
-      .filter((f) => f.filesize)
-      .sort((a, b) => b.filesize! - a.filesize!)
-      .find((format) => format.filesize! < fileLimit);
-
-    if (!selectedFormat) {
-      throw new Error("No supported format found (Quality/Size)");
-    }
-
-    return {
-      description: "",
-      media: [
-        {
-          source: selectedFormat.url,
-          type: "mp4",
-          size: selectedFormat.filesize || undefined,
-        },
-      ],
-    };
-  } catch (error) {
-    console.log(error);
-    throw new Error("Youtube fetching failed");
+  if (duration > supportedLengthVideos) {
+    throw new Error("For now, only videos up to 3 minutes are supported");
   }
+
+  const eligableFormats = formats.filter((format) => {
+    const { acodec, vcodec } = format;
+    return acodec !== "none" && vcodec !== "none";
+  });
+
+  const formatsWithSize = await Promise.all(
+    eligableFormats.map(async (format): Promise<Format> => {
+      const request = await fetch(format.url, { method: "HEAD" });
+      const headers = request.headers;
+
+      const size = headers.get("Content-Length");
+
+      return {
+        ...format,
+        filesize: Number(size),
+      };
+    })
+  );
+
+  const selectedFormat = formatsWithSize
+    .sort((a, b) => b.filesize! - a.filesize!)
+    .find((format) => format.filesize! < fileLimit);
+
+  if (!selectedFormat) {
+    throw new Error("No supported format found (Quality/Audio/Size)");
+  }
+
+  return {
+    description: "",
+    media: [
+      {
+        source: selectedFormat.url,
+        type: "mp4",
+        size: selectedFormat.filesize || undefined,
+      },
+    ],
+  };
 };
