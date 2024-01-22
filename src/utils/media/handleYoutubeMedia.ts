@@ -4,7 +4,7 @@ import { FeedbackManager } from "../managers/FeedbackManager";
 import yt, { type Format } from "youtube-dl-exec";
 
 const supportedQualities = ["240p", "360p", "480p", "720p"];
-const supportedLengthVideos = 60 * 5;
+const supportedLengthVideos = 400;
 
 export const handleYoutubeMedia = async (
   _url: string,
@@ -19,7 +19,7 @@ export const handleYoutubeMedia = async (
   });
 
   if (duration > supportedLengthVideos) {
-    throw new Error("For now, only videos up to 3 minutes are supported");
+    throw new Error("For now, only videos up to 6:34 minutes are supported");
   }
 
   const eligableFormats = formats.filter((format) => {
