@@ -175,7 +175,7 @@ export default {
       const trimmedUrl = removeQueryFromUrl(removeQueryFromUrl(itemUrl));
 
       actionRow.addComponents(
-        URLButton("Open", trimmedUrl),
+        URLButton("Open", platform.name === "YouTube" ? itemUrl : trimmedUrl),
         new ButtonBuilder()
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true)
