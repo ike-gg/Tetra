@@ -1,10 +1,10 @@
-import { PlatformResult } from "../../commands/media";
+import { MediaCommandError, PlatformResult } from "../../commands/media";
 import { guildParsePremium } from "../discord/guildParsePremium";
 import { FeedbackManager } from "../managers/FeedbackManager";
 import yt, { type Format } from "youtube-dl-exec";
 
 const supportedQualities = ["240p", "360p", "480p", "720p"];
-const supportedLengthVideos = 60 * 3;
+const supportedLengthVideos = 60 * 5;
 
 export const handleYoutubeMedia = async (
   _url: string,
@@ -27,6 +27,10 @@ export const handleYoutubeMedia = async (
     return acodec !== "none" && vcodec !== "none";
   });
 
+  if (eligableFormats.length === 0) {
+    throw new Error("No supported format found with audio and video.");
+  }
+
   const formatsWithSize = await Promise.all(
     eligableFormats.map(async (format): Promise<Format> => {
       const request = await fetch(format.url, { method: "HEAD" });
@@ -46,7 +50,7 @@ export const handleYoutubeMedia = async (
     .find((format) => format.filesize! < fileLimit);
 
   if (!selectedFormat) {
-    throw new Error("No supported format found (Quality/Audio/Size)");
+    throw MediaCommandError.FILE_LIMIT_EXCEEDED;
   }
 
   return {
