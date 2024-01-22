@@ -41,6 +41,10 @@ interface PlatformHandler {
   handler: (url: string, feedback: FeedbackManager) => Promise<PlatformResult>;
 }
 
+export enum MediaCommandError {
+  FILE_LIMIT_EXCEEDED,
+}
+
 const supportedPlatforms: PlatformHandler[] = [
   {
     name: "Twitter",
@@ -200,6 +204,10 @@ export default {
         components: [actionRow],
       });
     } catch (error) {
+      if (error === MediaCommandError.FILE_LIMIT_EXCEEDED) {
+        await feedback.fileLimitExceeded();
+        return;
+      }
       await feedback.handleError(error);
     }
   },
