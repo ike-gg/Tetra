@@ -6,12 +6,7 @@ import {
 
 import { DiscordBot } from "../types";
 import { getAllAudioBase64 } from "google-tts-api";
-import { OpenAI } from "openai";
-import { env } from "../env";
-import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-
-const openai = new OpenAI({ apiKey: env.openai_auth_key });
 
 const importEmote = {
   data: new SlashCommandBuilder()
@@ -38,40 +33,12 @@ const importEmote = {
         .setMinLength(2)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
-    const { hasPremium } = parseEntitlementsData(interaction);
     const feedback = await new FeedbackManager(interaction);
     try {
       const lang = interaction.options.getString("lang");
       const text = interaction.options.getString("text");
 
       if (!lang || !text) return;
-
-      if (hasPremium) {
-        await feedback.premium("Processing...");
-
-        const ai = await openai.audio.speech.create({
-          input: text,
-          model: "tts-1-hd",
-          voice: "nova",
-          response_format: "mp3",
-        });
-        const arrayBuffer = await ai.arrayBuffer();
-
-        const buffer = Buffer.from(arrayBuffer);
-
-        await feedback.sendMessage({
-          files: [
-            new AttachmentBuilder(buffer, {
-              name: `${interaction.user.username}${interaction.id}.mp3`,
-            }),
-          ],
-          content: "",
-          embeds: [],
-        });
-
-        return;
-      }
-      await feedback.working();
 
       const base = await getAllAudioBase64(text, {
         host: "https://translate.google.com",
