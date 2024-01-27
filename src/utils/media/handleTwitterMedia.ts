@@ -7,6 +7,9 @@ import * as z from "zod";
 const apiResponseSchema = z.object({
   mediaURLs: z.array(z.string().url()),
   text: z.string(),
+  date_epoch: z.number(),
+  user_name: z.string(),
+  likes: z.number(),
 });
 
 export const handleTwitterMedia = async (
@@ -26,7 +29,8 @@ export const handleTwitterMedia = async (
 
     const tweetData = await request.json();
 
-    const { mediaURLs, text } = apiResponseSchema.parse(tweetData);
+    const { mediaURLs, text, date_epoch, likes, user_name } =
+      apiResponseSchema.parse(tweetData);
 
     const parsedMedia: MediaOutput[] = await Promise.all(
       mediaURLs.map(async (item): Promise<MediaOutput> => {
@@ -55,6 +59,11 @@ export const handleTwitterMedia = async (
     return {
       description: description,
       media: parsedMedia,
+      metadata: {
+        author: user_name,
+        date: new Date(date_epoch * 1000),
+        likes: likes,
+      },
     };
   } catch (error) {
     if (error instanceof z.ZodError) {

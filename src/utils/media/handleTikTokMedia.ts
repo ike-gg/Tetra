@@ -18,7 +18,7 @@ export const handleTikTokMedia = async (
     try {
       const tempDirPath = tetraTempDirectory(feedback.interaction.id);
 
-      const { result } = await getTikTokVideo(_url);
+      const { result, ...a } = await getTikTokVideo(_url);
 
       if (!result)
         reject(new Error("Tiktok not found. (Results object empty))"));
@@ -73,7 +73,7 @@ export const handleTikTokMedia = async (
             const moviePath = `${tempDirPath}/final.mp4`;
             const movie = fs.readFileSync(moviePath);
             resolve({
-              description: "",
+              description: result.desc?.slice(0, 200) || "",
               media: [
                 {
                   source: movie,
@@ -81,7 +81,9 @@ export const handleTikTokMedia = async (
                   size: movie.length,
                 },
               ],
-              data: { name: `tetra_${feedback.interaction.id}.mp4` },
+              metadata: {
+                author: result.author.nickname,
+              },
             });
           });
       } else if (result?.type === "video" && (result.video1 || result.video2)) {
@@ -96,7 +98,7 @@ export const handleTikTokMedia = async (
         const size = Number(headers.get("content-length"));
 
         resolve({
-          description: "",
+          description: result.desc?.slice(0, 200) || "",
           media: [
             {
               source: videoUrl,
@@ -104,7 +106,9 @@ export const handleTikTokMedia = async (
               size,
             },
           ],
-          data: { name: `tetra_${feedback.interaction.id}.mp4` },
+          metadata: {
+            author: result.author.nickname,
+          },
         });
       } else {
         reject(new Error("Tiktok not found. Media empty?"));

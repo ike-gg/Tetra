@@ -12,7 +12,7 @@ export const handleYoutubeMedia = async (
 ): Promise<PlatformResult> => {
   const { fileLimit } = guildParsePremium(feedback.interaction.guild!);
 
-  const { formats, duration } = await yt(_url, {
+  const { formats, duration, channel, title, view_count } = await yt(_url, {
     dumpSingleJson: true,
     noWarnings: true,
     preferFreeFormats: true,
@@ -54,7 +54,7 @@ export const handleYoutubeMedia = async (
   }
 
   return {
-    description: "",
+    description: title,
     media: [
       {
         source: selectedFormat.url,
@@ -62,5 +62,9 @@ export const handleYoutubeMedia = async (
         size: selectedFormat.filesize || undefined,
       },
     ],
+    metadata: {
+      author: channel,
+      views: view_count,
+    },
   };
 };

@@ -50,5 +50,10 @@ export const handleTwitchClip = async (
         size: quality.size,
       },
     ],
+    metadata: {
+      author: clip.broadcaster_name,
+      date: new Date(clip.created_at),
+      views: clip.view_count,
+    },
   };
 };
