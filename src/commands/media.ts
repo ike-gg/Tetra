@@ -78,6 +78,8 @@ const supportedPlatforms: PlatformHandler[] = [
   },
 ];
 
+export const supportedMediaPlatforms = supportedPlatforms;
+
 export default {
   data: new SlashCommandBuilder()
     .setName("media")
@@ -195,71 +197,6 @@ export default {
           .setLabel(platform.name)
           .setCustomId(interaction.id)
       );
-
-      author &&
-        actionRow.addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true)
-            .setEmoji({ name: "👤" })
-            .setLabel(author)
-            .setCustomId(`authorm${interaction.id}`)
-        );
-
-      if (date) {
-        const formatDate = (date: Date): string => {
-          const hours = String(date.getHours()).padStart(2, "0");
-          const minutes = String(date.getMinutes()).padStart(2, "0");
-          const day = String(date.getDate()).padStart(2, "0");
-          const monthNames = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-          ];
-          const month = monthNames[date.getMonth()];
-          const year = String(date.getFullYear());
-
-          const formattedDate = `${hours}:${minutes} ${day} ${month} ${year}`;
-          return formattedDate;
-        };
-        actionRow.addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true)
-            .setEmoji({ name: "📅" })
-            .setLabel(formatDate(date))
-            .setCustomId(`datem${interaction.id}`)
-        );
-      }
-
-      likes &&
-        actionRow.addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true)
-            .setEmoji({ name: "❤️" })
-            .setLabel(likes.toString())
-            .setCustomId(`likesm${interaction.id}`)
-        );
-
-      views &&
-        actionRow.addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true)
-            .setEmoji({ name: "👀" })
-            .setLabel(views.toString())
-            .setCustomId(`viewsm${interaction.id}`)
-        );
 
       !hasPremium &&
         actionRow.addComponents(
