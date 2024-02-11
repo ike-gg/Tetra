@@ -30,40 +30,46 @@ const prepareEmote = async (
   }
 ) => {
   const { feedback, interaction, guild } = details;
-  const emoteBuffer = await getBufferFromUrl(emote.file.url);
 
-  if (emoteBuffer.byteLength >= maxSupportedSize) {
-    await feedback.error(
-      `Emote exceeded maximum size supported currently with custom files (${prettyBytes(
-        maxSupportedSize
-      )}) by Tetra.`
-    );
+  try {
+    const emoteBuffer = await getBufferFromUrl(emote.file.url);
+    if (emoteBuffer.byteLength >= maxSupportedSize) {
+      await feedback.error(
+        `Emote exceeded maximum size supported currently with custom files (${prettyBytes(
+          maxSupportedSize
+        )}) by Tetra.`
+      );
+      return;
+    }
+
+    const taskId =
+      TaskManager.getInstance().addTask<TaskTypes.PostProcessEmote>({
+        action: "postProcess",
+        emote: {
+          finalData: emoteBuffer,
+          data: emoteBuffer,
+          ...emote,
+          name: parseDiscordRegexName(emote.name),
+        },
+        feedback,
+        guild: guild || interaction.guild!,
+        interaction,
+      });
+
+    if (emoteBuffer.byteLength > maxEmoteSize) {
+      await feedback.attention(
+        Messages.EXCEEDED_EMOTE_SIZE(emoteBuffer.byteLength)
+      );
+      const optimizeChoiceRow = getChoiceOptimizeRow(taskId, emote.animated);
+      await feedback.updateComponents([optimizeChoiceRow]);
+      return;
+    }
+
+    editEmoteByUser(taskId);
+  } catch (error) {
+    await feedback.handleError(error);
     return;
   }
-
-  const taskId = TaskManager.getInstance().addTask<TaskTypes.PostProcessEmote>({
-    action: "postProcess",
-    emote: {
-      finalData: emoteBuffer,
-      data: emoteBuffer,
-      ...emote,
-      name: parseDiscordRegexName(emote.name),
-    },
-    feedback,
-    guild: guild || interaction.guild!,
-    interaction,
-  });
-
-  if (emoteBuffer.byteLength > maxEmoteSize) {
-    await feedback.attention(
-      Messages.EXCEEDED_EMOTE_SIZE(emoteBuffer.byteLength)
-    );
-    const optimizeChoiceRow = getChoiceOptimizeRow(taskId, emote.animated);
-    await feedback.updateComponents([optimizeChoiceRow]);
-    return;
-  }
-
-  editEmoteByUser(taskId);
 };
 
 export default prepareEmote;
