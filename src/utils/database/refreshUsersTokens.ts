@@ -54,7 +54,12 @@ export const refreshUsersTokens = async () => {
       });
       console.log("Updated token for:", updated.providerAccountId);
     } catch (error) {
-      console.error("Update token failed for:", user.providerAccountId, error);
+      console.error(
+        "[user will be deleted] Update token failed for:",
+        user.providerAccountId,
+        error
+      );
+      await prisma.account.delete({ where: { id: user.id } });
     }
   });
 };
