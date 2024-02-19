@@ -66,7 +66,7 @@ const supportedPlatforms: PlatformHandler[] = [
   {
     name: "TikTok",
     handler: handleTikTokMedia,
-    hostnames: ["tiktok.com"],
+    hostnames: ["tiktok.com", "www.tiktok.com"],
   },
   {
     name: "Twitch",
@@ -122,6 +122,8 @@ export default {
     const itemUrl = urls.find((l) =>
       supportedMediaHostnames.includes(new URL(l).hostname)
     );
+
+    console.log(urls, itemUrl);
 
     if (!itemUrl) {
       await feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
