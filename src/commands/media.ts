@@ -76,7 +76,7 @@ const supportedPlatforms: PlatformHandler[] = [
   {
     name: "YouTube",
     handler: handleYoutubeMedia,
-    hostnames: ["youtube.com", "youtu.be"],
+    hostnames: ["youtube.com", "youtu.be", "www.youtube.com"],
   },
 ];
 
@@ -120,10 +120,8 @@ export default {
     }
 
     const itemUrl = urls.find((l) =>
-      supportedMediaHostnames.includes(new URL(l).hostname)
+      supportedMediaHostnames.some((h) => h.includes(new URL(l).hostname))
     );
-
-    console.log(urls, itemUrl);
 
     if (!itemUrl) {
       await feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
