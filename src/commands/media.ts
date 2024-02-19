@@ -22,6 +22,8 @@ import { watermarkImage } from "../utils/media/watermarkImage";
 import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 import { handleTwitchClip } from "../utils/media/handleTwitchClip";
 import { handleYoutubeMedia } from "../utils/media/handleYoutubeMedia";
+import isValidURL from "../utils/isValidURL";
+import { Messages } from "../constants/messages";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -79,6 +81,9 @@ const supportedPlatforms: PlatformHandler[] = [
 ];
 
 export const supportedMediaPlatforms = supportedPlatforms;
+export const supportedMediaHostnames = supportedPlatforms.flatMap(
+  (s) => s.hostnames
+);
 
 export default {
   data: new SlashCommandBuilder()
@@ -99,13 +104,29 @@ export default {
         .setMaxValue(12)
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
-    const itemUrl = interaction.options.getString("url");
+    const input = interaction.options.getString("url");
 
-    if (!itemUrl) return;
+    if (!input) return;
 
     const { fileLimit } = guildParsePremium(interaction.guild!);
     const { hasPremium } = parseEntitlementsData(interaction);
     const feedback = new FeedbackManager(interaction);
+
+    const urls = input.split(" ").filter((i) => isValidURL(i));
+
+    if (!urls.length) {
+      await feedback.error(Messages.URL_NOT_FOUND);
+      return;
+    }
+
+    const itemUrl = urls.find((l) =>
+      supportedMediaHostnames.includes(new URL(l).hostname)
+    );
+
+    if (!itemUrl) {
+      await feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
+      return;
+    }
 
     try {
       const { host } = new URL(itemUrl);

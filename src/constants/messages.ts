@@ -4,6 +4,7 @@ import { ExtractedEmote } from "../types";
 import multilineText from "../utils/multilineText";
 import prettyBytes from "pretty-bytes";
 import { maxEmoteSize } from ".";
+import { supportedMediaPlatforms } from "../commands/media";
 
 type T = TetraEmbedContent;
 
@@ -37,6 +38,7 @@ export class Messages {
   };
   static readonly INVALID_REFERENCE: T = "Invalid URL.";
   static readonly FILE_NOT_FOUND: T = "File not found.";
+  static readonly URL_NOT_FOUND: T = "URL not found.";
 
   //emote case
   static readonly MULTIPLE_EMOTES_NOT_SUPPORTED: T = {
@@ -55,6 +57,15 @@ export class Messages {
     
     \`/media\` command combines multiple commands (\`/instagram\`, \`/tiktok\`, \`/twitter\` etc.) into one.
     `,
+  };
+
+  //media
+  static readonly METDIA_PLATFORM_NOT_SUPPORED: T = {
+    title: "Platform not supported",
+    description: `Currently supported platforms:
+${supportedMediaPlatforms
+  .map((media) => `- ${media.name} (${media.hostnames.join(", ")})`)
+  .join("\n")}`,
   };
 
   //twitch case
