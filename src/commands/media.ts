@@ -112,19 +112,13 @@ export default {
     const { hasPremium } = parseEntitlementsData(interaction);
     const feedback = new FeedbackManager(interaction);
 
-    const urls = input.split(" ").filter((i) => isValidURL(i));
-
-    if (!urls.length) {
-      await feedback.error(Messages.URL_NOT_FOUND);
-      return;
-    }
-
-    const itemUrl = urls.find((l) =>
-      supportedMediaHostnames.some((h) => h.includes(new URL(l).hostname))
-    );
+    const itemUrl = input
+      .split(" ")
+      .filter((i) => isValidURL(i))
+      .at(0);
 
     if (!itemUrl) {
-      await feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
+      await feedback.error(Messages.INVALID_REFERENCE);
       return;
     }
 
@@ -136,7 +130,7 @@ export default {
       );
 
       if (!platform) {
-        feedback.error("This platform is not supported");
+        feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
         return;
       }
 
