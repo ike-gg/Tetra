@@ -17,7 +17,9 @@ export const handleTwitterMedia = async (
   feedback: FeedbackManager
 ): Promise<PlatformResult> => {
   try {
-    const { pathname } = new URL(_url);
+    const { pathname: pathnameFull } = new URL(_url);
+
+    const pathname = pathnameFull.split("/").slice(0, 4).join("/");
 
     const apiUrl = new URL(pathname, "https://api.vxtwitter.com/").href;
 
