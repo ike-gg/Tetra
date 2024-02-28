@@ -12,11 +12,18 @@ export const handleYoutubeMedia = async (
 ): Promise<PlatformResult> => {
   const { fileLimit } = guildParsePremium(feedback.interaction.guild!);
 
-  const { formats, duration, channel, title, view_count } = await yt(_url, {
-    dumpSingleJson: true,
-    noWarnings: true,
-    preferFreeFormats: true,
-  });
+  const { formats, duration, channel, title, view_count, upload_date } =
+    await yt(_url, {
+      dumpSingleJson: true,
+      noWarnings: true,
+      preferFreeFormats: true,
+    });
+
+  const year = upload_date.slice(0, 4);
+  const month = upload_date.slice(4, 6);
+  const day = upload_date.slice(6, 8);
+
+  const formattedDate = `${year}-${month}-${day}`;
 
   if (duration > supportedLengthVideos) {
     throw new Error("For now, only videos up to 6:34 minutes are supported");
@@ -65,6 +72,7 @@ export const handleYoutubeMedia = async (
     metadata: {
       author: channel,
       views: view_count,
+      date: new Date(formattedDate),
     },
   };
 };

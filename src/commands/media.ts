@@ -1,5 +1,6 @@
 import {
   ActionRowBuilder,
+  ApplicationRoleConnectionMetadata,
   AttachmentBuilder,
   AttachmentData,
   ButtonBuilder,
@@ -24,6 +25,7 @@ import { handleTwitchClip } from "../utils/media/handleTwitchClip";
 import { handleYoutubeMedia } from "../utils/media/handleYoutubeMedia";
 import isValidURL from "../utils/isValidURL";
 import { Messages } from "../constants/messages";
+import { formatDate } from "../utils/formatDate";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -220,6 +222,46 @@ export default {
             .setCustomId("premiumoffering")
             .setEmoji({ name: "⭐" })
             .setLabel("Remove watermark")
+        );
+
+      date &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("datemedia")
+            .setEmoji({ name: "🗓️" })
+            .setLabel(formatDate(date))
+            .setDisabled(true)
+        );
+
+      author &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("author")
+            .setEmoji({ name: "👤" })
+            .setLabel("@" + author)
+            .setDisabled(true)
+        );
+
+      views &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("views")
+            .setEmoji({ name: "👀" })
+            .setLabel(String(views))
+            .setDisabled(true)
+        );
+
+      likes &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("likes")
+            .setEmoji({ name: "👍" })
+            .setLabel(String(likes))
+            .setDisabled(true)
         );
 
       await feedback.sendMessage({
