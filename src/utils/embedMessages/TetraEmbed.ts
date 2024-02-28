@@ -38,7 +38,7 @@ export class TetraEmbed {
   static error(content: TetraEmbedContent) {
     const details = this._transform(content);
     const embedTitle = getEmojiTitle(
-      "🟥",
+      "<:oh:1209982840922570803>",
       details.title || "Something went wrong"
     );
 
