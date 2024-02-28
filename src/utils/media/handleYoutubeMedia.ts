@@ -18,8 +18,6 @@ export const handleYoutubeMedia = async (
     preferFreeFormats: true,
   });
 
-  console.log("initial output:", formats);
-
   if (duration > supportedLengthVideos) {
     throw new Error("For now, only videos up to 6:34 minutes are supported");
   }
@@ -28,8 +26,6 @@ export const handleYoutubeMedia = async (
     const { acodec, vcodec } = format;
     return acodec !== "none" && vcodec !== "none";
   });
-
-  console.log("eligable formats:", eligableFormats);
 
   if (eligableFormats.length === 0) {
     throw new Error("No supported format found with audio and video.");
@@ -49,8 +45,6 @@ export const handleYoutubeMedia = async (
     })
   );
 
-  console.log("formats with size:", formatsWithSize);
-
   const selectedFormat = formatsWithSize
     .sort((a, b) => b.filesize! - a.filesize!)
     .find((format) => format.filesize! < fileLimit);
@@ -58,8 +52,6 @@ export const handleYoutubeMedia = async (
   if (!selectedFormat) {
     throw MediaCommandError.FILE_LIMIT_EXCEEDED;
   }
-
-  console.log("final url:", selectedFormat.url);
 
   return {
     description: title,
