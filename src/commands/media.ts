@@ -26,6 +26,7 @@ import { handleYoutubeMedia } from "../utils/media/handleYoutubeMedia";
 import isValidURL from "../utils/isValidURL";
 import { Messages } from "../constants/messages";
 import { formatDate } from "../utils/formatDate";
+import { getPremiumOfferingButton } from "../utils/elements/getPremiumOfferingButton";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -215,15 +216,6 @@ export default {
           .setCustomId(interaction.id)
       );
 
-      !hasPremium &&
-        actionRow.addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Primary)
-            .setCustomId("premiumoffering")
-            .setEmoji({ name: "⭐" })
-            .setLabel("Remove watermark")
-        );
-
       date &&
         actionRow.addComponents(
           new ButtonBuilder()
@@ -264,11 +256,17 @@ export default {
             .setDisabled(true)
         );
 
+      const components = [actionRow];
+      !hasPremium &&
+        components.push(
+          getPremiumOfferingButton({ withActionRowWrapper: true })
+        );
+
       await feedback.sendMessage({
         embeds: [],
         content: description.replace("\n\n", "\n"),
         files: mediaToUpload,
-        components: [actionRow],
+        components,
       });
     } catch (error) {
       if (error === MediaCommandError.FILE_LIMIT_EXCEEDED) {
