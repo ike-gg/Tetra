@@ -7,6 +7,8 @@ import {
   ButtonStyle,
   BaseMessageOptions,
   isJSONEncodable,
+  DiscordjsError,
+  DiscordAPIError,
 } from "discord.js";
 import {
   ActionRowBuilder,
@@ -119,7 +121,8 @@ export class FeedbackManager {
       error instanceof TypeError ||
       error instanceof SyntaxError ||
       error instanceof ReferenceError ||
-      error instanceof RangeError
+      error instanceof RangeError ||
+      error instanceof DiscordAPIError
     ) {
       await this.unhandledError(error);
     } else if (error instanceof Error) {

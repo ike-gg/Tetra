@@ -24,12 +24,15 @@ export const handleTwitterMedia = async (
     const apiUrl = new URL(pathname, "https://api.vxtwitter.com/").href;
 
     const request = await fetch(apiUrl);
+    const tweetData = await request.json();
 
     if (!request.ok) {
-      throw new Error("Request to API failed.");
+      if ("error" in tweetData) {
+        throw new Error(tweetData.error);
+      } else {
+        throw new Error("Request to API failed.");
+      }
     }
-
-    const tweetData = await request.json();
 
     const { mediaURLs, text, date_epoch, likes, user_name } =
       apiResponseSchema.parse(tweetData);
