@@ -14,6 +14,8 @@ import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
+import removebg from "../postProcess/removebg";
 
 const selectEmote = {
   data: { name: "postProcess" },
@@ -41,6 +43,15 @@ const selectEmote = {
       if (action === "square" || action === "center") {
         await transform(interaction, client, taskId, action);
         return;
+      }
+
+      if (action === "removebg") {
+        const { hasPremium } = parseEntitlementsData(interaction);
+        if (!hasPremium) {
+          await interaction.sendPremiumRequired();
+          return;
+        }
+        await removebg(interaction, client, taskId);
       }
 
       if (action === "submit") {
