@@ -117,6 +117,7 @@ export class FeedbackManager {
   }
 
   async handleError(error: any) {
+    if (env.node_env === "development") console.log(error);
     if (
       error instanceof TypeError ||
       error instanceof SyntaxError ||
