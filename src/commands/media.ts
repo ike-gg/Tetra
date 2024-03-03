@@ -27,6 +27,7 @@ import isValidURL from "../utils/isValidURL";
 import { Messages } from "../constants/messages";
 import { formatDate } from "../utils/formatDate";
 import { getPremiumOfferingButton } from "../utils/elements/getPremiumOfferingButton";
+import { handleStreamableMedia } from "../utils/media/handleStreamableMedia";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -80,6 +81,11 @@ const supportedPlatforms: PlatformHandler[] = [
     name: "YouTube",
     handler: handleYoutubeMedia,
     hostnames: ["youtube.com", "youtu.be", "www.youtube.com"],
+  },
+  {
+    name: "Streamable",
+    handler: handleStreamableMedia,
+    hostnames: ["streamable.com"],
   },
 ];
 
