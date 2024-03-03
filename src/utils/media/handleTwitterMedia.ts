@@ -24,6 +24,20 @@ export const handleTwitterMedia = async (
     const apiUrl = new URL(pathname, "https://api.vxtwitter.com/").href;
 
     const request = await fetch(apiUrl);
+
+    if (request.status !== 200) {
+      const responseType = request.headers.get("content-type");
+      if (responseType?.includes("application/json")) {
+        const errorResponse = await request.json();
+        if ("error" in errorResponse) {
+          throw new Error("Twitter API error: " + errorResponse.error);
+        } else {
+          throw new Error("Twitter API error");
+        }
+      }
+      throw new Error(`Twitter API error (${request.status})`);
+    }
+
     const tweetData = await request.json();
 
     if (!request.ok) {
