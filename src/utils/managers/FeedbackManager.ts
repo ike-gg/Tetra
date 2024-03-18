@@ -122,11 +122,10 @@ export class FeedbackManager {
       error instanceof TypeError ||
       error instanceof SyntaxError ||
       error instanceof ReferenceError ||
-      error instanceof RangeError ||
-      error instanceof DiscordAPIError
+      error instanceof RangeError
     ) {
       await this.unhandledError(error);
-    } else if (error instanceof Error) {
+    } else if (error instanceof Error || error instanceof DiscordAPIError) {
       await this.error(error.message);
     } else {
       await this.unhandledError(error);
