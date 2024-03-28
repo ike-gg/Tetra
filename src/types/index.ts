@@ -55,6 +55,7 @@ export interface Emote {
 export interface ExtractedEmote extends Emote {
   data: Buffer;
   finalData: Buffer;
+  slices?: Buffer[];
 }
 
 export interface FoundEmotesDiscord {

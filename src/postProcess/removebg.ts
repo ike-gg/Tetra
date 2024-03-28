@@ -38,6 +38,7 @@ export default async function removebg(
       emote: {
         ...taskDetails.emote,
         finalData: editedEmoteBuffer,
+        slices: undefined,
       },
     });
 

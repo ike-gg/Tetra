@@ -34,6 +34,7 @@ const transform = async (
       emote: {
         ...taskDetails.emote,
         finalData: editedEmote,
+        slices: undefined,
       },
     });
 
