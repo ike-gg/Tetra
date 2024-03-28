@@ -6,18 +6,25 @@ import { PrismaClient } from "@prisma/client";
 import { TetraAPIError } from "../TetraAPIError";
 import { announceUse } from "../../utils/managers/FeedbackManager";
 import { Messages } from "../../constants/messages";
+import { maxEmoteSize } from "../../constants";
+import { AutoXGifsicle } from "../../utils/AutoXGifsicle";
+
+const isGif = require("is-gif");
 
 export default async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = res.locals.accessToken as string;
 
   const { guildid } = req.params;
-  const { emoteUrl, emoteName } = req.body as {
+  const { emoteUrl, emoteName, fitting } = req.body as {
     emoteUrl: string;
     emoteName: string;
+    fitting?: "fill" | "cover";
   };
 
-  if (!guildid || !emoteUrl || !emoteName)
-    throw new TetraAPIError(400, "Bad request.");
+  if (!guildid || !emoteUrl || !emoteName) {
+    next(new TetraAPIError(400, "Bad request."));
+    return;
+  }
 
   try {
     const user = await discordOauth.getUser(accessToken);
@@ -41,7 +48,22 @@ export default async (req: Request, res: Response, next: NextFunction) => {
         "Not authorized. Missing permissions in guild."
       );
 
-    const emoteBuffer = await getBufferFromUrl(emoteUrl);
+    let emoteBuffer = await getBufferFromUrl(emoteUrl);
+
+    if (emoteBuffer.length >= maxEmoteSize || (fitting && isGif(emoteBuffer))) {
+      const workingBuffer = new AutoXGifsicle(emoteBuffer);
+
+      if (fitting === "fill") {
+        await workingBuffer.stretchToFit();
+      } else if (fitting === "cover") {
+        await workingBuffer.centerCrop();
+      }
+
+      await workingBuffer.optimize();
+
+      emoteBuffer = workingBuffer.fileBuffer;
+    }
+
     const addedEmote = await guild.emojis.create({
       attachment: emoteBuffer,
       name: emoteName,

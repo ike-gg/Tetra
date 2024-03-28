@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { client, discordOauth } from "../..";
 import { PermissionsBitField } from "discord.js";
 
-export default async (req: Request, res: Response) => {
+export default async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = res.locals.accessToken as string;
 
   try {
@@ -38,5 +38,7 @@ export default async (req: Request, res: Response) => {
     });
 
     res.status(200).json({ guilds, managingGuilds, guildsMissingTetra });
-  } catch (e) {}
+  } catch (e) {
+    next(e);
+  }
 };
