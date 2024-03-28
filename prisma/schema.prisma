@@ -19,7 +19,7 @@ model ManualAdjustment {
     accountId String
     channelId String?
     messageId String?
-    account Account? @relation(fields: [accountId], references: [providerAccountId])
+    account Account? @relation(fields: [accountId], references: [providerAccountId], onDelete: Cascade)
 
     @@index([accountId])
 }
@@ -33,7 +33,7 @@ model Emotes {
     animated Boolean
     origin EmoteOrigin
     accountId String
-    account Account? @relation(fields: [accountId], references: [providerAccountId])
+    account Account? @relation(fields: [accountId], references: [providerAccountId], onDelete: Cascade)
 
     @@index([accountId])
 }
