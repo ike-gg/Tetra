@@ -1,7 +1,7 @@
 import { Emote } from "../../../types";
-import fetch from "node-fetch";
+import fetch, { FetchError } from "node-fetch";
 
-const getSourceFile = async (sourceUrl: string): Promise<Emote> => {
+const getEmoteFromUrl = async (sourceUrl: string): Promise<Emote> => {
   try {
     const response = await fetch(sourceUrl);
 
@@ -26,8 +26,12 @@ const getSourceFile = async (sourceUrl: string): Promise<Emote> => {
 
     throw new Error("Not supported file.");
   } catch (error) {
-    throw new Error(String(error));
+    if (error instanceof FetchError) {
+      throw new Error(`Fetch to source failed. \`${error.code}\``);
+    } else {
+      throw new Error("Failed to fetch source file.");
+    }
   }
 };
 
-export default getSourceFile;
+export default getEmoteFromUrl;

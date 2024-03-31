@@ -21,11 +21,12 @@ import { DiscordBot } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
 import { client } from "../..";
-import { env } from "../../env";
+import { env, isDevelopment } from "../../env";
 
 export class FeedbackManager {
   client: DiscordBot;
   ephemeral: boolean;
+  public relatedTask?: string;
 
   constructor(
     public interaction:
@@ -117,7 +118,7 @@ export class FeedbackManager {
   }
 
   async handleError(error: any) {
-    if (env.node_env === "development") console.log(error);
+    if (isDevelopment) console.log(error);
     if (
       error instanceof TypeError ||
       error instanceof SyntaxError ||

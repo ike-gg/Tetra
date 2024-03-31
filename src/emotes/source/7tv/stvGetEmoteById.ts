@@ -3,6 +3,7 @@ import { stvGetUrlById } from "./helpers/constants";
 import { Emote } from "../../../types";
 import { STVEmote } from "../../../types/7tv";
 import stvTransformSourceUrl from "./helpers/stvTransformSourceUrl";
+import { env, isDevelopment } from "../../../env";
 
 const stvGetEmoteById = async (emoteId: string): Promise<Emote> => {
   const response = await fetch(stvGetUrlById(emoteId));

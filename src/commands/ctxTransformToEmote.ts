@@ -10,7 +10,7 @@ import getTenorGif from "../emotes/source/file/getTenorGif";
 import isValidURL from "../utils/isValidURL";
 import prepareEmote from "../emotes/prepareEmote";
 import getImgurFile from "../emotes/source/file/getImgurFile";
-import getSourceFile from "../emotes/source/file/getSourceFile";
+import getEmoteFromUrl from "../emotes/source/file/getEmoteFromUrl";
 import getGiphyGif from "../emotes/source/file/getGiphyGif";
 
 const ctxStealReaction = {
@@ -68,10 +68,10 @@ const ctxStealReaction = {
           emoteSource = await getImgurFile(attachment.url);
           break;
         case "source":
-          emoteSource = await getSourceFile(attachment.url);
+          emoteSource = await getEmoteFromUrl(attachment.url);
           break;
         case "discord":
-          emoteSource = await getSourceFile(attachment.url);
+          emoteSource = await getEmoteFromUrl(attachment.url);
           break;
         case "Giphy":
           emoteSource = await getGiphyGif(attachment.url);

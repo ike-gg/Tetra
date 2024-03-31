@@ -32,7 +32,11 @@ const prepareEmote = async (
   const { feedback, interaction, guild } = details;
 
   try {
-    const emoteBuffer = await getBufferFromUrl(emote.file.url);
+    const emoteBuffer = await getBufferFromUrl(emote.file.url, {
+      maxRetries: 3,
+      msBetweenRetries: 1000,
+    });
+
     if (emoteBuffer.byteLength >= maxSupportedSize) {
       await feedback.error(
         `Emote exceeded maximum size supported currently with custom files (${prettyBytes(

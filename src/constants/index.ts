@@ -1,6 +1,6 @@
 import { tmpdir } from "os";
 import * as fs from "fs";
-import { env } from "../env";
+import { env, isDevelopment } from "../env";
 
 export const enviroment =
   process.env.env === "development" ? "development" : "production";
@@ -30,9 +30,7 @@ export const tetraTempDirectory = (subPath: string) => {
     fs.mkdirSync(tempPath);
   }
 
-  if (env.node_env === "development") {
-    console.log("created temp directory at", tempPath);
-  }
+  if (isDevelopment) console.log("created temp directory at", tempPath);
 
   setTimeout(() => {
     fs.rmSync(tempPath, { recursive: true, force: true });

@@ -14,6 +14,8 @@ const editEmoteByUser = async (taskId: string) => {
   const { emote, feedback, guild, interaction } =
     TaskManager.getInstance().getTask<TaskTypes.PostProcessEmote>(taskId);
 
+  feedback.relatedTask = taskId;
+
   const isMultiUpload = Array.isArray(emote.slices) && emote.slices.length > 1;
 
   let isRateLimited: NodeJS.Timeout | undefined;
@@ -71,7 +73,7 @@ const editEmoteByUser = async (taskId: string) => {
       description: isMultiUpload
         ? "Emote will be uploaded in parts as shown below."
         : `Rescale or rename your emote now.${
-            !isMultiUpload && (aspectRatio >= 1.5 || aspectRatio <= 0.5)
+            aspectRatio >= 1.5 || aspectRatio <= 0.5
               ? "\n\n> It seems like your emote is a bit too wide, consider using scaling options to get best results."
               : ""
           }`,

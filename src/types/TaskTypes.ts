@@ -20,6 +20,7 @@ export interface Base {
   feedback?: FeedbackManager;
   message?: MessageComponentInteraction;
   webAccess?: boolean;
+  expiresIn?: number;
 }
 
 export interface EmoteNavigator extends Base {
