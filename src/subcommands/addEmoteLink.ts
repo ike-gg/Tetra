@@ -6,7 +6,7 @@ import ffzGetEmoteById from "../emotes/source/ffz/ffzGetEmoteById";
 import stvGetEmoteById from "../emotes/source/7tv/stvGetEmoteById";
 import bttvGetEmoteById from "../emotes/source/bttv/bttvGetEmoteById";
 import prepareEmote from "../emotes/prepareEmote";
-import getSourceFile from "../emotes/source/file/getSourceFile";
+import getEmoteFromUrl from "../emotes/source/file/getEmoteFromUrl";
 import { ChatInputCommandInteraction } from "discord.js";
 
 const addEmoteLink = async (
@@ -47,7 +47,7 @@ const addEmoteLink = async (
 
       emote = await bttvGetEmoteById(emoteId);
     } else {
-      emote = await getSourceFile(emoteUrl);
+      emote = await getEmoteFromUrl(emoteUrl);
     }
 
     if (!emote) {

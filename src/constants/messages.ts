@@ -1,6 +1,5 @@
 import { GuildEmoji } from "discord.js";
 import { TetraEmbedContent } from "../utils/embedMessages/TetraEmbed";
-import { ExtractedEmote } from "../types";
 import multilineText from "../utils/multilineText";
 import prettyBytes from "pretty-bytes";
 import { maxEmoteSize } from ".";

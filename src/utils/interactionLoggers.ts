@@ -1,7 +1,7 @@
 import { CommandInteraction, TextChannel } from "discord.js";
 import { DiscordBot } from "../types";
 import { TetraEmbed } from "./embedMessages/TetraEmbed";
-import { env } from "../env";
+import { env, isDevelopment } from "../env";
 
 const interactionLogger = async (
   interaction: CommandInteraction,
@@ -23,7 +23,7 @@ const interactionLogger = async (
       };
     });
 
-    if (env.node_env === "development") {
+    if (isDevelopment) {
       console.log(`---------------------------------
 ${id} by ${user.username} ${user.id} in
 guild: ${guild?.id} - ${guild?.name} - ${guild?.memberCount}

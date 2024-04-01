@@ -11,12 +11,12 @@ import {
 } from "discord.js";
 
 const editEmoteByUser = async (taskId: string) => {
-  // let origin: "postProcess" | undefined;
-
-  // if (options.origin === "postProcess") origin = "postProcess";
-
   const { emote, feedback, guild, interaction } =
     TaskManager.getInstance().getTask<TaskTypes.PostProcessEmote>(taskId);
+
+  feedback.relatedTask = taskId;
+
+  const isMultiUpload = Array.isArray(emote.slices) && emote.slices.length > 1;
 
   let isRateLimited: NodeJS.Timeout | undefined;
 
@@ -28,7 +28,8 @@ const editEmoteByUser = async (taskId: string) => {
     const postProcessRow = getPostProcessRow(taskId, {
       isEmoteAnimated: emote.animated,
     });
-    messageComponents.push(postProcessRow);
+
+    messageComponents.push(...postProcessRow);
 
     if (emote.animated) {
       const manualRow = getManualAdjustmentRow(taskId);
@@ -56,7 +57,7 @@ const editEmoteByUser = async (taskId: string) => {
     const emoteBufferPreview = await emoteSharp
       .gif()
       .resize({
-        width: 64,
+        width: isMultiUpload ? undefined : 64,
         height: 64,
         fit: "contain",
         background: { alpha: 0.05, r: 0, g: 0, b: 0 },
@@ -69,11 +70,13 @@ const editEmoteByUser = async (taskId: string) => {
 
     await feedback.attention({
       title: "Edit emote",
-      description: `Rescale or rename your emote now.${
-        aspectRatio >= 1.5 || aspectRatio <= 0.5
-          ? "\n\n> It seems like your emote is a bit too wide, consider using scaling options to get best results."
-          : ""
-      }`,
+      description: isMultiUpload
+        ? "Emote will be uploaded in parts as shown below."
+        : `Rescale or rename your emote now.${
+            aspectRatio >= 1.5 || aspectRatio <= 0.5
+              ? "\n\n> It seems like your emote is a bit too wide, consider using scaling options to get best results."
+              : ""
+          }`,
       image: {
         url: "attachment://preview.gif",
       },

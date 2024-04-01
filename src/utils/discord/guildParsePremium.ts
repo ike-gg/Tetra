@@ -1,5 +1,4 @@
 import { Guild, GuildPremiumTier } from "discord.js";
-import { parse } from "node:path";
 
 const parseFileLimit = (tier: GuildPremiumTier): number => {
   switch (tier) {
@@ -26,9 +25,25 @@ const parseEmoteLimit = (tier: GuildPremiumTier): number => {
 };
 
 export const guildParsePremium = (guild: Guild) => {
+  const emoteLimit = parseEmoteLimit(guild.premiumTier);
+  const fileLimit = parseFileLimit(guild.premiumTier);
+
+  const emoteAnimated = guild.emojis.cache.filter((e) => e.animated).size;
+  const emoteStatic = guild.emojis.cache.filter((e) => !e.animated).size;
+
   return {
-    fileLimit: parseFileLimit(guild.premiumTier),
-    emoteLimit: parseEmoteLimit(guild.premiumTier),
+    fileLimit,
+    emoteLimit,
+    emotes: {
+      animated: {
+        used: emoteAnimated,
+        free: Math.max(emoteLimit - emoteAnimated, 0),
+      },
+      static: {
+        used: emoteStatic,
+        free: Math.max(emoteLimit - emoteStatic, 0),
+      },
+    },
     level: guild.premiumTier,
   };
 };

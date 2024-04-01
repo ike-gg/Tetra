@@ -1,13 +1,47 @@
 import fetch from "node-fetch";
+import sleep from "../../utils/sleep";
 
-const getBufferFromUrl = async (sourceUrl: string) => {
-  try {
-    const rawEmote = await fetch(sourceUrl);
-    const bufferEmote = await rawEmote.buffer();
-    return bufferEmote;
-  } catch (error) {
-    throw new Error("File not found");
-  }
+interface GetBufferOptions {
+  maxRetries: number;
+  msBetweenRetries: number;
+}
+
+type GetBufferOptionsArg = Partial<GetBufferOptions>;
+
+const defaultOptions: GetBufferOptions = {
+  maxRetries: 3,
+  msBetweenRetries: 1000,
+};
+
+const getBufferFromUrl = async (url: string, options?: GetBufferOptionsArg) => {
+  const { maxRetries, msBetweenRetries } = { ...defaultOptions, ...options };
+  let retries = 0;
+
+  let data: Buffer | null = null;
+
+  do {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${url} - ${response.status}`);
+      }
+      const buffer = await response.buffer();
+      data = buffer;
+      break;
+    } catch (error) {
+      console.error(
+        `(${retries + 1}/${maxRetries}) Failed to fetch ${url} - ${error},`,
+        (error as Error).message
+      );
+    }
+
+    retries++;
+    if (retries < maxRetries) await sleep(msBetweenRetries);
+  } while (retries < maxRetries);
+
+  if (!data) throw new Error("Data download failed.");
+
+  return data;
 };
 
 export default getBufferFromUrl;

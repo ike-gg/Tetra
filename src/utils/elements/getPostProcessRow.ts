@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
-import { ButtonStyle } from "discord.js";
+import { ButtonStyle, SelectMenuBuilder } from "discord.js";
 
 const getPostProcessRow = (
   taskId: string,
@@ -9,22 +9,37 @@ const getPostProcessRow = (
 ) => {
   const { isEmoteAnimated } = options || {};
 
-  const row = new ActionRowBuilder<ButtonBuilder>();
-  row.addComponents(
+  const postProcessRow = new ActionRowBuilder<ButtonBuilder>();
+  const splitMenu = new ActionRowBuilder<SelectMenuBuilder>();
+
+  const menuSplit = new SelectMenuBuilder()
+    .setCustomId(`${taskId}:split`)
+    .setPlaceholder("Split emote into...");
+
+  [2, 3, 4, 5].forEach((splitCount) => {
+    menuSplit.addOptions({
+      label: `Split into ${splitCount} parts`,
+      value: splitCount.toString(),
+    });
+  });
+
+  menuSplit.options.length > 0 && splitMenu.addComponents(menuSplit);
+
+  postProcessRow.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:rename`)
       .setEmoji({ name: "✏️" })
       .setLabel("Rename emote")
       .setStyle(ButtonStyle.Secondary)
   );
-  row.addComponents(
+  postProcessRow.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:square`)
       .setEmoji({ name: "🖼️" })
       .setLabel("Stretch to fit")
       .setStyle(ButtonStyle.Secondary)
   );
-  row.addComponents(
+  postProcessRow.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:center`)
       .setEmoji({ name: "🔍" })
@@ -32,14 +47,17 @@ const getPostProcessRow = (
       .setStyle(ButtonStyle.Secondary)
   );
   !isEmoteAnimated &&
-    row.addComponents(
+    postProcessRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`${taskId}:removebg`)
         .setEmoji({ name: "✨" })
         .setLabel("Remove background")
         .setStyle(ButtonStyle.Secondary)
     );
-  return row;
+
+  return splitMenu.components.length > 0
+    ? [postProcessRow, splitMenu]
+    : [postProcessRow];
 };
 
 export default getPostProcessRow;
