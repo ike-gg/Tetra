@@ -77,6 +77,7 @@ const selectEmote = {
           emote: {
             ...taskDetails.emote,
             finalData: optimisedEmote,
+            optimizedBuffer: optimisedEmote,
           },
         });
         await editEmoteByUser(taskId);

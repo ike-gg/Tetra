@@ -1,23 +1,14 @@
-import { ModalBuilder, TextInputBuilder } from "@discordjs/builders";
-import { randomBytes } from "crypto";
-import {
-  ActionRowBuilder,
-  ButtonInteraction,
-  Client,
-  InteractionCollector,
-  TextInputStyle,
-} from "discord.js";
+import { ButtonInteraction, SelectMenuInteraction } from "discord.js";
 import * as TaskTypes from "../types/TaskTypes";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
 import { client } from "..";
-import parseDiscordRegexName from "../utils/discord/parseDiscordRegexName";
-import gifsicle from "../utils/gifsicle";
-import sharp from "sharp";
-import { extend } from "lodash";
+import sharp, { SharpOptions } from "sharp";
+import { maxEmoteSize } from "../constants";
+import emoteOptimise from "../emotes/emoteOptimise";
 
 const split = async (
-  buttonInteraction: ButtonInteraction,
+  buttonInteraction: ButtonInteraction | SelectMenuInteraction,
   taskId: string,
   splitInto: number
 ) => {
@@ -43,9 +34,18 @@ const split = async (
 
   if (!height) throw new Error("Height of the image is not defined.");
 
+  const sharpOptions: SharpOptions = {
+    animated: emote.animated,
+  };
+
   const newWidth = height * splitInto;
 
-  const extendedEmote = await sharp(emote.data)
+  const emoteBuffer = emote.optimizedBuffer
+    ? emote.optimizedBuffer
+    : emote.data;
+
+  const extendedEmote = await sharp(emoteBuffer, sharpOptions)
+    .gif()
     .resize({ width: newWidth, height, fit: "fill" })
     .toBuffer();
 
@@ -53,7 +53,8 @@ const split = async (
 
   const emotesSliced = await Promise.all(
     emoteSlots.map(async (_, i) => {
-      return sharp(extendedEmote)
+      return sharp(extendedEmote, sharpOptions)
+        .gif()
         .extract({
           height: height,
           left: i * height,
@@ -66,7 +67,8 @@ const split = async (
 
   const padding = 12;
 
-  const emotePreviewSliced = await sharp(emotesSliced[0])
+  const emotePreviewSliced = await sharp(emotesSliced[0], sharpOptions)
+    .gif()
     .extend({
       right: newWidth - height + padding * (splitInto - 1),
       background: { r: 0, g: 0, b: 0, alpha: 0 },
@@ -75,6 +77,7 @@ const split = async (
       emotesSliced.slice(1).map((e, i) => {
         return {
           input: e,
+          animated: true,
           left: (i + 1) * height + padding * (i + 1),
           top: 0,
         };
@@ -82,12 +85,19 @@ const split = async (
     )
     .toBuffer();
 
+  const emoteSlicesOptimized = await Promise.all(
+    emotesSliced.map(async (emoteSlice) => {
+      if (emoteSlice.byteLength < maxEmoteSize) return emoteSlice;
+      return await emoteOptimise(emoteSlice, { animated: emote.animated });
+    })
+  );
+
   client.tasks.updateTask<TaskTypes.PostProcessEmote>(taskId, {
     ...taskDetails,
     emote: {
       ...taskDetails.emote,
       finalData: emotePreviewSliced,
-      slices: emotesSliced,
+      slices: emoteSlicesOptimized,
     },
   });
 

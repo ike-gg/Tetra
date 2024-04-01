@@ -2,7 +2,6 @@ import { NextFunction, Request, Response } from "express";
 import { client, discordOauth } from "../..";
 import { TetraAPIError } from "../TetraAPIError";
 import { guildParsePremium } from "../../utils/discord/guildParsePremium";
-import { parseEntitlementsData } from "../../utils/discord/parseEntitlementsData";
 
 export default async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = res.locals.accessToken as string;

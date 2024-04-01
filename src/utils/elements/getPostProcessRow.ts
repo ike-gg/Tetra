@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
-import { ButtonStyle } from "discord.js";
+import { ButtonStyle, SelectMenuBuilder } from "discord.js";
 
 const getPostProcessRow = (
   taskId: string,
@@ -10,18 +10,20 @@ const getPostProcessRow = (
   const { isEmoteAnimated } = options || {};
 
   const postProcessRow = new ActionRowBuilder<ButtonBuilder>();
-  const splitRow = new ActionRowBuilder<ButtonBuilder>();
+  const splitMenu = new ActionRowBuilder<SelectMenuBuilder>();
 
-  !isEmoteAnimated &&
-    [2, 3, 4].forEach((splitCount) => {
-      splitRow.addComponents(
-        new ButtonBuilder()
-          .setCustomId(`${taskId}:split:${splitCount}`)
-          .setEmoji({ name: "🪓" })
-          .setLabel(`Split into ${splitCount}`)
-          .setStyle(ButtonStyle.Secondary)
-      );
+  const menuSplit = new SelectMenuBuilder()
+    .setCustomId(`${taskId}:split`)
+    .setPlaceholder("Split emote into...");
+
+  [2, 3, 4, 5].forEach((splitCount) => {
+    menuSplit.addOptions({
+      label: `Split into ${splitCount} parts`,
+      value: splitCount.toString(),
     });
+  });
+
+  menuSplit.options.length > 0 && splitMenu.addComponents(menuSplit);
 
   postProcessRow.addComponents(
     new ButtonBuilder()
@@ -53,8 +55,8 @@ const getPostProcessRow = (
         .setStyle(ButtonStyle.Secondary)
     );
 
-  return splitRow.components.length > 0
-    ? [postProcessRow, splitRow]
+  return splitMenu.components.length > 0
+    ? [postProcessRow, splitMenu]
     : [postProcessRow];
 };
 

@@ -10,6 +10,7 @@ const emoteOptimise = async (
     animated: boolean;
     feedback?: FeedbackManager;
     transform?: "square" | "center";
+    skipReducingFrames?: boolean;
   }
 ) => {
   const { animated, feedback, transform } = options;
@@ -38,6 +39,7 @@ const emoteOptimise = async (
     const buffer = new AutoXGifsicle(processedBuffer, {
       lossy: 80,
       finalSize: maxEmoteSize,
+      skipReducingFrames: options.skipReducingFrames,
     });
 
     transform === "center" && (await buffer.centerCrop());

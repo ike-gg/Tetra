@@ -20,24 +20,37 @@ const stagesOpt: Stage[] = [
   { method: "reduceFrames", value: 1 },
 ];
 
+const stagesOptWithoutReducingFrames = stagesOpt.filter(
+  (stage) => stage.method !== "reduceFrames"
+);
+
 interface AutoXGifsicleOptions {
-  finalSize?: number;
-  lossy?: number;
+  finalSize: number;
+  lossy: number;
+  skipReducingFrames: boolean;
 }
+
+const defaultOptions: AutoXGifsicleOptions = {
+  finalSize: maxEmoteSize,
+  lossy: 80,
+  skipReducingFrames: false,
+};
 
 export class AutoXGifsicle extends xGifsicle {
   private finalSize: number;
   private lossyFactor: number;
+  private skipReducingFrames: boolean;
 
-  constructor(
-    gifBuffer: Buffer,
-    options: AutoXGifsicleOptions = { finalSize: maxEmoteSize, lossy: 80 }
-  ) {
-    const { finalSize, lossy } = options;
+  constructor(gifBuffer: Buffer, options?: Partial<AutoXGifsicleOptions>) {
+    const { finalSize, lossy, skipReducingFrames } = {
+      ...defaultOptions,
+      ...options,
+    };
 
     super(gifBuffer);
-    this.finalSize = finalSize!;
-    this.lossyFactor = lossy!;
+    this.finalSize = finalSize;
+    this.lossyFactor = lossy;
+    this.skipReducingFrames = skipReducingFrames;
   }
 
   private async checkLossy() {
@@ -56,7 +69,11 @@ export class AutoXGifsicle extends xGifsicle {
   async optimize() {
     let stage = 0;
     while (this.size > this.finalSize) {
-      const { method, value } = stagesOpt[stage] || {
+      const internalStages = this.skipReducingFrames
+        ? stagesOptWithoutReducingFrames
+        : stagesOpt;
+
+      const { method, value } = internalStages.at(stage) || {
         method: "scale",
         value: 0.95,
       };
