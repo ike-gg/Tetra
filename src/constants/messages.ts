@@ -100,6 +100,10 @@ ${supportedMediaPlatforms
     return `Someone just added an emote ${emote} to their server!`;
   }
 
+  static ANNOUNCE_ADDED_MULTIPLE_EMOTES(emote: GuildEmoji[]): string {
+    return `Someone just added multiple emotes ${emote.join()} to their server!`;
+  }
+
   static ANNOUNCE_ADDED_EMOTE_PANEL(emote: GuildEmoji): string {
     return `> Someone just added an emote ${emote} to their server using **Tetra Panel**!`;
   }
