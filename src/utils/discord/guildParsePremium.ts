@@ -28,8 +28,14 @@ export const guildParsePremium = (guild: Guild) => {
   const emoteLimit = parseEmoteLimit(guild.premiumTier);
   const fileLimit = parseFileLimit(guild.premiumTier);
 
-  const emoteAnimated = guild.emojis.cache.filter((e) => e.animated).size;
-  const emoteStatic = guild.emojis.cache.filter((e) => !e.animated).size;
+  const discordEmotes = guild.emojis.cache.filter((e) => e.deletable);
+
+  const emoteAnimated = discordEmotes.filter((e) => e.animated).size;
+  const emoteStatic = discordEmotes.filter((e) => !e.animated).size;
+
+  console.log(
+    discordEmotes.forEach((e) => console.log(e.name, e.deletable, e.author))
+  );
 
   return {
     fileLimit,
