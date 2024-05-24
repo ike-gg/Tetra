@@ -58,7 +58,7 @@ export enum MediaCommandError {
 
 const supportedPlatforms: PlatformHandler[] = [
   {
-    name: "Twitter",
+    name: "X",
     handler: handleTwitterMedia,
     hostnames: ["twitter.com", "x.com", "fxtwitter.com"],
   },
