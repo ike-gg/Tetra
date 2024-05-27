@@ -33,10 +33,6 @@ export const guildParsePremium = (guild: Guild) => {
   const emoteAnimated = discordEmotes.filter((e) => e.animated).size;
   const emoteStatic = discordEmotes.filter((e) => !e.animated).size;
 
-  console.log(
-    discordEmotes.forEach((e) => console.log(e.name, e.deletable, e.author))
-  );
-
   return {
     fileLimit,
     emoteLimit,

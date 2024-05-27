@@ -72,7 +72,12 @@ const interactionHandler = async (
     if (env.node_env === "development" && !isDevCommand) return;
     if (env.node_env === "production" && isDevCommand) return;
 
-    if (!(interaction.user.id === interaction.message.interaction!.user.id)) {
+    const isForAll = interaction.customId.split(":")[1] === "all";
+
+    const currentUserId = interaction.user.id;
+    const originalUserId = interaction.message.interaction!.user.id;
+
+    if (currentUserId !== originalUserId && !isForAll) {
       interaction.deferUpdate();
       return;
     }
@@ -92,6 +97,10 @@ const interactionHandler = async (
     } else if (interactionTaskId === "premiumoffering") {
       taskDetails = {
         action: "premiumoffering",
+      };
+    } else if (interactionTaskId === "describeMedia") {
+      taskDetails = {
+        action: "describeMedia",
       };
     } else {
       taskDetails = client.tasks.getTask(interactionTaskId);

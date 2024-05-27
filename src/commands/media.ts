@@ -262,11 +262,20 @@ export default {
             .setDisabled(true)
         );
 
-      const components = [actionRow];
-      !hasPremium &&
-        components.push(
-          getPremiumOfferingButton({ withActionRowWrapper: true })
+      const premiumRow = new ActionRowBuilder<ButtonBuilder>();
+
+      !hasPremium && premiumRow.addComponents(getPremiumOfferingButton());
+
+      media.some((m) => m.type === "mp4") &&
+        premiumRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Primary)
+            .setCustomId("describeMedia:all")
+            .setLabel("Summarize")
+            .setEmoji({ name: "✨" })
         );
+
+      const components = [actionRow, premiumRow];
 
       await feedback.sendMessage({
         embeds: [],
