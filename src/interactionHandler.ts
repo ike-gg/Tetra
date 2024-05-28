@@ -10,6 +10,7 @@ import interactionLogger from "./utils/interactionLoggers";
 import { BANNEDLIST } from "./bannedusers";
 import { TetraEmbed } from "./utils/embedMessages/TetraEmbed";
 import { env } from "./env";
+import { BLACKLISTED_GUILDS } from "./blacklistedguilds";
 
 const interactionHandler = async (
   interaction: Interaction,
@@ -18,6 +19,14 @@ const interactionHandler = async (
   const banDetails = BANNEDLIST.find(
     (bannedUser) => bannedUser.userId === interaction.user.id
   );
+
+  const blacklistedGuild = BLACKLISTED_GUILDS.find(
+    (guild) => guild.guildId === interaction.guildId
+  );
+
+  if (blacklistedGuild) {
+    if (blacklistedGuild.isActive) await interaction.guild?.leave();
+  }
 
   if (banDetails) {
     if (!interaction.isRepliable()) return;
