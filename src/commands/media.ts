@@ -275,7 +275,8 @@ export default {
             .setEmoji({ name: "✨" })
         );
 
-      const components = [actionRow, premiumRow];
+      const components = [actionRow];
+      if (premiumRow.components.length > 0) components.push(premiumRow);
 
       await feedback.sendMessage({
         embeds: [],
