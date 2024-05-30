@@ -77,11 +77,11 @@ const supportedPlatforms: PlatformHandler[] = [
     handler: handleTwitchClip,
     hostnames: ["twitch.tv"],
   },
-  {
-    name: "YouTube",
-    handler: handleYoutubeMedia,
-    hostnames: ["youtube.com", "youtu.be", "www.youtube.com"],
-  },
+  // {
+  //   name: "YouTube",
+  //   handler: handleYoutubeMedia,
+  //   hostnames: ["youtube.com", "youtu.be", "www.youtube.com"],
+  // },
   {
     name: "Streamable",
     handler: handleStreamableMedia,
@@ -266,15 +266,6 @@ export default {
 
       !hasPremium && premiumRow.addComponents(getPremiumOfferingButton());
 
-      media.some((m) => m.type === "mp4") &&
-        premiumRow.addComponents(
-          new ButtonBuilder()
-            .setStyle(ButtonStyle.Primary)
-            .setCustomId("describeMedia:all")
-            .setLabel("Summarize")
-            .setEmoji({ name: "✨" })
-        );
-
       const components = [actionRow];
       if (premiumRow.components.length > 0) components.push(premiumRow);
 
@@ -287,9 +278,9 @@ export default {
     } catch (error) {
       if (error === MediaCommandError.FILE_LIMIT_EXCEEDED) {
         await feedback.fileLimitExceeded();
-        return;
+      } else {
+        await feedback.handleError(error);
       }
-      await feedback.handleError(error);
     }
   },
 };
