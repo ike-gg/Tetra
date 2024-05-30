@@ -40,8 +40,6 @@ export const handleTwitterMedia = async (
 
     const tweetData = await request.json();
 
-    console.log(tweetData);
-
     if (!request.ok) {
       if ("error" in tweetData) {
         throw new Error(tweetData.error);

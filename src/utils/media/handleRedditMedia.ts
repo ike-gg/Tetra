@@ -13,7 +13,8 @@ export const handleRedditMedia = async (
   url.host = url.host.replace("reddit", "rxddit");
   const response = await fetch(url.toString(), {
     headers: {
-      "User-Agent": "Discordbot",
+      "User-Agent":
+        "Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)",
     },
   });
 
@@ -21,6 +22,8 @@ export const handleRedditMedia = async (
 
   const html = await response.text();
   const { document } = new JSDOM(html).window;
+
+  console.log(html);
 
   let videoUrls: string[] = [];
   let imageUrls: string[] = [];
@@ -32,8 +35,6 @@ export const handleRedditMedia = async (
     document
       .querySelector('meta[property="og:description"]')
       ?.getAttribute("content") ?? "";
-
-  // sometimes content can begin with the gallery and some words and two line breaks, delete it.
 
   const description = plainDescription.startsWith("🖼️ Gallery")
     ? plainDescription.split("\n").slice(2).join("\n")
