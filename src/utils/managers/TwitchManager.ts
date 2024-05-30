@@ -58,6 +58,15 @@ export class TwitchManager {
     }
   }
 
+  static async getChannelInfo(channelName: string) {
+    try {
+      const channel = await twitchApi.streams.getStreamByUserName(channelName);
+      return channel;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   static async getChannelEmotes(channelId: string): Promise<Emote[]> {
     try {
       const emotes = await twitchApi.chat.getChannelEmotes(channelId);

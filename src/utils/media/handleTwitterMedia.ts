@@ -40,6 +40,8 @@ export const handleTwitterMedia = async (
 
     const tweetData = await request.json();
 
+    console.log(tweetData);
+
     if (!request.ok) {
       if ("error" in tweetData) {
         throw new Error(tweetData.error);
@@ -68,15 +70,15 @@ export const handleTwitterMedia = async (
       })
     );
 
-    const description =
-      text
-        ?.split(" ")
-        .slice(0, -1)
-        .filter((block) => !isValidURL(block))
-        .join(" ") || "-";
+    const endsWithLinkRegex = /https?:\/\/[\w\d./?=#&]+$/;
+    const isLinkAtEnd = endsWithLinkRegex.test(text);
+
+    const description = text.replace(endsWithLinkRegex, "");
 
     return {
-      description: description,
+      description: isLinkAtEnd
+        ? `${description}\n\n*Read more on X...*`
+        : description,
       media: parsedMedia,
       metadata: {
         author: user_name,

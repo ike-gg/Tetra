@@ -1,6 +1,11 @@
 import { EmbedBuilder, EmbedData } from "discord.js";
+import { getRandomLoadingEmote } from "../../constants/messages";
 
-export type TetraEmbedContent = EmbedData | string;
+interface ExtraEmbedData extends EmbedData {
+  hideTitle?: boolean;
+}
+
+export type TetraEmbedContent = ExtraEmbedData | string;
 
 const getEmojiTitle = (emoji: String, title: string) => `${emoji}  ${title}`;
 
@@ -95,12 +100,14 @@ export class TetraEmbed {
 
   static media(content: TetraEmbedContent) {
     const details = this._transform(content);
-    const embedTitle = getEmojiTitle("🔹", details.title || "Media");
+    const embedTitle = details.title || "Media";
+
+    const hideTitle = typeof content === "object" ? content.hideTitle : false;
 
     return new EmbedBuilder({
       color: 0x40c6ff,
       ...details,
-      title: embedTitle,
+      title: hideTitle ? undefined : embedTitle,
     });
   }
 

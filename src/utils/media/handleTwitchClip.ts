@@ -10,6 +10,11 @@ export const handleTwitchClip = async (
   feedback: FeedbackManager
 ): Promise<PlatformResult> => {
   const url = new URL(_url);
+
+  if (url.pathname.endsWith("/")) {
+    url.pathname = url.pathname.slice(0, -1);
+  }
+
   const clipId = url.pathname.split("/").pop();
 
   if (!clipId) throw new Error("Invalid clip ID.");
@@ -41,8 +46,11 @@ export const handleTwitchClip = async (
     throw new Error("No quality available.");
   }
 
+  console.log(clip);
+
   return {
-    description: "",
+    description: `${clip.title}
+    *Clipped by: ${clip.creator_name}*`,
     media: [
       {
         source: quality.src,

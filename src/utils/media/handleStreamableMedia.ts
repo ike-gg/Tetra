@@ -47,7 +47,6 @@ export const handleStreamableMedia = async (
           size,
         },
       ],
-      description: "",
     };
   } catch (error) {
     if (error instanceof z.ZodError) {

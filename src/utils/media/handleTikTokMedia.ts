@@ -73,7 +73,8 @@ export const handleTikTokMedia = async (
             const moviePath = `${tempDirPath}/final.mp4`;
             const movie = fs.readFileSync(moviePath);
             resolve({
-              description: result.desc?.slice(0, 200) || "",
+              description:
+                result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
               media: [
                 {
                   source: movie,
@@ -98,7 +99,7 @@ export const handleTikTokMedia = async (
         const size = Number(headers.get("content-length"));
 
         resolve({
-          description: result.desc?.slice(0, 200) || "",
+          description: result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
           media: [
             {
               source: videoUrl,

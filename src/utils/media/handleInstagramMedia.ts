@@ -49,7 +49,6 @@ export const handleInstagramMedia = async (
 
     return {
       media: mediaDetails,
-      description: "",
     };
   } catch (error) {
     throw error;

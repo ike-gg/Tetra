@@ -14,7 +14,7 @@ function getPremiumOfferingButton(options?: Options): ButtonReturnType {
   const { withActionRowWrapper = false } = options || {};
 
   const premiumOfferingButton = new ButtonBuilder()
-    .setStyle(ButtonStyle.Success)
+    .setStyle(ButtonStyle.Primary)
     .setCustomId("premiumoffering")
     .setEmoji({ name: "⭐" })
     .setLabel("Remove watermark");

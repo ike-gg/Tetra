@@ -15,7 +15,7 @@ const loadingEmotes = [
   "<a:tetraLoading:1165904168205156372>",
   "<a:tetraLoading:1165904037800050788>",
 ];
-const getRandomLoadingEmote = () =>
+export const getRandomLoadingEmote = () =>
   loadingEmotes[Math.floor(Math.random() * loadingEmotes.length)];
 
 export class Messages {
