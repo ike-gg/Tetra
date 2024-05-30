@@ -78,6 +78,11 @@ const supportedPlatforms: PlatformHandler[] = [
     hostnames: ["twitch.tv"],
   },
   {
+    name: "YouTube",
+    handler: handleYoutubeMedia,
+    hostnames: ["youtube.com", "youtu.be", "www.youtube.com"],
+  },
+  {
     name: "Streamable",
     handler: handleStreamableMedia,
     hostnames: ["streamable.com"],
@@ -203,10 +208,81 @@ export default {
         })
       );
 
+      const actionRow = new ActionRowBuilder<ButtonBuilder>();
+      const trimmedUrl = removeQueryFromUrl(removeQueryFromUrl(itemUrl));
+      const { author, date, likes, views } = metadata || {};
+
+      actionRow.addComponents(
+        URLButton("Open", platform.name === "YouTube" ? itemUrl : trimmedUrl),
+        new ButtonBuilder()
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true)
+          .setEmoji({ name: "ℹ️" })
+          .setLabel(platform.name)
+          .setCustomId(interaction.id)
+      );
+
+      date &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("datemedia")
+            .setEmoji({ name: "🗓️" })
+            .setLabel(formatDate(date))
+            .setDisabled(true)
+        );
+
+      author &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("author")
+            .setEmoji({ name: "👤" })
+            .setLabel("@" + author)
+            .setDisabled(true)
+        );
+
+      views &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("views")
+            .setEmoji({ name: "👀" })
+            .setLabel(String(views))
+            .setDisabled(true)
+        );
+
+      likes &&
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Secondary)
+            .setCustomId("likes")
+            .setEmoji({ name: "👍" })
+            .setLabel(String(likes))
+            .setDisabled(true)
+        );
+
+      const premiumRow = new ActionRowBuilder<ButtonBuilder>();
+
+      !hasPremium && premiumRow.addComponents(getPremiumOfferingButton());
+
+      media.some((m) => m.type === "mp4") &&
+        premiumRow.addComponents(
+          new ButtonBuilder()
+            .setStyle(ButtonStyle.Primary)
+            .setCustomId("describeMedia:all")
+            .setLabel("Summarize")
+            .setEmoji({ name: "✨" })
+        );
+
+      const components = [actionRow];
+      if (premiumRow.components.length > 0) components.push(premiumRow);
+
       await feedback.sendMessage({
         embeds: [],
         content: description.replace("\n\n", "\n"),
         files: mediaToUpload,
+        components,
       });
     } catch (error) {
       if (error === MediaCommandError.FILE_LIMIT_EXCEEDED) {
