@@ -14,7 +14,6 @@ import rateLimit from "express-rate-limit";
 import cron from "node-cron";
 import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
 import { env } from "./env";
-import { BLACKLISTED_GUILDS } from "./blacklistedguilds";
 
 if (env.node_env === "development") {
   console.log("---- Running in development mode ----");
@@ -63,15 +62,6 @@ client.tasks = TaskManager.getInstance();
 
 client.on(Events.ClientReady, async (client) => {
   console.info(`${client.user.username} connected. Bot ready.`);
-});
-
-client.on(Events.GuildCreate, async (guild) => {
-  const guildBlacklisted = BLACKLISTED_GUILDS.find(
-    (g) => g.guildId === guild.id
-  );
-  if (guildBlacklisted) {
-    guildBlacklisted.isActive && guild.leave();
-  }
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
