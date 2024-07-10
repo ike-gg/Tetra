@@ -1,13 +1,12 @@
-import { TiktokDL } from "@tobyg74/tiktok-api-dl";
-import { MusicalDownResponse } from "@tobyg74/tiktok-api-dl/lib/types/musicaldown";
+import { Downloader } from "@tobyg74/tiktok-api-dl";
 
 export const getTikTokVideo = async (link: string) => {
   try {
-    const data = await TiktokDL(link, { version: "v3" });
+    const data = await Downloader(link, { version: "v3" });
 
     if (data.status === "error") throw new Error(data.message);
 
-    return data as MusicalDownResponse;
+    return data;
   } catch (error) {
     throw new Error("Downloading tiktok failed");
   }
