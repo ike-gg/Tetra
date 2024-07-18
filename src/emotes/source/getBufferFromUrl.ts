@@ -29,6 +29,7 @@ const getBufferFromUrl = async (url: string, options?: GetBufferOptionsArg) => {
       data = buffer;
       break;
     } catch (error) {
+      console.log(url);
       console.error(
         `(${retries + 1}/${maxRetries}) Failed to fetch ${url} - ${error},`,
         (error as Error).message

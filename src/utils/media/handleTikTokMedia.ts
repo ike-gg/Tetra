@@ -29,23 +29,25 @@ export const handleTikTokMedia = async (
         result.images?.length > 0
       ) {
         const imageSlides = result.images;
-        const audioURL = result.music;
+        const audioURL = result.music.playUrl.at(0);
 
         const imgPaths = await Promise.all(
           imageSlides.map(async (imageURL, index) => {
+            console.log(imageURL);
             const fileBuffer = await getBufferFromUrl(imageURL);
+            console.log(fileBuffer);
             const imageTransformedBuffer = await sharp(fileBuffer)
               .jpeg()
               .resize({ height: 960, width: 540, fit: "contain" })
               .toBuffer();
-            const path = `${tempDirPath}/${index}.jpg`;
+            const path = `${tempDirPath}/${index}.jpeg`;
             fs.writeFileSync(path, imageTransformedBuffer);
             return path;
           })
         );
         if (audioURL) {
           const audioPath = `${tempDirPath}/audio.mp3`;
-          const audioBuffer = await getBufferFromUrl(audioURL as string);
+          const audioBuffer = await getBufferFromUrl(audioURL);
           fs.writeFileSync(audioPath, audioBuffer);
         }
         videoshow(imgPaths, {
@@ -74,7 +76,7 @@ export const handleTikTokMedia = async (
             const movie = fs.readFileSync(moviePath);
             resolve({
               description:
-                result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
+                result.description?.slice(0, 200).replace(/\B#\w+/g, "") || "",
               media: [
                 {
                   source: movie,
@@ -88,7 +90,7 @@ export const handleTikTokMedia = async (
             });
           });
       } else if (result?.type === "video") {
-        const videoUrl = result.video;
+        const videoUrl = result.video?.downloadAddr.at(0);
 
         if (!videoUrl) {
           throw new Error("Tiktok video url not found.");
@@ -99,7 +101,8 @@ export const handleTikTokMedia = async (
         const size = Number(headers.get("content-length"));
 
         resolve({
-          description: result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
+          description:
+            result.description?.slice(0, 200).replace(/\B#\w+/g, "") || "",
           media: [
             {
               source: videoUrl,
