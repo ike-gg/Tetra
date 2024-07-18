@@ -87,8 +87,8 @@ export const handleTikTokMedia = async (
               },
             });
           });
-      } else if (result?.type === "video" && (result.video1 || result.video2)) {
-        const videoUrl = result.video1 || result.video2;
+      } else if (result?.type === "video") {
+        const videoUrl = result.video;
 
         if (!videoUrl) {
           throw new Error("Tiktok video url not found.");
