@@ -8,6 +8,7 @@ export const getTikTokVideo = async (link: string) => {
 
     return data;
   } catch (error) {
+    console.log(error);
     throw new Error("Downloading tiktok failed");
   }
 };

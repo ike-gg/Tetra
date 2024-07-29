@@ -20,6 +20,8 @@ export const handleTikTokMedia = async (
 
       const { result, ...a } = await getTikTokVideo(_url);
 
+      console.log("results->", result, a);
+
       if (!result)
         reject(new Error("Tiktok not found. (Results object empty))"));
 
