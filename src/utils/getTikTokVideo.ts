@@ -2,13 +2,13 @@ import A, { Downloader } from "@tobyg74/tiktok-api-dl";
 
 export const getTikTokVideo = async (link: string) => {
   try {
-    const data = await Downloader(link, { version: "v1" });
+    const data = await Downloader(link, { version: "v3" });
 
     if (data.status === "error") throw new Error(data.message);
 
     return data;
   } catch (error) {
-    console.log(error);
+    console.log("downloading failed->", error);
     throw new Error("Downloading tiktok failed");
   }
 };

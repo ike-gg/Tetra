@@ -20,8 +20,6 @@ export const handleTikTokMedia = async (
 
       const { result, ...a } = await getTikTokVideo(_url);
 
-      console.log("results->", result, a);
-
       if (!result)
         reject(new Error("Tiktok not found. (Results object empty))"));
 
@@ -31,7 +29,7 @@ export const handleTikTokMedia = async (
         result.images?.length > 0
       ) {
         const imageSlides = result.images;
-        const audioURL = result.music.playUrl.at(0);
+        const audioURL = result.music;
 
         const imgPaths = await Promise.all(
           imageSlides.map(async (imageURL, index) => {
@@ -78,7 +76,7 @@ export const handleTikTokMedia = async (
             const movie = fs.readFileSync(moviePath);
             resolve({
               description:
-                result.description?.slice(0, 200).replace(/\B#\w+/g, "") || "",
+                result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
               media: [
                 {
                   source: movie,
@@ -92,7 +90,7 @@ export const handleTikTokMedia = async (
             });
           });
       } else if (result?.type === "video") {
-        const videoUrl = result.video?.downloadAddr.at(0);
+        const videoUrl = result.video1 ?? result.video2;
 
         if (!videoUrl) {
           throw new Error("Tiktok video url not found.");
@@ -103,8 +101,7 @@ export const handleTikTokMedia = async (
         const size = Number(headers.get("content-length"));
 
         resolve({
-          description:
-            result.description?.slice(0, 200).replace(/\B#\w+/g, "") || "",
+          description: result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
           media: [
             {
               source: videoUrl,
