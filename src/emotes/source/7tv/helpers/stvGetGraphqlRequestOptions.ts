@@ -1,6 +1,9 @@
 import { RequestInit } from "node-fetch";
 
-export default (query: string, ignoreTags: boolean = false): RequestInit => {
+export default (
+  query: string,
+  ignoreTags: boolean = false
+): RequestInit => {
   return {
     method: "POST",
     headers: {
@@ -9,7 +12,7 @@ export default (query: string, ignoreTags: boolean = false): RequestInit => {
     body: JSON.stringify({
       //filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}
       query: `{
-    emotes(query: "${query}", limit: 20000, filter: {ignore_tags: ${ignoreTags}}) {
+    emotes(query: "${query}", limit: 100, filter: {ignore_tags: ${ignoreTags}}) {
       count
       items {
         id
