@@ -28,7 +28,9 @@ const addEmoteLink = async (
 
   try {
     if (domain.includes("7tv")) {
-      const emoteId = emoteUrl.split("/").find((path) => path.length === 24);
+      const emoteId = emoteUrl
+        .split("/")
+        .find((path) => path.length >= 24 && path.length <= 30);
       if (!emoteId) return;
 
       emote = await stvGetEmoteById(emoteId);
