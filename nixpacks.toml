@@ -6,7 +6,6 @@ nixPkgs = [
     "python39",
     "autoconf", 
     "automake", 
-    "gcompat"    
 ]
 
 [build]
