@@ -1,5 +1,10 @@
 [phases.setup]
 nixPkgs = [
+  "...",
+  "nodejs",
     "ffmpeg",
     "python39",
 ]
+
+[build]
+builder = "node"
