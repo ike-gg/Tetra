@@ -1,15 +1,14 @@
 [phases.setup]
 nixPkgs = [
   "...",
-    "nodejs",  
-    "ffmpeg",
-    "python39",
-    "autoconf",
-    "automake", 
+        "nodejs",  
+    "python39", 
+    "ffmpeg",   
+    "autoconf", 
+    "automake",  
     "gcc",      
     "make",     
-    "gcompat",  
-    "gawk",     
+    "gawk"      
 ]
 
 [build]
