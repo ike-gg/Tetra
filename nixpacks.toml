@@ -1,2 +1,9 @@
 [phases.setup]
-nixPkgs = ["...", "ffmpeg", "python39"]
+nixPkgs = [
+    "ffmpeg",
+    "python39",
+    "autoconf", 
+    "automake", 
+    "build-base",
+    "gcompat"    
+]
