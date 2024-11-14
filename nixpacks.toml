@@ -6,8 +6,7 @@ nixPkgs = [
     "ffmpeg",   
     "autoconf", 
     "automake",  
-    "gcc",      
-    "make",     
+    "gcc",       
     "gawk"      
 ]
 
