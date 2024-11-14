@@ -4,9 +4,8 @@ nixPkgs = [
   "nodejs",
     "ffmpeg",
     "python39",
-        "autoconf", 
+    "autoconf", 
     "automake", 
-    "build-base",
     "gcompat"    
 ]
 
