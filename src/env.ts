@@ -28,6 +28,9 @@ const envSchema = z.object({
   PORT: z.string().default("3002"),
 
   openai_auth_key: z.string(),
+
+  COBALT_URL: z.string().url(),
+  COBALT_API_KEY: z.string(),
 });
 
 export const env = envSchema.parse(process.env);

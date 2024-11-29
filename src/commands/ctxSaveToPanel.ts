@@ -2,6 +2,7 @@ import {
   ApplicationCommandType,
   ContextMenuCommandBuilder,
   MessageContextMenuCommandInteraction,
+  ContextMenuCommandType,
 } from "discord.js";
 
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
@@ -14,12 +15,12 @@ import { PrismaClient, Emotes } from "@prisma/client";
 const ctxStealEmote = {
   data: new ContextMenuCommandBuilder()
     .setName("Save to Panel")
+    //@ts-expect-error - will be fixed in d.js
     .setType(ApplicationCommandType.Message),
-  async execute(
-    interaction: MessageContextMenuCommandInteraction,
-    client: DiscordBot
-  ) {
-    const feedback = new FeedbackManager(interaction, { ephemeral: true });
+  async execute(interaction: MessageContextMenuCommandInteraction, client: DiscordBot) {
+    const feedback = new FeedbackManager(interaction, {
+      ephemeral: true,
+    });
 
     const messageContent = interaction.targetMessage.content;
     const { username } = interaction.targetMessage.author;

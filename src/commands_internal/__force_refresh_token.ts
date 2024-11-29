@@ -7,7 +7,9 @@ const here = {
     .setName("forcerefreshtoken")
     .setDescription("refresh user tokens"),
   async execute(interaction: ChatInputCommandInteraction) {
-    const feedback = new FeedbackManager(interaction, { ephemeral: true });
+    const feedback = new FeedbackManager(interaction, {
+      ephemeral: true,
+    });
 
     await feedback.info("refreshing tokens...");
 

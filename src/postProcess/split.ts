@@ -40,16 +40,20 @@ const split = async (
 
   const newWidth = height * splitInto;
 
-  const emoteBuffer = emote.optimizedBuffer
-    ? emote.optimizedBuffer
-    : emote.data;
+  const emoteBuffer = emote.optimizedBuffer ? emote.optimizedBuffer : emote.data;
 
   const extendedEmote = await sharp(emoteBuffer, sharpOptions)
     .gif()
-    .resize({ width: newWidth, height, fit: "fill" })
+    .resize({
+      width: newWidth,
+      height,
+      fit: "fill",
+    })
     .toBuffer();
 
-  const emoteSlots = Array.from({ length: splitInto });
+  const emoteSlots = Array.from({
+    length: splitInto,
+  });
 
   const emotesSliced = await Promise.all(
     emoteSlots.map(async (_, i) => {
@@ -71,7 +75,12 @@ const split = async (
     .gif()
     .extend({
       right: newWidth - height + padding * (splitInto - 1),
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
+      background: {
+        r: 0,
+        g: 0,
+        b: 0,
+        alpha: 0,
+      },
     })
     .composite(
       emotesSliced.slice(1).map((e, i) => {
@@ -88,7 +97,9 @@ const split = async (
   const emoteSlicesOptimized = await Promise.all(
     emotesSliced.map(async (emoteSlice) => {
       if (emoteSlice.byteLength < maxEmoteSize) return emoteSlice;
-      return await emoteOptimise(emoteSlice, { animated: emote.animated });
+      return await emoteOptimise(emoteSlice, {
+        animated: emote.animated,
+      });
     })
   );
 

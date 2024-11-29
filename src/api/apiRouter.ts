@@ -12,29 +12,39 @@ apiRouter.use(async (req: Request, res: Response, next: NextFunction) => {
   const nextAuthSession = req.cookies["session"];
 
   if (!nextAuthSession) {
-    res.status(401).json({ error: "Unauthorized. missing auth" });
+    res.status(401).json({
+      error: "Unauthorized. missing auth",
+    });
     return;
   }
 
   const prisma = new PrismaClient();
 
   const currentSession = await prisma.session.findFirst({
-    where: { sessionToken: nextAuthSession },
+    where: {
+      sessionToken: nextAuthSession,
+    },
   });
 
   if (!currentSession) {
     await prisma.$disconnect();
-    res.status(401).json({ error: "Unauthorized. missing session" });
+    res.status(401).json({
+      error: "Unauthorized. missing session",
+    });
     return;
   }
 
   const currentAccount = await prisma.account.findFirst({
-    where: { userId: currentSession.userId },
+    where: {
+      userId: currentSession.userId,
+    },
   });
 
   if (!currentAccount || !currentAccount.access_token) {
     await prisma.$disconnect();
-    res.status(401).json({ error: "Unauthorized. missing acc or tkn" });
+    res.status(401).json({
+      error: "Unauthorized. missing acc or tkn",
+    });
     return;
   }
 
@@ -52,12 +62,16 @@ apiRouter.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(String(err).slice(0, 256));
 
   if (err instanceof TetraAPIError) {
-    res.status(err.code).json({ error: err.message });
+    res.status(err.code).json({
+      error: err.message,
+    });
     return;
   }
 
   if (err instanceof DiscordAPIError) {
-    res.status(409).json({ error: `Discord Error: ${err.message}` });
+    res.status(409).json({
+      error: `Discord Error: ${err.message}`,
+    });
     return;
   }
 
@@ -65,7 +79,9 @@ apiRouter.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   if (errorMessage.length > 96) {
     errorMessage = errorMessage.slice(0, 96) + "...";
   }
-  res.status(500).json({ error: errorMessage });
+  res.status(500).json({
+    error: errorMessage,
+  });
   return;
 });
 

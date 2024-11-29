@@ -62,22 +62,17 @@ const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
       await feedback.removeComponents();
       await feedback.working();
 
-      const newNamePlain = await collectedInteraction.fields.getTextInputValue(
-        "newname"
-      );
+      const newNamePlain = await collectedInteraction.fields.getTextInputValue("newname");
 
       const newName = parseDiscordRegexName(newNamePlain);
 
-      await TaskManager.getInstance().updateTask<TaskTypes.PostProcessEmote>(
-        taskId,
-        {
-          ...taskDetails,
-          emote: {
-            ...taskDetails.emote,
-            name: newName,
-          },
-        }
-      );
+      await TaskManager.getInstance().updateTask<TaskTypes.PostProcessEmote>(taskId, {
+        ...taskDetails,
+        emote: {
+          ...taskDetails.emote,
+          name: newName,
+        },
+      });
 
       await editEmoteByUser(taskId);
     } catch (error) {

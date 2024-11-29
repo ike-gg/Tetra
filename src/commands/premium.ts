@@ -1,5 +1,6 @@
 import {
   ChatInputCommandInteraction,
+  EmbedBuilder,
   EmbedData,
   SlashCommandBuilder,
 } from "discord.js";
@@ -21,29 +22,27 @@ const importEmote = {
       return feedback.info("You don't have access to premium features.");
     }
 
-    const premiumDetails: EmbedData = { fields: [] };
+    const premiumDetails = new EmbedBuilder();
 
     if (purchasedEntitlement) {
-      premiumDetails.fields!.push({
+      premiumDetails.addFields({
         name: "Premium",
         value: `You are eligible to use premium features on this server.
-        Renewal date: <t:${Math.floor(
-          purchasedEntitlement.endsTimestamp! / 1000
-        )}>
+        Renewal date: <t:${Math.floor(purchasedEntitlement.endsTimestamp! / 1000)}>
         Purchased by: <@${purchasedEntitlement.userId}>`,
         inline: true,
       });
     }
 
     if (testEntitlement) {
-      premiumDetails.fields!.push({
+      premiumDetails.addFields({
         name: "Temporary Premium",
         value: "You have limited access to premium features on this server.",
         inline: true,
       });
     }
 
-    return feedback.premium(premiumDetails);
+    return feedback.premium(premiumDetails.toJSON() as EmbedData);
   },
 };
 

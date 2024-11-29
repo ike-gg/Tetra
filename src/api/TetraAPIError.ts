@@ -1,5 +1,8 @@
 export class TetraAPIError extends Error {
-  constructor(public code: number, public message: string) {
+  constructor(
+    public code: number,
+    public message: string
+  ) {
     if (message.length > 128) {
       message = message.slice(0, 128) + "...";
     }

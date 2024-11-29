@@ -1,9 +1,6 @@
 import { RequestInit } from "node-fetch";
 
-export default (
-  query: string,
-  ignoreTags: boolean = false
-): RequestInit => {
+export default (query: string, ignoreTags: boolean = false): RequestInit => {
   return {
     method: "POST",
     headers: {

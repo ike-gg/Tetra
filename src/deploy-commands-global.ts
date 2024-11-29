@@ -25,7 +25,9 @@ for (const file of commandFiles) {
   commands.push(command.default.data.toJSON());
 }
 
-const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
+const rest = new REST({
+  version: "10",
+}).setToken(env.discordBotToken);
 
 (async () => {
   try {

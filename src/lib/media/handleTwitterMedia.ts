@@ -1,8 +1,8 @@
 import fetch from "node-fetch";
-import { MediaOutput, PlatformResult } from "../../commands/media";
-import isValidURL from "../isValidURL";
-import { FeedbackManager } from "../managers/FeedbackManager";
+import { MediaOutput, PlatformHandlerCallback } from "../../commands/media";
 import * as z from "zod";
+import isValidURL from "../../utils/isValidURL";
+import { EmbeddedError } from "../../constants/errors";
 
 const apiResponseSchema = z.object({
   mediaURLs: z.array(z.string().url()),
@@ -12,10 +12,7 @@ const apiResponseSchema = z.object({
   likes: z.number(),
 });
 
-export const handleTwitterMedia = async (
-  _url: string,
-  feedback: FeedbackManager
-): Promise<PlatformResult> => {
+export const handleTwitterMedia: PlatformHandlerCallback = async (_url) => {
   try {
     const { pathname: pathnameFull } = new URL(_url);
 
@@ -53,7 +50,9 @@ export const handleTwitterMedia = async (
 
     const parsedMedia: MediaOutput[] = await Promise.all(
       mediaURLs.map(async (item): Promise<MediaOutput> => {
-        const request = await fetch(item, { method: "HEAD" });
+        const request = await fetch(item, {
+          method: "HEAD",
+        });
         const headers = request.headers;
 
         const contentType = headers.get("content-type");
@@ -68,15 +67,16 @@ export const handleTwitterMedia = async (
       })
     );
 
-    const endsWithLinkRegex = /https?:\/\/[\w\d./?=#&]+$/;
-    const isLinkAtEnd = endsWithLinkRegex.test(text);
+    const linkAtTheEnd = isValidURL(text.split(" ").at(-1) ?? "");
 
-    const description = text.replace(endsWithLinkRegex, "");
+    const description = linkAtTheEnd
+      ? `${text.split(" ").slice(0, -1).join(" ")}
+    
+_Read more on X..._`
+      : text;
 
     return {
-      description: isLinkAtEnd
-        ? `${description}\n\n*Read more on X...*`
-        : description,
+      description,
       media: parsedMedia,
       metadata: {
         author: user_name,
@@ -86,7 +86,10 @@ export const handleTwitterMedia = async (
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error("Received wrong response from API.");
+      throw new EmbeddedError("X provided unexpected data.", {
+        unsupportedFeature: true,
+        origin: error,
+      });
     } else {
       throw error;
     }

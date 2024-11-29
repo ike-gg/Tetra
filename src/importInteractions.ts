@@ -21,9 +21,7 @@ const importInteractions = (client: DiscordBot) => {
   importSelectMenu(client.selectMenu);
 };
 
-const importCommands = (
-  clientCommands: Collection<string, CommandInteraction>
-) => {
+const importCommands = (clientCommands: Collection<string, CommandInteraction>) => {
   const commandsPath = path.join(__dirname, "commands");
   const commandFiles = fs
     .readdirSync(commandsPath)
@@ -73,9 +71,7 @@ const importButtonInteractions = (
   }
 };
 
-const importSelectMenu = (
-  clientCommands: Collection<string, SelectMenuInteraction>
-) => {
+const importSelectMenu = (clientCommands: Collection<string, SelectMenuInteraction>) => {
   const selectMenuPath = path.join(__dirname, "selectMenu");
   const selectMenuFiles = fs
     .readdirSync(selectMenuPath)

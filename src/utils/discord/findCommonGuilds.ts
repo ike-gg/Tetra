@@ -1,9 +1,6 @@
 import { Collection, Guild } from "discord.js";
 
-const findCommonGuilds = async (
-  guilds: Collection<string, Guild>,
-  userId: string
-) => {
+const findCommonGuilds = async (guilds: Collection<string, Guild>, userId: string) => {
   return await guilds.reduce(
     //@ts-ignore
     async (acc: Guild[], guild: Guild) => {

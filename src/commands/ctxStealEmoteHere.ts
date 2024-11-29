@@ -14,12 +14,12 @@ import { Messages } from "../constants/messages";
 const ctxStealEmoteHere = {
   data: new ContextMenuCommandBuilder()
     .setName("Steal emote here")
+    //@ts-expect-error - will be fixed in d.js
     .setType(ApplicationCommandType.Message),
-  async execute(
-    interaction: MessageContextMenuCommandInteraction,
-    client: DiscordBot
-  ) {
-    const feedback = new FeedbackManager(interaction, { ephemeral: true });
+  async execute(interaction: MessageContextMenuCommandInteraction, client: DiscordBot) {
+    const feedback = new FeedbackManager(interaction, {
+      ephemeral: true,
+    });
 
     await feedback.working();
 
@@ -44,7 +44,10 @@ const ctxStealEmoteHere = {
 
     const emote = emotes[0];
 
-    prepareEmote(emote, { feedback, interaction });
+    prepareEmote(emote, {
+      feedback,
+      interaction,
+    });
   },
 };
 

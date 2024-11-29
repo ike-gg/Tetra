@@ -7,17 +7,50 @@ interface Stage {
 }
 
 const stagesOpt: Stage[] = [
-  { method: "scale", value: 0.95 },
-  { method: "colors", value: 192 },
-  { method: "scale", value: 0.95 },
-  { method: "reduceFrames", value: 1 },
-  { method: "colors", value: 128 },
-  { method: "scale", value: 0.95 },
-  { method: "colors", value: 96 },
-  { method: "scale", value: 0.95 },
-  { method: "colors", value: 64 },
-  { method: "scale", value: 0.95 },
-  { method: "reduceFrames", value: 1 },
+  {
+    method: "scale",
+    value: 0.95,
+  },
+  {
+    method: "colors",
+    value: 192,
+  },
+  {
+    method: "scale",
+    value: 0.95,
+  },
+  {
+    method: "reduceFrames",
+    value: 1,
+  },
+  {
+    method: "colors",
+    value: 128,
+  },
+  {
+    method: "scale",
+    value: 0.95,
+  },
+  {
+    method: "colors",
+    value: 96,
+  },
+  {
+    method: "scale",
+    value: 0.95,
+  },
+  {
+    method: "colors",
+    value: 64,
+  },
+  {
+    method: "scale",
+    value: 0.95,
+  },
+  {
+    method: "reduceFrames",
+    value: 1,
+  },
 ];
 
 const stagesOptWithoutReducingFrames = stagesOpt.filter(
@@ -55,7 +88,9 @@ export class AutoXGifsicle extends xGifsicle {
 
   private async checkLossy() {
     const args: Arguments = [`--lossy=${this.lossyFactor}`];
-    return await this.process(args, [], { saveToBuffer: false });
+    return await this.process(args, [], {
+      saveToBuffer: false,
+    });
   }
 
   async isLossyFinal() {

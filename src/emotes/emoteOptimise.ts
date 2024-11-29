@@ -19,7 +19,9 @@ const emoteOptimise = async (
   await feedback?.warning("Processing your emote ⏳");
 
   if (!animated) {
-    const buffer = sharp(processedBuffer, { animated: false });
+    const buffer = sharp(processedBuffer, {
+      animated: false,
+    });
     const { height: _height, width: _width } = (await buffer.metadata()) as {
       width: number;
       height: number;
@@ -28,9 +30,17 @@ const emoteOptimise = async (
     const side = Math.min(Math.max(_height, _width), 128);
 
     transform === "center" &&
-      buffer.resize({ fit: "cover", width: side, height: side });
+      buffer.resize({
+        fit: "cover",
+        width: side,
+        height: side,
+      });
     transform === "square" &&
-      buffer.resize({ fit: "fill", width: side, height: side });
+      buffer.resize({
+        fit: "fill",
+        width: side,
+        height: side,
+      });
 
     processedBuffer = await buffer.toBuffer();
   }

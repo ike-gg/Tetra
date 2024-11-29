@@ -1,10 +1,7 @@
 import { ReactionManager } from "discord.js";
 import { Emote } from "../../types";
 
-const emotesFromReactions = (
-  reactions: ReactionManager,
-  username: string
-): Emote[] => {
+const emotesFromReactions = (reactions: ReactionManager, username: string): Emote[] => {
   const reactionEmotes = reactions.cache.map((reaction) => reaction.emoji);
   const filteredEmotes = reactionEmotes.filter((emote) => emote.id);
 

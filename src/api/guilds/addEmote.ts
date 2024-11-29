@@ -16,8 +16,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     emoteName: string;
   };
 
-  if (!guildid || !emoteUrl || !emoteName)
-    throw new TetraAPIError(400, "Bad request.");
+  if (!guildid || !emoteUrl || !emoteName) throw new TetraAPIError(400, "Bad request.");
 
   try {
     const user = await discordOauth.getUser(accessToken);
@@ -31,24 +30,19 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (!userInGuild)
       throw new TetraAPIError(401, "Not authorized. Not found user in guild.");
 
-    const hasPermissions = userInGuild.permissions.has(
-      "ManageEmojisAndStickers"
-    );
+    const hasPermissions = userInGuild.permissions.has("ManageEmojisAndStickers");
 
     if (!hasPermissions)
-      throw new TetraAPIError(
-        401,
-        "Not authorized. Missing permissions in guild."
-      );
+      throw new TetraAPIError(401, "Not authorized. Missing permissions in guild.");
 
     const emoteBuffer = await getBufferFromUrl(emoteUrl);
     const addedEmote = await guild.emojis.create({
       attachment: emoteBuffer,
       name: emoteName,
     });
-    res
-      .status(200)
-      .json({ message: `Added ${addedEmote.name} emote to ${guild.name}` });
+    res.status(200).json({
+      message: `Added ${addedEmote.name} emote to ${guild.name}`,
+    });
 
     await announceUse(Messages.ANNOUNCE_ADDED_EMOTE_PANEL(addedEmote));
   } catch (e) {
@@ -74,8 +68,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       });
       await prisma.$disconnect();
       res.status(301).json({
-        message:
-          "Emote has exceeded the file limit. Manual adjustment has been created.",
+        message: "Emote has exceeded the file limit. Manual adjustment has been created.",
         taskId: id,
       });
       return;

@@ -12,31 +12,27 @@ export default async (req: Request, res: Response) => {
     const guildsWithoutTetra = userGuilds.filter(
       (guild) => !tetraGuilds.includes(guild.id)
     );
-    const guildsWithTetra = userGuilds.filter((guild) =>
-      tetraGuilds.includes(guild.id)
-    );
+    const guildsWithTetra = userGuilds.filter((guild) => tetraGuilds.includes(guild.id));
 
     const guilds = guildsWithTetra.filter((guild) => {
-      const userPermissions = new PermissionsBitField(
-        BigInt(guild.permissions!)
-      );
+      const userPermissions = new PermissionsBitField(BigInt(guild.permissions!));
       return !userPermissions.has("ManageEmojisAndStickers");
     });
 
     const managingGuilds = guildsWithTetra.filter((guild) => {
-      const userPermissions = new PermissionsBitField(
-        BigInt(guild.permissions!)
-      );
+      const userPermissions = new PermissionsBitField(BigInt(guild.permissions!));
       return userPermissions.has("ManageEmojisAndStickers");
     });
 
     const guildsMissingTetra = guildsWithoutTetra.filter((guild) => {
-      const userPermissions = new PermissionsBitField(
-        BigInt(guild.permissions!)
-      );
+      const userPermissions = new PermissionsBitField(BigInt(guild.permissions!));
       return userPermissions.has("ManageGuild");
     });
 
-    res.status(200).json({ guilds, managingGuilds, guildsMissingTetra });
+    res.status(200).json({
+      guilds,
+      managingGuilds,
+      guildsMissingTetra,
+    });
   } catch (e) {}
 };

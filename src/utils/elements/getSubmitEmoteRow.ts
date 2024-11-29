@@ -12,7 +12,9 @@ const getSubmitEmoteRow = (
   row.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:submit`)
-      .setEmoji({ name: "✅" })
+      .setEmoji({
+        name: "✅",
+      })
       .setLabel(`Add emote as "${emoteName}"`)
       .setStyle(ButtonStyle.Success)
   );

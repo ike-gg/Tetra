@@ -62,9 +62,7 @@ export class Messages {
   static readonly METDIA_PLATFORM_NOT_SUPPORED: T = {
     title: "Platform not supported",
     description: `Currently supported platforms:
-${supportedMediaPlatforms
-  .map((media) => `- ${media.name} (${media.hostnames.join(", ")})`)
-  .join("\n")}`,
+${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`,
   };
 
   //twitch case

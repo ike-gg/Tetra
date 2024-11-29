@@ -22,8 +22,7 @@ const here = {
   async execute(interaction: ChatInputCommandInteraction) {
     const feedback = new FeedbackManager(interaction);
     try {
-      const guildId =
-        interaction.options.getString("guildid") ?? interaction.guildId;
+      const guildId = interaction.options.getString("guildid") ?? interaction.guildId;
 
       const deleteMode = interaction.options.getBoolean("deletemode")!;
 
@@ -42,9 +41,7 @@ const here = {
           return;
         }
 
-        await interaction.client.application.entitlements.deleteTest(
-          testEntitlement
-        );
+        await interaction.client.application.entitlements.deleteTest(testEntitlement);
 
         await feedback.success(`Test entitlement deleted successfully.`);
 

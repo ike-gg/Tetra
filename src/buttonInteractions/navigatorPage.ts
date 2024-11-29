@@ -7,7 +7,9 @@ import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import * as TaskTypes from "../types/TaskTypes";
 
 const navigatorPage = {
-  data: { name: "navigatorPage" },
+  data: {
+    name: "navigatorPage",
+  },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
 
@@ -18,8 +20,7 @@ const navigatorPage = {
       const interationArguments = interaction.customId.split(":");
       const [taskId, action] = interationArguments;
 
-      const taskDetails =
-        client.tasks.getTask<TaskTypes.EmoteNavigator>(taskId)!;
+      const taskDetails = client.tasks.getTask<TaskTypes.EmoteNavigator>(taskId)!;
       const { currentPage, totalPages, storeId } = taskDetails;
 
       let pageDirection: number;

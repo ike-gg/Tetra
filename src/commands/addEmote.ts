@@ -16,9 +16,7 @@ const importEmote = {
     .addSubcommand((subcommand) =>
       subcommand
         .setName("byname")
-        .setDescription(
-          "Search using emote name, select source of emotes, default 7TV."
-        )
+        .setDescription("Search using emote name, select source of emotes, default 7TV.")
         .addStringOption((option) =>
           option
             .setName("name")
@@ -30,9 +28,18 @@ const importEmote = {
             .setName("source")
             .setDescription("Source of emotes, default 7TV")
             .addChoices(
-              { name: "7TV", value: "7tv" },
-              { name: "BTTV", value: "bttv" },
-              { name: "FFZ", value: "ffz" }
+              {
+                name: "7TV",
+                value: "7tv",
+              },
+              {
+                name: "BTTV",
+                value: "bttv",
+              },
+              {
+                name: "FFZ",
+                value: "ffz",
+              }
             )
             .setRequired(false)
         )

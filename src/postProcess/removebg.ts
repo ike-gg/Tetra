@@ -14,8 +14,7 @@ export default async function removebg(
   try {
     await interaction.deferUpdate();
 
-    const taskDetails =
-      client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+    const taskDetails = client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
 
     const { feedback } = taskDetails;
 
@@ -28,7 +27,9 @@ export default async function removebg(
     const tempFile = `${tempDir}/emote.png`;
     fs.writeFileSync(tempFile, emote.data);
 
-    const editedEmote = await removeBackground(tempFile, { model: "medium" });
+    const editedEmote = await removeBackground(tempFile, {
+      model: "medium",
+    });
 
     const arrayBuffer = await editedEmote.arrayBuffer();
     const editedEmoteBuffer = Buffer.from(arrayBuffer);

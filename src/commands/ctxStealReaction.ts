@@ -17,12 +17,12 @@ import { Messages } from "../constants/messages";
 const ctxStealReaction = {
   data: new ContextMenuCommandBuilder()
     .setName("Steal reaction")
+    //@ts-expect-error - will be fixed in d.js
     .setType(ApplicationCommandType.Message),
-  async execute(
-    interaction: MessageContextMenuCommandInteraction,
-    client: DiscordBot
-  ) {
-    const feedback = new FeedbackManager(interaction, { ephemeral: true });
+  async execute(interaction: MessageContextMenuCommandInteraction, client: DiscordBot) {
+    const feedback = new FeedbackManager(interaction, {
+      ephemeral: true,
+    });
     await feedback.working();
 
     const { reactions } = interaction.targetMessage;

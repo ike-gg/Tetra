@@ -11,9 +11,7 @@ const ffzGetEmoteById = async (emoteId: string): Promise<Emote> => {
   }
 
   if (!response.ok) {
-    throw new Error(
-      `Request failed, try again in a while. \`FFZ_REQUEST_ID_NOT_OK\``
-    );
+    throw new Error(`Request failed, try again in a while. \`FFZ_REQUEST_ID_NOT_OK\``);
   }
 
   const data = (await response.json()) as FFZResponseById;

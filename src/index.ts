@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Events } from "discord.js";
+import { Client, GatewayIntentBits, Events, Options } from "discord.js";
 
 import { DiscordBot } from "./types";
 import DiscordOauth2 from "discord-oauth2";
@@ -15,6 +15,8 @@ import cron from "node-cron";
 import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
 import { env } from "./env";
 import { BLACKLISTED_GUILDS } from "./blacklistedguilds";
+
+process.title = "tetra-bot";
 
 if (env.node_env === "development") {
   console.log("---- Running in development mode ----");
@@ -46,7 +48,11 @@ app.use(
   })
 );
 app.use(limiter);
-app.use(bodyParser.json({ limit: "10mb" }));
+app.use(
+  bodyParser.json({
+    limit: "10mb",
+  })
+);
 app.use("/", apiRouter);
 app.listen(PORT);
 
@@ -56,6 +62,7 @@ const client = new Client({
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
   ],
+  makeCache: Options.cacheWithLimits(Options.DefaultMakeCacheSettings),
 }) as DiscordBot;
 
 importInteractions(client);
@@ -66,9 +73,7 @@ client.on(Events.ClientReady, async (client) => {
 });
 
 client.on(Events.GuildCreate, async (guild) => {
-  const guildBlacklisted = BLACKLISTED_GUILDS.find(
-    (g) => g.guildId === guild.id
-  );
+  const guildBlacklisted = BLACKLISTED_GUILDS.find((g) => g.guildId === guild.id);
 
   if (guildBlacklisted) {
     guildBlacklisted.isActive && guild.leave();
@@ -85,8 +90,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
   const isSelectMenu = interaction.isSelectMenu();
   const isAutocomplete = interaction.isAutocomplete();
 
-  const supportedInteraction =
-    isCommand || isButton || isSelectMenu || isAutocomplete;
+  const supportedInteraction = isCommand || isButton || isSelectMenu || isAutocomplete;
 
   if (supportedInteraction) {
     try {

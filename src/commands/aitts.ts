@@ -10,7 +10,9 @@ import { env } from "../env";
 import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
-const openai = new OpenAI({ apiKey: env.openai_auth_key });
+const openai = new OpenAI({
+  apiKey: env.openai_auth_key,
+});
 
 const supportedModels = ["alloy", "echo", "fable", "onyx", "nova", "shimmer"];
 
@@ -24,7 +26,10 @@ const importEmote = {
         .setDescription("voice model")
         .setRequired(true)
         .addChoices(
-          ...supportedModels.map((model) => ({ name: model, value: model }))
+          ...supportedModels.map((model) => ({
+            name: model,
+            value: model,
+          }))
         )
     )
     .addStringOption((option) =>

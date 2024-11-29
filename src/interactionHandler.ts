@@ -12,10 +12,7 @@ import { TetraEmbed } from "./utils/embedMessages/TetraEmbed";
 import { env } from "./env";
 import { BLACKLISTED_GUILDS } from "./blacklistedguilds";
 
-const interactionHandler = async (
-  interaction: Interaction,
-  client: DiscordBot
-) => {
+const interactionHandler = async (interaction: Interaction, client: DiscordBot) => {
   const banDetails = BANNEDLIST.find(
     (bannedUser) => bannedUser.userId === interaction.user.id
   );
@@ -24,8 +21,7 @@ const interactionHandler = async (
     (guild) => guild.guildId === interaction.guildId
   );
 
-  if (blacklistedGuild)
-    blacklistedGuild.isActive && (await interaction.guild?.leave());
+  if (blacklistedGuild) blacklistedGuild.isActive && (await interaction.guild?.leave());
 
   if (banDetails) {
     if (!interaction.isRepliable()) return;
@@ -74,8 +70,7 @@ const interactionHandler = async (
   if (isButtonInteraction || isSelectMenuInteraction) {
     const feedback = new FeedbackManager(interaction);
 
-    const isDevCommand =
-      interaction.message.interaction?.commandName.startsWith("dev");
+    const isDevCommand = interaction.message.interaction?.commandName.startsWith("dev");
 
     if (env.node_env === "development" && !isDevCommand) return;
     if (env.node_env === "production" && isDevCommand) return;

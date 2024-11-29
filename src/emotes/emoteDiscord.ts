@@ -3,9 +3,7 @@ import { ExtractedEmote, FoundEmotesDiscord } from "../types";
 import emoteOptimise from "./emoteOptimise";
 import getBufferFromUrl from "./source/getBufferFromUrl";
 
-const emoteDiscord = async (
-  emote: FoundEmotesDiscord
-): Promise<ExtractedEmote> => {
+const emoteDiscord = async (emote: FoundEmotesDiscord): Promise<ExtractedEmote> => {
   try {
     const rawEmote = await getBufferFromUrl(emote.link);
     const rawEmoteBuffer = Buffer.from(rawEmote!);

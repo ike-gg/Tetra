@@ -45,7 +45,9 @@ export const refreshUsersTokens = async () => {
       if (!response.ok) throw data;
 
       const updated = await prisma.account.update({
-        where: { id },
+        where: {
+          id,
+        },
         data: {
           access_token: data.access_token,
           expires_at: Date.now() / 1000 + data.expires_in,
@@ -59,7 +61,11 @@ export const refreshUsersTokens = async () => {
         user.providerAccountId,
         error
       );
-      await prisma.account.delete({ where: { id: user.id } });
+      await prisma.account.delete({
+        where: {
+          id: user.id,
+        },
+      });
     }
   });
 };

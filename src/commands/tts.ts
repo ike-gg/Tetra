@@ -13,16 +13,24 @@ const importEmote = {
     .setName("tts")
     .setDescription("TTS mp3")
     .addStringOption((option) =>
-      option
-        .setName("lang")
-        .setDescription("language")
-        .setRequired(true)
-        .addChoices(
-          { name: "Polish 👑", value: "pl" },
-          { name: "Ukrainian 🐷", value: "uk" },
-          { name: "Czech", value: "cs" },
-          { name: "English", value: "en" }
-        )
+      option.setName("lang").setDescription("language").setRequired(true).addChoices(
+        {
+          name: "Polish 👑",
+          value: "pl",
+        },
+        {
+          name: "Ukrainian 🐷",
+          value: "uk",
+        },
+        {
+          name: "Czech",
+          value: "cs",
+        },
+        {
+          name: "English",
+          value: "en",
+        }
+      )
     )
     .addStringOption((option) =>
       option

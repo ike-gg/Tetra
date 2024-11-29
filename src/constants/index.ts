@@ -1,6 +1,7 @@
 import { tmpdir } from "os";
 import * as fs from "fs";
-import { env, isDevelopment } from "../env";
+import { isDevelopment } from "../env";
+import { randomUUID } from "crypto";
 
 export const enviroment =
   process.env.env === "development" ? "development" : "production";
@@ -18,7 +19,9 @@ export const dashboardUrl =
     ? "https://localhost:3001/dashboard"
     : "https://tetra.lol/dashboard";
 
-export const tetraTempDirectory = (subPath: string) => {
+export const tetraTempDirectory = (subPath?: string) => {
+  if (!subPath) subPath = randomUUID();
+
   const basePath = `${tmpdir()}/tetra`;
 
   if (!fs.existsSync(basePath)) {
@@ -32,9 +35,15 @@ export const tetraTempDirectory = (subPath: string) => {
 
   if (isDevelopment) console.log("created temp directory at", tempPath);
 
-  setTimeout(() => {
-    fs.rmSync(tempPath, { recursive: true, force: true });
-  }, 1000 * 60 * 60);
+  setTimeout(
+    () => {
+      fs.rmSync(tempPath, {
+        recursive: true,
+        force: true,
+      });
+    },
+    1000 * 60 * 60
+  );
 
   return tempPath;
 };

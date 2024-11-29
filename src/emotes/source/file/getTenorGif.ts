@@ -29,12 +29,9 @@ const getTenorGif = async (tenorGifUrl: string): Promise<Emote> => {
   const paramsString = params.toString();
 
   try {
-    const response = await fetch(
-      "https://tenor.googleapis.com/v2/posts?" + paramsString
-    );
+    const response = await fetch("https://tenor.googleapis.com/v2/posts?" + paramsString);
 
-    if (!response.ok)
-      throw new Error("Tenor API request failed (TENOR_NOT_OK)");
+    if (!response.ok) throw new Error("Tenor API request failed (TENOR_NOT_OK)");
 
     const tenorGifData = (await response.json()) as TenorResponseObject;
 

@@ -6,7 +6,9 @@ import * as TaskTypes from "../types/TaskTypes";
 import prepareEmote from "../emotes/prepareEmote";
 
 const selectEmote = {
-  data: { name: "selectEmote" },
+  data: {
+    name: "selectEmote",
+  },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
 

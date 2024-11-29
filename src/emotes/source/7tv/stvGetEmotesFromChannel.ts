@@ -11,9 +11,7 @@ const stvGetEmotesFromChannel = async (channelId: string): Promise<Emote[]> => {
     throw new Error("Channel not found in 7TV. `STV_REQUEST_CHANNEL_404`");
 
   if (!response.ok) {
-    throw new Error(
-      "Request failed, try again in a while. `STV_REQUEST_CHANNEL_NOT_OK`"
-    );
+    throw new Error("Request failed, try again in a while. `STV_REQUEST_CHANNEL_NOT_OK`");
   }
 
   const data = (await response.json()) as STVSetEmotes;

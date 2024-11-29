@@ -7,12 +7,14 @@ interface ExtraEmbedData extends EmbedData {
 
 export type TetraEmbedContent = ExtraEmbedData | string;
 
-const getEmojiTitle = (emoji: String, title: string) => `${emoji}  ${title}`;
+const getEmojiTitle = (emoji: string, title: string) => `${emoji}  ${title}`;
 
 export class TetraEmbed {
   static _transform(content: TetraEmbedContent): EmbedData {
     if (typeof content === "string") {
-      return { description: content };
+      return {
+        description: content,
+      };
     }
     return content;
   }

@@ -41,7 +41,14 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
     const { name, banner, icon } = guild;
 
-    res.status(200).json({ emotes, name, icon, banner, stats, level });
+    res.status(200).json({
+      emotes,
+      name,
+      icon,
+      banner,
+      stats,
+      level,
+    });
   } catch (e) {
     next(e);
   }

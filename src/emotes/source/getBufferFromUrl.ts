@@ -14,7 +14,10 @@ const defaultOptions: GetBufferOptions = {
 };
 
 const getBufferFromUrl = async (url: string, options?: GetBufferOptionsArg) => {
-  const { maxRetries, msBetweenRetries } = { ...defaultOptions, ...options };
+  const { maxRetries, msBetweenRetries } = {
+    ...defaultOptions,
+    ...options,
+  };
   let retries = 0;
 
   let data: Buffer | null = null;

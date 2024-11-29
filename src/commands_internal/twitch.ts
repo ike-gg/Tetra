@@ -19,10 +19,7 @@ const importEmote = {
         .setName("title")
         .setDescription("get current title of twitch channel")
         .addStringOption((option) =>
-          option
-            .setName("channel")
-            .setDescription("twitch channel")
-            .setRequired(true)
+          option.setName("channel").setDescription("twitch channel").setRequired(true)
         )
     ),
   async execute(interaction: ChatInputCommandInteraction, client: DiscordBot) {
