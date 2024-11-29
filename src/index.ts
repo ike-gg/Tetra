@@ -54,7 +54,9 @@ app.use(
   })
 );
 app.use("/", apiRouter);
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`API running on port ${PORT}`);
+});
 
 const client = new Client({
   intents: [
