@@ -4,6 +4,7 @@ import { tetraTempDirectory } from "../../../constants";
 //@ts-expect-error - videoshow is not typed
 import videoshow from "videoshow";
 import { EmbeddedError } from "../../../constants/errors";
+import path from "path";
 
 export const renderSlideshow = async (
   images: Buffer[],
@@ -28,9 +29,16 @@ export const renderSlideshow = async (
       })
     );
 
+    const audioPath = `${tempDirPath}/audio.mp3`;
+
     if (audio) {
-      const audioPath = `${tempDirPath}/audio.mp3`;
       fs.writeFileSync(audioPath, audio);
+    }
+
+    if (!audio) {
+      const blankAudioPath = path.resolve(__dirname, "./blank.mp3");
+      const blankAudio = fs.readFileSync(blankAudioPath);
+      fs.writeFileSync(audioPath, blankAudio);
     }
 
     videoshow(imgPaths, {
@@ -49,6 +57,7 @@ export const renderSlideshow = async (
       .audio(`${tempDirPath}/audio.mp3`)
       .save(`${tempDirPath}/final.mp4`)
       .on("error", (err: any, stdout: any, stderr: any) => {
+        console.log(err, stdout);
         reject(new EmbeddedError("Error occurred while rendering slideshow"));
       })
       .on("end", async () => {

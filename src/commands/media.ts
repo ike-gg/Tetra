@@ -133,8 +133,7 @@ export default {
     if (!input) return;
 
     const { fileLimit } = guildParsePremium(interaction.guild!);
-    // const { hasPremium } = parseEntitlementsData(interaction);
-    const hasPremium = true;
+    const { hasPremium } = parseEntitlementsData(interaction);
     const feedback = new FeedbackManager(interaction);
 
     const itemUrl = input
@@ -198,7 +197,10 @@ export default {
           })
         );
 
-        const audioBuffer = audio ? await getBufferFromUrl(audio) : undefined;
+        const audioRawBuffer = audio ? await getBufferFromUrl(audio) : undefined;
+
+        const audioBuffer =
+          audioRawBuffer && audioRawBuffer.length > 1024 ? audioRawBuffer : undefined;
 
         await feedback.info("Rendering slideshow...");
 
