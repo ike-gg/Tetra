@@ -24,6 +24,7 @@ const importEmote = {
     const premiumDetails: EmbedData = { fields: [] };
 
     if (purchasedEntitlement) {
+      //@ts-expect-error
       premiumDetails.fields!.push({
         name: "Premium",
         value: `You are eligible to use premium features on this server.
@@ -36,6 +37,7 @@ const importEmote = {
     }
 
     if (testEntitlement) {
+      //@ts-expect-error
       premiumDetails.fields!.push({
         name: "Temporary Premium",
         value: "You have limited access to premium features on this server.",

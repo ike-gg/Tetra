@@ -28,6 +28,9 @@ const envSchema = z.object({
   PORT: z.string().default("3002"),
 
   openai_auth_key: z.string(),
+
+  BETTER_AUTH_SECRET: z.string(),
+  BETTER_AUTH_URL: z.string(),
 });
 
 export const env = envSchema.parse(process.env);

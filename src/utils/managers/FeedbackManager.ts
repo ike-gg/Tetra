@@ -65,6 +65,7 @@ export class FeedbackManager {
         iconURL: this.client.user!.avatarURL()!,
       });
 
+      //@ts-expect-error
       embeds[lastIndex] = lastEmbedBuilder.toJSON();
     }
 

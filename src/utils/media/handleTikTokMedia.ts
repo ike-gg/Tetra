@@ -85,12 +85,12 @@ export const handleTikTokMedia = async (
                 },
               ],
               metadata: {
-                author: result.author.nickname,
+                author: result.author?.nickname,
               },
             });
           });
       } else if (result?.type === "video") {
-        const videoUrl = result.video1 ?? result.video2;
+        const videoUrl = result.videoHD;
 
         if (!videoUrl) {
           throw new Error("Tiktok video url not found.");
@@ -110,7 +110,7 @@ export const handleTikTokMedia = async (
             },
           ],
           metadata: {
-            author: result.author.nickname,
+            author: result.author?.nickname,
           },
         });
       } else {
