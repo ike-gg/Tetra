@@ -34,14 +34,11 @@ const getImgurFile = async (imgurUrl: string): Promise<Emote> => {
 
   if (imgurUrl.includes("/a/")) imgurObject = "album";
 
-  const response = await fetch(
-    `https://api.imgur.com/3/${imgurObject}/${fileId}`,
-    {
-      headers: {
-        Authorization: `Client-ID ${env.imgurClientId}`,
-      },
-    }
-  );
+  const response = await fetch(`https://api.imgur.com/3/${imgurObject}/${fileId}`, {
+    headers: {
+      Authorization: `Client-ID ${env.imgurClientId}`,
+    },
+  });
 
   if (!response.ok) throw new Error("Imgur API request failed (IMGUR_NOT_OK)");
 
@@ -55,8 +52,7 @@ const getImgurFile = async (imgurUrl: string): Promise<Emote> => {
     imageDetails = imgurFileData.data;
   }
 
-  if (!imageDetails)
-    throw new Error("Source url to file not found. (EMPTY_OBJECT)");
+  if (!imageDetails) throw new Error("Source url to file not found. (EMPTY_OBJECT)");
 
   return {
     animated: imageDetails.animated,

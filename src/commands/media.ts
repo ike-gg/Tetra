@@ -1,8 +1,6 @@
 import {
   ActionRowBuilder,
-  ApplicationRoleConnectionMetadata,
   AttachmentBuilder,
-  AttachmentData,
   ButtonBuilder,
   ButtonStyle,
   ChatInputCommandInteraction,
@@ -11,25 +9,24 @@ import {
 
 import { DiscordBot } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { handleTwitterMedia } from "../utils/media/handleTwitterMedia";
+import { handleTwitterMedia } from "../lib/media/handleTwitterMedia";
 import URLButton from "../utils/elements/URLButton";
-import { handleInstagramMedia } from "../utils/media/handleInstagramMedia";
-import { handleTikTokMedia } from "../utils/media/handleTikTokMedia";
+import { handleInstagramMedia } from "../lib/media/handleInstagramMedia";
 import { removeQueryFromUrl } from "../utils/removeQueryFromUrl";
 import { watermarkVideo } from "../utils/media/watermarkVideo";
-import fetch from "node-fetch";
 import { guildParsePremium } from "../utils/discord/guildParsePremium";
 import { watermarkImage } from "../utils/media/watermarkImage";
-import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
-import { handleTwitchClip } from "../utils/media/handleTwitchClip";
-import { handleYoutubeMedia } from "../utils/media/handleYoutubeMedia";
+import { handleTwitchClip } from "../lib/media/handleTwitchClip";
 import isValidURL from "../utils/isValidURL";
 import { Messages } from "../constants/messages";
 import { formatDate } from "../utils/formatDate";
 import { getPremiumOfferingButton } from "../utils/elements/getPremiumOfferingButton";
-import { handleStreamableMedia } from "../utils/media/handleStreamableMedia";
+import { handleStreamableMedia } from "../lib/media/handleStreamableMedia";
 import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
-import { handleRedditMedia } from "../utils/media/handleRedditMedia";
+import { handleTikTokMedia } from "../lib/media/handleTikTokMedia";
+import { renderSlideshow } from "../lib/media/helper/renderSlideshow";
+import getBufferFromUrl from "../emotes/source/getBufferFromUrl";
+import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
@@ -40,6 +37,8 @@ export interface MediaOutput {
 export interface PlatformResult {
   description?: string;
   media: MediaOutput[];
+  isSlideshow?: boolean;
+  audio?: string;
   metadata?: {
     author?: string;
     date?: Date;
@@ -48,16 +47,24 @@ export interface PlatformResult {
   };
 }
 
+export type PlatformHandlerCallback = (
+  url: string,
+  feedback: FeedbackManager
+) => Promise<PlatformResult>;
+
 interface PlatformHandler {
   name: string;
   hostnames: string[];
-  handler: (url: string, feedback: FeedbackManager) => Promise<PlatformResult>;
+  handler: PlatformHandlerCallback;
   color: number;
   emote: string;
 }
 
 export enum MediaCommandError {
   FILE_LIMIT_EXCEEDED,
+  POST_NOT_FOUND,
+  INSTAGRAM_NOT_FOUND_OR_NOT_SUPPORTED,
+  REDDIT_NOT_FOUND_OR_NOT_VIDEO,
 }
 
 const supportedPlatforms: PlatformHandler[] = [
@@ -88,8 +95,7 @@ const supportedPlatforms: PlatformHandler[] = [
     hostnames: ["twitch.tv"],
     color: 0x9146ff,
     emote: "<:_tetra_symbol_twitch:1245824662177448036>",
-  },
-  // {
+  }, // {
   //   name: "YouTube",
   //   handler: handleYoutubeMedia,
   //   hostnames: ["youtube.com", "youtu.be", "www.youtube.com"],
@@ -101,19 +107,9 @@ const supportedPlatforms: PlatformHandler[] = [
     color: 0x007aff,
     emote: "<:_tetra_symbol_streamable:1245825591089827861>",
   },
-  {
-    name: "Reddit",
-    handler: handleRedditMedia,
-    hostnames: ["reddit.com", "redd.it"],
-    color: 0xff5700,
-    emote: "<:_tetra_symbol_reddit:1245824659350618212>",
-  },
 ];
 
 export const supportedMediaPlatforms = supportedPlatforms;
-export const supportedMediaHostnames = supportedPlatforms.flatMap(
-  (s) => s.hostnames
-);
 
 export default {
   data: new SlashCommandBuilder()
@@ -127,9 +123,7 @@ export default {
     .addIntegerOption((option) =>
       option
         .setName("time")
-        .setDescription(
-          "Set time for each slide (only applies to slide tiktoks)"
-        )
+        .setDescription("Set time for each slide (only applies to slide tiktoks)")
         .setRequired(false)
         .setMaxValue(12)
     ),
@@ -160,7 +154,7 @@ export default {
       );
 
       if (!platform) {
-        feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
+        await feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
         return;
       }
 
@@ -169,15 +163,12 @@ export default {
         color: platform.color,
       });
 
-      const { description, media, metadata } = await platform.handler(
+      const { description, media, metadata, isSlideshow, audio } = await platform.handler(
         itemUrl,
         feedback
       );
 
-      const totalFilesSize = media.reduce(
-        (curr, acc) => curr + (acc.size ?? 0),
-        0
-      );
+      const totalFilesSize = media.reduce((curr, acc) => curr + (acc.size ?? 0), 0);
 
       if (totalFilesSize > fileLimit) {
         await feedback.fileLimitExceeded();
@@ -186,54 +177,77 @@ export default {
 
       let mediaToUpload: AttachmentBuilder[] = [];
 
-      if (!hasPremium) {
-        await feedback.media({
-          title: `${platform.emote}  Fetching ${platform.name}...`,
-          description:
-            "Buy Tetra Premium to remove watermark and speed up processing media.",
-          color: platform.color,
-        });
+      // if (!hasPremium) {
+      //   await feedback.media({
+      //     title: `${platform.emote}  Fetching ${platform.name}...`,
+      //     description: "Buy Tetra Premium to remove watermark and speed up processing
+      // media.", color: platform.color, }); }
+
+      if (isSlideshow) {
+        await feedback.info("Downloading slideshow assets...");
+
+        const sources = media.filter((m) => m.type !== "mp4");
+        const images = await Promise.all(
+          sources.map(async (image) => {
+            if (typeof image.source === "string") {
+              return await getBufferFromUrl(image.source);
+            }
+
+            return image.source;
+          })
+        );
+
+        const audioRawBuffer = audio ? await getBufferFromUrl(audio) : undefined;
+
+        const audioBuffer =
+          audioRawBuffer && audioRawBuffer.length > 1024 ? audioRawBuffer : undefined;
+
+        await feedback.info("Rendering slideshow...");
+
+        const movie = await renderSlideshow(images, audioBuffer);
+
+        mediaToUpload.push(
+          new AttachmentBuilder(movie, {
+            name: `tetra_${interaction.id}.mp4`,
+          })
+        );
       }
 
-      await Promise.all(
-        media.map(async (m) => {
-          if (hasPremium) {
+      !isSlideshow &&
+        (await Promise.all(
+          media.map(async (m) => {
+            if (hasPremium) {
+              mediaToUpload.push(
+                new AttachmentBuilder(m.source, {
+                  name: `tetra_${interaction.id}.${m.type}`,
+                })
+              );
+              return;
+            }
+
+            const mediaBuffer: Buffer =
+              m.source instanceof Buffer ? m.source : await getBufferFromUrl(m.source);
+
+            let watermarkedBuffer =
+              m.type === "mp4"
+                ? await watermarkVideo(mediaBuffer, interaction.id)
+                : await watermarkImage(mediaBuffer);
+
             mediaToUpload.push(
-              new AttachmentBuilder(m.source, {
+              new AttachmentBuilder(watermarkedBuffer, {
                 name: `tetra_${interaction.id}.${m.type}`,
               })
             );
-            return;
-          }
+          })
+        ));
 
-          let mediaBuffer: Buffer;
-
-          if (typeof m.source === "string") {
-            const response = await fetch(m.source);
-            mediaBuffer = await response.buffer();
-          } else {
-            mediaBuffer = m.source;
-          }
-
-          let watermarkedBuffer =
-            m.type === "mp4"
-              ? await watermarkVideo(mediaBuffer, interaction.id)
-              : await watermarkImage(mediaBuffer);
-
-          mediaToUpload.push(
-            new AttachmentBuilder(watermarkedBuffer, {
-              name: `tetra_${interaction.id}.${m.type}`,
-            })
-          );
-        })
-      );
-
+      const metadataRow = new ActionRowBuilder<ButtonBuilder>();
       const actionRow = new ActionRowBuilder<ButtonBuilder>();
-      const trimmedUrl = removeQueryFromUrl(removeQueryFromUrl(itemUrl));
+      const trimmedUrl = removeQueryFromUrl(itemUrl);
+
       const { author, date, likes, views } = metadata || {};
 
-      actionRow.addComponents(
-        URLButton("Open", platform.name === "YouTube" ? itemUrl : trimmedUrl),
+      metadataRow.addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true)
@@ -243,53 +257,73 @@ export default {
       );
 
       date &&
-        actionRow.addComponents(
+        metadataRow.addComponents(
           new ButtonBuilder()
             .setStyle(ButtonStyle.Secondary)
             .setCustomId("datemedia")
-            .setEmoji({ name: "🗓️" })
+            .setEmoji({
+              name: "🗓️",
+            })
             .setLabel(formatDate(date))
             .setDisabled(true)
         );
 
       author &&
-        actionRow.addComponents(
+        metadataRow.addComponents(
           new ButtonBuilder()
             .setStyle(ButtonStyle.Secondary)
             .setCustomId("author")
-            .setEmoji({ name: "👤" })
+            .setEmoji({
+              name: "👤",
+            })
             .setLabel("@" + author)
             .setDisabled(true)
         );
 
       views &&
-        actionRow.addComponents(
+        metadataRow.addComponents(
           new ButtonBuilder()
             .setStyle(ButtonStyle.Secondary)
             .setCustomId("views")
-            .setEmoji({ name: "👀" })
+            .setEmoji({
+              name: "👀",
+            })
             .setLabel(String(views))
             .setDisabled(true)
         );
 
       likes &&
-        actionRow.addComponents(
+        metadataRow.addComponents(
           new ButtonBuilder()
             .setStyle(ButtonStyle.Secondary)
             .setCustomId("likes")
-            .setEmoji({ name: "👍" })
+            .setEmoji({
+              name: "👍",
+            })
             .setLabel(String(likes))
             .setDisabled(true)
         );
 
-      const premiumRow = new ActionRowBuilder<ButtonBuilder>();
+      actionRow.addComponents(
+        URLButton("Open", platform.name === "YouTube" ? itemUrl : trimmedUrl)
+      );
 
-      !hasPremium &&
-        mediaToUpload.length > 0 &&
-        premiumRow.addComponents(getPremiumOfferingButton());
+      // if (!hasPremium && mediaToUpload.length > 0) {
+      //   const removeWatermarkButton = getPremiumOfferingButton({
+      //     label: "Watermark",
+      //   });
+      //   actionRow.addComponents(removeWatermarkButton);
 
-      const components = [actionRow];
-      if (premiumRow.components.length > 0) components.push(premiumRow);
+      //   if (isSlideshow) {
+      //     actionRow.addComponents(
+      //       new ButtonBuilder().setDisabled(true).setLabel("Slideshow")
+      //     );
+      //   }
+      // }
+
+      const components = [metadataRow];
+
+      if (actionRow.components.length > 0) components.push(actionRow);
 
       if (mediaToUpload.length === 0) {
         await feedback.sendMessage({

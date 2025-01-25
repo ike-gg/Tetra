@@ -139,3 +139,6 @@ test.ts
 
 #testing gifsicle purposes
 *.gif
+
+# IntelliJ IDEA
+.idea/

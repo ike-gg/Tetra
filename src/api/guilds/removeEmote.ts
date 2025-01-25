@@ -23,23 +23,19 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (!userInGuild)
       throw new TetraAPIError(401, "Not authorized. Not found user in guild.");
 
-    const hasPermissions = userInGuild.permissions.has(
-      "ManageEmojisAndStickers"
-    );
+    const hasPermissions = userInGuild.permissions.has("ManageEmojisAndStickers");
 
     if (!hasPermissions)
-      throw new TetraAPIError(
-        401,
-        "Not authorized. Missing permissions in guild."
-      );
+      throw new TetraAPIError(401, "Not authorized. Missing permissions in guild.");
 
     const emoteInGuild = await guild.emojis.fetch(emoteid);
 
-    if (!emoteInGuild)
-      throw new TetraAPIError(400, "Bad request. Emote not found.");
+    if (!emoteInGuild) throw new TetraAPIError(400, "Bad request. Emote not found.");
 
     const removedEmote = await emoteInGuild.delete();
-    res.status(200).json({ message: `Removed ${removedEmote.name} emote.` });
+    res.status(200).json({
+      message: `Removed ${removedEmote.name} emote.`,
+    });
   } catch (e) {
     next(e);
   }

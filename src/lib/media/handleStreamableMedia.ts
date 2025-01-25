@@ -1,8 +1,9 @@
 import { MediaOutput, PlatformResult } from "../../commands/media";
 
-import { FeedbackManager } from "../managers/FeedbackManager";
+import { FeedbackManager } from "../../utils/managers/FeedbackManager";
 import fetch from "node-fetch";
 import * as z from "zod";
+import { EmbeddedError } from "../../constants/errors";
 
 const streamableSchema = z.object({
   files: z.object({
@@ -19,7 +20,7 @@ export const handleStreamableMedia = async (
   try {
     const videoId = new URL(_url).pathname.split("/").at(1);
 
-    if (!videoId) throw new Error("Invalid Streamable URL (id not found)");
+    if (!videoId) throw new EmbeddedError("Invalid Streamable URL.");
 
     const url = new URL(videoId, "https://api.streamable.com/videos/").href;
 
@@ -27,7 +28,7 @@ export const handleStreamableMedia = async (
 
     if (request.status !== 200) {
       const error = await request.text();
-      throw new Error("Streamable API error: " + error);
+      throw new EmbeddedError("Streamable API error: " + error);
     }
 
     const response = await request.json();
@@ -50,7 +51,7 @@ export const handleStreamableMedia = async (
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new Error("Received wrong response from API.");
+      throw new EmbeddedError("Received wrong response from Streamable API.");
     } else {
       throw error;
     }

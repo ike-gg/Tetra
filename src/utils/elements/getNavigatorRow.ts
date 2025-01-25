@@ -11,8 +11,7 @@ const getNavigatorRow = (
     previousDisabled: boolean;
   }
 ): ActionRowBuilder<ButtonBuilder> => {
-  const taskDetails =
-    client.tasks.getTask<TaskTypes.EmoteNavigator>(navigatorTaskId);
+  const taskDetails = client.tasks.getTask<TaskTypes.EmoteNavigator>(navigatorTaskId);
   const { currentPage, totalPages } = taskDetails;
 
   const navigatorRow = new ActionRowBuilder<ButtonBuilder>();
@@ -37,7 +36,9 @@ const getNavigatorRow = (
     new ButtonBuilder()
       .setCustomId("asdf")
       .setLabel("Previous")
-      .setEmoji({ name: "⬅️" })
+      .setEmoji({
+        name: "⬅️",
+      })
       .setStyle(ButtonStyle.Primary)
       .setCustomId(`${navigatorTaskId}:previous`)
       .setDisabled(previousDisabled)
@@ -46,7 +47,9 @@ const getNavigatorRow = (
   navigatorRow.addComponents(
     new ButtonBuilder()
       .setLabel("Next")
-      .setEmoji({ name: "➡️" })
+      .setEmoji({
+        name: "➡️",
+      })
       .setStyle(ButtonStyle.Primary)
       .setCustomId(`${navigatorTaskId}:next`)
       .setDisabled(nextDisabled)

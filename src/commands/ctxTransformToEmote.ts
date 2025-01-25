@@ -16,11 +16,9 @@ import getGiphyGif from "../emotes/source/file/getGiphyGif";
 const ctxStealReaction = {
   data: new ContextMenuCommandBuilder()
     .setName("File to emote")
+    //@ts-expect-error - will be fixed in d.js
     .setType(ApplicationCommandType.Message),
-  async execute(
-    interaction: MessageContextMenuCommandInteraction,
-    client: DiscordBot
-  ) {
+  async execute(interaction: MessageContextMenuCommandInteraction, client: DiscordBot) {
     const feedback = new FeedbackManager(interaction);
 
     await feedback.working();
@@ -30,26 +28,36 @@ const ctxStealReaction = {
       return;
     }
 
-    let attachment: { url: string; provider: string } | null = null;
+    let attachment: {
+      url: string;
+      provider: string;
+    } | null = null;
 
     const { attachments, embeds, content } = interaction.targetMessage;
 
     if (isValidURL(content)) {
-      attachment = { provider: "source", url: content };
+      attachment = {
+        provider: "source",
+        url: content,
+      };
     }
 
     const targetAttachments = attachments.at(0);
     if (targetAttachments) {
-      attachment = { provider: "discord", url: targetAttachments.url };
+      attachment = {
+        provider: "discord",
+        url: targetAttachments.url,
+      };
     }
 
-    const targetEmbed = embeds
-      .filter((embed) => embed.url && embed.provider)
-      .at(0);
+    const targetEmbed = embeds.filter((embed) => embed.url && embed.provider).at(0);
     if (targetEmbed) {
       const { url, provider } = targetEmbed;
       if (!url || !provider) return;
-      attachment = { provider: provider.name!, url };
+      attachment = {
+        provider: provider.name!,
+        url,
+      };
     }
 
     if (!attachment) {
@@ -77,9 +85,7 @@ const ctxStealReaction = {
           emoteSource = await getGiphyGif(attachment.url);
           break;
         default:
-          await feedback.error(
-            `${attachment.provider} provider not supported yet.`
-          );
+          await feedback.error(`${attachment.provider} provider not supported yet.`);
           return;
       }
     } catch (error) {
@@ -92,7 +98,10 @@ const ctxStealReaction = {
       return;
     }
 
-    prepareEmote(emoteSource, { feedback, interaction });
+    prepareEmote(emoteSource, {
+      feedback,
+      interaction,
+    });
   },
 };
 

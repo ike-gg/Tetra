@@ -38,9 +38,7 @@ class TaskManager {
   }
 
   getUserTasks(userId: string) {
-    const userTasks = this.tasks.filter(
-      (task) => task.interaction?.user.id === userId
-    );
+    const userTasks = this.tasks.filter((task) => task.interaction?.user.id === userId);
     const available = userTasks.filter((task) => task.webAccess === true);
     return available;
   }
@@ -71,7 +69,11 @@ class TaskManager {
         messageId: interactionReply?.id ?? null,
       },
       include: {
-        account: { where: { id: interaction!.user.id } },
+        account: {
+          where: {
+            id: interaction!.user.id,
+          },
+        },
       },
     });
     this.removeTask(id);

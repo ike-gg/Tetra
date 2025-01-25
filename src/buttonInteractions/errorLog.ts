@@ -9,20 +9,25 @@ import { DiscordBot } from "../types";
 import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
 
 const errorLog = {
-  data: { name: "errorLog" },
+  data: {
+    name: "errorLog",
+  },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     await interaction.update({
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setCustomId(`errorlogreceived`)
-            .setEmoji({ name: "📨" })
+            .setEmoji({
+              name: "📨",
+            })
             .setLabel(`Log received!`)
             .setStyle(ButtonStyle.Danger)
             .setDisabled(true)
         ),
       ],
     });
+
     try {
       const errorSnapshotsChannel = (await client.channels.fetch(
         "1075586205070151710"
@@ -37,11 +42,9 @@ const errorLog = {
       await errorSnapshotsChannel.send({
         embeds: [
           TetraEmbed.attention({
-            title:
-              originalInteraction?.id ?? "undefined initial interaction id",
+            title: originalInteraction?.id ?? "undefined initial interaction id",
             description:
-              originalInteraction?.commandName ??
-              "undefined initial command name",
+              originalInteraction?.commandName ?? "undefined initial command name",
             author: {
               name: user.username,
               iconURL: user.avatarURL() ?? "",

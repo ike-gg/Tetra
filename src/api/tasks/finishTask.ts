@@ -37,11 +37,12 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     const { emote: emoteBase64, guildId, name } = body.data;
 
     const taskDetails = await prisma.manualAdjustment.findFirst({
-      where: { id: taskId },
+      where: {
+        id: taskId,
+      },
     });
 
-    if (!taskDetails)
-      throw new TetraAPIError(400, "Bad request. Task not found.");
+    if (!taskDetails) throw new TetraAPIError(400, "Bad request. Task not found.");
 
     const { accountId, channelId, messageId } = taskDetails;
 
@@ -57,21 +58,20 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (!userInGuild)
       throw new TetraAPIError(401, "Not authorized. Not found user in guild.");
 
-    const hasPermissions = userInGuild.permissions.has(
-      "ManageEmojisAndStickers"
-    );
+    const hasPermissions = userInGuild.permissions.has("ManageEmojisAndStickers");
 
     if (!hasPermissions)
-      throw new TetraAPIError(
-        401,
-        "Not authorized. Missing permissions in guild."
-      );
+      throw new TetraAPIError(401, "Not authorized. Missing permissions in guild.");
 
     const addedEmote = await guild.emojis.create({
       attachment: emoteBase64,
       name: name,
     });
-    await prisma.manualAdjustment.delete({ where: { id: taskId } });
+    await prisma.manualAdjustment.delete({
+      where: {
+        id: taskId,
+      },
+    });
 
     await announceUse(Messages.ANNOUNCE_ADDED_EMOTE_PANEL(addedEmote));
 

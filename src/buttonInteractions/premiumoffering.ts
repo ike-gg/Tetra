@@ -4,7 +4,9 @@ import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const premiumoffering = {
-  data: { name: "premiumoffering" },
+  data: {
+    name: "premiumoffering",
+  },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const { hasPremium } = parseEntitlementsData(interaction);
 

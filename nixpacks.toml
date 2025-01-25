@@ -1,2 +1,14 @@
 [phases.setup]
-nixPkgs = ["...", "ffmpeg", "python39"]
+nixPkgs = [
+  "...",
+        "nodejs",  
+    "python39", 
+    "ffmpeg",   
+    "autoconf", 
+    "automake",  
+    "gcc",       
+    "gawk"      
+]
+
+[build]
+builder = "node"

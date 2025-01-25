@@ -4,10 +4,7 @@ import { tetraTempDirectory } from "../../constants";
 import path from "path";
 import { randomUUID } from "crypto";
 
-export const watermarkVideo = async (
-  video: Buffer,
-  id: string
-): Promise<Buffer> => {
+export const watermarkVideo = async (video: Buffer, id: string): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const pid = randomUUID();
     const tempDir = tetraTempDirectory(id);

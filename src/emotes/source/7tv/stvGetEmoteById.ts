@@ -9,9 +9,7 @@ const stvGetEmoteById = async (emoteId: string): Promise<Emote> => {
   const response = await fetch(stvGetUrlById(emoteId));
 
   if (!response.ok) {
-    throw new Error(
-      `Request failed, try again in a while. \`STV_REQUEST_ID_NOT_OK\``
-    );
+    throw new Error(`Request failed, try again in a while. \`STV_REQUEST_ID_NOT_OK\``);
   }
 
   const data = (await response.json()) as STVEmote;

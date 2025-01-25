@@ -28,21 +28,27 @@ const getPostProcessRow = (
   postProcessRow.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:rename`)
-      .setEmoji({ name: "✏️" })
+      .setEmoji({
+        name: "✏️",
+      })
       .setLabel("Rename emote")
       .setStyle(ButtonStyle.Secondary)
   );
   postProcessRow.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:square`)
-      .setEmoji({ name: "🖼️" })
+      .setEmoji({
+        name: "🖼️",
+      })
       .setLabel("Stretch to fit")
       .setStyle(ButtonStyle.Secondary)
   );
   postProcessRow.addComponents(
     new ButtonBuilder()
       .setCustomId(`${taskId}:center`)
-      .setEmoji({ name: "🔍" })
+      .setEmoji({
+        name: "🔍",
+      })
       .setLabel("Center and crop to fit")
       .setStyle(ButtonStyle.Secondary)
   );
@@ -50,14 +56,14 @@ const getPostProcessRow = (
     postProcessRow.addComponents(
       new ButtonBuilder()
         .setCustomId(`${taskId}:removebg`)
-        .setEmoji({ name: "✨" })
+        .setEmoji({
+          name: "✨",
+        })
         .setLabel("Remove background")
         .setStyle(ButtonStyle.Secondary)
     );
 
-  return splitMenu.components.length > 0
-    ? [postProcessRow, splitMenu]
-    : [postProcessRow];
+  return splitMenu.components.length > 0 ? [postProcessRow, splitMenu] : [postProcessRow];
 };
 
 export default getPostProcessRow;

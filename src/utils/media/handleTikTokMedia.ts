@@ -8,7 +8,7 @@ import videoshow from "videoshow";
 import * as fs from "fs";
 import { FeedbackManager } from "../managers/FeedbackManager";
 import fetch from "node-fetch";
-import { getTikTokVideo } from "../getTikTokVideo";
+import { getTikTokPost } from "../getTikTokPost";
 
 export const handleTikTokMedia = async (
   _url: string,
@@ -18,18 +18,11 @@ export const handleTikTokMedia = async (
     try {
       const tempDirPath = tetraTempDirectory(feedback.interaction.id);
 
-      const { result, ...a } = await getTikTokVideo(_url);
+      const post = await getTikTokPost(_url);
 
-      if (!result)
-        reject(new Error("Tiktok not found. (Results object empty))"));
-
-      if (
-        result?.type === "image" &&
-        result.images &&
-        result.images?.length > 0
-      ) {
-        const imageSlides = result.images;
-        const audioURL = result.music;
+      if ("images" in post && post.images.length > 0) {
+        const imageSlides = post.images;
+        const audioURL = post.music;
 
         const imgPaths = await Promise.all(
           imageSlides.map(async (imageURL, index) => {
@@ -38,18 +31,22 @@ export const handleTikTokMedia = async (
             console.log(fileBuffer);
             const imageTransformedBuffer = await sharp(fileBuffer)
               .jpeg()
-              .resize({ height: 960, width: 540, fit: "contain" })
+              .resize({
+                height: 960,
+                width: 540,
+                fit: "contain",
+              })
               .toBuffer();
             const path = `${tempDirPath}/${index}.jpeg`;
             fs.writeFileSync(path, imageTransformedBuffer);
             return path;
           })
         );
-        if (audioURL) {
-          const audioPath = `${tempDirPath}/audio.mp3`;
-          const audioBuffer = await getBufferFromUrl(audioURL);
-          fs.writeFileSync(audioPath, audioBuffer);
-        }
+        // if (audioURL) {
+        //   const audioPath = `${tempDirPath}/audio.mp3`;
+        //   const audioBuffer = await getBufferFromUrl(audioURL);
+        //   fs.writeFileSync(audioPath, audioBuffer);
+        // }
         videoshow(imgPaths, {
           fps: 15,
           loop: 3,
@@ -63,20 +60,21 @@ export const handleTikTokMedia = async (
           format: "mp4",
           pixelFormat: "yuv420p",
         })
-          .audio(`${tempDirPath}/audio.mp3`)
+          // .audio(`${tempDirPath}/audio.mp3`)
           .save(`${tempDirPath}/final.mp4`)
           .on("start", (command: any) => {
-            feedback.media({ title: "Rendering slide TikTok..." });
+            feedback.media({
+              title: "Rendering slide TikTok...",
+            });
           })
           .on("error", (err: any, stdout: any, stderr: any) => {
+            console.log("Error: ", err);
             reject(new Error("Tiktok rendering failed."));
           })
           .on("end", async () => {
             const moviePath = `${tempDirPath}/final.mp4`;
             const movie = fs.readFileSync(moviePath);
             resolve({
-              description:
-                result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
               media: [
                 {
                   source: movie,
@@ -85,32 +83,31 @@ export const handleTikTokMedia = async (
                 },
               ],
               metadata: {
-                author: result.author?.nickname,
+                author: post.author,
               },
             });
           });
-      } else if (result?.type === "video") {
-        const videoUrl = result.videoHD;
-
-        if (!videoUrl) {
+      } else if ("video" in post) {
+        if (!post.video) {
           throw new Error("Tiktok video url not found.");
         }
 
-        const request = await fetch(videoUrl, { method: "HEAD" });
+        const request = await fetch(post.video, {
+          method: "HEAD",
+        });
         const headers = request.headers;
         const size = Number(headers.get("content-length"));
 
         resolve({
-          description: result.desc?.slice(0, 200).replace(/\B#\w+/g, "") || "",
           media: [
             {
-              source: videoUrl,
+              source: post.video,
               type: "mp4",
               size,
             },
           ],
           metadata: {
-            author: result.author?.nickname,
+            author: post.author,
           },
         });
       } else {

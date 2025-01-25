@@ -11,10 +11,7 @@ interface EmoteSelectMessage {
 
 const emojiNumbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
-const renderEmotesSelect = (
-  emotes: Emote[],
-  client: DiscordBot
-): EmoteSelectMessage => {
+const renderEmotesSelect = (emotes: Emote[], client: DiscordBot): EmoteSelectMessage => {
   const selectEmoteActionRow = new ActionRowBuilder<ButtonBuilder>();
 
   const embeds = emotes.map((emote, index) => {

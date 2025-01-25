@@ -40,9 +40,7 @@ const addEmoteToGuild = async (taskId: string) => {
       await feedback.success(
         `Successfully uploaded all emotes. ${uploadedEmotes.join(", ")}`
       );
-      await announceUse(
-        Messages.ANNOUNCE_ADDED_MULTIPLE_EMOTES(uploadedEmotes)
-      );
+      await announceUse(Messages.ANNOUNCE_ADDED_MULTIPLE_EMOTES(uploadedEmotes));
     } catch (error) {
       await feedback.handleError(error);
     }

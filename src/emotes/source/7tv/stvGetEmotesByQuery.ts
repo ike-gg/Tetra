@@ -12,10 +12,7 @@ const stvGetEmotesByQuery = async (query: string): Promise<Emote[]> => {
   let tries = 0;
 
   do {
-    const response = await fetch(
-      stvGetGraphqlUrl,
-      stvGetGraphqlRequestOptions(query)
-    );
+    const response = await fetch(stvGetGraphqlUrl, stvGetGraphqlRequestOptions(query));
 
     data = await response.json();
 

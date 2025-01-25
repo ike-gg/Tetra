@@ -7,14 +7,9 @@ import {
   ButtonStyle,
   BaseMessageOptions,
   isJSONEncodable,
-  DiscordjsError,
   DiscordAPIError,
 } from "discord.js";
-import {
-  ActionRowBuilder,
-  EmbedBuilder,
-  ButtonBuilder,
-} from "@discordjs/builders";
+import { ActionRowBuilder, EmbedBuilder, ButtonBuilder } from "@discordjs/builders";
 
 import { randomUUID } from "crypto";
 import { DiscordBot } from "../../types";
@@ -22,6 +17,14 @@ import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
 import { client } from "../..";
 import { env, isDevelopment } from "../../env";
+import { EmbeddedError } from "../../constants/errors";
+
+export class UnhandledError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnhandledError";
+  }
+}
 
 export class FeedbackManager {
   client: DiscordBot;
@@ -29,10 +32,7 @@ export class FeedbackManager {
   public relatedTask?: string;
 
   constructor(
-    public interaction:
-      | CommandInteraction
-      | ButtonInteraction
-      | SelectMenuInteraction,
+    public interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction,
     options?: {
       ephemeral?: boolean;
     }
@@ -56,8 +56,7 @@ export class FeedbackManager {
 
       let lastEmbedData = embeds[lastIndex];
       if (!lastEmbedData) return;
-      if (isJSONEncodable(lastEmbedData))
-        lastEmbedData = lastEmbedData.toJSON();
+      if (isJSONEncodable(lastEmbedData)) lastEmbedData = lastEmbedData.toJSON();
 
       const lastEmbedBuilder = new EmbedBuilder(lastEmbedData);
       lastEmbedBuilder.setFooter({
@@ -65,7 +64,7 @@ export class FeedbackManager {
         iconURL: this.client.user!.avatarURL()!,
       });
 
-      //@ts-expect-error
+      //@ts-expect-error - embeds is a readonly property
       embeds[lastIndex] = lastEmbedBuilder.toJSON();
     }
 
@@ -81,11 +80,15 @@ export class FeedbackManager {
   }
 
   async info(content: TetraEmbedContent) {
-    await this.sendMessage({ embeds: [TetraEmbed.info(content)] });
+    await this.sendMessage({
+      embeds: [TetraEmbed.info(content)],
+    });
   }
 
   async success(content: TetraEmbedContent) {
-    await this.sendMessage({ embeds: [TetraEmbed.success(content)] });
+    await this.sendMessage({
+      embeds: [TetraEmbed.success(content)],
+    });
   }
 
   async panel(content: TetraEmbedContent) {
@@ -103,31 +106,44 @@ export class FeedbackManager {
   }
 
   async attention(content: TetraEmbedContent) {
-    await this.sendMessage({ embeds: [TetraEmbed.attention(content)] });
+    await this.sendMessage({
+      embeds: [TetraEmbed.attention(content)],
+    });
   }
 
   async warning(content: TetraEmbedContent) {
-    await this.sendMessage({ embeds: [TetraEmbed.warning(content)] });
+    await this.sendMessage({
+      embeds: [TetraEmbed.warning(content)],
+    });
   }
 
   async media(content: TetraEmbedContent) {
-    await this.sendMessage({ embeds: [TetraEmbed.media(content)] });
+    await this.sendMessage({
+      embeds: [TetraEmbed.media(content)],
+    });
   }
 
   async premium(content: TetraEmbedContent) {
-    await this.sendMessage({ embeds: [TetraEmbed.premium(content)] });
+    await this.sendMessage({
+      embeds: [TetraEmbed.premium(content)],
+    });
   }
 
   async handleError(error: any) {
     if (isDevelopment) console.log(error);
-    if (
+
+    if (error instanceof EmbeddedError) {
+      await this.error(error.embed);
+    } else if (error instanceof UnhandledError) {
+      await this.unhandledError(error);
+    } else if (
       error instanceof TypeError ||
       error instanceof SyntaxError ||
       error instanceof ReferenceError ||
       error instanceof RangeError
     ) {
       await this.unhandledError(error);
-    } else if (error instanceof Error || error instanceof DiscordAPIError) {
+    } else if (error instanceof DiscordAPIError) {
       await this.error(error.message);
     } else {
       await this.unhandledError(error);
@@ -139,7 +155,9 @@ export class FeedbackManager {
     row.addComponents(
       new ButtonBuilder()
         .setCustomId(`errorlog`)
-        .setEmoji({ name: "📠" })
+        .setEmoji({
+          name: "📠",
+        })
         .setLabel(`Send developers log`)
         .setStyle(ButtonStyle.Danger)
     );
@@ -156,22 +174,34 @@ export class FeedbackManager {
       title: "Unhandled error",
       description:
         "An unhandled error has occurred. Please report this to the developers.",
-      fields: [{ name: "Tracking ID", value: trackingId }],
+      fields: [
+        {
+          name: "Tracking ID",
+          value: trackingId,
+        },
+      ],
     });
   }
 
   async updateComponents(
     components: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[]
   ) {
-    await this.sendMessage({ components: components });
+    await this.sendMessage({
+      components: components,
+    });
   }
 
   async removeComponents() {
-    await this.sendMessage({ components: [], files: [] });
+    await this.sendMessage({
+      components: [],
+      files: [],
+    });
   }
 
   async updateFiles(files: BaseMessageOptions["files"]) {
-    await this.sendMessage({ files: files });
+    await this.sendMessage({
+      files: files,
+    });
   }
 
   async working() {

@@ -19,14 +19,15 @@ import removebg from "../postProcess/removebg";
 import split from "../postProcess/split";
 
 const selectEmote = {
-  data: { name: "postProcess" },
+  data: {
+    name: "postProcess",
+  },
   async execute(interaction: ButtonInteraction, client: DiscordBot) {
     const genericFeedbackManager = new FeedbackManager(interaction);
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action, value] = interactionArguments;
 
-    const taskDetails =
-      client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+    const taskDetails = client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
 
     const { feedback } = taskDetails;
 

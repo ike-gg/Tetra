@@ -8,8 +8,7 @@ const here = {
   async execute(interaction: ChatInputCommandInteraction) {
     const feedback = new FeedbackManager(interaction);
     try {
-      const entitlements =
-        await interaction.client.application.entitlements.fetch();
+      const entitlements = await interaction.client.application.entitlements.fetch();
 
       await feedback.info(`Found ${entitlements.size} entitlements, logged.`);
       console.log(entitlements);

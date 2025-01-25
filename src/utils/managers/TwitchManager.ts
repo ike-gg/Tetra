@@ -9,7 +9,9 @@ const authProvider = new RefreshingAuthProvider({
   clientSecret: env.twitchSecretKey!,
 });
 
-const twitchApi = new ApiClient({ authProvider });
+const twitchApi = new ApiClient({
+  authProvider,
+});
 
 export class TwitchManager {
   public client = twitchApi;
@@ -125,7 +127,9 @@ export class TwitchManager {
 
     const clipSourceUrl = clipSource.toString();
 
-    const clipData = { ...clip };
+    const clipData = {
+      ...clip,
+    };
 
     return {
       ...clipData[rawDataSymbol],

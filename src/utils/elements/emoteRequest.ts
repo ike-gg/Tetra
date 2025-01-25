@@ -6,7 +6,9 @@ const EmoteRequest = (requestId: string) => {
   row.addComponents(
     new ButtonBuilder()
       .setCustomId(`${requestId}:request`)
-      .setEmoji({ name: "📄" })
+      .setEmoji({
+        name: "📄",
+      })
       .setLabel("Make a request")
       .setStyle(ButtonStyle.Primary)
   );

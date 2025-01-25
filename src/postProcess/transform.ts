@@ -13,8 +13,7 @@ const transform = async (
   try {
     await interaction.deferUpdate();
 
-    const taskDetails =
-      client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
+    const taskDetails = client.tasks.getTask<TaskTypes.PostProcessEmote>(taskId);
 
     const { feedback } = taskDetails;
 

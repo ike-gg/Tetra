@@ -20,9 +20,7 @@ const importEmote = {
     .addIntegerOption((option) =>
       option
         .setName("time")
-        .setDescription(
-          "set time for each slide in seconds, default 3, not required"
-        )
+        .setDescription("set time for each slide in seconds, default 3, not required")
         .setRequired(false)
         .setMaxValue(15)
     ),

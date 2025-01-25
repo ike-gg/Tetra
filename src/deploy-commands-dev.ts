@@ -41,7 +41,9 @@ for (const file of internalCommandFiles) {
 console.log("D> loaded commands:" + commandFiles.join(", "));
 console.log("D> loaded internal commands:" + internalCommandFiles.join(", "));
 
-const rest = new REST({ version: "10" }).setToken(env.discordBotToken);
+const rest = new REST({
+  version: "10",
+}).setToken(env.discordBotToken);
 
 devGuilds.forEach((guildId) => {
   rest

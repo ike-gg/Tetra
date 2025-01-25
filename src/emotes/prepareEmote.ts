@@ -46,24 +46,21 @@ const prepareEmote = async (
       return;
     }
 
-    const taskId =
-      TaskManager.getInstance().addTask<TaskTypes.PostProcessEmote>({
-        action: "postProcess",
-        emote: {
-          finalData: emoteBuffer,
-          data: emoteBuffer,
-          ...emote,
-          name: parseDiscordRegexName(emote.name),
-        },
-        feedback,
-        guild: guild || interaction.guild!,
-        interaction,
-      });
+    const taskId = TaskManager.getInstance().addTask<TaskTypes.PostProcessEmote>({
+      action: "postProcess",
+      emote: {
+        finalData: emoteBuffer,
+        data: emoteBuffer,
+        ...emote,
+        name: parseDiscordRegexName(emote.name),
+      },
+      feedback,
+      guild: guild || interaction.guild!,
+      interaction,
+    });
 
     if (emoteBuffer.byteLength > maxEmoteSize) {
-      await feedback.attention(
-        Messages.EXCEEDED_EMOTE_SIZE(emoteBuffer.byteLength)
-      );
+      await feedback.attention(Messages.EXCEEDED_EMOTE_SIZE(emoteBuffer.byteLength));
       const optimizeChoiceRow = getChoiceOptimizeRow(taskId, emote.animated);
       await feedback.updateComponents([optimizeChoiceRow]);
       return;

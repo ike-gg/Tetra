@@ -5,8 +5,7 @@ const getEmoteFromUrl = async (sourceUrl: string): Promise<Emote> => {
   try {
     const response = await fetch(sourceUrl);
 
-    if (!response.ok)
-      throw new Error("Request to source failed. (SOURCE_NOT_OK)");
+    if (!response.ok) throw new Error("Request to source failed. (SOURCE_NOT_OK)");
 
     const contentType = response.headers.get("content-type");
 

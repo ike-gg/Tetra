@@ -31,6 +31,8 @@ const envSchema = z.object({
 
   BETTER_AUTH_SECRET: z.string(),
   BETTER_AUTH_URL: z.string(),
+  COBALT_URL: z.string().url(),
+  COBALT_API_KEY: z.string(),
 });
 
 export const env = envSchema.parse(process.env);

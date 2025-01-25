@@ -3,10 +3,7 @@ import { DiscordBot } from "../types";
 import { TetraEmbed } from "./embedMessages/TetraEmbed";
 import { env, isDevelopment } from "../env";
 
-const interactionLogger = async (
-  interaction: CommandInteraction,
-  client: DiscordBot
-) => {
+const interactionLogger = async (interaction: CommandInteraction, client: DiscordBot) => {
   try {
     const { guild, user, id, commandName } = interaction;
 

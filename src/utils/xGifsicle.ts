@@ -7,8 +7,16 @@ const xgifsicle = require("gifsicle");
 const execBuffer = require("exec-buffer");
 
 export type Arguments = (string | number)[];
-export type FrameDimensions = { width: number; height: number };
-export type CroppingPoints = { x1: number; y1: number; x2: number; y2: number };
+export type FrameDimensions = {
+  width: number;
+  height: number;
+};
+export type CroppingPoints = {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+};
 
 type ActionLog = Awaited<ReturnType<xGifsicle["metadata"]>> & {
   action: string;
@@ -80,15 +88,16 @@ export class xGifsicle {
   ): Promise<xGifsicle>;
   async crop(cropping: CroppingPoints): Promise<xGifsicle>;
   async crop(
-    croppingOrFn:
-      | CroppingPoints
-      | ((frameDimensions: FrameDimensions) => CroppingPoints)
+    croppingOrFn: CroppingPoints | ((frameDimensions: FrameDimensions) => CroppingPoints)
   ): Promise<xGifsicle> {
     let croppingString: string;
 
     if (typeof croppingOrFn === "function") {
       const { width, height } = await this.metadata();
-      const { x1, x2, y1, y2 } = croppingOrFn({ width, height });
+      const { x1, x2, y1, y2 } = croppingOrFn({
+        width,
+        height,
+      });
       croppingString = `${x1},${y1}-${x2},${y2}`;
     } else {
       const { x1, x2, y1, y2 } = croppingOrFn;
@@ -108,9 +117,7 @@ export class xGifsicle {
   }
 
   async cut(cut: [number, number]): Promise<xGifsicle>;
-  async cut(
-    cutFn: (totalFrames: number) => [number, number]
-  ): Promise<xGifsicle>;
+  async cut(cutFn: (totalFrames: number) => [number, number]): Promise<xGifsicle>;
   async cut(
     cutArrayOrFn: [number, number] | ((totalFrames: number) => [number, number])
   ): Promise<xGifsicle> {
@@ -161,13 +168,24 @@ export class xGifsicle {
     const fps = Math.round(1 / (delay / 100));
     const { size, prettySize } = this;
 
-    return { delay, frames, height, width, duration, fps, size, prettySize };
+    return {
+      delay,
+      frames,
+      height,
+      width,
+      duration,
+      fps,
+      size,
+      prettySize,
+    };
   }
 
   protected async process(
     _args: Arguments,
     _argsBeforeInput: Arguments = [],
-    options: ProcessOptions = { saveToBuffer: true }
+    options: ProcessOptions = {
+      saveToBuffer: true,
+    }
   ): Promise<Buffer> {
     const args: Arguments = [
       "--no-warnings",

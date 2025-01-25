@@ -4,11 +4,7 @@ import getPostProcessRow from "../utils/elements/getPostProcessRow";
 import getSubmitEmoteRow from "../utils/elements/getSubmitEmoteRow";
 import getManualAdjustmentRow from "../utils/elements/getManualAdjustmentRow";
 import sharp from "sharp";
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  StringSelectMenuBuilder,
-} from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, StringSelectMenuBuilder } from "discord.js";
 
 const editEmoteByUser = async (taskId: string) => {
   const { emote, feedback, guild, interaction } =
@@ -21,9 +17,8 @@ const editEmoteByUser = async (taskId: string) => {
   let isRateLimited: NodeJS.Timeout | undefined;
 
   try {
-    const messageComponents: ActionRowBuilder<
-      ButtonBuilder | StringSelectMenuBuilder
-    >[] = [];
+    const messageComponents: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[] =
+      [];
 
     const postProcessRow = getPostProcessRow(taskId, {
       isEmoteAnimated: emote.animated,
@@ -60,12 +55,20 @@ const editEmoteByUser = async (taskId: string) => {
         width: isMultiUpload ? undefined : 64,
         height: 64,
         fit: "contain",
-        background: { alpha: 0.05, r: 0, g: 0, b: 0 },
+        background: {
+          alpha: 0.05,
+          r: 0,
+          g: 0,
+          b: 0,
+        },
       })
       .toBuffer();
 
     await feedback.updateFiles([
-      { attachment: emoteBufferPreview, name: "preview.gif" },
+      {
+        attachment: emoteBufferPreview,
+        name: "preview.gif",
+      },
     ]);
 
     await feedback.attention({
