@@ -5,16 +5,11 @@ import DiscordOauth2 from "discord-oauth2";
 import TaskManager from "./utils/managers/TaskManager";
 import importInteractions from "./importInteractions";
 import interactionHandler from "./interactionHandler";
-import express from "express";
-import bodyParser from "body-parser";
-import cors from "cors";
-import apiRouter from "./api/apiRouter";
-import cookieParser from "cookie-parser";
-import rateLimit from "express-rate-limit";
 import cron from "node-cron";
 import { refreshUsersTokens } from "./utils/database/refreshUsersTokens";
 import { env } from "./env";
 import { BLACKLISTED_GUILDS } from "./blacklistedguilds";
+import { initApi } from "./api";
 
 process.title = "tetra-bot";
 
@@ -24,39 +19,7 @@ if (env.node_env === "development") {
   console.log("---- RUNNING IN PRODUCTION ----");
 }
 
-const PORT = env.PORT;
-
-const app = express();
-
-const limiter = rateLimit({
-  windowMs: 30000,
-  max: 20,
-});
-
-app.use(cookieParser());
-app.use(
-  cors({
-    credentials: true,
-    origin: [
-      "https://tetra.lol",
-      "http://localhost:3001",
-      "http://localhost:3000",
-      "https://www.tetra.lol",
-      "https://panel.tetra.lol",
-      "https://tetra.lol",
-    ],
-  })
-);
-app.use(limiter);
-app.use(
-  bodyParser.json({
-    limit: "10mb",
-  })
-);
-app.use("/", apiRouter);
-app.listen(PORT, () => {
-  console.log(`API running on port ${PORT}`);
-});
+initApi();
 
 const client = new Client({
   intents: [
@@ -83,8 +46,10 @@ client.on(Events.GuildCreate, async (guild) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.inGuild() && interaction.isRepliable()) {
-    interaction.reply("Not supported yet.");
+  const inGuild = interaction.inGuild();
+
+  if (!inGuild) {
+    return;
   }
 
   const isCommand = interaction.isCommand();
@@ -113,6 +78,7 @@ client.login(env.discordBotToken);
 const discordOauth = new DiscordOauth2({
   clientId: env.oauthClientId,
   clientSecret: env.oauthClientSecret,
+  version: "v10",
 });
 
 export { client, discordOauth };

@@ -5,4 +5,7 @@ export const auth = betterAuth({
   database: new Pool({
     connectionString: "postgresql://postgres:pwd@localhost:5432/postgres",
   }),
+  emailAndPassword: {
+    enabled: true,
+  },
 });

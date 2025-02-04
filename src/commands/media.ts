@@ -225,7 +225,9 @@ export default {
               return;
             }
 
+
             const mediaBuffer: Buffer =
+            //@ts-expect-error
               m.source instanceof Buffer ? m.source : await getBufferFromUrl(m.source);
 
             let watermarkedBuffer =

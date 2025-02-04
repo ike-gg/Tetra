@@ -29,10 +29,14 @@ const envSchema = z.object({
 
   openai_auth_key: z.string(),
 
-  BETTER_AUTH_SECRET: z.string(),
-  BETTER_AUTH_URL: z.string(),
   COBALT_URL: z.string().url(),
   COBALT_API_KEY: z.string(),
+
+  POSTGRES_URL: z.string(),
+
+  BACKEND_URL: z.string(),
+
+  SESSION_KEYS: z.string().transform((val) => val.split(",")),
 });
 
 export const env = envSchema.parse(process.env);
