@@ -35,6 +35,7 @@ export const initApi = () => {
         "https://www.tetra.lol",
         "https://panel.tetra.lol",
         "https://tetra.lol",
+        "https://dev.tetra.lol",
       ],
     })
   );
