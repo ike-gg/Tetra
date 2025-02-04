@@ -8,7 +8,7 @@
     "deployCommands": "npx ts-node src/deploy-commands-global.ts",
     "dev": "nodemon",
     "devdeploy": "ts-node src/deploy-commands-dev.ts",
-    "db:push": "prisma db push"
+    "db:push": "npx drizzle-kit push"
   },
   "author": "ike",
   "license": "ISC",
