@@ -8,6 +8,7 @@ import { sessions, users } from "../../../db/schema";
 import { eq } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { API_CONSTANTS } from "../../constants/API_CONSTANTS";
+import { ApiConsole } from "../../utils/api-console";
 
 export const sessionSchema = z.object({
   session_token: z.string(),
@@ -95,6 +96,7 @@ authRouter.get("/callback", async (req: Request, res: Response, next: NextFuncti
     if (error instanceof z.ZodError) {
       throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");
     } else {
+      ApiConsole.dev.error(error);
       throw new TetraAPIError(500, "Internal Server Error", "AUTH_CALLBACK_ERROR");
     }
   }
