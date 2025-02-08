@@ -19,34 +19,6 @@ export const guildsGetGuild = async (req: Request, res: Response, next: NextFunc
   try {
     const { guildId } = getGuildQuerySchema.parse(req.params);
 
-    ApiConsole.dev.info("Checking user in db...");
-
-    const user = await db.query.users.findFirst({
-      where: eq(users.discord_id, req.user!.id),
-    });
-
-    if (!user)
-      throw new TetraAPIError(
-        500,
-        "Internal Server Error",
-        "AUTH_PASSED_USER_NOT_FOUND_ME_GET_GUILD"
-      );
-
-    // ApiConsole.dev.info("Checking users guild to get the specific one.");
-
-    // let userInGuild: OAuth.Member;
-    // try {
-    //   userInGuild = await discordOauth.getGuildMember(user.access_token, guildId);
-    // } catch {
-    //   throw new TetraAPIError(
-    //     404,
-    //     "Guild not found",
-    //     "GUILD_NOT_FOUND_UNKNOWN_GUILD_MEMBER"
-    //   );
-    // }
-
-    ApiConsole.dev.info("Fetching guild from bot...");
-
     let guild: Guild;
     try {
       guild = await client.guilds.fetch(guildId);
@@ -60,7 +32,7 @@ export const guildsGetGuild = async (req: Request, res: Response, next: NextFunc
 
     let member: GuildMember;
     try {
-      member = await guild.members.fetch(user.discord_id);
+      member = await guild.members.fetch(req.user!.id);
     } catch {
       throw new TetraAPIError(
         404,
@@ -68,8 +40,6 @@ export const guildsGetGuild = async (req: Request, res: Response, next: NextFunc
         "GUILD_NOT_FOUND_UNKNOWN_GUILD_MEMBER"
       );
     }
-
-    ApiConsole.dev.info("Parsing statistics...");
 
     const emotes = guild.emojis.cache.map((e) => e);
     const { emoteLimit, level } = guildParsePremium(guild);
@@ -89,8 +59,6 @@ export const guildsGetGuild = async (req: Request, res: Response, next: NextFunc
         free: Math.max(emoteLimit - staticEmotes, 0),
       },
     };
-
-    ApiConsole.dev.info("Responding...");
 
     const { name, banner, icon, id } = guild;
 

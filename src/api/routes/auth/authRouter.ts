@@ -19,7 +19,7 @@ export type SessionSchema = z.infer<typeof sessionSchema>;
 
 export const authRouter = Router();
 
-authRouter.get("/login", (req: Request, res: Response, next: NextFunction) => {
+authRouter.get("/", (req: Request, res: Response, next: NextFunction) => {
   const authUrl = discordOauth.generateAuthUrl({
     scope: API_CONSTANTS.DISCORD_SCOPES,
     redirectUri: `${env.BACKEND_URL}${API_CONSTANTS.RELATIVE_REDIRECT_URI}`,

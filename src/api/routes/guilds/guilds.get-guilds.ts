@@ -41,17 +41,23 @@ export const guildsGetGuilds = async (
   );
   const guildsWithTetra = userGuilds.filter((guild) => tetraGuilds.includes(guild.id));
 
+  // console.log(
+  //   "Guilds tetra + user",
+  //   guildsWithTetra.map((g) => g.name),
+  //   guildsWithTetra.map((g) => g.permissions)
+  // );
+
   const guildsWithBot = guildsWithTetra
     .filter((guild) => {
       const userPermissions = new PermissionsBitField(BigInt(guild.permissions!));
-      return !userPermissions.has("ManageEmojisAndStickers");
+      return !userPermissions.has("ManageGuildExpressions");
     })
     .map(transformGuildOauth);
 
   const guildsWithUserPermissions = guildsWithTetra
     .filter((guild) => {
       const userPermissions = new PermissionsBitField(BigInt(guild.permissions!));
-      return userPermissions.has("ManageEmojisAndStickers");
+      return userPermissions.has("ManageGuildExpressions");
     })
     .map(transformGuildOauth);
 

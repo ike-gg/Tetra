@@ -82,7 +82,6 @@ export const guildsPostEmote = async (
 
       if (fitting) {
         if (fitting === "fill") {
-          ApiConsole.dev.info("Fitting emote to fill");
           await autoxgif.stretchToFit();
         } else if (fitting === "cover") {
           await autoxgif.centerCrop();
