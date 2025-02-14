@@ -5,23 +5,23 @@ export abstract class TConsole {
   abstract get prefix(): string;
 
   static log(...args: any[]) {
-    console.log(chalk.black(`[${this.getPrefix()} 📝] -`, ...args));
+    console.log(chalk.black(`[${this.getPrefix()} • ] -`, ...args));
   }
 
   static warn(...args: any[]) {
-    console.warn(chalk.yellow(`[${this.getPrefix()} ⚠️ ]  -`, ...args));
+    console.warn(chalk.yellow(`[${this.getPrefix()} ! ]  -`, ...args));
   }
 
   static error(...args: any[]) {
-    console.error(chalk.red(`[${this.getPrefix()} ❌] -`, ...args));
+    console.error(chalk.red(`[${this.getPrefix()} ⨯ ] -`, ...args));
   }
 
   static info(...args: any[]) {
-    console.info(chalk.blue(`[${this.getPrefix()} ℹ️ ] -`, ...args));
+    console.info(chalk.blue(`[${this.getPrefix()} ℹ ] -`, ...args));
   }
 
   static success(...args: any[]) {
-    console.info(chalk.green(`[${this.getPrefix()} ✅] -`, ...args));
+    console.info(chalk.green(`[${this.getPrefix()} ✓ ] -`, ...args));
   }
 
   static get dev() {
