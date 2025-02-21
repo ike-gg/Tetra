@@ -1,11 +1,12 @@
-import { NextFunction, Request, Response } from "express";
-import { TetraAPIError } from "../../TetraAPIError";
-import { client } from "../../..";
 import { DiscordAPIError, Guild, GuildEmoji, GuildMember } from "discord.js";
+import { eq } from "drizzle-orm";
+import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
+
+import { client } from "../../..";
 import { db } from "../../../db";
 import { EmoteOrigin, emotes, removedEmotes, users } from "../../../db/schema";
-import { eq } from "drizzle-orm";
+import { TetraAPIError } from "../../TetraAPIError";
 
 const getGuildParams = z.object({
   guildId: z.string(),
@@ -72,7 +73,9 @@ export const guildsRemoveEmote = async (
           extension: emote.animated ? "gif" : "webp",
           size: 64,
         }),
-        url: emote.imageURL(),
+        url: emote.imageURL({
+          extension: emote.animated ? "gif" : "webp",
+        }),
       })
       .returning();
 

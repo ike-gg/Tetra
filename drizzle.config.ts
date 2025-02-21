@@ -1,11 +1,17 @@
+import dotenv from "dotenv";
 import { defineConfig } from "drizzle-kit";
-import { env } from "./src/env";
+
+dotenv.config();
+
+if (!process.env.POSTGRES_URL) {
+  throw new Error("POSTGRES_URL is not defined in the environment variables");
+}
 
 export default defineConfig({
   out: "./drizzle",
   schema: "./src/db/schema.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: env.POSTGRES_URL,
+    url: process.env.POSTGRES_URL,
   },
 });

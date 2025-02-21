@@ -1,31 +1,31 @@
-import { DiscordAPIError, Guild, GuildMember } from "discord.js";
+import { DiscordAPIError, Guild, GuildEmoji, GuildMember } from "discord.js";
+import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
+import emoteOptimise from "@/emotes/emoteOptimise";
+import getBufferFromUrl from "@/emotes/source/getBufferFromUrl";
 import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
 
 import { client } from "../../..";
-import getBufferFromUrl from "../../../emotes/source/getBufferFromUrl";
+import { db } from "../../../db";
+import { removedEmotes } from "../../../db/schema";
 import { TetraAPIError } from "../../TetraAPIError";
+
+import { ApiConsole } from "#/loggers";
 
 const getGuildParams = z.object({
   guildId: z.string(),
+  restoreId: z.string(),
 });
 
-const bodyPostEmote = z.object({
-  name: z.string(),
-  file: z.string().url(),
-  fitting: z.enum(["fill", "cover", "contain"]).optional(),
-});
-
-export const guildsPostEmote = async (
+export const guildsRestoreEmote = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { file, name, fitting } = bodyPostEmote.parse(req.body);
-    const { guildId } = getGuildParams.parse(req.params);
+    const { guildId, restoreId } = getGuildParams.parse(req.params);
 
     let guild: Guild;
     try {
@@ -55,26 +55,30 @@ export const guildsPostEmote = async (
       throw new TetraAPIError(403, "Missing permissions", "MISSING_PERMISSIONS");
     }
 
-    let emoteBuffer: Buffer;
+    const removedEmote = await db.query.removedEmotes.findFirst({
+      where: eq(removedEmotes.id, Number(restoreId)),
+      with: {
+        emote: true,
+      },
+    });
 
-    try {
-      emoteBuffer = await getBufferFromUrl(file);
-    } catch {
-      throw new TetraAPIError(
-        400,
-        "Failed to download data of the provided emote",
-        "DOWNLOAD_DATA_FAILED"
-      );
+    if (!removedEmote || !removedEmote.emote) {
+      throw new TetraAPIError(404, "Emote not found", "EMOTE_NOT_FOUND");
     }
 
-    const optimizedBuffer = await optimizeBuffer(emoteBuffer, { fitting });
+    const { emote } = removedEmote;
+
+    const emoteBuffer = await getBufferFromUrl(emote.url);
+    const optimizedBuffer = await optimizeBuffer(emoteBuffer);
 
     const createdEmote = await guild.emojis.create({
       attachment: optimizedBuffer,
-      name,
+      name: emote.name,
     });
 
-    res.json({ message: `Emote ${createdEmote.name} created in ${guild.name}!` });
+    await db.delete(removedEmotes).where(eq(removedEmotes.id, Number(restoreId)));
+
+    res.json({ message: `Emote ${createdEmote.name} restored in ${guild.name}!` });
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");

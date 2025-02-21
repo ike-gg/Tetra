@@ -9,7 +9,6 @@ import OAuth from "discord-oauth2";
 import { users } from "../../../db/schema";
 import { z } from "zod";
 import { guildParsePremium } from "../../../utils/discord/guildParsePremium";
-import { ApiConsole } from "../../utils/api-console";
 
 const getGuildQuerySchema = z.object({
   guildId: z.string(),

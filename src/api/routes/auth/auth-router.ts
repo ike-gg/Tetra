@@ -1,14 +1,16 @@
+import { randomBytes } from "crypto";
+import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response, Router } from "express";
-import { discordOauth } from "../../..";
-import { env } from "../../../env";
 import { z } from "zod";
-import { TetraAPIError } from "../../TetraAPIError";
+
+import { discordOauth } from "../../..";
 import { db } from "../../../db";
 import { sessions, users } from "../../../db/schema";
-import { eq } from "drizzle-orm";
-import { randomBytes } from "crypto";
+import { env } from "../../../env";
+import { TetraAPIError } from "../../TetraAPIError";
 import { API_CONSTANTS } from "../../constants/API_CONSTANTS";
-import { ApiConsole } from "../../utils/api-console";
+
+import { ApiConsole } from "#/loggers";
 
 export const sessionSchema = z.object({
   session_token: z.string(),
@@ -87,11 +89,7 @@ authRouter.get("/callback", async (req: Request, res: Response, next: NextFuncti
 
     req.session = session;
 
-    res.json({
-      userData,
-      sessionToken,
-      token,
-    });
+    res.sendStatus(200);
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");

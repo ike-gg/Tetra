@@ -1,13 +1,14 @@
+import { randomUUID } from "crypto";
 import ffmpeg from "ffmpeg";
 import * as fs from "fs";
-import { tetraTempDirectory } from "../../constants";
 import path from "path";
-import { randomUUID } from "crypto";
+
+import { TempFileManager } from "#/files/temp-file-manager";
 
 export const watermarkVideo = async (video: Buffer, id: string): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const pid = randomUUID();
-    const tempDir = tetraTempDirectory(id);
+    const tempDir = TempFileManager.create();
     const videoPath = `${tempDir}/in${pid}.mp4`;
     const newVideoPath = `${tempDir}/out${pid}.mp4`;
 

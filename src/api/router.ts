@@ -1,15 +1,14 @@
-import { NextFunction, Request, Response, Router } from "express";
-import { PrismaClient } from "@prisma/client";
-import tasksRouter from "./tasks/tasksRouter";
-import { TetraAPIError } from "./TetraAPIError";
-import { DiscordAPIError } from "discord.js";
-import { discordOauth } from "..";
-import { authRouter } from "./routes/auth/authRouter";
-import { meRouter } from "./routes/me/me-router";
 import { randomBytes } from "crypto";
-import { ApiConsole } from "./utils/api-console";
-import { guildsRouter } from "./routes/guilds/guilds-router";
+import { DiscordAPIError } from "discord.js";
+import { NextFunction, Request, Response, Router } from "express";
+
+import { TetraAPIError } from "./TetraAPIError";
 import { checkUserAuth } from "./middleware/auth";
+import { authRouter } from "./routes/auth/auth-router";
+import { guildsRouter } from "./routes/guilds/guilds-router";
+import { meRouter } from "./routes/me/me-router";
+
+import { ApiConsole } from "#/loggers";
 
 export const router = Router();
 

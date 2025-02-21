@@ -1,13 +1,14 @@
 import { Interaction } from "discord.js";
+
+import { env, isDevelopment, isProduction } from "./env";
 import {
   DiscordBot,
   ExecutableButtonInteraction,
   ExecutableCommandInteraction,
   ExecutableSelectMenu,
 } from "./types";
-import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import interactionLogger from "./utils/interactionLoggers";
-import { env } from "./env";
+import { FeedbackManager } from "./utils/managers/FeedbackManager";
 
 const interactionHandler = async (interaction: Interaction, client: DiscordBot) => {
   if (interaction.isAutocomplete()) {
@@ -46,8 +47,8 @@ const interactionHandler = async (interaction: Interaction, client: DiscordBot) 
 
     const isDevCommand = interaction.message.interaction?.commandName.startsWith("dev");
 
-    if (env.node_env === "development" && !isDevCommand) return;
-    if (env.node_env === "production" && isDevCommand) return;
+    if (isDevelopment && !isDevCommand) return;
+    if (isProduction && isDevCommand) return;
 
     const isForAll = interaction.customId.split(":")[1] === "all";
 

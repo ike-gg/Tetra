@@ -1,10 +1,12 @@
-import express from "express";
-import cors from "cors";
-import rateLimit from "express-rate-limit";
-import { router } from "./router";
-import { env } from "../env";
 import cookieSession from "cookie-session";
-import { ApiConsole } from "./utils/api-console";
+import cors from "cors";
+import express from "express";
+import rateLimit from "express-rate-limit";
+
+import { env, isDevelopment, isProduction } from "../env";
+import { router } from "./router";
+
+import { ApiConsole } from "#/loggers";
 
 export const initApi = () => {
   const PORT = env.PORT;
@@ -20,6 +22,9 @@ export const initApi = () => {
     cookieSession({
       name: "tetra-session",
       keys: env.SESSION_KEYS,
+      signed: false,
+      secure: isProduction,
+      httpOnly: true,
       // max age 1 year
       maxAge: 365 * 24 * 60 * 60 * 1000,
     })

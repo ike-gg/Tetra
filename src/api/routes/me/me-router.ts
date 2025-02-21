@@ -1,4 +1,5 @@
 import { NextFunction, Response, Router, Request } from "express";
+
 import { checkUserAuth } from "../../middleware/auth";
 
 export const meRouter = Router();
@@ -10,6 +11,7 @@ meStateRouter.use((req, res, next) =>
   checkUserAuth(req, res, next, { fetchUserData: false })
 );
 meStateRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
+  // if we are in this place, it means that user is authenticated, so we can just send 200
   res.status(200).send();
 });
 

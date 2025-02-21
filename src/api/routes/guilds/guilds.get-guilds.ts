@@ -7,7 +7,6 @@ import { client } from "../../..";
 import { Options, PermissionsBitField } from "discord.js";
 import OAuth from "discord-oauth2";
 import { users } from "../../../db/schema";
-import { ApiConsole } from "../../utils/api-console";
 
 const transformGuildOauth = (guild: OAuth.PartialGuild) => {
   const { features, ...rest } = guild;

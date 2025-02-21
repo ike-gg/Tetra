@@ -1,13 +1,16 @@
-import { Response, NextFunction, Request } from "express";
-import { sessionSchema } from "../routes/auth/authRouter";
-import { z } from "zod";
-import { TetraAPIError } from "../TetraAPIError";
-import { db } from "../../db";
 import { eq } from "drizzle-orm";
-import { sessions, users } from "../../db/schema";
+import { Response, NextFunction, Request } from "express";
+import { APIConnectionError } from "openai";
+import { z } from "zod";
+
 import { discordOauth } from "../..";
+import { db } from "../../db";
+import { sessions, users } from "../../db/schema";
+import { TetraAPIError } from "../TetraAPIError";
 import { API_CONSTANTS } from "../constants/API_CONSTANTS";
-import { ApiConsole } from "../utils/api-console";
+import { sessionSchema } from "../routes/auth/auth-router";
+
+import { ApiConsole } from "#/loggers";
 
 interface CheckAuthOptions {
   fetchUserData?: boolean;
@@ -89,6 +92,7 @@ export const checkUserAuth = async (
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
+      ApiConsole.dev.error("Invalid session schema:", error);
       req.session = undefined;
       throw new TetraAPIError(401, "Unauthorized", "INVALID_SESSION_SCHEMA");
     }

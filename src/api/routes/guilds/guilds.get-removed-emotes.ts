@@ -1,11 +1,12 @@
-import { NextFunction, Request, Response } from "express";
-import { db } from "../../../db";
-import { eq } from "drizzle-orm";
-import { TetraAPIError } from "../../TetraAPIError";
-import { client } from "../../..";
 import { Guild, GuildMember } from "discord.js";
-import { emotes, removedEmotes } from "../../../db/schema";
+import { eq } from "drizzle-orm";
+import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
+
+import { client } from "../../..";
+import { db } from "../../../db";
+import { emotes, removedEmotes } from "../../../db/schema";
+import { TetraAPIError } from "../../TetraAPIError";
 
 const getGuildParams = z.object({
   guildId: z.string(),
