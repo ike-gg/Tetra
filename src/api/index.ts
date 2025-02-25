@@ -27,6 +27,7 @@ export const initApi = () => {
       httpOnly: true,
       // max age 1 year
       maxAge: 365 * 24 * 60 * 60 * 1000,
+      domain: isDevelopment ? undefined : ".tetra.lol",
     })
   );
 
