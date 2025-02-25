@@ -5,7 +5,6 @@ import { execBunBuffer, execBunBufferSymbol } from "./x-gifsicle-support";
 
 const isGif = require("is-gif");
 const xgifsicle = require("gifsicle");
-const execBuffer = require("exec-buffer");
 
 export type Arguments = (string | number | Symbol)[];
 export type FrameDimensions = {
