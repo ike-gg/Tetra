@@ -3,6 +3,8 @@ import { Response, NextFunction, Request } from "express";
 import { APIConnectionError } from "openai";
 import { z } from "zod";
 
+import { isProduction } from "@/env";
+
 import { discordOauth } from "../..";
 import { db } from "../../db";
 import { sessions, users } from "../../db/schema";
@@ -29,6 +31,7 @@ export const checkUserAuth = async (
   const { fetchUserData } = { ...defaultCheckAuthOptions, ...options };
 
   try {
+    ApiConsole.info(`Session schema:`, JSON.stringify(req.session, null, 2));
     const { session_token } = sessionSchema.parse(req.session);
 
     const currentSession = await db.query.sessions.findFirst({
@@ -93,7 +96,7 @@ export const checkUserAuth = async (
   } catch (error) {
     if (error instanceof z.ZodError) {
       ApiConsole.dev.error("Invalid session schema:", error);
-      req.session = undefined;
+      if (isProduction) req.session = undefined;
       throw new TetraAPIError(401, "Unauthorized", "INVALID_SESSION_SCHEMA");
     }
     if (error instanceof TetraAPIError) {

@@ -8,6 +8,7 @@ import {
   integer,
   pgEnum,
   boolean,
+  bigint,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -59,10 +60,9 @@ export const emotes = pgTable("emotes", {
 export const removedEmotes = pgTable("removed_emotes", {
   id: serial("id").primaryKey(),
   guildId: varchar("guild_id", { length: 255 }).notNull(),
-  emoteId: integer("emote_id")
+  emoteId: bigint("emote_id", { mode: "number" })
     .notNull()
     .references(() => emotes.id),
-  deletedBy: integer("deleted_by").references(() => users.id),
   deletedWithPanel: boolean("deleted_with_panel").notNull(),
 });
 

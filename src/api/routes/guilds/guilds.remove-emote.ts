@@ -56,12 +56,6 @@ export const guildsRemoveEmote = async (
       throw new TetraAPIError(404, "Emote not found", "GUILD_EMOTE_NOT_FOUND");
     }
 
-    try {
-      await emote.delete();
-    } catch {
-      throw new TetraAPIError(400, "Failed to delete emote", "GUILD_EMOTE_DELETE_FAILED");
-    }
-
     const [insertedEmote] = await db
       .insert(emotes)
       .values({
@@ -79,16 +73,17 @@ export const guildsRemoveEmote = async (
       })
       .returning();
 
-    const currentUser = await db.query.users.findFirst({
-      where: eq(users.discord_id, req.user!.id),
-    });
-
     await db.insert(removedEmotes).values({
       deletedWithPanel: true,
       emoteId: insertedEmote.id,
       guildId: guild.id,
-      deletedBy: currentUser?.id,
     });
+
+    try {
+      await emote.delete();
+    } catch {
+      throw new TetraAPIError(400, "Failed to delete emote", "GUILD_EMOTE_DELETE_FAILED");
+    }
 
     res.json({ message: `Emote ${emote.name} deleted from ${guild.name}` });
   } catch (error) {

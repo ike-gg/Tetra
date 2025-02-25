@@ -17,66 +17,6 @@ const envSchema = z.object({
       "Environment of the application, it makes a difference in how the application behaves in certain situations."
     ),
 
-  DISCORD_BOT_ID: z.string().describe("Discord Bot ID"),
-  DISCORD_BOT_TOKEN: z.string().describe("Discord Bot token"),
-
-  DISCORD_OAUTH_CLIENT_ID: z.string().describe("Discord OAuth Client ID"),
-  DISCORD_OAUTH_CLIENT_SECRET: z.string().describe("Discord OAuth Client Secret"),
-
-  INVITE_LINK: z.string().url().describe("Discord Bot invite link"),
-
-  TWITCH_CLIENT_ID: z.string().describe("Twitch Client ID"),
-  TWITCH_SECRET_KEY: z.string().describe("Twitch Secret Key"),
-
-  TENOR_API_KEY: z.string().describe("Tenor API Key"),
-
-  IMGUR_CLIENT_ID: z.string().describe("Imgur Client ID"),
-
-  OPENAI_API_KEY: z.string().describe("OpenAI API Key"),
-
-  // DEPRECATED - marked to remove in the future
-  DATABASE_URL: z
-    .string()
-    .url()
-    .describe(
-      "DEPRECATED: Use POSTGRES_URL instead, still exists due to legacy reasons."
-    ),
-
-  PORT: z.string().default("3002").describe("Port for the API to listen on"),
-
-  COBALT_URL: z
-    .string()
-    .url()
-    .optional()
-    .describe("URL of Cobalt API instance, media command depends on it"),
-  COBALT_API_KEY: z
-    .string()
-    .optional()
-    .describe("API key for Cobalt API, if its protected"),
-
-  POSTGRES_URL: z
-    .string()
-    .url()
-    .describe("URL Connection String for the postgresql database"),
-
-  BACKEND_URL: z
-    .string()
-    .url()
-    .describe("Public URL of the application that is used for example. OAuth2 redirects"),
-
-  SESSION_KEYS: z
-    .string()
-    .transform((val) => val.split(","))
-    .describe("Comma separated list of keys for session"),
-
-  DEV_GUILDS: z
-    .string()
-    .transform((val) => val.split(","))
-    .optional()
-    .describe(
-      `Used for development purposes, comma separated list of guild IDs, see ${chalk.underline("src/deploy-commands-dev.ts")}`
-    ),
-
   TEMP_DIR_PATH: z
     .string()
     .default(tmpdir())
@@ -96,6 +36,68 @@ const envSchema = z.object({
       }
     })
     .describe("Path to the temporary directory for storing temporary files"),
+
+  DISCORD_BOT_ID: z.string().describe("Discord Bot ID"),
+  DISCORD_BOT_TOKEN: z.string().describe("Discord Bot token"),
+
+  DISCORD_OAUTH_CLIENT_ID: z.string().describe("Discord OAuth Client ID"),
+  DISCORD_OAUTH_CLIENT_SECRET: z.string().describe("Discord OAuth Client Secret"),
+
+  // DEPRECATED - marked to remove in the future
+  DATABASE_URL: z
+    .string()
+    .url()
+    .describe(
+      "DEPRECATED: Use POSTGRES_URL instead, still exists due to legacy reasons."
+    ),
+
+  POSTGRES_URL: z
+    .string()
+    .url()
+    .describe("URL Connection String for the postgresql database"),
+
+  BACKEND_URL: z
+    .string()
+    .url()
+    .describe("Public URL of the application that is used for example. OAuth2 redirects"),
+
+  FRONTEND_URL: z.string().url().describe("Public URL of the frontend application"),
+
+  SESSION_KEYS: z
+    .string()
+    .transform((val) => val.split(","))
+    .describe("Comma separated list of keys for session"),
+
+  PORT: z.string().default("3002").describe("Port for the API to listen on"),
+
+  INVITE_LINK: z.string().url().describe("Discord Bot invite link"),
+
+  DEV_GUILDS: z
+    .string()
+    .transform((val) => val.split(","))
+    .optional()
+    .describe(
+      `Used for development purposes, comma separated list of guild IDs, see ${chalk.underline("src/deploy-commands-dev.ts")}`
+    ),
+
+  COBALT_URL: z
+    .string()
+    .url()
+    .optional()
+    .describe("URL of Cobalt API instance, media command depends on it"),
+  COBALT_API_KEY: z
+    .string()
+    .optional()
+    .describe("API key for Cobalt API, if its protected"),
+
+  TWITCH_CLIENT_ID: z.string().describe("Twitch Client ID"),
+  TWITCH_SECRET_KEY: z.string().describe("Twitch Secret Key"),
+
+  TENOR_API_KEY: z.string().describe("Tenor API Key"),
+
+  IMGUR_CLIENT_ID: z.string().describe("Imgur Client ID"),
+
+  OPENAI_API_KEY: z.string().describe("OpenAI API Key"),
 });
 
 let { data, error } = envSchema.safeParse(process.env);

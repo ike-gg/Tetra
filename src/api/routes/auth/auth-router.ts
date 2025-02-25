@@ -45,6 +45,8 @@ authRouter.get("/callback", async (req: Request, res: Response, next: NextFuncti
       redirectUri: `${env.BACKEND_URL}${API_CONSTANTS.RELATIVE_REDIRECT_URI}`,
     });
 
+    // console.log("???");
+
     const userData = await discordOauth.getUser(token.access_token);
 
     const existingUser = await db.query.users.findFirst({
@@ -87,13 +89,17 @@ authRouter.get("/callback", async (req: Request, res: Response, next: NextFuncti
       user_discord_id: userData.id,
     };
 
+    console.log(session);
+
     req.session = session;
 
-    res.sendStatus(200);
+    // res.sendStatus(200);
+    res.redirect(env.FRONTEND_URL + "/panel");
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");
     } else {
+      // console.log(error);
       ApiConsole.dev.error(error);
       throw new TetraAPIError(500, "Internal Server Error", "AUTH_CALLBACK_ERROR");
     }
