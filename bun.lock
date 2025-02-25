@@ -23,6 +23,7 @@
         "ffmpeg": "^0.0.4",
         "gifsicle": "^5.3.0",
         "google-tts-api": "^2.0.2",
+        "is-gif": "^4.0.1",
         "lodash": "^4.17.21",
         "node-fetch": "^2.6.7",
         "openai": "^4.47.1",
@@ -662,6 +663,8 @@
     "is-buffer": ["is-buffer@1.1.6", "", {}, ""],
 
     "is-fullwidth-code-point": ["is-fullwidth-code-point@1.0.0", "", { "dependencies": { "number-is-nan": "^1.0.0" } }, ""],
+
+    "is-gif": ["is-gif@4.0.1", "", {}, "sha512-Az44B+o+6QLOaXPvKUksE05C97MFl1dHf1qkKaE4kGGCosHdCaI6MtBnlLx67t8RcDrfvBsluGBxUytMxhc5+Q=="],
 
     "is-natural-number": ["is-natural-number@4.0.1", "", {}, ""],
 
