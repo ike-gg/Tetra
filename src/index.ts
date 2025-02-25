@@ -28,17 +28,9 @@ importInteractions(client);
 
 client.tasks = TaskManager.getInstance();
 
-const registeredEvents = clientEvents
-  .entries()
-  .map(([event, callback]) => {
-    client.on(event, callback);
-    return event;
-  })
-  .toArray();
-
-BotConsole.dev.info(
-  `Registered ${registeredEvents.length} events. (${registeredEvents.join(", ")})`
-);
+clientEvents.forEach((callback, event) => {
+  client.on(event, callback);
+});
 
 client.login(env.DISCORD_BOT_TOKEN);
 
