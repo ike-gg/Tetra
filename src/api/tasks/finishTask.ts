@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { client, discordOauth } from "../..";
+import { client, discordOauth } from "../../..";
 import { PrismaClient } from "@prisma/client";
 import * as z from "zod";
 import { TetraAPIError } from "../TetraAPIError";

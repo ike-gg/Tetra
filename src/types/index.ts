@@ -8,7 +8,6 @@ import Discord, {
 } from "discord.js";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import TaskManager from "../utils/managers/TaskManager";
-
 export interface DiscordBot extends Client {
   commands: Collection<string, CommandInteraction>;
   buttonInteractions: Collection<string, ButtonInteraction>;

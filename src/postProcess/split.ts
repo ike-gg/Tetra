@@ -2,7 +2,7 @@ import { ButtonInteraction, SelectMenuInteraction } from "discord.js";
 import * as TaskTypes from "../types/TaskTypes";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
-import { client } from "..";
+import { client } from "../bot";
 import sharp, { SharpOptions } from "sharp";
 import { maxEmoteSize } from "../constants";
 import emoteOptimise from "../emotes/emoteOptimise";

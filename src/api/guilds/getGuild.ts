@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { client, discordOauth } from "../..";
+import { client, discordOauth } from "../../..";
 import { TetraAPIError } from "../TetraAPIError";
 import { guildParsePremium } from "../../utils/discord/guildParsePremium";
 

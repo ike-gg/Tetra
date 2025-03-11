@@ -15,7 +15,7 @@ import { randomUUID } from "crypto";
 import { DiscordBot } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 import { Messages } from "../../constants/messages";
-import { client } from "../..";
+import { client } from "../../bot";
 import { env, isDevelopment } from "../../env";
 import { EmbeddedError } from "../../constants/errors";
 

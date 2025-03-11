@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { client, discordOauth } from "../..";
+import { client, discordOauth } from "../../..";
 import { PermissionsBitField } from "discord.js";
 
 export default async (req: Request, res: Response) => {

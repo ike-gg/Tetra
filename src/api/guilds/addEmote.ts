@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { client, discordOauth } from "../..";
+import { client, discordOauth } from "../../..";
 import getBufferFromUrl from "../../emotes/source/getBufferFromUrl";
 import { DiscordAPIError } from "discord.js";
 import { PrismaClient } from "@prisma/client";

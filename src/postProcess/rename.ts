@@ -10,8 +10,8 @@ import {
 import * as TaskTypes from "../types/TaskTypes";
 import editEmoteByUser from "../emotes/editEmoteByUser";
 import TaskManager from "../utils/managers/TaskManager";
-import { client } from "..";
 import parseDiscordRegexName from "../utils/discord/parseDiscordRegexName";
+import { client } from "../bot";
 
 const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
   const identificator = randomBytes(8).toString("hex");
