@@ -1,10 +1,9 @@
+import gifsiclebin from "gifsicle";
+import isGif from "is-gif";
 import prettyBytes from "pretty-bytes";
 import sharp from "sharp";
 
 import { execBunBuffer, execBunBufferSymbol } from "./x-gifsicle-support";
-
-const isGif = require("is-gif");
-const xgifsicle = require("gifsicle");
 
 export type Arguments = (string | number | Symbol)[];
 export type FrameDimensions = {
@@ -210,7 +209,7 @@ export class xGifsicle {
       // });
       const newBuffer = await execBunBuffer({
         input: this.fileBuffer,
-        bin: xgifsicle,
+        bin: gifsiclebin,
         args,
       });
       if (options.saveToBuffer) {

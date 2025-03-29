@@ -1,9 +1,13 @@
 import { CommandInteraction, TextChannel } from "discord.js";
-import { DiscordBot } from "../types";
-import { TetraEmbed } from "./embedMessages/TetraEmbed";
-import { env, isDevelopment } from "../env";
 
-const interactionLogger = async (interaction: CommandInteraction, client: DiscordBot) => {
+import { env, isDevelopment } from "../env";
+import { TetraClient } from "../types";
+import { TetraEmbed } from "./embedMessages/TetraEmbed";
+
+const interactionLogger = async (
+  interaction: CommandInteraction,
+  client: TetraClient
+) => {
   try {
     const { guild, user, id, commandName } = interaction;
 

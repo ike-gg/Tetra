@@ -1,17 +1,17 @@
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import { ChatInputCommandInteraction } from "discord.js";
 
-import { DiscordBot, Emote } from "../types";
-import isValidURL from "../utils/isValidURL";
-import ffzGetEmoteById from "../emotes/source/ffz/ffzGetEmoteById";
+import prepareEmote from "../emotes/prepareEmote";
 import stvGetEmoteById from "../emotes/source/7tv/stvGetEmoteById";
 import bttvGetEmoteById from "../emotes/source/bttv/bttvGetEmoteById";
-import prepareEmote from "../emotes/prepareEmote";
+import ffzGetEmoteById from "../emotes/source/ffz/ffzGetEmoteById";
 import getEmoteFromUrl from "../emotes/source/file/getEmoteFromUrl";
-import { ChatInputCommandInteraction } from "discord.js";
+import { TetraClient, Emote } from "../types";
+import isValidURL from "../utils/isValidURL";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,
-  client: DiscordBot,
+  client: TetraClient,
   feedback: FeedbackManager
 ) => {
   const emoteUrl = interaction.options.getString("link")!;

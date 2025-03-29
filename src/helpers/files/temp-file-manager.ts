@@ -14,7 +14,7 @@ class FileConsole extends TConsole {
 export class TempFileManager {
   static tempDirPath = env.TEMP_DIR_PATH;
 
-  static {
+  static cleanup() {
     try {
       if (!fs.existsSync(this.tempDirPath)) {
         FileConsole.dev.log(

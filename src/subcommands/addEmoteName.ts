@@ -1,18 +1,19 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { DiscordBot, Emote } from "../types";
-import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import getNavigatorRow from "../utils/elements/getNavigatorRow";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
-import * as TaskTypes from "../types/TaskTypes";
+
+import { Messages } from "../constants/messages";
 import stvGetEmotesByQuery from "../emotes/source/7tv/stvGetEmotesByQuery";
 import bttvGetEmotesByQuery from "../emotes/source/bttv/bttvGetEmotesByQuery";
 import ffzGetEmotesByQuery from "../emotes/source/ffz/ffzGetEmotesByQuery";
-import { Messages } from "../constants/messages";
+import { TetraClient, Emote } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
+import getNavigatorRow from "../utils/elements/getNavigatorRow";
+import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
+import { EmoteListManager } from "../utils/managers/EmoteListManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const addEmoteName = async (
   interaction: ChatInputCommandInteraction,
-  client: DiscordBot,
+  client: TetraClient,
   feedback: FeedbackManager
 ) => {
   const emoteQuery = interaction.options.getString("name");

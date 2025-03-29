@@ -1,14 +1,15 @@
 import { SelectMenuInteraction } from "discord.js";
-import { DiscordBot } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import * as TaskTypes from "../types/TaskTypes";
+
 import prepareEmote from "../emotes/prepareEmote";
+import { TetraClient } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const stealEmote = {
   data: {
     name: "stealEmote",
   },
-  async execute(interaction: SelectMenuInteraction, client: DiscordBot) {
+  async execute(interaction: SelectMenuInteraction, client: TetraClient) {
     const feedback = new FeedbackManager(interaction, {
       ephemeral: true,
     });

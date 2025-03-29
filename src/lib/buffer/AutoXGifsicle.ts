@@ -1,4 +1,4 @@
-import { maxEmoteSize } from "../../constants";
+import { MAX_EMOTE_SIZE } from "../../constants";
 import { Arguments, xGifsicle } from "./xGifsicle";
 
 interface Stage {
@@ -64,7 +64,7 @@ interface AutoXGifsicleOptions {
 }
 
 const defaultOptions: AutoXGifsicleOptions = {
-  finalSize: maxEmoteSize,
+  finalSize: MAX_EMOTE_SIZE,
   lossy: 80,
   skipReducingFrames: false,
 };

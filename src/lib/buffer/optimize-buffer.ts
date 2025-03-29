@@ -1,7 +1,7 @@
 import prettyBytes from "pretty-bytes";
 import sharp from "sharp";
 
-import { maxEmoteSize } from "@/constants";
+import { MAX_EMOTE_SIZE } from "@/constants";
 import { AutoXGifsicle } from "@/lib/buffer/AutoXGifsicle";
 import { FittingOption } from "@/types";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
@@ -16,7 +16,7 @@ interface OptimizeBufferOptions {
 }
 
 const defaultOptions: OptimizeBufferOptions = {
-  targetSize: maxEmoteSize,
+  targetSize: MAX_EMOTE_SIZE,
 };
 
 export const optimizeBuffer = async (
@@ -87,5 +87,7 @@ export const optimizeBuffer = async (
     prettyBytes(processedBuffer.byteLength)
   );
 
-  return processedBuffer;
+  const metadata = await sharp(processedBuffer).metadata();
+
+  return { buffer: processedBuffer, metadata };
 };

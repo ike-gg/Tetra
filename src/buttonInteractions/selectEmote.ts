@@ -1,15 +1,15 @@
 import { ButtonInteraction } from "discord.js";
 
-import { DiscordBot } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import * as TaskTypes from "../types/TaskTypes";
 import prepareEmote from "../emotes/prepareEmote";
+import { TetraClient } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const selectEmote = {
   data: {
     name: "selectEmote",
   },
-  async execute(interaction: ButtonInteraction, client: DiscordBot) {
+  async execute(interaction: ButtonInteraction, client: TetraClient) {
     const feedback = new FeedbackManager(interaction);
 
     const taskId = interaction.customId;

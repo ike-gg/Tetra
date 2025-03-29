@@ -5,17 +5,18 @@ import {
   Guild,
   SelectMenuInteraction,
 } from "discord.js";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { Emote } from "../types";
-import getBufferFromUrl from "./source/getBufferFromUrl";
-import TaskManager from "../utils/managers/TaskManager";
-import * as TaskTypes from "../types/TaskTypes";
-import { maxEmoteSize, maxSupportedSize } from "../constants";
-import editEmoteByUser from "./editEmoteByUser";
-import getChoiceOptimizeRow from "../utils/elements/getChoiceOptimizeRow";
-import parseDiscordRegexName from "../utils/discord/parseDiscordRegexName";
 import prettyBytes from "pretty-bytes";
+
+import { MAX_EMOTE_SIZE, MAX_SUPPORTED_SIZE } from "../constants";
 import { Messages } from "../constants/messages";
+import { Emote } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
+import parseDiscordRegexName from "../utils/discord/parseDiscordRegexName";
+import getChoiceOptimizeRow from "../utils/elements/getChoiceOptimizeRow";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import TaskManager from "../utils/managers/TaskManager";
+import editEmoteByUser from "./editEmoteByUser";
+import getBufferFromUrl from "./source/getBufferFromUrl";
 
 const prepareEmote = async (
   emote: Emote,
@@ -37,10 +38,10 @@ const prepareEmote = async (
       msBetweenRetries: 1000,
     });
 
-    if (emoteBuffer.byteLength >= maxSupportedSize) {
+    if (emoteBuffer.byteLength >= MAX_SUPPORTED_SIZE) {
       await feedback.error(
         `Emote exceeded maximum size supported currently with custom files (${prettyBytes(
-          maxSupportedSize
+          MAX_SUPPORTED_SIZE
         )}) by Tetra.`
       );
       return;
@@ -59,7 +60,7 @@ const prepareEmote = async (
       interaction,
     });
 
-    if (emoteBuffer.byteLength > maxEmoteSize) {
+    if (emoteBuffer.byteLength > MAX_EMOTE_SIZE) {
       await feedback.attention(Messages.EXCEEDED_EMOTE_SIZE(emoteBuffer.byteLength));
       const optimizeChoiceRow = getChoiceOptimizeRow(taskId, emote.animated);
       await feedback.updateComponents([optimizeChoiceRow]);

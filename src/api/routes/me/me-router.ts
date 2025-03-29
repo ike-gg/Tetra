@@ -10,7 +10,7 @@ const meStateRouter = Router();
 meStateRouter.use((req, res, next) =>
   checkUserAuth(req, res, next, { fetchUserData: false })
 );
-meStateRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
+meStateRouter.get("/", async (_: Request, res: Response, __: NextFunction) => {
   // if we are in this place, it means that user is authenticated, so we can just send 200
   res.status(200).send();
 });
@@ -20,6 +20,6 @@ meRouter.use("/state", meStateRouter);
 
 // for meRouter we using full auth, with fetching user data
 meRouter.use((req, res, next) => checkUserAuth(req, res, next, { fetchUserData: true }));
-meRouter.get("/", async (req: Request, res: Response, next: NextFunction) => {
+meRouter.get("/", async (req: Request, res: Response, _: NextFunction) => {
   res.json(req.user);
 });

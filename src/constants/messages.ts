@@ -1,8 +1,9 @@
 import { GuildEmoji } from "discord.js";
 import prettyBytes from "pretty-bytes";
 
-import { maxEmoteSize } from ".";
-import { supportedMediaPlatforms } from "../commands/media";
+import { supportedMediaPlatforms } from "@/interactions/commands/global/chat-input/media";
+
+import { MAX_EMOTE_SIZE } from ".";
 import { TetraEmbedContent } from "../utils/embedMessages/TetraEmbed";
 import multilineText from "../utils/multilineText";
 
@@ -64,7 +65,7 @@ export class Messages {
   static readonly METDIA_PLATFORM_NOT_SUPPORED: T = {
     title: "Platform not supported",
     description: `Currently supported platforms:
-${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`,
+  ${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`,
   };
 
   //twitch case
@@ -82,9 +83,9 @@ ${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.joi
   }
 
   static EXCEEDED_EMOTE_SIZE(size: number): T {
-    const maxSize = prettyBytes(maxEmoteSize);
+    const maxSize = prettyBytes(MAX_EMOTE_SIZE);
     const emoteSize = prettyBytes(size);
-    const differenceSize = prettyBytes(size - maxEmoteSize);
+    const differenceSize = prettyBytes(size - MAX_EMOTE_SIZE);
 
     return {
       description: multilineText(

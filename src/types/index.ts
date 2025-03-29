@@ -7,27 +7,32 @@ import {
   Client,
 } from "discord.js";
 
+import {
+  ChatInputCommandHandler,
+  ContextMenuMessageCommandHandler,
+} from "../interactions";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import TaskManager from "../utils/managers/TaskManager";
 
-export interface DiscordBot extends Client {
-  commands: Collection<string, CommandInteraction>;
+export interface TetraClient extends Client {
+  chatInputCommands: Collection<string, ChatInputCommandHandler>;
+  contextMenuMessageCommands: Collection<string, ContextMenuMessageCommandHandler>;
   buttonInteractions: Collection<string, ButtonInteraction>;
   selectMenu: Collection<string, SelectMenuInteraction>;
   tasks: TaskManager;
 }
 
 export interface ExecutableCommandInteraction extends CommandInteraction {
-  execute(interaction: CommandInteraction, client?: DiscordBot): void;
-  autocomplete(interaction: AutocompleteInteraction, client?: DiscordBot): void;
+  execute(interaction: CommandInteraction, client?: TetraClient): void;
+  autocomplete(interaction: AutocompleteInteraction, client?: TetraClient): void;
 }
 
 export interface ExecutableButtonInteraction extends ButtonInteraction {
-  execute(interaction: ButtonInteraction, client?: DiscordBot): void;
+  execute(interaction: ButtonInteraction, client?: TetraClient): void;
 }
 
 export interface ExecutableSelectMenu extends SelectMenuInteraction {
-  execute(interaction: SelectMenuInteraction, client?: DiscordBot): void;
+  execute(interaction: SelectMenuInteraction, client?: TetraClient): void;
 }
 
 export type SupportedEmotesOrigin =

@@ -102,18 +102,7 @@ const envSchema = z.object({
 
 let { data, error } = envSchema.safeParse(process.env);
 
-class EnvError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "EnvError";
-    this.stack = undefined;
-    this.cause = "Invalid environment variables";
-  }
-}
-
 if (error) {
-  CoreConsole.error(`Unable to parse environment variables:`);
-
   const table = new Table({
     columns: [
       {
@@ -140,7 +129,7 @@ if (error) {
   });
 
   error.errors.forEach((err) => {
-    const { path, received, expected, message } = err as {
+    const { path, received, message } = err as {
       path: string[];
       received: string;
       expected: string;
@@ -160,7 +149,8 @@ if (error) {
 
   table.printTable();
 
-  throw new EnvError("Failed to parse environment variables.");
+  CoreConsole.error("Failed to parse environment variables.");
+  process.exit(1);
 }
 
 export const env = data!;

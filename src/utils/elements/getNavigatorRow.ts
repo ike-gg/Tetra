@@ -1,11 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import { ButtonStyle } from "discord.js";
-import { DiscordBot } from "../../types";
+
+import { TetraClient } from "../../types";
 import * as TaskTypes from "../../types/TaskTypes";
 
 const getNavigatorRow = (
   navigatorTaskId: string,
-  client: DiscordBot,
+  client: TetraClient,
   options?: {
     nextDisabled: boolean;
     previousDisabled: boolean;

@@ -1,9 +1,9 @@
-import { MediaOutput, PlatformResult } from "../../commands/media";
-
-import { FeedbackManager } from "../../utils/managers/FeedbackManager";
 import fetch from "node-fetch";
 import * as z from "zod";
+
+import { MediaOutput, PlatformResult } from "../../commands/media";
 import { EmbeddedError } from "../../constants/errors";
+import { FeedbackManager } from "../../utils/managers/FeedbackManager";
 
 const streamableSchema = z.object({
   files: z.object({

@@ -17,14 +17,16 @@ export const router = Router();
 router.use("/auth", authRouter);
 
 // /me includes protected routes, check meRouter structure
+
 router.use("/me", meRouter);
 
 // -- PROTECTED ROUTES --
+
 router.use((req, res, next) => checkUserAuth(req, res, next, { fetchUserData: true }));
 
 router.use("/guilds", guildsRouter);
 
-router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
+router.use((error: Error, _: Request, res: Response, __: NextFunction) => {
   if (error instanceof TetraAPIError) {
     res.status(error.code).json({
       error: error.message,
@@ -50,5 +52,3 @@ router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
 
   return;
 });
-
-// export default router;

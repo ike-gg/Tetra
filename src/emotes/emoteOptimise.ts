@@ -1,6 +1,6 @@
 import sharp from "sharp";
 
-import { maxEmoteSize } from "../constants";
+import { MAX_EMOTE_SIZE } from "../constants";
 import { AutoXGifsicle } from "../lib/buffer/AutoXGifsicle";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
@@ -48,7 +48,7 @@ const emoteOptimise = async (
   if (animated) {
     const buffer = new AutoXGifsicle(processedBuffer, {
       lossy: 80,
-      finalSize: maxEmoteSize,
+      finalSize: MAX_EMOTE_SIZE,
       skipReducingFrames: options.skipReducingFrames,
     });
 

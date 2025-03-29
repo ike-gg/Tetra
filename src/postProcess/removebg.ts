@@ -4,14 +4,14 @@ import fs from "fs";
 import path from "path";
 
 import editEmoteByUser from "../emotes/editEmoteByUser";
-import { DiscordBot } from "../types";
+import { TetraClient } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
 
 import { TempFileManager } from "#/files/temp-file-manager";
 
 export default async function removebg(
   interaction: ButtonInteraction,
-  client: DiscordBot,
+  client: TetraClient,
   taskId: string
 ) {
   try {

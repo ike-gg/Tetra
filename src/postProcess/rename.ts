@@ -7,11 +7,12 @@ import {
   InteractionCollector,
   TextInputStyle,
 } from "discord.js";
-import * as TaskTypes from "../types/TaskTypes";
+
+import { internalClient } from "../bot";
 import editEmoteByUser from "../emotes/editEmoteByUser";
-import TaskManager from "../utils/managers/TaskManager";
-import { client } from "..";
+import * as TaskTypes from "../types/TaskTypes";
 import parseDiscordRegexName from "../utils/discord/parseDiscordRegexName";
+import TaskManager from "../utils/managers/TaskManager";
 
 const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
   const identificator = randomBytes(8).toString("hex");
@@ -48,7 +49,7 @@ const rename = async (buttonInteraction: ButtonInteraction, taskId: string) => {
 
   await buttonInteraction.showModal(modal);
 
-  const collector = new InteractionCollector(client as Client<true>, {
+  const collector = new InteractionCollector(internalClient as Client<true>, {
     time: 1000 * 60 * 10,
     filter: (i) => i.user.id === interaction.user.id,
   });

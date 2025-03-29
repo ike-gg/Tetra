@@ -1,8 +1,7 @@
-import TaskManager from "../utils/managers/TaskManager";
-import * as TaskTypes from "../types/TaskTypes";
 import { Messages } from "../constants/messages";
-import { announceUse } from "../utils/managers/FeedbackManager";
+import * as TaskTypes from "../types/TaskTypes";
 import { guildParsePremium } from "../utils/discord/guildParsePremium";
+import TaskManager from "../utils/managers/TaskManager";
 
 const addEmoteToGuild = async (taskId: string) => {
   const taskDetails =
@@ -40,7 +39,6 @@ const addEmoteToGuild = async (taskId: string) => {
       await feedback.success(
         `Successfully uploaded all emotes. ${uploadedEmotes.join(", ")}`
       );
-      await announceUse(Messages.ANNOUNCE_ADDED_MULTIPLE_EMOTES(uploadedEmotes));
     } catch (error) {
       await feedback.handleError(error);
     }
@@ -62,7 +60,6 @@ const addEmoteToGuild = async (taskId: string) => {
       name: emote.name,
     });
     await feedback.success(Messages.ADDED_EMOTE(addedEmote));
-    await announceUse(Messages.ANNOUNCE_ADDED_EMOTE(addedEmote));
   } catch (error) {
     await feedback.handleError(error);
   }

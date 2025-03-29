@@ -1,8 +1,7 @@
 import { MediaOutput, PlatformHandlerCallback } from "../../commands/media";
-
-import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
-import { getRemoteResourceDetails } from "../../utils";
 import { EmbeddedError } from "../../constants/errors";
+import { getRemoteResourceDetails } from "../../utils";
+import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
 
 // for ig cobalt is used,
 // it supports only: static posts and reels

@@ -5,24 +5,24 @@ import {
   ButtonInteraction,
 } from "discord.js";
 
-import { DiscordBot } from "../types";
-import * as TaskTypes from "../types/TaskTypes";
-import rename from "../postProcess/rename";
-import transform from "../postProcess/transform";
 import addEmoteToGuild from "../emotes/addEmoteToGuild";
-import emoteOptimise from "../emotes/emoteOptimise";
 import editEmoteByUser from "../emotes/editEmoteByUser";
-import TaskManager from "../utils/managers/TaskManager";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
+import emoteOptimise from "../emotes/emoteOptimise";
 import removebg from "../postProcess/removebg";
+import rename from "../postProcess/rename";
 import split from "../postProcess/split";
+import transform from "../postProcess/transform";
+import { TetraClient } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
+import { parseEntitlementsData } from "../utils/discord/parseEntitlementsData";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import TaskManager from "../utils/managers/TaskManager";
 
 const selectEmote = {
   data: {
     name: "postProcess",
   },
-  async execute(interaction: ButtonInteraction, client: DiscordBot) {
+  async execute(interaction: ButtonInteraction, client: TetraClient) {
     const genericFeedbackManager = new FeedbackManager(interaction);
     const interactionArguments = interaction.customId.split(":");
     const [taskId, action, value] = interactionArguments;

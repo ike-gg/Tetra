@@ -1,12 +1,12 @@
-import { ZodError, z } from "zod";
-import { PlatformResult } from "../../commands/media";
-
-import { FeedbackManager } from "../../utils/managers/FeedbackManager";
 import fetch from "node-fetch";
-import { TwitchManager } from "../../utils/managers/TwitchManager";
+import { ZodError, z } from "zod";
+
+import { PlatformResult } from "../../commands/media";
 import { EmbeddedError } from "../../constants/errors";
-import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
 import { getRemoteResourceDetails } from "../../utils";
+import { FeedbackManager } from "../../utils/managers/FeedbackManager";
+import { TwitchManager } from "../../utils/managers/TwitchManager";
+import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
 
 export const handleTwitchClip = async (
   _url: string,

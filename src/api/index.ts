@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import rateLimit from "express-rate-limit";
 
-import { env, isDevelopment, isProduction } from "../env";
+import { env, isProduction } from "../env";
 import { router } from "./router";
 
 import { ApiConsole } from "#/loggers";
@@ -12,6 +12,11 @@ export const initApi = () => {
   const PORT = env.PORT;
 
   const app = express();
+
+  app.use((_, res, next) => {
+    res.setHeader("X-Powered-By", "Tetra Core");
+    next();
+  });
 
   const limiter = rateLimit({
     windowMs: 30000,
@@ -48,11 +53,10 @@ export const initApi = () => {
 
   app.use(express.json());
 
-  // app.use(
-  //   bodyParser.json({
-  //     limit: "10mb",
-  //   })
-  // );
+  app.use((req, _, next) => {
+    ApiConsole.info(`${req.method.toUpperCase()}::${req.url}`);
+    next();
+  });
 
   app.use("/api", router);
 

@@ -1,16 +1,17 @@
 import { ButtonInteraction } from "discord.js";
-import { DiscordBot } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import getNavigatorRow from "../utils/elements/getNavigatorRow";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
+
+import { TetraClient } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
+import getNavigatorRow from "../utils/elements/getNavigatorRow";
+import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
+import { EmoteListManager } from "../utils/managers/EmoteListManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const navigatorPage = {
   data: {
     name: "navigatorPage",
   },
-  async execute(interaction: ButtonInteraction, client: DiscordBot) {
+  async execute(interaction: ButtonInteraction, client: TetraClient) {
     const feedback = new FeedbackManager(interaction);
 
     await feedback.removeComponents();

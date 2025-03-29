@@ -1,12 +1,13 @@
 import { ButtonInteraction } from "discord.js";
-import { DiscordBot } from "../types";
-import * as TaskTypes from "../types/TaskTypes";
-import emoteOptimise from "../emotes/emoteOptimise";
+
 import editEmoteByUser from "../emotes/editEmoteByUser";
+import emoteOptimise from "../emotes/emoteOptimise";
+import { TetraClient } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
 
 const transform = async (
   interaction: ButtonInteraction,
-  client: DiscordBot,
+  client: TetraClient,
   taskId: string,
   transform: "square" | "center"
 ) => {

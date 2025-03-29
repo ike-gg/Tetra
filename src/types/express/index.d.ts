@@ -4,6 +4,7 @@ declare global {
   namespace Express {
     export interface Request {
       user?: OAuth.User;
+      accessToken?: string;
     }
   }
 }

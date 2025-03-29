@@ -18,4 +18,10 @@ class BotConsole extends TConsole {
   }
 }
 
-export { ApiConsole, CoreConsole, BotConsole };
+class DeployConsole extends TConsole {
+  get prefix(): string {
+    return "DEPLOY";
+  }
+}
+
+export { ApiConsole, CoreConsole, BotConsole, DeployConsole };

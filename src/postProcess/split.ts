@@ -1,11 +1,12 @@
 import { ButtonInteraction, SelectMenuInteraction } from "discord.js";
-import * as TaskTypes from "../types/TaskTypes";
-import editEmoteByUser from "../emotes/editEmoteByUser";
-import TaskManager from "../utils/managers/TaskManager";
-import { client } from "..";
 import sharp, { SharpOptions } from "sharp";
-import { maxEmoteSize } from "../constants";
+
+import { internalClient } from "../bot";
+import { MAX_EMOTE_SIZE } from "../constants";
+import editEmoteByUser from "../emotes/editEmoteByUser";
 import emoteOptimise from "../emotes/emoteOptimise";
+import * as TaskTypes from "../types/TaskTypes";
+import TaskManager from "../utils/managers/TaskManager";
 
 const split = async (
   buttonInteraction: ButtonInteraction | SelectMenuInteraction,
@@ -96,14 +97,14 @@ const split = async (
 
   const emoteSlicesOptimized = await Promise.all(
     emotesSliced.map(async (emoteSlice) => {
-      if (emoteSlice.byteLength < maxEmoteSize) return emoteSlice;
+      if (emoteSlice.byteLength < MAX_EMOTE_SIZE) return emoteSlice;
       return await emoteOptimise(emoteSlice, {
         animated: emote.animated,
       });
     })
   );
 
-  client.tasks.updateTask<TaskTypes.PostProcessEmote>(taskId, {
+  internalClient.tasks.updateTask<TaskTypes.PostProcessEmote>(taskId, {
     ...taskDetails,
     emote: {
       ...taskDetails.emote,

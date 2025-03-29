@@ -1,11 +1,12 @@
-import { NextFunction, Request, Response } from "express";
-import { client, discordOauth } from "../..";
-import getBufferFromUrl from "../../emotes/source/getBufferFromUrl";
-import { DiscordAPIError } from "discord.js";
 import { PrismaClient } from "@prisma/client";
+import { DiscordAPIError } from "discord.js";
+import { NextFunction, Request, Response } from "express";
+
+import { internalClient } from "@/bot";
+
+import { discordOauth } from "../..";
+import getBufferFromUrl from "../../emotes/source/getBufferFromUrl";
 import { TetraAPIError } from "../TetraAPIError";
-import { announceUse } from "../../utils/managers/FeedbackManager";
-import { Messages } from "../../constants/messages";
 
 export default async (req: Request, res: Response, next: NextFunction) => {
   const accessToken = res.locals.accessToken as string;
@@ -23,7 +24,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
 
     if (!user) throw new TetraAPIError(401, "Not authorized.");
 
-    const guild = await client.guilds.fetch(guildid);
+    const guild = await internalClient.guilds.fetch(guildid);
 
     const userInGuild = await guild.members.fetch(user.id);
 
@@ -43,8 +44,6 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     res.status(200).json({
       message: `Added ${addedEmote.name} emote to ${guild.name}`,
     });
-
-    await announceUse(Messages.ANNOUNCE_ADDED_EMOTE_PANEL(addedEmote));
   } catch (e) {
     if (e instanceof DiscordAPIError && e.code === 50138) {
       const prisma = new PrismaClient();
@@ -52,7 +51,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       const webTaskExpireTime = 1000 * 60 * 30;
       const currentTime = new Date();
 
-      const guild = await client.guilds.fetch(guildid);
+      const guild = await internalClient.guilds.fetch(guildid);
       const user = await discordOauth.getUser(accessToken);
 
       const { id } = await prisma.manualAdjustment.create({

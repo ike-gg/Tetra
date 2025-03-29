@@ -1,11 +1,10 @@
 import { eq } from "drizzle-orm";
 import { Response, NextFunction, Request } from "express";
-import { APIConnectionError } from "openai";
 import { z } from "zod";
 
 import { isProduction } from "@/env";
+import { discordOauth } from "@/index";
 
-import { discordOauth } from "../..";
 import { db } from "../../db";
 import { sessions, users } from "../../db/schema";
 import { TetraAPIError } from "../TetraAPIError";
@@ -31,7 +30,6 @@ export const checkUserAuth = async (
   const { fetchUserData } = { ...defaultCheckAuthOptions, ...options };
 
   try {
-    ApiConsole.info(`Session schema:`, JSON.stringify(req.session, null, 2));
     const { session_token } = sessionSchema.parse(req.session);
 
     const currentSession = await db.query.sessions.findFirst({
@@ -81,6 +79,8 @@ export const checkUserAuth = async (
         throw new TetraAPIError(401, "Unauthorized", "INVALID_REFRESH_TOKEN");
       }
     }
+
+    req.accessToken = currentUser.access_token;
 
     if (fetchUserData) {
       try {

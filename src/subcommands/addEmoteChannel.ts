@@ -1,20 +1,21 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { DiscordBot } from "../types";
-import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import getNavigatorRow from "../utils/elements/getNavigatorRow";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
-import * as TaskTypes from "../types/TaskTypes";
-import getEmotesFromChannel from "../emotes/source/7tv/stvGetEmotesFromChannel";
+
 import { Messages } from "../constants/messages";
+import getEmotesFromChannel from "../emotes/source/7tv/stvGetEmotesFromChannel";
+import { TetraClient } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
+import getNavigatorRow from "../utils/elements/getNavigatorRow";
+import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
+import { EmoteListManager } from "../utils/managers/EmoteListManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import { TwitchManager } from "../utils/managers/TwitchManager";
 
 const addEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
-  client: DiscordBot,
+  client: TetraClient,
   feedback: FeedbackManager
 ) => {
-  const channelName = interaction.options.get("channelname")?.value as string;
+  const channelName = interaction.options.get("channel")?.value as string;
   const queryString = interaction.options.get("search")?.value as string;
 
   try {

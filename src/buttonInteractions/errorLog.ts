@@ -5,14 +5,15 @@ import {
   ButtonStyle,
   TextChannel,
 } from "discord.js";
-import { DiscordBot } from "../types";
+
+import { TetraClient } from "../types";
 import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
 
 const errorLog = {
   data: {
     name: "errorLog",
   },
-  async execute(interaction: ButtonInteraction, client: DiscordBot) {
+  async execute(interaction: ButtonInteraction, client: TetraClient) {
     await interaction.update({
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(

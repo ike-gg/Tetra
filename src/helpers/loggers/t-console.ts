@@ -1,5 +1,6 @@
 import chalk from "chalk";
-import { isDevelopment } from "../../env";
+
+import { isDevelopment } from "@/env";
 
 export abstract class TConsole {
   abstract get prefix(): string;

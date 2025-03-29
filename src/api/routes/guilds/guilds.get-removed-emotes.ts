@@ -1,11 +1,14 @@
-import { Guild, GuildMember } from "discord.js";
+import OAuth from "discord-oauth2";
+import { APIGuild, PermissionsBitField } from "discord.js";
 import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-import { client } from "../../..";
+import { discordOauth } from "@/index";
+import { discordRestApi } from "@/lib/discord-rest-api";
+
 import { db } from "../../../db";
-import { emotes, removedEmotes } from "../../../db/schema";
+import { removedEmotes } from "../../../db/schema";
 import { TetraAPIError } from "../../TetraAPIError";
 
 const getGuildParams = z.object({
@@ -15,15 +18,19 @@ const getGuildParams = z.object({
 export const guildsGetRemovedEmotes = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  _: NextFunction
 ) => {
   try {
     const { guildId } = getGuildParams.parse(req.params);
 
-    let guild: Guild;
-    try {
-      guild = await client.guilds.fetch(guildId);
-    } catch {
+    const promises = [
+      discordRestApi.guilds.get(guildId),
+      discordOauth.getUserGuilds(req.accessToken!),
+    ];
+
+    const [guildPromise, guildsPromise] = await Promise.allSettled(promises);
+
+    if (guildPromise.status === "rejected") {
       throw new TetraAPIError(
         404,
         "Guild not found",
@@ -31,20 +38,23 @@ export const guildsGetRemovedEmotes = async (
       );
     }
 
-    let member: GuildMember;
-    try {
-      member = await guild.members.fetch(req.user!.id);
-    } catch {
-      throw new TetraAPIError(
-        404,
-        "Guild not found",
-        "GUILD_NOT_FOUND_UNKNOWN_GUILD_MEMBER"
-      );
+    if (guildsPromise.status === "rejected") {
+      throw new TetraAPIError(404, "Guild not found", "OAUTH_GET_GUILDS_ERROR");
     }
 
-    const hasPermissons = member.permissions.has("ManageGuildExpressions");
+    const guildMember = (guildsPromise.value as OAuth.PartialGuild[]).find(
+      (guild) => guild.id === guildId
+    );
 
-    if (!hasPermissons) {
+    if (!guildMember) {
+      throw new TetraAPIError(404, "Guild not found", "USER_NOT_IN_GUILD");
+    }
+
+    const guild = guildPromise.value as APIGuild;
+
+    const userPermissions = new PermissionsBitField(BigInt(guildMember.permissions!));
+
+    if (!userPermissions.has("ManageGuildExpressions")) {
       throw new TetraAPIError(403, "Missing permissions", "MISSING_PERMISSIONS");
     }
 

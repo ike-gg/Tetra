@@ -1,19 +1,20 @@
 import { ChatInputCommandInteraction } from "discord.js";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { DiscordBot } from "../types";
-import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import getNavigatorRow from "../utils/elements/getNavigatorRow";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
-import * as TaskTypes from "../types/TaskTypes";
+
 import { Messages } from "../constants/messages";
+import { TetraClient } from "../types";
+import * as TaskTypes from "../types/TaskTypes";
+import getNavigatorRow from "../utils/elements/getNavigatorRow";
+import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
+import { EmoteListManager } from "../utils/managers/EmoteListManager";
+import { FeedbackManager } from "../utils/managers/FeedbackManager";
 import { TwitchManager } from "../utils/managers/TwitchManager";
 
 const addSubEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
-  client: DiscordBot,
+  client: TetraClient,
   feedback: FeedbackManager
 ) => {
-  const channelName = interaction.options.getString("channelname");
+  const channelName = interaction.options.getString("channel");
 
   if (!channelName) return;
 

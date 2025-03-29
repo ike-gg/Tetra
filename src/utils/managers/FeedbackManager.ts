@@ -5,18 +5,16 @@ import {
   CommandInteraction,
   SelectMenuBuilder,
   SelectMenuInteraction,
-  TextChannel,
   ButtonStyle,
   BaseMessageOptions,
   isJSONEncodable,
   DiscordAPIError,
 } from "discord.js";
 
-import { client } from "../..";
 import { EmbeddedError } from "../../constants/errors";
 import { Messages } from "../../constants/messages";
-import { env, isDevelopment } from "../../env";
-import { DiscordBot } from "../../types";
+import { isDevelopment } from "../../env";
+import { TetraClient } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
 
 export class UnhandledError extends Error {
@@ -27,7 +25,7 @@ export class UnhandledError extends Error {
 }
 
 export class FeedbackManager {
-  client: DiscordBot;
+  client: TetraClient;
   ephemeral: boolean;
   public relatedTask?: string;
 
@@ -39,7 +37,7 @@ export class FeedbackManager {
   ) {
     let ephemeral = options?.ephemeral || false;
 
-    this.client = interaction.client as DiscordBot;
+    this.client = interaction.client as TetraClient;
     this.ephemeral = ephemeral;
   }
 
@@ -238,17 +236,3 @@ export class FeedbackManager {
     );
   }
 }
-
-export const announceUse = async (text: string) => {
-  try {
-    const announceChannel = (await client.channels.fetch(
-      "1054273914437648384"
-    )) as TextChannel;
-
-    if (!announceChannel) return;
-
-    await announceChannel.send(text);
-  } catch (error) {
-    console.error("Cant reach announcement channel");
-  }
-};

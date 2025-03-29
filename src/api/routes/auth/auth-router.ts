@@ -3,7 +3,8 @@ import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response, Router } from "express";
 import { z } from "zod";
 
-import { discordOauth } from "../../..";
+import { discordOauth } from "@/index";
+
 import { db } from "../../../db";
 import { sessions, users } from "../../../db/schema";
 import { env } from "../../../env";
