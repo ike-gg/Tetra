@@ -20,7 +20,6 @@ import { handleTwitchClip } from "../lib/media/handleTwitchClip";
 import isValidURL from "../utils/isValidURL";
 import { Messages } from "../constants/messages";
 import { formatDate } from "../utils/formatDate";
-import { getPremiumOfferingButton } from "../utils/elements/getPremiumOfferingButton";
 import { handleStreamableMedia } from "../lib/media/handleStreamableMedia";
 import { TetraEmbed } from "../utils/embedMessages/TetraEmbed";
 import { handleTikTokMedia } from "../lib/media/handleTikTokMedia";
@@ -133,7 +132,6 @@ export default {
     if (!input) return;
 
     const { fileLimit } = guildParsePremium(interaction.guild!);
-    const { hasPremium } = parseEntitlementsData(interaction);
     const feedback = new FeedbackManager(interaction);
 
     const itemUrl = input
@@ -216,28 +214,12 @@ export default {
       !isSlideshow &&
         (await Promise.all(
           media.map(async (m) => {
-            if (hasPremium) {
-              mediaToUpload.push(
-                new AttachmentBuilder(m.source, {
-                  name: `tetra_${interaction.id}.${m.type}`,
-                })
-              );
-              return;
-            }
-
-            const mediaBuffer: Buffer =
-              m.source instanceof Buffer ? m.source : await getBufferFromUrl(m.source);
-
-            let watermarkedBuffer =
-              m.type === "mp4"
-                ? await watermarkVideo(mediaBuffer, interaction.id)
-                : await watermarkImage(mediaBuffer);
-
             mediaToUpload.push(
-              new AttachmentBuilder(watermarkedBuffer, {
+              new AttachmentBuilder(m.source, {
                 name: `tetra_${interaction.id}.${m.type}`,
               })
             );
+            return;
           })
         ));
 
@@ -307,19 +289,6 @@ export default {
       actionRow.addComponents(
         URLButton("Open", platform.name === "YouTube" ? itemUrl : trimmedUrl)
       );
-
-      // if (!hasPremium && mediaToUpload.length > 0) {
-      //   const removeWatermarkButton = getPremiumOfferingButton({
-      //     label: "Watermark",
-      //   });
-      //   actionRow.addComponents(removeWatermarkButton);
-
-      //   if (isSlideshow) {
-      //     actionRow.addComponents(
-      //       new ButtonBuilder().setDisabled(true).setLabel("Slideshow")
-      //     );
-      //   }
-      // }
 
       const components = [metadataRow];
 

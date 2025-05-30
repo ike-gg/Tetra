@@ -7,35 +7,9 @@ import {
 } from "./types";
 import { FeedbackManager } from "./utils/managers/FeedbackManager";
 import interactionLogger from "./utils/interactionLoggers";
-import { BANNEDLIST } from "./bannedusers";
-import { TetraEmbed } from "./utils/embedMessages/TetraEmbed";
 import { env } from "./env";
-import { BLACKLISTED_GUILDS } from "./blacklistedguilds";
 
 const interactionHandler = async (interaction: Interaction, client: DiscordBot) => {
-  const banDetails = BANNEDLIST.find(
-    (bannedUser) => bannedUser.userId === interaction.user.id
-  );
-
-  const blacklistedGuild = BLACKLISTED_GUILDS.find(
-    (guild) => guild.guildId === interaction.guildId
-  );
-
-  if (blacklistedGuild) blacklistedGuild.isActive && (await interaction.guild?.leave());
-
-  if (banDetails) {
-    if (!interaction.isRepliable()) return;
-    interaction.reply({
-      embeds: [
-        TetraEmbed.error({
-          title: "Banned",
-          description: `Reason: ${banDetails.reason || "-"}`,
-        }),
-      ],
-    });
-    return;
-  }
-
   if (interaction.isAutocomplete()) {
     const command = client.commands.get(
       interaction.commandName
