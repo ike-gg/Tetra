@@ -1,17 +1,17 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
-import { Messages } from "../constants/messages";
-import stvGetEmotesByQuery from "../emotes/source/7tv/stvGetEmotesByQuery";
-import bttvGetEmotesByQuery from "../emotes/source/bttv/bttvGetEmotesByQuery";
-import ffzGetEmotesByQuery from "../emotes/source/ffz/ffzGetEmotesByQuery";
-import { TetraClient, Emote } from "../types";
-import * as TaskTypes from "../types/TaskTypes";
-import getNavigatorRow from "../utils/elements/getNavigatorRow";
-import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import { Messages } from "@/constants/messages";
+import stvGetEmotesByQuery from "@/emotes/source/7tv/stvGetEmotesByQuery";
+import bttvGetEmotesByQuery from "@/emotes/source/bttv/bttvGetEmotesByQuery";
+import ffzGetEmotesByQuery from "@/emotes/source/ffz/ffzGetEmotesByQuery";
+import { Emote, TetraClient } from "@/types";
+import * as TaskTypes from "@/types/TaskTypes";
+import getNavigatorRow from "@/utils/elements/getNavigatorRow";
+import renderEmotesSelect from "@/utils/emoteSelectMenu/renderEmotesSelect";
+import { EmoteListManager } from "@/utils/managers/EmoteListManager";
+import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
-const addEmoteName = async (
+export const addEmoteName = async (
   interaction: ChatInputCommandInteraction,
   client: TetraClient,
   feedback: FeedbackManager
@@ -43,7 +43,7 @@ const addEmoteName = async (
     const pagesOfEmotes = EmoteListManager.getEmotesInPages(storeId, 1)!;
     const storeInfo = EmoteListManager.getStoredInfo(storeId)!;
 
-    const emotesEmbedsPreview = renderEmotesSelect(pagesOfEmotes, client);
+    const emotesEmbedsPreview = await renderEmotesSelect(pagesOfEmotes, client);
 
     const navigatorTask = client.tasks.addTask<TaskTypes.EmoteNavigator>({
       action: "navigatorPage",
@@ -68,5 +68,3 @@ const addEmoteName = async (
     await feedback.handleError(error);
   }
 };
-
-export default addEmoteName;

@@ -1,15 +1,15 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
-import prepareEmote from "../emotes/prepareEmote";
-import stvGetEmoteById from "../emotes/source/7tv/stvGetEmoteById";
-import bttvGetEmoteById from "../emotes/source/bttv/bttvGetEmoteById";
-import ffzGetEmoteById from "../emotes/source/ffz/ffzGetEmoteById";
-import getEmoteFromUrl from "../emotes/source/file/getEmoteFromUrl";
-import { TetraClient, Emote } from "../types";
-import isValidURL from "../utils/isValidURL";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import prepareEmote from "@/emotes/prepareEmote";
+import stvGetEmoteById from "@/emotes/source/7tv/stvGetEmoteById";
+import bttvGetEmoteById from "@/emotes/source/bttv/bttvGetEmoteById";
+import ffzGetEmoteById from "@/emotes/source/ffz/ffzGetEmoteById";
+import getEmoteFromUrl from "@/emotes/source/file/getEmoteFromUrl";
+import { Emote, TetraClient } from "@/types";
+import isValidURL from "@/utils/isValidURL";
+import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
-const addEmoteLink = async (
+export const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,
   client: TetraClient,
   feedback: FeedbackManager
@@ -65,5 +65,3 @@ const addEmoteLink = async (
     await feedback.handleError(error);
   }
 };
-
-export default addEmoteLink;

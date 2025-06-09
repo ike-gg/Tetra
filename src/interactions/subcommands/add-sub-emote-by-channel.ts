@@ -1,22 +1,22 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
-import { Messages } from "../constants/messages";
-import getEmotesFromChannel from "../emotes/source/7tv/stvGetEmotesFromChannel";
-import { TetraClient } from "../types";
-import * as TaskTypes from "../types/TaskTypes";
-import getNavigatorRow from "../utils/elements/getNavigatorRow";
-import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import { TwitchManager } from "../utils/managers/TwitchManager";
+import { Messages } from "@/constants/messages";
+import { TetraClient } from "@/types";
+import * as TaskTypes from "@/types/TaskTypes";
+import getNavigatorRow from "@/utils/elements/getNavigatorRow";
+import renderEmotesSelect from "@/utils/emoteSelectMenu/renderEmotesSelect";
+import { EmoteListManager } from "@/utils/managers/EmoteListManager";
+import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { TwitchManager } from "@/utils/managers/TwitchManager";
 
-const addEmoteChannel = async (
+const addSubEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
   client: TetraClient,
   feedback: FeedbackManager
 ) => {
-  const channelName = interaction.options.get("channel")?.value as string;
-  const queryString = interaction.options.get("search")?.value as string;
+  const channelName = interaction.options.getString("channel");
+
+  if (!channelName) return;
 
   try {
     const channelInfo = await TwitchManager.getChannel(channelName);
@@ -26,12 +26,7 @@ const addEmoteChannel = async (
       return;
     }
 
-    let foundEmotes = await getEmotesFromChannel(channelInfo.id);
-
-    if (queryString)
-      foundEmotes = foundEmotes.filter((emote) =>
-        emote.name.toLowerCase().includes(queryString.toLowerCase())
-      );
+    const foundEmotes = await TwitchManager.getChannelEmotes(channelInfo.id);
 
     if (foundEmotes.length === 0) {
       await feedback.error(Messages.EMOTE_NOT_FOUND);
@@ -68,4 +63,4 @@ const addEmoteChannel = async (
   }
 };
 
-export default addEmoteChannel;
+export default addSubEmoteChannel;

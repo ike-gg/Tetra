@@ -1,8 +1,9 @@
 import { EmbedBuilder } from "@discordjs/builders";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from "discord.js";
 
+import SelectEmoteButtonInteractionHandler from "@/interactions/buttons/global/select-emote";
+
 import { TetraClient, Emote } from "../../types";
-import * as TaskTypes from "../../types/TaskTypes";
 import emotePreviewEmbed from "../embedMessages/emotePreviewEmbed";
 
 interface EmoteSelectMessage {
@@ -12,37 +13,44 @@ interface EmoteSelectMessage {
 
 const emojiNumbers = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣"];
 
-const renderEmotesSelect = (emotes: Emote[], client: TetraClient): EmoteSelectMessage => {
+const renderEmotesSelect = async (
+  emotes: Emote[],
+  _: TetraClient
+): Promise<EmoteSelectMessage> => {
   const selectEmoteActionRow = new ActionRowBuilder<ButtonBuilder>();
 
-  const embeds = emotes.map((emote, index) => {
-    const number = emojiNumbers[index];
+  const components = await Promise.all(
+    emotes.map(async (emote, index) => {
+      const number = emojiNumbers[index];
 
-    const taskId = client.tasks.addTask<TaskTypes.EmotePicker>({
-      action: "selectEmote",
-      emote,
-    });
+      const { buttonId } = await SelectEmoteButtonInteractionHandler.create({ emote });
 
-    selectEmoteActionRow.addComponents(
-      new ButtonBuilder()
-        .setCustomId(taskId)
+      const button = new ButtonBuilder()
+        .setCustomId(buttonId)
         .setEmoji(number)
         .setLabel("Select")
-        .setStyle(ButtonStyle.Secondary)
-    );
+        .setStyle(ButtonStyle.Secondary);
 
-    const { name, author, file } = emote;
+      const { name, author, file } = emote;
 
-    return emotePreviewEmbed({
-      number,
-      name,
-      author: author,
-      preview: file.preview,
-    });
+      return {
+        button,
+        embed: emotePreviewEmbed({
+          number,
+          name,
+          author: author,
+          preview: file.preview,
+        }),
+      };
+    })
+  );
+
+  components.forEach((component) => {
+    selectEmoteActionRow.addComponents(component.button);
   });
 
   return {
-    embeds,
+    embeds: components.map((component) => component.embed),
     components: selectEmoteActionRow,
   };
 };

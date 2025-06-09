@@ -11,11 +11,15 @@ import {
   DiscordAPIError,
 } from "discord.js";
 
+import submitErrorLogGenericButton from "@/interactions/buttons/generic/submit-error-log";
+
 import { EmbeddedError } from "../../constants/errors";
 import { Messages } from "../../constants/messages";
 import { isDevelopment } from "../../env";
 import { TetraClient } from "../../types";
 import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
+
+import { CoreConsole } from "#/loggers";
 
 export class UnhandledError extends Error {
   constructor(message: string) {
@@ -128,8 +132,6 @@ export class FeedbackManager {
   }
 
   async handleError(error: any) {
-    if (isDevelopment) console.log(error);
-
     if (error instanceof EmbeddedError) {
       await this.error(error.embed);
     } else if (error instanceof UnhandledError) {
@@ -150,15 +152,9 @@ export class FeedbackManager {
 
   async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
-    row.addComponents(
-      new ButtonBuilder()
-        .setCustomId(`errorlog`)
-        .setEmoji({
-          name: "📠",
-        })
-        .setLabel(`Send developers log`)
-        .setStyle(ButtonStyle.Danger)
-    );
+    const button = submitErrorLogGenericButton.metadata.getButton();
+    row.addComponents(button);
+
     await this.sendMessage({
       embeds: [TetraEmbed.error(content)],
       components: [row],
@@ -167,7 +163,7 @@ export class FeedbackManager {
 
   async unhandledError(error: any) {
     const trackingId = randomUUID();
-    console.error(`[ ${trackingId} ]`, error);
+    CoreConsole.error(`[ ${trackingId} ]`, error);
     await this.error({
       title: "Unhandled error",
       description:

@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 import { ChatInputCommandHandler } from "@/interactions";
-import addEmoteChannel from "@/subcommands/addEmoteChannel";
-import addEmoteLink from "@/subcommands/addEmoteLink";
-import addEmoteName from "@/subcommands/addEmoteName";
-import addSubEmoteChannel from "@/subcommands/addSubEmoteChannel";
+import { addEmoteChannel } from "@/interactions/subcommands/add-emote-by-channel";
+import { addEmoteLink } from "@/interactions/subcommands/add-emote-by-link";
+import { addEmoteName } from "@/interactions/subcommands/add-emote-by-name";
+import addSubEmoteChannel from "@/interactions/subcommands/add-sub-emote-by-channel";
 import { TetraClient } from "@/types";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 

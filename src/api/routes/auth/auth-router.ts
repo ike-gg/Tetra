@@ -22,7 +22,7 @@ export type SessionSchema = z.infer<typeof sessionSchema>;
 
 export const authRouter = Router();
 
-authRouter.get("/", (req: Request, res: Response, next: NextFunction) => {
+authRouter.get("/", (_: Request, res: Response, __: NextFunction) => {
   const authUrl = discordOauth.generateAuthUrl({
     scope: API_CONSTANTS.DISCORD_SCOPES,
     redirectUri: `${env.BACKEND_URL}${API_CONSTANTS.RELATIVE_REDIRECT_URI}`,
@@ -35,7 +35,7 @@ const callbackSchema = z.object({
   code: z.string(),
 });
 
-authRouter.get("/callback", async (req: Request, res: Response, next: NextFunction) => {
+authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction) => {
   try {
     const { code } = callbackSchema.parse(req.query);
 

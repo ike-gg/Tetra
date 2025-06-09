@@ -1,9 +1,11 @@
 import { Events } from "discord.js";
 
-import { interactionCreateHandler as handler } from "@/interactions/interaction-create-handler";
+import { interactionHandler } from "@/interactions/interaction-handler";
 
 import { EventHandler } from ".";
 import { internalClient } from "../bot";
+
+import { BotConsole } from "#/loggers";
 
 export const interactionCreateHandler: EventHandler<Events.InteractionCreate> = async (
   interaction
@@ -18,16 +20,16 @@ export const interactionCreateHandler: EventHandler<Events.InteractionCreate> = 
 
   const isCommand = interaction.isCommand();
   const isButton = interaction.isButton();
-  const isSelectMenu = interaction.isSelectMenu();
+  const isSelectMenu = interaction.isStringSelectMenu();
   const isAutocomplete = interaction.isAutocomplete();
 
   const supportedInteraction = isCommand || isButton || isSelectMenu || isAutocomplete;
 
   if (supportedInteraction) {
     try {
-      handler(interaction, internalClient);
+      interactionHandler(interaction, internalClient);
     } catch (error) {
-      console.error("Failed to handle interaction: ", error);
+      BotConsole.error("Failed to handle interaction:", error);
     }
   }
 };

@@ -13,4 +13,8 @@ export const FILE_PATH = {
   GLOBAL_CONTEXT_MENU_MESSAGE_COMMANDS: resolveDir(
     "../interactions/commands/global/context-menu-message"
   ),
+
+  // button interactions
+  GENERIC_BUTTON_INTERACTIONS: resolveDir("../interactions/buttons/generic"),
+  GLOBAL_BUTTON_INTERACTIONS: resolveDir("../interactions/buttons/global"),
 };

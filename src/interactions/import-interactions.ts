@@ -1,7 +1,3 @@
-import { ButtonInteraction, Collection, SelectMenuInteraction } from "discord.js";
-import fs from "fs";
-import path from "path";
-
 import { isDevelopment } from "../env";
 import { TetraClient } from "../types";
 
@@ -15,31 +11,15 @@ export const importInteractions = async (client: TetraClient) => {
   client.contextMenuMessageCommands =
     await InteractionsFileManager.getGlobalContextMenuMessageCommands();
 
-  // client.buttonInteractions = new Collection();
-  // importButtonInteractions(client.buttonInteractions);
+  client.genericButtonInteractions =
+    await InteractionsFileManager.getGenericButtonInteractions();
+
+  client.globalButtonInteractions =
+    await InteractionsFileManager.getGlobalButtonInteractions();
 
   // client.selectMenu = new Collection();
   // importSelectMenu(client.selectMenu);
 };
-
-// const importButtonInteractions = (
-//   clientButtonInteractions: Collection<string, ButtonInteraction>
-// ) => {
-//   const buttonInteractionsPath = path.join(__dirname, "buttonInteractions");
-//   const buttonInteractionsFiles = fs
-//     .readdirSync(buttonInteractionsPath)
-//     .filter((file) => file.endsWith(".ts"));
-
-//   for (const file of buttonInteractionsFiles) {
-//     const filePath = path.join(buttonInteractionsPath, file);
-//     import(filePath).then((buttonInteraction) => {
-//       clientButtonInteractions.set(
-//         buttonInteraction.default.data.name,
-//         buttonInteraction.default
-//       );
-//     });
-//   }
-// };
 
 // const importSelectMenu = (clientCommands: Collection<string, SelectMenuInteraction>) => {
 //   const selectMenuPath = path.join(__dirname, "selectMenu");

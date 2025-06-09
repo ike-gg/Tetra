@@ -9,11 +9,13 @@ import {
 import { Messages } from "@/constants/messages";
 import getBufferFromUrl from "@/emotes/source/getBufferFromUrl";
 import { ChatInputCommandHandler } from "@/interactions";
-import { handleInstagramMedia } from "@/lib/media/handleInstagramMedia";
-import { handleStreamableMedia } from "@/lib/media/handleStreamableMedia";
-import { handleTikTokMedia } from "@/lib/media/handleTikTokMedia";
-import { handleTwitchClip } from "@/lib/media/handleTwitchClip";
-import { handleTwitterMedia } from "@/lib/media/handleTwitterMedia";
+import {
+  handleInstagramMedia,
+  handleStreamableMedia,
+  handleTikTokMedia,
+  handleTwitchClip,
+  handleTwitterMedia,
+} from "@/lib/media";
 import { renderSlideshow } from "@/lib/media/helper/renderSlideshow";
 import URLButton from "@/utils/discord/components/url-button";
 import { guildParsePremium } from "@/utils/discord/guildParsePremium";

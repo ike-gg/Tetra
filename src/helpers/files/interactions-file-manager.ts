@@ -4,14 +4,28 @@ import path from "path";
 
 import { FILE_PATH } from "@/constants/files";
 import {
+  GenericButtonInteractionHandler,
   ChatInputCommandHandler,
   ContextMenuMessageCommandHandler,
 } from "@/interactions";
+import { SelectEmoteButtonInteraction } from "@/interactions/buttons/global/select-emote";
+import { BaseContinuity } from "@/interactions/continuity/base-continuity";
 
-type CommandHandler = ChatInputCommandHandler | ContextMenuMessageCommandHandler;
+import { CoreConsole } from "#/loggers";
+
+type CommandHandler =
+  | ChatInputCommandHandler
+  | ContextMenuMessageCommandHandler
+  | GenericButtonInteractionHandler
+  | SelectEmoteButtonInteraction
+  | BaseContinuity<any>;
+
 type CommandHandlerClass =
   | typeof ChatInputCommandHandler
-  | typeof ContextMenuMessageCommandHandler;
+  | typeof ContextMenuMessageCommandHandler
+  | typeof GenericButtonInteractionHandler
+  | typeof SelectEmoteButtonInteraction
+  | typeof BaseContinuity<any>;
 
 export class InteractionsFileManager {
   static getFilesFromDirectory(directory: string): string[] {
@@ -32,6 +46,8 @@ export class InteractionsFileManager {
       const command = await import(file);
 
       if (!(command.default instanceof commandHandler)) continue;
+
+      CoreConsole.dev.info("Loading command:", command.default.metadata.name);
 
       if (asInternal && !command.default.metadata.name.startsWith("internal-")) {
         command.default.metadata.name = `internal-${command.default.metadata.name}`;
@@ -75,6 +91,21 @@ export class InteractionsFileManager {
     return this.getCommandsFromDirectory<ContextMenuMessageCommandHandler>(
       FILE_PATH.GLOBAL_CONTEXT_MENU_MESSAGE_COMMANDS,
       ContextMenuMessageCommandHandler
+    );
+  }
+
+  // button interactions
+  static async getGenericButtonInteractions() {
+    return this.getCommandsFromDirectory<GenericButtonInteractionHandler>(
+      FILE_PATH.GENERIC_BUTTON_INTERACTIONS,
+      GenericButtonInteractionHandler
+    );
+  }
+
+  static async getGlobalButtonInteractions() {
+    return this.getCommandsFromDirectory<BaseContinuity<any>>(
+      FILE_PATH.GLOBAL_BUTTON_INTERACTIONS,
+      BaseContinuity
     );
   }
 }

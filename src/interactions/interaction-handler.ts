@@ -2,16 +2,17 @@ import { Interaction } from "discord.js";
 
 import { ChatInputCommandHandler, ContextMenuMessageCommandHandler } from ".";
 import { isDevelopment, isProduction } from "../env";
-import { ExecutableButtonInteraction, ExecutableSelectMenu, TetraClient } from "../types";
-import interactionLogger from "../utils/interactionLoggers";
+import { ExecutableSelectMenu, TetraClient } from "../types";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import { BaseContinuity } from "./continuity/base-continuity";
+import { interactionLogger } from "./interaction-logger";
 
-export const interactionCreateHandler = async (
+export const interactionHandler = async (
   interaction: Interaction,
   client: TetraClient
 ) => {
   if (interaction.isChatInputCommand()) {
-    interactionLogger(interaction, client);
+    interactionLogger(interaction);
 
     const command = client.chatInputCommands.get(
       interaction.commandName
@@ -25,6 +26,8 @@ export const interactionCreateHandler = async (
   }
 
   if (interaction.isMessageContextMenuCommand()) {
+    interactionLogger(interaction);
+
     const command = client.contextMenuMessageCommands.get(
       interaction.commandName
     ) as ContextMenuMessageCommandHandler;
@@ -36,8 +39,60 @@ export const interactionCreateHandler = async (
     } catch {}
   }
 
+  const isContinuityInteraction =
+    interaction.isButton() || interaction.isStringSelectMenu();
+
+  if (isContinuityInteraction) {
+    const feedback = new FeedbackManager(interaction);
+
+    // TODO IMPLEMENTATION OF DEV COMMANDS
+
+    const currentUserId = interaction.user.id;
+    const originalUserId = interaction.message.interactionMetadata?.user.id;
+
+    if (currentUserId !== originalUserId) {
+      interaction.deferUpdate();
+      return;
+    }
+
+    // Generic Button Interactions
+
+    const genericButtonInteraction = client.genericButtonInteractions.get(
+      interaction.customId
+    );
+
+    if (genericButtonInteraction && interaction.isButton()) {
+      try {
+        genericButtonInteraction.handler(interaction, client);
+      } catch {
+        await feedback.error("An error occurred while executing the button interaction.");
+      }
+    }
+
+    // Global Button Interactions
+
+    const continuityInteraction = BaseContinuity.decodeButtonId(interaction.customId);
+
+    const globalButtonInteraction = client.globalButtonInteractions.get(
+      continuityInteraction.name
+    );
+
+    if (
+      globalButtonInteraction &&
+      globalButtonInteraction.handler &&
+      interaction.isButton()
+    ) {
+      try {
+        const data = await globalButtonInteraction.getContext(continuityInteraction.id);
+        globalButtonInteraction.handler({ client, interaction, data });
+      } catch (error) {
+        await feedback.handleError(error);
+      }
+    }
+  }
+
   const isButtonInteraction = interaction.isButton();
-  const isSelectMenuInteraction = interaction.isSelectMenu();
+  const isSelectMenuInteraction = interaction.isStringSelectMenu();
 
   if (isButtonInteraction || isSelectMenuInteraction) {
     const feedback = new FeedbackManager(interaction);
@@ -87,19 +142,19 @@ export const interactionCreateHandler = async (
       return;
     }
 
-    if (isButtonInteraction) {
-      const buttonInteraction = client.buttonInteractions.get(
-        taskDetails.action
-      ) as ExecutableButtonInteraction;
+    // if (isButtonInteraction) {
+    //   const buttonInteraction = client.buttonInteractions.get(
+    //     taskDetails.action
+    //   ) as ExecutableButtonInteraction;
 
-      if (!buttonInteraction) return;
+    //   if (!buttonInteraction) return;
 
-      try {
-        buttonInteraction.execute(interaction, client);
-      } catch {
-        console.error;
-      }
-    }
+    //   try {
+    //     buttonInteraction.execute(interaction, client);
+    //   } catch {
+    //     console.error;
+    //   }
+    // }
 
     if (isSelectMenuInteraction) {
       const selectMenuInteraction = client.selectMenu.get(
