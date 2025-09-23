@@ -1,7 +1,8 @@
 import cookieSession from "cookie-session";
 import cors from "cors";
 import express from "express";
-import rateLimit from "express-rate-limit";
+
+// import rateLimit from "express-rate-limit";
 
 import { env, isProduction } from "../env";
 import { router } from "./router";
@@ -18,10 +19,10 @@ export const initApi = () => {
     next();
   });
 
-  const limiter = rateLimit({
-    windowMs: 30000,
-    max: 20,
-  });
+  // const limiter = rateLimit({
+  //   windowMs: 30000,
+  //   max: 20,
+  // });
 
   app.use(
     cookieSession({
@@ -32,7 +33,7 @@ export const initApi = () => {
       httpOnly: true,
       // max age 1 year
       maxAge: 365 * 24 * 60 * 60 * 1000,
-      domain: ".tetra.lol",
+      domain: "localhost",
     })
   );
 

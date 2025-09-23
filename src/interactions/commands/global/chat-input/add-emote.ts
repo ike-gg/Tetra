@@ -5,7 +5,6 @@ import { addEmoteChannel } from "@/interactions/subcommands/add-emote-by-channel
 import { addEmoteLink } from "@/interactions/subcommands/add-emote-by-link";
 import { addEmoteName } from "@/interactions/subcommands/add-emote-by-name";
 import addSubEmoteChannel from "@/interactions/subcommands/add-sub-emote-by-channel";
-import { TetraClient } from "@/types";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
 const command = new SlashCommandBuilder()
@@ -86,7 +85,7 @@ const command = new SlashCommandBuilder()
 
 export default new ChatInputCommandHandler(
   command,
-  async (interaction: ChatInputCommandInteraction, client: TetraClient) => {
+  async (interaction: ChatInputCommandInteraction) => {
     const feedback = new FeedbackManager(interaction);
 
     if (!interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
@@ -100,16 +99,16 @@ export default new ChatInputCommandHandler(
 
     switch (subcommandUsed) {
       case "bylink":
-        addEmoteLink(interaction, client, feedback);
+        addEmoteLink(interaction, feedback);
         break;
       case "byname":
-        addEmoteName(interaction, client, feedback);
+        addEmoteName(interaction, feedback);
         break;
       case "bychannel":
-        addEmoteChannel(interaction, client, feedback);
+        addEmoteChannel(interaction, feedback);
         break;
       case "subemotes":
-        addSubEmoteChannel(interaction, client, feedback);
+        addSubEmoteChannel(interaction, feedback);
         break;
       default:
         feedback.error("Subcommand not supported yet.");

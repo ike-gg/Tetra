@@ -7,7 +7,6 @@ import { readyHandler } from "./ready";
 export type EventHandler<T extends keyof ClientEvents> = (
   ...args: ClientEvents[T]
 ) => void;
-
 class ClientEventsMap extends Map<
   keyof ClientEvents,
   (...args: ClientEvents[keyof ClientEvents]) => void
@@ -28,6 +27,6 @@ class ClientEventsMap extends Map<
 
 export const clientEvents = new ClientEventsMap();
 
-clientEvents.set("ready", readyHandler);
+clientEvents.set("clientReady", readyHandler);
 clientEvents.set("interactionCreate", interactionCreateHandler);
 clientEvents.set("emojiDelete", guildEmojiDeleteHandler);

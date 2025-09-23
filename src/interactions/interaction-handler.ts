@@ -67,6 +67,7 @@ export const interactionHandler = async (
       } catch {
         await feedback.error("An error occurred while executing the button interaction.");
       }
+      return;
     }
 
     // Global Button Interactions

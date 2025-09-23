@@ -30,7 +30,7 @@ export const interactionLogger = async (interaction: CommandInteraction) => {
       guildId: guild?.id,
       userId: user.id,
       id: Number(id),
-      input: JSON.stringify(interaction.options),
+      input: JSON.stringify("options" in interaction ? interaction.options : null),
     });
   } catch (e) {
     BotConsole.error("Error occured while logging interaction:", e);

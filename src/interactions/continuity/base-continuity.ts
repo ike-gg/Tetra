@@ -14,7 +14,8 @@ export type ContinuityHandler<
 export abstract class BaseContinuity<T> {
   static decodeButtonId(buttonId: string) {
     const [name, id] = buttonId.split(":");
-    if (!name || !id) {
+
+    if (!name && !id) {
       throw new Error(`Invalid button id: ${buttonId}`);
     }
 

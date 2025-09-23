@@ -56,6 +56,8 @@ const envSchema = z.object({
     .url()
     .describe("URL Connection String for the postgresql database"),
 
+  REDIS_URL: z.string().url().describe("URL Connection String for the redis database"),
+
   BACKEND_URL: z
     .string()
     .url()

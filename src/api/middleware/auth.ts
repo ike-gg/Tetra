@@ -30,6 +30,7 @@ export const checkUserAuth = async (
   const { fetchUserData } = { ...defaultCheckAuthOptions, ...options };
 
   try {
+    console.log(JSON.stringify(req.session));
     const { session_token } = sessionSchema.parse(req.session);
 
     const currentSession = await db.query.sessions.findFirst({

@@ -1,17 +1,13 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
+import { EmoteListComponent } from "@/components/emote-list.component";
 import { Messages } from "@/constants/messages";
-import { TetraClient } from "@/types";
-import * as TaskTypes from "@/types/TaskTypes";
-import getNavigatorRow from "@/utils/elements/getNavigatorRow";
-import renderEmotesSelect from "@/utils/emoteSelectMenu/renderEmotesSelect";
-import { EmoteListManager } from "@/utils/managers/EmoteListManager";
+import { EmoteStorageService } from "@/services/emote-storage.service";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 import { TwitchManager } from "@/utils/managers/TwitchManager";
 
 const addSubEmoteChannel = async (
   interaction: ChatInputCommandInteraction,
-  client: TetraClient,
   feedback: FeedbackManager
 ) => {
   const channelName = interaction.options.getString("channel");
@@ -33,31 +29,11 @@ const addSubEmoteChannel = async (
       return;
     }
 
-    const storeId = EmoteListManager.storeEmotes(channelInfo.id, foundEmotes)!;
-    const pagesOfEmotes = EmoteListManager.getEmotesInPages(storeId, 1)!;
-    const storeInfo = EmoteListManager.getStoredInfo(storeId)!;
+    const storageKey = await EmoteStorageService.store(foundEmotes);
 
-    const emotesEmbedsPreview = renderEmotesSelect(pagesOfEmotes, client);
+    const content = await EmoteListComponent({ storageKey, currentPage: 1 });
 
-    const navigatorTask = client.tasks.addTask<TaskTypes.EmoteNavigator>({
-      action: "navigatorPage",
-      feedback: feedback,
-      interaction: interaction,
-      multiAdd: false,
-      currentPage: 1,
-      totalPages: storeInfo.pages,
-      storeId,
-    });
-
-    const navigatorRow = getNavigatorRow(navigatorTask, client, {
-      nextDisabled: storeInfo.pages === 1,
-      previousDisabled: true,
-    });
-
-    await feedback.sendMessage({
-      components: [emotesEmbedsPreview.components, navigatorRow],
-      embeds: emotesEmbedsPreview.embeds,
-    });
+    await feedback.sendMessage(content);
   } catch (error) {
     await feedback.handleError(error);
   }

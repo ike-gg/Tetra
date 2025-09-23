@@ -5,13 +5,12 @@ import stvGetEmoteById from "@/emotes/source/7tv/stvGetEmoteById";
 import bttvGetEmoteById from "@/emotes/source/bttv/bttvGetEmoteById";
 import ffzGetEmoteById from "@/emotes/source/ffz/ffzGetEmoteById";
 import getEmoteFromUrl from "@/emotes/source/file/getEmoteFromUrl";
-import { Emote, TetraClient } from "@/types";
+import { Emote } from "@/types";
 import isValidURL from "@/utils/isValidURL";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
 export const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,
-  client: TetraClient,
   feedback: FeedbackManager
 ) => {
   const emoteUrl = interaction.options.getString("link")!;

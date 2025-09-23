@@ -1,6 +1,7 @@
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response, Router } from "express";
+import { APIConnectionError } from "openai/error.mjs";
 import { z } from "zod";
 
 import { discordOauth } from "@/index";
@@ -97,11 +98,10 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
     // res.sendStatus(200);
     res.redirect(env.FRONTEND_URL + "/panel");
   } catch (error) {
+    ApiConsole.dev.error(error);
     if (error instanceof z.ZodError) {
       throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");
     } else {
-      // console.log(error);
-      ApiConsole.dev.error(error);
       throw new TetraAPIError(500, "Internal Server Error", "AUTH_CALLBACK_ERROR");
     }
   }

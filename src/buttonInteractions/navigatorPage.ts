@@ -1,10 +1,11 @@
 import { ButtonInteraction } from "discord.js";
 
+import { EmoteStorageService } from "@/services/emote-storage.service";
+
 import { TetraClient } from "../types";
 import * as TaskTypes from "../types/TaskTypes";
 import getNavigatorRow from "../utils/elements/getNavigatorRow";
 import renderEmotesSelect from "../utils/emoteSelectMenu/renderEmotesSelect";
-import { EmoteListManager } from "../utils/managers/EmoteListManager";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
 const navigatorPage = {
@@ -41,9 +42,9 @@ const navigatorPage = {
         previousDisabled = true;
       }
 
-      const emotePage = EmoteListManager.getEmotesInPages(storeId, newPage)!;
+      const { page } = await EmoteStorageService.getPage(storeId, newPage);
 
-      const emotesEmbedsPreview = renderEmotesSelect(emotePage, client);
+      const emotesEmbedsPreview = await renderEmotesSelect(page, client);
       const navigatorRow = getNavigatorRow(taskId, client, {
         nextDisabled,
         previousDisabled,

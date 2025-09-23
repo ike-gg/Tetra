@@ -1,43 +1,43 @@
 import { ButtonInteraction } from "discord.js";
 import { z } from "zod";
 
-import prepareEmote from "@/emotes/prepareEmote";
+import { EmoteListComponent } from "@/components/emote-list.component";
 import {
   BaseContinuity,
   ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
-import { EmoteSchema } from "@/types";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
-export const SelectEmoteContinuitySchema = z.object({
-  emote: EmoteSchema,
+export const NavigationEmoteListContinuitySchema = z.object({
+  storageKey: z.string(),
+  setPage: z.number(),
 });
 
-type SelectEmoteContinuityDataType = z.infer<typeof SelectEmoteContinuitySchema>;
+type NavigationEmoteListContinuityDataType = z.infer<
+  typeof NavigationEmoteListContinuitySchema
+>;
 
-export class SelectEmoteButtonInteraction extends BaseContinuity<SelectEmoteContinuityDataType> {
+export class NavigationEmoteListButtonInteraction extends BaseContinuity<NavigationEmoteListContinuityDataType> {
   constructor(
-    handler: ContinuityHandler<SelectEmoteContinuityDataType, ButtonInteraction>
+    handler: ContinuityHandler<NavigationEmoteListContinuityDataType, ButtonInteraction>
   ) {
-    super(SelectEmoteContinuitySchema, { name: "navigation-emote-list" });
+    super(NavigationEmoteListContinuitySchema, { name: "navigation-emote-list" });
     this.handler = handler;
   }
 }
 
-const SelectEmoteContinuity = new SelectEmoteButtonInteraction(
-  async ({ interaction, data }) => {
+const NavigationEmoteListContinuity = new NavigationEmoteListButtonInteraction(
+  async function ({ interaction, data }) {
     const feedback = new FeedbackManager(interaction);
 
-    const { emote } = data;
-
     await feedback.removeComponents();
-    await feedback.working();
 
-    prepareEmote(emote, {
-      feedback,
-      interaction,
-    });
+    const { setPage, storageKey } = data;
+
+    const content = await EmoteListComponent({ storageKey, currentPage: setPage });
+
+    await feedback.sendMessage(content);
   }
 );
 
-export default SelectEmoteContinuity;
+export default NavigationEmoteListContinuity;
