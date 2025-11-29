@@ -10,7 +10,7 @@ import {
 import { APP } from "@/constants";
 import { APP_EMOTES } from "@/constants/app_emotes";
 import { ChatInputCommandHandler } from "@/interactions";
-import URLButton from "@/utils/discord/components/url-button";
+import { URLButton } from "@/utils/discord/components/url-button";
 
 const command = new SlashCommandBuilder()
   .setName("info")

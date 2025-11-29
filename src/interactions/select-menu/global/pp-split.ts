@@ -28,8 +28,6 @@ export class PPSplitSelectMenuInteraction extends BaseContinuity<PPSplitContinui
   }
 }
 
-// TODO
-
 const PPSplitContinuity = new PPSplitSelectMenuInteraction(
   async ({ interaction, data }) => {
     const { processingEmoteKey } = data;

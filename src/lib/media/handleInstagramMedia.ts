@@ -1,4 +1,8 @@
-import { MediaOutput, PlatformHandlerCallback } from "../../commands/media";
+import {
+  MediaOutput,
+  PlatformHandlerCallback,
+} from "@/interactions/commands/global/chat-input/media";
+
 import { EmbeddedError } from "../../constants/errors";
 import { getRemoteResourceDetails } from "../../utils";
 import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
@@ -7,7 +11,7 @@ import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
 // it supports only: static posts and reels
 // things like stories are not supported
 
-export const handleInstagramMedia: PlatformHandlerCallback = async (url, feedback) => {
+export const handleInstagramMedia: PlatformHandlerCallback = async (url) => {
   try {
     const post = await fetchCobaltAPI(url);
 

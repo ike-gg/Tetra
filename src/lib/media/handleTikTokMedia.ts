@@ -1,4 +1,8 @@
-import { PlatformHandlerCallback, PlatformResult } from "../../commands/media";
+import {
+  PlatformHandlerCallback,
+  PlatformResult,
+} from "@/interactions/commands/global/chat-input/media";
+
 import { EmbeddedError } from "../../constants/errors";
 import { getRemoteResourceDetails } from "../../utils";
 import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";

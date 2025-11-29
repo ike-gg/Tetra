@@ -1,9 +1,9 @@
 import fetch from "node-fetch";
 import * as z from "zod";
 
-import { MediaOutput, PlatformResult } from "../../commands/media";
+import { PlatformResult } from "@/interactions/commands/global/chat-input/media";
+
 import { EmbeddedError } from "../../constants/errors";
-import { FeedbackManager } from "../../utils/managers/FeedbackManager";
 
 const streamableSchema = z.object({
   files: z.object({
@@ -13,10 +13,7 @@ const streamableSchema = z.object({
   }),
 });
 
-export const handleStreamableMedia = async (
-  _url: string,
-  feedback: FeedbackManager
-): Promise<PlatformResult> => {
+export const handleStreamableMedia = async (_url: string): Promise<PlatformResult> => {
   try {
     const videoId = new URL(_url).pathname.split("/").at(1);
 

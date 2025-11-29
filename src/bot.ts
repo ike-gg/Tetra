@@ -5,7 +5,6 @@ import { importInteractions } from "@/interactions/import-interactions";
 
 import { clientEvents } from "./events";
 import { TetraClient } from "./types";
-import TaskManager from "./utils/managers/TaskManager";
 
 const client = new Client({
   intents: [
@@ -17,8 +16,6 @@ const client = new Client({
 }) as TetraClient;
 
 importInteractions(client);
-
-client.tasks = TaskManager.getInstance();
 
 clientEvents.forEach((callback, event) => {
   client.on(event, callback);

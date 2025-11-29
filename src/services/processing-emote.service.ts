@@ -1,4 +1,3 @@
-// TODO: BUFFER CAN BE AN ARRAY FOR SPLIT FEATURE
 import { randomUUIDv7 } from "bun";
 import * as fs from "fs";
 import path from "path";

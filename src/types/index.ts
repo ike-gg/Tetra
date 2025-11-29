@@ -16,7 +16,6 @@ import {
   GenericButtonInteractionHandler,
 } from "../interactions";
 import { FeedbackManager } from "../utils/managers/FeedbackManager";
-import TaskManager from "../utils/managers/TaskManager";
 
 export interface TetraClient extends Client {
   chatInputCommands: Collection<string, ChatInputCommandHandler>;
@@ -24,8 +23,6 @@ export interface TetraClient extends Client {
   genericButtonInteractions: Collection<string, GenericButtonInteractionHandler>;
   globalButtonInteractions: Collection<string, BaseContinuity<any>>;
   globalSelectMenuInteractions: Collection<string, BaseContinuity<any>>;
-
-  tasks: TaskManager;
 }
 
 export interface ExecutableCommandInteraction extends CommandInteraction {

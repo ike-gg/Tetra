@@ -43,14 +43,6 @@ const envSchema = z.object({
   DISCORD_OAUTH_CLIENT_ID: z.string().describe("Discord OAuth Client ID"),
   DISCORD_OAUTH_CLIENT_SECRET: z.string().describe("Discord OAuth Client Secret"),
 
-  // DEPRECATED - marked to remove in the future
-  DATABASE_URL: z
-    .string()
-    .url()
-    .describe(
-      "DEPRECATED: Use POSTGRES_URL instead, still exists due to legacy reasons."
-    ),
-
   POSTGRES_URL: z
     .string()
     .url()

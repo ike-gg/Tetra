@@ -1,7 +1,11 @@
 import fetch from "node-fetch";
 import * as z from "zod";
 
-import { MediaOutput, PlatformHandlerCallback } from "../../commands/media";
+import {
+  MediaOutput,
+  PlatformHandlerCallback,
+} from "@/interactions/commands/global/chat-input/media";
+
 import { EmbeddedError } from "../../constants/errors";
 import isValidURL from "../../utils/isValidURL";
 

@@ -22,7 +22,7 @@ router.use("/me", meRouter);
 
 // -- PROTECTED ROUTES --
 
-router.use((req, res, next) => checkUserAuth(req, res, next, { fetchUserData: true }));
+router.use(checkUserAuth({ fetchUserData: true }));
 
 router.use("/guilds", guildsRouter);
 

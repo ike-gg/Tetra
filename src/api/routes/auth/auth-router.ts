@@ -1,7 +1,6 @@
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response, Router } from "express";
-import { APIConnectionError } from "openai/error.mjs";
 import { z } from "zod";
 
 import { discordOauth } from "@/index";
@@ -47,8 +46,6 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
       redirectUri: `${env.BACKEND_URL}${API_CONSTANTS.RELATIVE_REDIRECT_URI}`,
     });
 
-    // console.log("???");
-
     const userData = await discordOauth.getUser(token.access_token);
 
     const existingUser = await db.query.users.findFirst({
@@ -56,6 +53,7 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
     });
 
     let userId;
+
     if (existingUser) {
       await db
         .update(users)
@@ -95,7 +93,6 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
 
     req.session = session;
 
-    // res.sendStatus(200);
     res.redirect(env.FRONTEND_URL + "/panel");
   } catch (error) {
     ApiConsole.dev.error(error);

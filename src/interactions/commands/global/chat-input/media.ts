@@ -17,7 +17,7 @@ import {
   handleTwitterMedia,
 } from "@/lib/media";
 import { renderSlideshow } from "@/lib/media/helper/renderSlideshow";
-import URLButton from "@/utils/discord/components/url-button";
+import { URLButton } from "@/utils/discord/components/url-button";
 import { guildParsePremium } from "@/utils/discord/guildParsePremium";
 import { TetraEmbed } from "@/utils/embedMessages/TetraEmbed";
 import { formatDate } from "@/utils/formatDate";
