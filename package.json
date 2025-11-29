@@ -44,7 +44,6 @@
   },
   "dependencies": {
     "@discordjs/core": "^2.0.1",
-    "@imgly/background-removal-node": "^1.4.5",
     "@prisma/client": "^5.4.2",
     "@twurple/api": "^7.0.6",
     "@twurple/auth": "^7.0.6",

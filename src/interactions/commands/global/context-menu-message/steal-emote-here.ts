@@ -1,7 +1,7 @@
 import { ApplicationCommandType, ContextMenuCommandBuilder } from "discord.js";
 
 import { Messages } from "@/constants/messages";
-import prepareEmote from "@/emotes/prepareEmote";
+import { prepareEmote } from "@/emotes/prepare-emote";
 import { ContextMenuMessageCommandHandler } from "@/interactions";
 import findEmotesInMessage from "@/utils/discord/findEmotesInMessage";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
@@ -38,8 +38,5 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
 
   const emote = emotes[0];
 
-  prepareEmote(emote, {
-    feedback,
-    interaction,
-  });
+  await prepareEmote({ emote, feedback });
 });

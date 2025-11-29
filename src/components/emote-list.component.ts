@@ -6,6 +6,7 @@ import {
   ButtonStyle,
 } from "discord.js";
 
+import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
 import NavigationEmoteListContinuity from "@/interactions/buttons/global/navigation-emote-list";
 import SelectEmoteContinuity from "@/interactions/buttons/global/select-emote";
 import { EmoteStorageService } from "@/services/emote-storage.service";
@@ -105,6 +106,8 @@ export const EmoteListComponent = async (
   }
 
   navigationActionRow.addComponents(previousPageButton, nextPageButton);
+
+  navigationActionRow.addComponents(CancelInteractionGenericButton.metadata.getButton());
 
   return {
     components: [selectEmoteActionRow, navigationActionRow],

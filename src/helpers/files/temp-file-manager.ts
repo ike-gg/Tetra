@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import path from "path";
 
+import { TIME } from "@/constants/time";
 import { env } from "@/env";
 
 import { TConsole } from "#/loggers/t-console";
@@ -13,6 +14,7 @@ class FileConsole extends TConsole {
 
 export class TempFileManager {
   static tempDirPath = env.TEMP_DIR_PATH;
+  static removeAfter = TIME.MINUTE * 15;
 
   static cleanup() {
     try {
@@ -32,8 +34,6 @@ export class TempFileManager {
   }
 
   static create(id?: string) {
-    const DEFAULT_REMOVE_AFTER = 1000 * 60 * 10; // 10 minutes
-
     const dir = id ?? Bun.randomUUIDv7();
     const subTempDir = path.join(this.tempDirPath, dir);
 
@@ -45,7 +45,7 @@ export class TempFileManager {
       if (!fs.existsSync(subTempDir)) return;
       FileConsole.dev.log(`Auto-removing temp directory: ${subTempDir}`);
       fs.rmdirSync(subTempDir, { recursive: true });
-    }, DEFAULT_REMOVE_AFTER);
+    }, this.removeAfter);
 
     return subTempDir;
   }

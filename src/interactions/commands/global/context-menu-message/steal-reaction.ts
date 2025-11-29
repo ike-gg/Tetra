@@ -4,7 +4,7 @@ import { EmoteListComponent } from "@/components/emote-list.component";
 import { Messages } from "@/constants/messages";
 import { ContextMenuMessageCommandHandler } from "@/interactions";
 import { EmoteStorageService } from "@/services/emote-storage.service";
-import emotesFromReactions from "@/utils/discord/emotesFromReactions";
+import { emotesFromReactions } from "@/utils/discord/emotes-from-reactions";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
 const command = new ContextMenuCommandBuilder()
@@ -15,6 +15,7 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
   const feedback = new FeedbackManager(interaction, {
     ephemeral: true,
   });
+
   await feedback.working();
 
   const { reactions } = interaction.targetMessage;

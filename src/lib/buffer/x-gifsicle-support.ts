@@ -37,12 +37,10 @@ export const execBunBuffer = async (opts: {
     throw new Error("Arguments are required and must be an array");
   }
 
-  // Create a temporary directory for input and output files
   const tempDir = TempFileManager.create();
   const inputPath = path.join(tempDir, "input");
   const outputPath = path.join(tempDir, "output");
 
-  // Replace placeholders with actual temporary file paths
   opts.args = opts.args.map((arg) => {
     if (arg === input) return inputPath;
     if (arg === output) return outputPath;
@@ -50,28 +48,22 @@ export const execBunBuffer = async (opts: {
   });
 
   try {
-    // Write the input Buffer to the input file
     await fs.writeFile(inputPath, opts.input);
 
-    // Spawn the child process using Bun's spawn function
     const proc = spawn({
       cmd: [opts.bin, ...opts.args],
       stdout: "inherit", // Inherit stdout to display output in the console
       stderr: "inherit", // Inherit stderr to display errors in the console
     });
 
-    // Wait for the child process to exit
     await proc.exited;
 
-    // Read the output from the output file
     const outputData = await fs.readFile(outputPath);
 
     return outputData;
   } finally {
-    // Clean up the temporary files and directory
-    // await fs.rm(tempDir, { recursive: true, force: true });
+    await fs.rm(tempDir, { recursive: true, force: true });
   }
 };
 
-// Export the input and output symbols
 export { input, output };

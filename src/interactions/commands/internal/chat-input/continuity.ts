@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder } from "discord.js";
 
 import { ChatInputCommandHandler } from "@/interactions";
-import cancelInteractionButton from "@/interactions/buttons/generic/cancel-interaction";
+import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
 const command = new SlashCommandBuilder()
@@ -11,7 +11,7 @@ const command = new SlashCommandBuilder()
 export default new ChatInputCommandHandler(command, async (interaction) => {
   const feedback = new FeedbackManager(interaction);
 
-  const button = cancelInteractionButton.metadata.getButton();
+  const button = CancelInteractionGenericButton.metadata.getButton();
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents([button!]);
 

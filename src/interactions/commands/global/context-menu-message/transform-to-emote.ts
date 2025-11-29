@@ -1,6 +1,6 @@
 import { ApplicationCommandType, ContextMenuCommandBuilder } from "discord.js";
 
-import prepareEmote from "@/emotes/prepareEmote";
+import { prepareEmote } from "@/emotes/prepare-emote";
 import getEmoteFromUrl from "@/emotes/source/file/getEmoteFromUrl";
 import getGiphyGif from "@/emotes/source/file/getGiphyGif";
 import getImgurFile from "@/emotes/source/file/getImgurFile";
@@ -94,8 +94,5 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
     return;
   }
 
-  prepareEmote(emoteSource, {
-    feedback,
-    interaction,
-  });
+  await prepareEmote({ emote: emoteSource!, feedback });
 });

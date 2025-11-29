@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
-import prepareEmote from "@/emotes/prepareEmote";
+import { prepareEmote } from "@/emotes/prepare-emote";
 import stvGetEmoteById from "@/emotes/source/7tv/stvGetEmoteById";
 import bttvGetEmoteById from "@/emotes/source/bttv/bttvGetEmoteById";
 import ffzGetEmoteById from "@/emotes/source/ffz/ffzGetEmoteById";
@@ -56,10 +56,7 @@ export const addEmoteLink = async (
       return;
     }
 
-    prepareEmote(emote, {
-      feedback,
-      interaction,
-    });
+    await prepareEmote({ emote, feedback });
   } catch (error) {
     await feedback.handleError(error);
   }

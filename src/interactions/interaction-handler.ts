@@ -63,7 +63,7 @@ export const interactionHandler = async (
 
     if (genericButtonInteraction && interaction.isButton()) {
       try {
-        genericButtonInteraction.handler(interaction, client);
+        await genericButtonInteraction.handler(interaction, client);
       } catch {
         await feedback.error("An error occurred while executing the button interaction.");
       }
@@ -85,91 +85,112 @@ export const interactionHandler = async (
     ) {
       try {
         const data = await globalButtonInteraction.getContext(continuityInteraction.id);
-        globalButtonInteraction.handler({ client, interaction, data });
+        await globalButtonInteraction.handler({ client, interaction, data });
+      } catch (error) {
+        await feedback.handleError(error);
+      }
+    }
+
+    // Global Select Menu Interactions
+
+    const globalSelectMenuInteraction = client.globalSelectMenuInteractions.get(
+      continuityInteraction.name
+    );
+
+    if (
+      globalSelectMenuInteraction &&
+      globalSelectMenuInteraction.handler &&
+      interaction.isStringSelectMenu()
+    ) {
+      try {
+        const data = await globalSelectMenuInteraction.getContext(
+          continuityInteraction.id
+        );
+        await globalSelectMenuInteraction.handler({ client, interaction, data });
       } catch (error) {
         await feedback.handleError(error);
       }
     }
   }
 
-  const isButtonInteraction = interaction.isButton();
-  const isSelectMenuInteraction = interaction.isStringSelectMenu();
+  // const isButtonInteraction = interaction.isButton();
+  // const isSelectMenuInteraction = interaction.isStringSelectMenu();
 
-  if (isButtonInteraction || isSelectMenuInteraction) {
-    const feedback = new FeedbackManager(interaction);
+  // if (isButtonInteraction || isSelectMenuInteraction) {
+  // const feedback = new FeedbackManager(interaction);
 
-    const isDevCommand = interaction.message.interaction?.commandName.startsWith("dev");
+  // const isDevCommand = interaction.message.interaction?.commandName.startsWith("dev");
 
-    if (isDevelopment && !isDevCommand) return;
-    if (isProduction && isDevCommand) return;
+  // if (isDevelopment && !isDevCommand) return;
+  // if (isProduction && isDevCommand) return;
 
-    const isForAll = interaction.customId.split(":")[1] === "all";
+  // const isForAll = interaction.customId.split(":")[1] === "all";
 
-    const currentUserId = interaction.user.id;
-    const originalUserId = interaction.message.interaction!.user.id;
+  // const currentUserId = interaction.user.id;
+  // const originalUserId = interaction.message.interaction!.user.id;
 
-    if (currentUserId !== originalUserId && !isForAll) {
-      interaction.deferUpdate();
-      return;
-    }
+  // if (currentUserId !== originalUserId && !isForAll) {
+  //   interaction.deferUpdate();
+  //   return;
+  // }
 
-    const interactionTaskId = interaction.customId.split(":")[0];
+  // const interactionTaskId = interaction.customId.split(":")[0];
 
-    let taskDetails;
+  // let taskDetails;
 
-    if (interactionTaskId === "cancelAction") {
-      taskDetails = {
-        action: "cancelAction",
-      };
-    } else if (interactionTaskId === "errorlog") {
-      taskDetails = {
-        action: "errorLog",
-      };
-    } else if (interactionTaskId === "premiumoffering") {
-      taskDetails = {
-        action: "premiumoffering",
-      };
-    } else if (interactionTaskId === "describeMedia") {
-      taskDetails = {
-        action: "describeMedia",
-      };
-    } else {
-      taskDetails = client.tasks.getTask(interactionTaskId);
-    }
+  // if (interactionTaskId === "cancelAction") {
+  //   taskDetails = {
+  //     action: "cancelAction",
+  //   };
+  // } else if (interactionTaskId === "errorlog") {
+  //   taskDetails = {
+  //     action: "errorLog",
+  //   };
+  // } else if (interactionTaskId === "premiumoffering") {
+  //   taskDetails = {
+  //     action: "premiumoffering",
+  //   };
+  // } else if (interactionTaskId === "describeMedia") {
+  //   taskDetails = {
+  //     action: "describeMedia",
+  //   };
+  // } else {
+  //   taskDetails = client.tasks.getTask(interactionTaskId);
+  // }
 
-    if (!taskDetails) {
-      await feedback.removeComponents();
-      await feedback.interactionTimeout();
-      return;
-    }
+  // if (!taskDetails) {
+  //   await feedback.removeComponents();
+  //   await feedback.interactionTimeout();
+  //   return;
+  // }
 
-    // if (isButtonInteraction) {
-    //   const buttonInteraction = client.buttonInteractions.get(
-    //     taskDetails.action
-    //   ) as ExecutableButtonInteraction;
+  // if (isButtonInteraction) {
+  //   const buttonInteraction = client.buttonInteractions.get(
+  //     taskDetails.action
+  //   ) as ExecutableButtonInteraction;
 
-    //   if (!buttonInteraction) return;
+  //   if (!buttonInteraction) return;
 
-    //   try {
-    //     buttonInteraction.execute(interaction, client);
-    //   } catch {
-    //     console.error;
-    //   }
-    // }
+  //   try {
+  //     buttonInteraction.execute(interaction, client);
+  //   } catch {
+  //     console.error;
+  //   }
+  // }
 
-    if (isSelectMenuInteraction) {
-      const selectMenuInteraction = client.selectMenu.get(
-        taskDetails.action
-      ) as ExecutableSelectMenu;
+  // if (isSelectMenuInteraction) {
+  //   const selectMenuInteraction = client.selectMenu.get(
+  //     taskDetails.action
+  //   ) as ExecutableSelectMenu;
 
-      if (!selectMenuInteraction) return;
+  //   if (!selectMenuInteraction) return;
 
-      try {
-        selectMenuInteraction.execute(interaction, client);
-        await feedback.removeComponents();
-      } catch {
-        console.error;
-      }
-    }
-  }
+  //   try {
+  //     selectMenuInteraction.execute(interaction, client);
+  //     await feedback.removeComponents();
+  //   } catch {
+  //     console.error;
+  //   }
+  // }
+  // }
 };

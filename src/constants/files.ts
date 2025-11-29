@@ -17,4 +17,7 @@ export const FILE_PATH = {
   // button interactions
   GENERIC_BUTTON_INTERACTIONS: resolveDir("../interactions/buttons/generic"),
   GLOBAL_BUTTON_INTERACTIONS: resolveDir("../interactions/buttons/global"),
+
+  // select menu interactions
+  SELECT_MENU_INTERACTIONS: resolveDir("../interactions/select-menu/global"),
 };

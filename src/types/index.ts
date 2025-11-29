@@ -23,7 +23,8 @@ export interface TetraClient extends Client {
   contextMenuMessageCommands: Collection<string, ContextMenuMessageCommandHandler>;
   genericButtonInteractions: Collection<string, GenericButtonInteractionHandler>;
   globalButtonInteractions: Collection<string, BaseContinuity<any>>;
-  selectMenu: Collection<string, SelectMenuInteraction>;
+  globalSelectMenuInteractions: Collection<string, BaseContinuity<any>>;
+
   tasks: TaskManager;
 }
 

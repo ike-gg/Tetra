@@ -108,4 +108,11 @@ export class InteractionsFileManager {
       BaseContinuity
     );
   }
+
+  static async getGlobalSelectMenuInteractions() {
+    return this.getCommandsFromDirectory<BaseContinuity<any>>(
+      FILE_PATH.SELECT_MENU_INTERACTIONS,
+      BaseContinuity
+    );
+  }
 }

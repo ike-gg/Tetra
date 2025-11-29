@@ -23,12 +23,21 @@ export const getRandomLoadingEmote = () =>
 
 export class Messages {
   //generic
-  static readonly INTERACTION_TIMEOUT: T =
-    "This interaction has timed out. Please create a new one.";
+  static readonly INTERACTION_TIMEOUT: T = {
+    title: "Interaction expired",
+    description: "This interaction has expired. Please start a new one.",
+  };
+
+  static INTERACTION_TIMEOUT_WITH_REASON(reason: string): T {
+    return {
+      title: "Interaction expired",
+      description: `This interaction has expired (${reason}). Please start a new one.`,
+    };
+  }
+
   static WORKING(): T {
     return {
-      title: "Working on it...",
-      description: getRandomLoadingEmote(),
+      title: `Working on it... ${getRandomLoadingEmote()}`,
     };
   }
   static readonly RATE_LIMIT_EXCEEDED: T =
@@ -72,12 +81,13 @@ export class Messages {
   static readonly CHANNEL_NOT_FOUND: T = "Channel not found.";
 
   //interactive
+
   static ADDED_EMOTE(emote: GuildEmoji): T {
     return {
       title: "Success!",
       description: `Added \`${emote.name}\` emote ${emote} in \`${emote.guild.name}\``,
       image: {
-        url: emote.url,
+        url: emote.imageURL({ animated: true, size: 256 }),
       },
     };
   }
@@ -93,6 +103,43 @@ export class Messages {
         `**${emoteSize}** / ${maxSize} *(exceeds by ${differenceSize})*`,
         " ",
         "Choose the optimization method."
+      ),
+    };
+  }
+
+  static REMAINING_EMOTE_SLOTS_WARNING({
+    remainingSlots,
+    emoteType,
+  }: {
+    remainingSlots: number;
+    emoteType: "animated" | "static";
+  }): T {
+    return {
+      title:
+        remainingSlots === 0
+          ? `No ${emoteType} slots left`
+          : `Only ${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left`,
+      description:
+        remainingSlots === 0
+          ? `There are no available ${emoteType} emote slots. Please remove some existing ${emoteType} emotes to free up space.`
+          : undefined,
+    };
+  }
+
+  static NOT_ENOUGH_EMOTE_SLOTS_SLICES({
+    remainingSlots,
+    uploadCount,
+    emoteType,
+  }: {
+    remainingSlots: number;
+    uploadCount: number;
+    emoteType: "animated" | "static";
+  }): T {
+    return {
+      title: "Not enough emote slots",
+      description: multilineText(
+        `Not enough slots to upload ${uploadCount} emotes.`,
+        `${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left.`
       ),
     };
   }

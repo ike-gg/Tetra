@@ -17,23 +17,6 @@ export const importInteractions = async (client: TetraClient) => {
   client.globalButtonInteractions =
     await InteractionsFileManager.getGlobalButtonInteractions();
 
-  // client.selectMenu = new Collection();
-  // importSelectMenu(client.selectMenu);
+  client.globalSelectMenuInteractions =
+    await InteractionsFileManager.getGlobalSelectMenuInteractions();
 };
-
-// const importSelectMenu = (clientCommands: Collection<string, SelectMenuInteraction>) => {
-//   const selectMenuPath = path.join(__dirname, "selectMenu");
-//   const selectMenuFiles = fs
-//     .readdirSync(selectMenuPath)
-//     .filter((file) => file.endsWith(".ts"));
-
-//   for (const file of selectMenuFiles) {
-//     const filePath = path.join(selectMenuPath, file);
-//     import(filePath).then((selectMenuInteraction) => {
-//       clientCommands.set(
-//         selectMenuInteraction.default.data.name,
-//         selectMenuInteraction.default
-//       );
-//     });
-//   }
-// };

@@ -11,7 +11,7 @@ import {
   DiscordAPIError,
 } from "discord.js";
 
-import submitErrorLogGenericButton from "@/interactions/buttons/generic/submit-error-log";
+import SubmitErrorLogGenericButton from "@/interactions/buttons/generic/submit-error-log";
 
 import { EmbeddedError } from "../../constants/errors";
 import { Messages } from "../../constants/messages";
@@ -152,7 +152,7 @@ export class FeedbackManager {
 
   async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
-    const button = submitErrorLogGenericButton.metadata.getButton();
+    const button = SubmitErrorLogGenericButton.metadata.getButton();
     row.addComponents(button);
 
     await this.sendMessage({

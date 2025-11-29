@@ -1,7 +1,7 @@
 import { ButtonInteraction } from "discord.js";
 import { z } from "zod";
 
-import prepareEmote from "@/emotes/prepareEmote";
+import { prepareEmote } from "@/emotes/prepare-emote";
 import {
   BaseContinuity,
   ContinuityHandler,
@@ -28,15 +28,17 @@ const SelectEmoteContinuity = new SelectEmoteButtonInteraction(
   async ({ interaction, data }) => {
     const feedback = new FeedbackManager(interaction);
 
-    const { emote } = data;
+    try {
+      await feedback.working();
 
-    await feedback.removeComponents();
-    await feedback.working();
+      const { emote } = data;
 
-    prepareEmote(emote, {
-      feedback,
-      interaction,
-    });
+      await feedback.removeComponents();
+
+      await prepareEmote({ emote, feedback });
+    } catch (error) {
+      await feedback.handleError(error);
+    }
   }
 );
 

@@ -8,7 +8,7 @@ import { CoreConsole } from "#/loggers";
 
 const BUTTON_INTERACTION_KEY = "submit-error-log";
 
-export const submitErrorLogGenericButton = new GenericButtonInteractionHandler(
+const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
   {
     name: BUTTON_INTERACTION_KEY,
     getButton: (data) =>
@@ -72,4 +72,4 @@ export const submitErrorLogGenericButton = new GenericButtonInteractionHandler(
   }
 );
 
-export default submitErrorLogGenericButton;
+export default SubmitErrorLogGenericButton;

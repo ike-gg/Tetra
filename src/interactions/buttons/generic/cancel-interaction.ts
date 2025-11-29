@@ -4,7 +4,7 @@ import { GenericButtonInteractionHandler } from "../..";
 
 const BUTTON_INTERACTION_KEY = "cancel-interaction";
 
-export const cancelInteractionGenericButton = new GenericButtonInteractionHandler(
+const CancelInteractionGenericButton = new GenericButtonInteractionHandler(
   {
     name: BUTTON_INTERACTION_KEY,
     getButton: (data) =>
@@ -14,12 +14,11 @@ export const cancelInteractionGenericButton = new GenericButtonInteractionHandle
         .setStyle(ButtonStyle.Danger),
   },
   async (interaction) => {
-    console.log("running from cancel handler!!!");
-
     await interaction.update({
       content: "-# Interaction cancelled",
       components: [],
       files: [],
+      embeds: [],
     });
     try {
       await interaction.message.delete();
@@ -31,4 +30,4 @@ export const cancelInteractionGenericButton = new GenericButtonInteractionHandle
   }
 );
 
-export default cancelInteractionGenericButton;
+export default CancelInteractionGenericButton;

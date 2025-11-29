@@ -1,7 +1,7 @@
 import { env } from "@/env";
 
 export const MAX_EMOTE_SIZE = 262144;
-export const MAX_SUPPORTED_SIZE = MAX_EMOTE_SIZE * 16;
+export const MAX_SUPPORTED_SIZE = 10_485_760; // 10 MB
 
 export const APP = {
   GITHUB_REPO: "https://github.com/ike-gg/Tetra",

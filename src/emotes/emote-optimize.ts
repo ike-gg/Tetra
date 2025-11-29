@@ -2,21 +2,17 @@ import sharp from "sharp";
 
 import { MAX_EMOTE_SIZE } from "../constants";
 import { AutoXGifsicle } from "../lib/buffer/AutoXGifsicle";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
 
-const emoteOptimise = async (
+export const emoteOptimize = async (
   emoteBuffer: Buffer,
   options: {
     animated: boolean;
-    feedback?: FeedbackManager;
     transform?: "square" | "center";
     skipReducingFrames?: boolean;
   }
 ) => {
-  const { animated, feedback, transform } = options;
+  const { animated, transform } = options;
   let processedBuffer: Buffer = emoteBuffer;
-
-  await feedback?.warning("Processing your emote ⏳");
 
   if (!animated) {
     const buffer = sharp(processedBuffer, {
@@ -35,6 +31,7 @@ const emoteOptimise = async (
         width: side,
         height: side,
       });
+
     transform === "square" &&
       buffer.resize({
         fit: "fill",
@@ -64,5 +61,3 @@ const emoteOptimise = async (
 
   return processedBuffer;
 };
-
-export default emoteOptimise;
