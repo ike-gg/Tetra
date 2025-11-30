@@ -3,6 +3,7 @@ nixPkgs = [
     "bun",  
     "python311", 
     "ffmpeg",   
+    "gifsicle",
     "autoconf", 
     "automake",  
     "gcc",       
