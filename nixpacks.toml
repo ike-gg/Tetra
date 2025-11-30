@@ -3,20 +3,12 @@ enabled = false
 
 [phases.setup]
 nixPkgs = [
-    "bun",
-    "python39",
-    "ffmpeg",
-    "autoconf",
-    "automake",
-    "gcc",
-    "gawk"
+  "...",
+        "bun",  
+    "python39", 
+    "ffmpeg",   
+    "autoconf", 
+    "automake",  
+    "gcc",       
+    "gawk"      
 ]
-
-[phases.install]
-cmds = ["bun install"]
-
-[phases.build]
-cmds = ["bun run build"]
-
-[start]
-cmd = "bun run start"
