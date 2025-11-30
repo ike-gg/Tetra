@@ -2,7 +2,7 @@
 archive = "b86a7d65b1db316335165cb42a78726df985f403"
 nixPkgs = [
     "...",
-    "nodejs-22_x",
+    "nodejs-22",
     "bun",  
     "python39", 
     "ffmpeg",   
