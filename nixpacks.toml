@@ -1,11 +1,16 @@
+[phases.node]
+enabled = false
+
+[providers]
+bun = true
+
 [phases.setup]
 nixPkgs = [
-  "...",
-        "bun",  
-    "python39", 
-    "ffmpeg",   
-    "autoconf", 
-    "automake",  
-    "gcc",       
-    "gawk"      
+    "bun",
+    "python39",
+    "ffmpeg",
+    "autoconf",
+    "automake",
+    "gcc",
+    "gawk"
 ]
