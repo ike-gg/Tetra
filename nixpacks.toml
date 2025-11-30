@@ -1,7 +1,6 @@
 [phases.setup]
 archive = "b86a7d65b1db316335165cb42a78726df985f403"
 nixPkgs = [
-    "...",
     "nodejs_22",
     "bun",  
     "python39", 
