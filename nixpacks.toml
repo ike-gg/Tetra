@@ -20,12 +20,3 @@ cmds = ["bun run build"]
 
 [start]
 cmd = "bun run start"
-
-
-    # "bun",
-    # "python39",
-    # "ffmpeg",
-    # "autoconf",
-    # "automake",
-    # "gcc",
-    # "gawk"
