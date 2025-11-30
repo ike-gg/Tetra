@@ -1,11 +1,13 @@
-import { NextFunction, Request, Response } from "express";
-import { client, discordOauth } from "../../..";
 import { PrismaClient } from "@prisma/client";
+import { NextFunction, Request, Response } from "express";
 import * as z from "zod";
-import { TetraAPIError } from "../TetraAPIError";
-import { TetraEmbed } from "../../utils/embedMessages/TetraEmbed";
+
+import { internalClient } from "@/bot";
+
+import { discordOauth } from "../..";
 import { Messages } from "../../constants/messages";
-import { announceUse } from "../../utils/managers/FeedbackManager";
+import { TetraEmbed } from "../../utils/embedMessages/TetraEmbed";
+import { TetraAPIError } from "../TetraAPIError";
 
 const schema = z.object({
   emote: z.string().refine((value) => value.length % 4),
@@ -21,8 +23,8 @@ const schema = z.object({
 export default async (req: Request, res: Response, next: NextFunction) => {
   const prisma = new PrismaClient();
   try {
-    const accessToken = res.locals.accessToken as string;
-    const taskId = req.params.taskid;
+    const accessToken = res.locals["accessToken"] as string;
+    const taskId = req.params["taskid"];
 
     if (!taskId) throw new TetraAPIError(400, "Bad request, task missing.");
 
@@ -51,7 +53,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (currentUser.id !== accountId)
       throw new TetraAPIError(401, "Not authorized. Mismatching user ids.");
 
-    const guild = await client.guilds.fetch(guildId);
+    const guild = await internalClient.guilds.fetch(guildId);
 
     const userInGuild = await guild.members.fetch(accountId);
 
@@ -73,11 +75,9 @@ export default async (req: Request, res: Response, next: NextFunction) => {
       },
     });
 
-    await announceUse(Messages.ANNOUNCE_ADDED_EMOTE_PANEL(addedEmote));
-
     if (messageId && channelId) {
       try {
-        const channel = await client.channels.fetch(channelId);
+        const channel = await internalClient.channels.fetch(channelId);
         if (channel?.isDMBased() || !channel?.isTextBased()) return;
         const message = await channel.messages.fetch(messageId);
         await message.edit({

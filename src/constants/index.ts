@@ -1,49 +1,12 @@
-import { tmpdir } from "os";
-import * as fs from "fs";
-import { isDevelopment } from "../env";
-import { randomUUID } from "crypto";
+import { env } from "@/env";
 
-export const enviroment =
-  process.env.env === "development" ? "development" : "production";
+export const MAX_EMOTE_SIZE = 262144;
+export const MAX_SUPPORTED_SIZE = 10_485_760; // 10 MB
 
-export const maxEmoteSize = 262144;
-export const maxSupportedSize = maxEmoteSize * 16;
-
-export const redirect_uri =
-  enviroment === "development"
-    ? "http://localhost:3001/dashboard/auth"
-    : "https://tetra.lol/api/auth/callback";
-
-export const dashboardUrl =
-  enviroment === "development"
-    ? "https://localhost:3001/dashboard"
-    : "https://tetra.lol/dashboard";
-
-export const tetraTempDirectory = (subPath?: string) => {
-  if (!subPath) subPath = randomUUID();
-
-  const basePath = `${tmpdir()}/tetra`;
-
-  if (!fs.existsSync(basePath)) {
-    fs.mkdirSync(basePath);
-  }
-
-  const tempPath = `${basePath}/${subPath}`;
-  if (!fs.existsSync(tempPath)) {
-    fs.mkdirSync(tempPath);
-  }
-
-  if (isDevelopment) console.log("created temp directory at", tempPath);
-
-  setTimeout(
-    () => {
-      fs.rmSync(tempPath, {
-        recursive: true,
-        force: true,
-      });
-    },
-    1000 * 60 * 60
-  );
-
-  return tempPath;
+export const APP = {
+  GITHUB_REPO: "https://github.com/ike-gg/Tetra",
+  GITHUB_OWNER: "https://github.com/ike-gg",
+  DISCORD_OWNER: "https://discord.com/users/224978978362884096/",
+  INVITE_LINK: env.INVITE_LINK,
+  PRIMARY_COLOR: 0xfe5101,
 };

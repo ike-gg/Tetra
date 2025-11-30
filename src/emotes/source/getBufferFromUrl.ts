@@ -1,51 +1,72 @@
+import { sleep } from "bun";
 import fetch from "node-fetch";
-import sleep from "../../utils/sleep";
+
+import { EmbeddedError } from "@/constants/errors";
 
 interface GetBufferOptions {
   maxRetries: number;
   msBetweenRetries: number;
+  maxBufferSize?: number;
 }
 
 type GetBufferOptionsArg = Partial<GetBufferOptions>;
 
-const defaultOptions: GetBufferOptions = {
+const DEFAULT_OPTIONS: GetBufferOptions = {
   maxRetries: 3,
   msBetweenRetries: 1000,
 };
 
-const getBufferFromUrl = async (url: string, options?: GetBufferOptionsArg) => {
-  const { maxRetries, msBetweenRetries } = {
-    ...defaultOptions,
-    ...options,
-  };
-  let retries = 0;
+async function getBufferFromUrl(
+  url: string,
+  options?: GetBufferOptionsArg
+): Promise<Buffer> {
+  const config = { ...DEFAULT_OPTIONS, ...options };
+  const { maxRetries, msBetweenRetries, maxBufferSize } = config;
 
-  let data: Buffer | null = null;
-
-  do {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       const response = await fetch(url);
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch ${url} - ${response.status}`);
+        throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
       }
+
       const buffer = await response.buffer();
-      data = buffer;
-      break;
+
+      if (maxBufferSize && buffer.byteLength > maxBufferSize) {
+        throw new EmbeddedError({
+          title: "Resource too large",
+          description:
+            "The resource you are trying to fetch is too large to be processed by Tetra.",
+        });
+      }
+
+      return buffer;
     } catch (error) {
-      console.log(url);
+      if (error instanceof EmbeddedError) {
+        throw error;
+      }
+
+      const isLastAttempt = attempt === maxRetries;
+      const errorMessage = error instanceof Error ? error.message : String(error);
+
       console.error(
-        `(${retries + 1}/${maxRetries}) Failed to fetch ${url} - ${error},`,
-        (error as Error).message
+        `Attempt ${attempt}/${maxRetries} failed to fetch ${url}: ${errorMessage}`
       );
+
+      if (isLastAttempt) {
+        throw new Error(
+          `Failed to fetch data from ${url} after ${maxRetries} attempts: ${errorMessage}`
+        );
+      }
+
+      await sleep(msBetweenRetries);
     }
+  }
 
-    retries++;
-    if (retries < maxRetries) await sleep(msBetweenRetries);
-  } while (retries < maxRetries);
-
-  if (!data) throw new Error("Data download failed.");
-
-  return data;
-};
+  // This should never be reached due to the throw in the loop,
+  // but TypeScript needs this for type safety
+  throw new Error("Failed to fetch data: Unexpected error");
+}
 
 export default getBufferFromUrl;

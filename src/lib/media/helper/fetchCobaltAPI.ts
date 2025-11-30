@@ -21,6 +21,13 @@ export const fetchCobaltAPI = async <T = DefaultCobaltAPIResponse>(
   url: string,
   options?: CobaltAPIOptions
 ): Promise<T> => {
+  if (!env.COBALT_URL || !env.COBALT_API_KEY)
+    throw new EmbeddedError({
+      title: "Cobalt API is not configured",
+      description:
+        "Cobalt API is not configured, please set the COBALT_URL and COBALT_API_KEY environment variables. (EME001)",
+    });
+
   const response = await fetch(env.COBALT_URL, {
     method: "POST",
     headers: {

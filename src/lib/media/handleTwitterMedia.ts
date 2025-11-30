@@ -1,8 +1,13 @@
 import fetch from "node-fetch";
-import { MediaOutput, PlatformHandlerCallback } from "../../commands/media";
 import * as z from "zod";
-import isValidURL from "../../utils/isValidURL";
+
+import {
+  MediaOutput,
+  PlatformHandlerCallback,
+} from "@/interactions/commands/global/chat-input/media";
+
 import { EmbeddedError } from "../../constants/errors";
+import isValidURL from "../../utils/isValidURL";
 
 const apiResponseSchema = z.object({
   mediaURLs: z.array(z.string().url()),

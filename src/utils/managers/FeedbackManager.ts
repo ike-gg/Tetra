@@ -1,23 +1,25 @@
+import { ActionRowBuilder, EmbedBuilder, ButtonBuilder } from "@discordjs/builders";
+import { randomUUID } from "crypto";
 import {
   ButtonInteraction,
   CommandInteraction,
   SelectMenuBuilder,
   SelectMenuInteraction,
-  TextChannel,
   ButtonStyle,
   BaseMessageOptions,
   isJSONEncodable,
   DiscordAPIError,
 } from "discord.js";
-import { ActionRowBuilder, EmbedBuilder, ButtonBuilder } from "@discordjs/builders";
 
-import { randomUUID } from "crypto";
-import { DiscordBot } from "../../types";
-import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
-import { Messages } from "../../constants/messages";
-import { client } from "../../bot";
-import { env, isDevelopment } from "../../env";
+import SubmitErrorLogGenericButton from "@/interactions/buttons/generic/submit-error-log";
+
 import { EmbeddedError } from "../../constants/errors";
+import { Messages } from "../../constants/messages";
+import { isDevelopment } from "../../env";
+import { TetraClient } from "../../types";
+import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
+
+import { CoreConsole } from "#/loggers";
 
 export class UnhandledError extends Error {
   constructor(message: string) {
@@ -27,7 +29,7 @@ export class UnhandledError extends Error {
 }
 
 export class FeedbackManager {
-  client: DiscordBot;
+  client: TetraClient;
   ephemeral: boolean;
   public relatedTask?: string;
 
@@ -39,7 +41,7 @@ export class FeedbackManager {
   ) {
     let ephemeral = options?.ephemeral || false;
 
-    this.client = interaction.client as DiscordBot;
+    this.client = interaction.client as TetraClient;
     this.ephemeral = ephemeral;
   }
 
@@ -50,7 +52,7 @@ export class FeedbackManager {
       const lastIndex = embeds.length - 1;
       let lastEmbedText = this.client.user!.username;
 
-      if (env.node_env === "development") {
+      if (isDevelopment) {
         lastEmbedText += " | dev";
       }
 
@@ -58,7 +60,6 @@ export class FeedbackManager {
       if (!lastEmbedData) return;
       if (isJSONEncodable(lastEmbedData)) lastEmbedData = lastEmbedData.toJSON();
 
-      //@ts-expect-error - valid embed
       const lastEmbedBuilder = new EmbedBuilder(lastEmbedData);
       lastEmbedBuilder.setFooter({
         text: lastEmbedText,
@@ -131,8 +132,6 @@ export class FeedbackManager {
   }
 
   async handleError(error: any) {
-    if (isDevelopment) console.log(error);
-
     if (error instanceof EmbeddedError) {
       await this.error(error.embed);
     } else if (error instanceof UnhandledError) {
@@ -153,15 +152,9 @@ export class FeedbackManager {
 
   async error(content: TetraEmbedContent) {
     const row = new ActionRowBuilder<ButtonBuilder>();
-    row.addComponents(
-      new ButtonBuilder()
-        .setCustomId(`errorlog`)
-        .setEmoji({
-          name: "📠",
-        })
-        .setLabel(`Send developers log`)
-        .setStyle(ButtonStyle.Danger)
-    );
+    const button = SubmitErrorLogGenericButton.metadata.getButton();
+    row.addComponents(button);
+
     await this.sendMessage({
       embeds: [TetraEmbed.error(content)],
       components: [row],
@@ -170,7 +163,7 @@ export class FeedbackManager {
 
   async unhandledError(error: any) {
     const trackingId = randomUUID();
-    console.error(`[ ${trackingId} ]`, error);
+    CoreConsole.error(`[ ${trackingId} ]`, error);
     await this.error({
       title: "Unhandled error",
       description:
@@ -239,17 +232,3 @@ export class FeedbackManager {
     );
   }
 }
-
-export const announceUse = async (text: string) => {
-  try {
-    const announceChannel = (await client.channels.fetch(
-      "1054273914437648384"
-    )) as TextChannel;
-
-    if (!announceChannel) return;
-
-    await announceChannel.send(text);
-  } catch (error) {
-    console.error("Cant reach announcement channel");
-  }
-};

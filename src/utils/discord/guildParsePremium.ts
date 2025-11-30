@@ -1,4 +1,4 @@
-import { Guild, GuildPremiumTier } from "discord.js";
+import { APIGuild, Guild, GuildPremiumTier } from "discord.js";
 
 const parseFileLimit = (tier: GuildPremiumTier): number => {
   switch (tier) {
@@ -47,5 +47,16 @@ export const guildParsePremium = (guild: Guild) => {
       },
     },
     level: guild.premiumTier,
+  };
+};
+
+export const basicGuildParsePremium = (guild: APIGuild) => {
+  const emoteLimit = parseEmoteLimit(guild.premium_tier);
+  const fileLimit = parseFileLimit(guild.premium_tier);
+
+  return {
+    fileLimit,
+    emoteLimit,
+    level: guild.premium_tier,
   };
 };

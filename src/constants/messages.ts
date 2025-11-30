@@ -1,9 +1,11 @@
 import { GuildEmoji } from "discord.js";
+import prettyBytes from "pretty-bytes";
+
+import { supportedMediaPlatforms } from "@/interactions/commands/global/chat-input/media";
+
+import { MAX_EMOTE_SIZE } from ".";
 import { TetraEmbedContent } from "../utils/embedMessages/TetraEmbed";
 import multilineText from "../utils/multilineText";
-import prettyBytes from "pretty-bytes";
-import { maxEmoteSize } from ".";
-import { supportedMediaPlatforms } from "../commands/media";
 
 type T = TetraEmbedContent;
 
@@ -15,17 +17,27 @@ const loadingEmotes = [
   "<a:tetraLoading:1165904168205156372>",
   "<a:tetraLoading:1165904037800050788>",
 ];
+
 export const getRandomLoadingEmote = () =>
   loadingEmotes[Math.floor(Math.random() * loadingEmotes.length)];
 
 export class Messages {
   //generic
-  static readonly INTERACTION_TIMEOUT: T =
-    "This interaction has timed out. Please create a new one.";
+  static readonly INTERACTION_TIMEOUT: T = {
+    title: "Interaction expired",
+    description: "This interaction has expired. Please start a new one.",
+  };
+
+  static INTERACTION_TIMEOUT_WITH_REASON(reason: string): T {
+    return {
+      title: "Interaction expired",
+      description: `This interaction has expired (${reason}). Please start a new one.`,
+    };
+  }
+
   static WORKING(): T {
     return {
-      title: "Working on it...",
-      description: getRandomLoadingEmote(),
+      title: `Working on it... ${getRandomLoadingEmote()}`,
     };
   }
   static readonly RATE_LIMIT_EXCEEDED: T =
@@ -62,27 +74,28 @@ export class Messages {
   static readonly METDIA_PLATFORM_NOT_SUPPORED: T = {
     title: "Platform not supported",
     description: `Currently supported platforms:
-${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`,
+  ${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`,
   };
 
   //twitch case
   static readonly CHANNEL_NOT_FOUND: T = "Channel not found.";
 
   //interactive
+
   static ADDED_EMOTE(emote: GuildEmoji): T {
     return {
       title: "Success!",
       description: `Added \`${emote.name}\` emote ${emote} in \`${emote.guild.name}\``,
       image: {
-        url: emote.url,
+        url: emote.imageURL({ animated: true, size: 256 }),
       },
     };
   }
 
   static EXCEEDED_EMOTE_SIZE(size: number): T {
-    const maxSize = prettyBytes(maxEmoteSize);
+    const maxSize = prettyBytes(MAX_EMOTE_SIZE);
     const emoteSize = prettyBytes(size);
-    const differenceSize = prettyBytes(size - maxEmoteSize);
+    const differenceSize = prettyBytes(size - MAX_EMOTE_SIZE);
 
     return {
       description: multilineText(
@@ -90,6 +103,43 @@ ${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.joi
         `**${emoteSize}** / ${maxSize} *(exceeds by ${differenceSize})*`,
         " ",
         "Choose the optimization method."
+      ),
+    };
+  }
+
+  static REMAINING_EMOTE_SLOTS_WARNING({
+    remainingSlots,
+    emoteType,
+  }: {
+    remainingSlots: number;
+    emoteType: "animated" | "static";
+  }): T {
+    return {
+      title:
+        remainingSlots === 0
+          ? `No ${emoteType} slots left`
+          : `Only ${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left`,
+      description:
+        remainingSlots === 0
+          ? `There are no available ${emoteType} emote slots. Please remove some existing ${emoteType} emotes to free up space.`
+          : undefined,
+    };
+  }
+
+  static NOT_ENOUGH_EMOTE_SLOTS_SLICES({
+    remainingSlots,
+    uploadCount,
+    emoteType,
+  }: {
+    remainingSlots: number;
+    uploadCount: number;
+    emoteType: "animated" | "static";
+  }): T {
+    return {
+      title: "Not enough emote slots",
+      description: multilineText(
+        `Not enough slots to upload ${uploadCount} emotes.`,
+        `${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left.`
       ),
     };
   }
