@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Emote management Discord bot.",
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
