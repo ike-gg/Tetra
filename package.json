@@ -1,7 +1,7 @@
 {
   "name": "tetra",
-  "version": "1.2.0",
-  "description": "Fun-utility bot that focuses primarly on managing emotes with seamless import from platforms such like 7TV, BTTV, FFZ and Twitch.",
+  "version": "2.0.0",
+  "description": "Emote management Discord bot.",
   "main": "src/index.ts",
   "scripts": {
     "start": "bun run src/index.ts",

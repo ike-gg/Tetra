@@ -50,6 +50,12 @@ const envSchema = z.object({
 
   REDIS_URL: z.string().url().describe("URL Connection String for the redis database"),
 
+  API_ENABLED: z
+    .string()
+    .default("false")
+    .transform((val) => val === "true" || val === "1")
+    .describe("Whether the API is enabled"),
+
   BACKEND_URL: z
     .string()
     .url()

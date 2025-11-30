@@ -12,7 +12,7 @@ if (isProduction) {
   TempFileManager.cleanup();
 } else CoreConsole.info("Running in development mode.");
 
-initApi();
+if (env.API_ENABLED) initApi();
 
 const discordOauth = new DiscordOauth2({
   clientId: env.DISCORD_OAUTH_CLIENT_ID,

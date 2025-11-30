@@ -7,5 +7,5 @@ const command = new SlashCommandBuilder()
   .setDescription("Get started with Tetra");
 
 export default new ChatInputCommandHandler(command, async (interaction) => {
-  await interaction.reply("We got you covered!");
+  await interaction.reply("Soon");
 });
