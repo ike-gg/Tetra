@@ -1,7 +1,7 @@
 [phases.setup]
 nixPkgs = [
     "bun",  
-    "python311", 
+    "python312", 
     "ffmpeg",   
     "gifsicle",
     "autoconf", 
