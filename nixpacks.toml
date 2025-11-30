@@ -1,9 +1,6 @@
 [phases.node]
 enabled = false
 
-[providers]
-bun = true
-
 [phases.setup]
 nixPkgs = [
     "bun",
@@ -14,3 +11,21 @@ nixPkgs = [
     "gcc",
     "gawk"
 ]
+
+[phases.install]
+cmds = ["bun install"]
+
+[phases.build]
+cmds = ["bun run build"]
+
+[start]
+cmd = "bun run start"
+
+
+    # "bun",
+    # "python39",
+    # "ffmpeg",
+    # "autoconf",
+    # "automake",
+    # "gcc",
+    # "gawk"
