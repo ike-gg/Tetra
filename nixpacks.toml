@@ -1,10 +1,6 @@
-[phases.node]
-enabled = false
-
 [phases.setup]
 nixPkgs = [
-  "...",
-        "bun",  
+    "bun",  
     "python39", 
     "ffmpeg",   
     "autoconf", 
