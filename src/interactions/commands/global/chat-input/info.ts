@@ -47,7 +47,9 @@ export default new ChatInputCommandHandler(command, async (interaction, client) 
   });
   messagePayload.addFields({
     name: "Users count",
-    value: usersCount.toString(),
+    // todo fetch count from all shards
+    // value: usersCount.toString(),
+    value: "-",
     inline: true,
   });
   messagePayload.addFields({
