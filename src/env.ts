@@ -96,8 +96,6 @@ const envSchema = z.object({
   TENOR_API_KEY: z.string().describe("Tenor API Key"),
 
   IMGUR_CLIENT_ID: z.string().describe("Imgur Client ID"),
-
-  OPENAI_API_KEY: z.string().describe("OpenAI API Key"),
 });
 
 let { data, error } = envSchema.safeParse(process.env);

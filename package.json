@@ -8,7 +8,7 @@
     "start": "bun run src/index.ts",
     "dev": "bun --watch src/index.ts",
     "deploy:dev": "bun run src/deploy/deploy-commands-dev.ts",
-    "deployCommands": "npx ts-node src/deploy/deploy-commands-global.ts",
+    "deployCommands": "bun run src/deploy/deploy-commands-global.ts",
     "db:push": "npx drizzle-kit push",
     "db:studio": "npx drizzle-kit studio"
   },
