@@ -64,7 +64,7 @@
     "express": "^5.0.1",
     "express-rate-limit": "^6.7.0",
     "ffmpeg": "^0.0.4",
-    "gifsicle": "^5.3.0",
+    "gifsicle": "^7.0.1",
     "google-tts-api": "^2.0.2",
     "ioredis": "^5.8.0",
     "is-gif": "^4.0.1",
