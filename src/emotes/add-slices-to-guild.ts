@@ -17,6 +17,7 @@ export const addSlicesToGuild = async ({
   feedback,
 }: AddSlicesToGuildOptions) => {
   const slices = await ProcessingEmoteService.getSlices(processingEmoteKey);
+  const { customName } = await ProcessingEmoteService.get(processingEmoteKey);
   const emote = await ProcessingEmoteService.getEmote(processingEmoteKey);
 
   const guild = feedback.interaction.guild;
@@ -43,10 +44,12 @@ export const addSlicesToGuild = async ({
 
     const uploadedEmotes: GuildEmoji[] = [];
 
+    const emoteName = customName ?? emote.name;
+
     for (const [i, emotePart] of slices.entries()) {
       const addedEmote = await guild.emojis.create({
         attachment: emotePart,
-        name: `${emote.name}${i + 1}`,
+        name: `${emoteName}${i + 1}`,
       });
       uploadedEmotes.push(addedEmote);
     }
