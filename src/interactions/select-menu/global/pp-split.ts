@@ -56,7 +56,11 @@ const PPSplitContinuity = new PPSplitSelectMenuInteraction(
         animated: emote.animated,
       };
 
-      const { height } = await sharp(bufferSplitFrom, sharpOptions).metadata();
+      const metadata = await sharp(bufferSplitFrom, sharpOptions).metadata();
+
+      const { height: originalHeight, pageHeight } = metadata;
+
+      const height = pageHeight || originalHeight;
 
       if (!height) {
         throw new EmbeddedError({
@@ -119,8 +123,10 @@ const PPSplitContinuity = new PPSplitSelectMenuInteraction(
         .toBuffer();
 
       const emoteSlicesOptimized = await Promise.all(
-        emotesSliced.map(async (emoteSlice) => {
-          if (emoteSlice.byteLength < MAX_EMOTE_SIZE) return emoteSlice;
+        emotesSliced.map(async (emoteSlice, _) => {
+          if (emoteSlice.byteLength < MAX_EMOTE_SIZE) {
+            return emoteSlice;
+          }
           return await emoteOptimize(emoteSlice, {
             animated: emote.animated,
           });
