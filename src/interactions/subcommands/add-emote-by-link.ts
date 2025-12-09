@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction } from "discord.js";
 
+import { EmbeddedError } from "@/constants/errors";
 import { prepareEmote } from "@/emotes/prepare-emote";
 import stvGetEmoteById from "@/emotes/source/7tv/stvGetEmoteById";
 import bttvGetEmoteById from "@/emotes/source/bttv/bttvGetEmoteById";
@@ -25,12 +26,18 @@ export const addEmoteLink = async (
   const emoteURL = new URL(emoteUrl);
   const domain = emoteURL.hostname.toLowerCase();
 
+  const cantFindReference = new EmbeddedError({
+    title: "Cant find reference",
+    description:
+      "Link to the emote is from known source, but we couldn't find the emote. Maybe link include invalid characters or is not a valid emote link.",
+  });
+
   try {
     if (domain.includes("7tv")) {
-      const emoteId = emoteUrl
-        .split("/")
-        .find((path) => path.length >= 24 && path.length <= 30);
-      if (!emoteId) return;
+      const match = emoteUrl.match(/\/([a-zA-Z0-9]{24,30})(?:[^\w]|$)/);
+      const emoteId = match?.[1] ?? null;
+
+      if (!emoteId) throw cantFindReference;
 
       emote = await stvGetEmoteById(emoteId);
     } else if (domain.includes("frankerfacez")) {
@@ -39,12 +46,14 @@ export const addEmoteLink = async (
         .map((path) => parseInt(path, 10))
         .filter((num) => !isNaN(num))
         .sort((a, b) => b - a)[0];
-      if (!emoteId) return;
+
+      if (!emoteId) throw cantFindReference;
 
       emote = await ffzGetEmoteById(String(emoteId));
     } else if (domain.includes("betterttv")) {
       const emoteId = emoteUrl.split("/").find((path) => path.length === 24);
-      if (!emoteId) return;
+
+      if (!emoteId) throw cantFindReference;
 
       emote = await bttvGetEmoteById(emoteId);
     } else {
