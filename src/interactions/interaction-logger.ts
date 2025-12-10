@@ -22,7 +22,7 @@ export const interactionLogger = async (interaction: CommandInteraction) => {
     const commandName = command.join(".");
 
     BotConsole.log(
-      `${commandName} - ${user.username} (${user.id}) in ${guild?.name} (${guild?.id})`
+      `${commandName} - [${id}] - ${user.username} (${user.id}) in ${guild?.name} (${guild?.id})`
     );
 
     await db.insert(interactions).values({
