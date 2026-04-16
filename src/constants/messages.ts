@@ -47,6 +47,15 @@ export class Messages {
     title: "Permissions",
     description: "You don't have sufficient permissions to use this command.",
   };
+  static readonly BOT_MISSING_PERMISSIONS: T = {
+    title: "Tetra missing permissions",
+    description: `Tetra doesn't have sufficient permissions.
+    
+Make sure Tetra has the following permissions:
+- Create Expressions
+- Manage Expressions
+`,
+  };
   static readonly INVALID_REFERENCE: T = "Invalid URL.";
   static readonly FILE_NOT_FOUND: T = "File not found.";
   static readonly URL_NOT_FOUND: T = "URL not found.";

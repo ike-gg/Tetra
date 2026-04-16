@@ -144,6 +144,11 @@ export class FeedbackManager {
     ) {
       await this.unhandledError(error);
     } else if (error instanceof DiscordAPIError) {
+      // Missing Permissions
+      if (error.code == 50013) {
+        await this.botMissingPermissions();
+        return;
+      }
       await this.error(error.message);
     } else {
       await this.unhandledError(error);
@@ -216,6 +221,10 @@ export class FeedbackManager {
 
   async missingPermissions() {
     await this.error(Messages.MISSING_PERMISSIONS);
+  }
+
+  async botMissingPermissions() {
+    await this.error(Messages.BOT_MISSING_PERMISSIONS);
   }
 
   async invalidReference() {
