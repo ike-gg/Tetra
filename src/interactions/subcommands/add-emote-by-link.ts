@@ -10,6 +10,10 @@ import { Emote } from "@/types";
 import isValidURL from "@/utils/isValidURL";
 import { FeedbackManager } from "@/utils/managers/FeedbackManager";
 
+/** Matches `cdn.7tv.app` for `7tv.app`, but not `my7tvfan.com`. */
+const isDomain = (hostname: string, roots: string[]) =>
+  roots.some((root) => hostname === root || hostname.endsWith(`.${root}`));
+
 export const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,
   feedback: FeedbackManager
@@ -33,14 +37,14 @@ export const addEmoteLink = async (
   });
 
   try {
-    if (domain.includes("7tv")) {
+    if (isDomain(domain, ["7tv.app", "7tv.io"])) {
       const match = emoteUrl.match(/\/([a-zA-Z0-9]{24,30})(?:[^\w]|$)/);
       const emoteId = match?.[1] ?? null;
 
       if (!emoteId) throw cantFindReference;
 
       emote = await stvGetEmoteById(emoteId);
-    } else if (domain.includes("frankerfacez")) {
+    } else if (isDomain(domain, ["frankerfacez.com"])) {
       const emoteId = emoteUrl
         .split("/")
         .map((path) => parseInt(path, 10))
@@ -50,7 +54,7 @@ export const addEmoteLink = async (
       if (!emoteId) throw cantFindReference;
 
       emote = await ffzGetEmoteById(String(emoteId));
-    } else if (domain.includes("betterttv")) {
+    } else if (isDomain(domain, ["betterttv.com", "betterttv.net"])) {
       const emoteId = emoteUrl.split("/").find((path) => path.length === 24);
 
       if (!emoteId) throw cantFindReference;

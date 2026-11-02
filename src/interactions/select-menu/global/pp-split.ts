@@ -127,9 +127,7 @@ const PPSplitContinuity = new PPSplitSelectMenuInteraction(
           if (emoteSlice.byteLength < MAX_EMOTE_SIZE) {
             return emoteSlice;
           }
-          return await emoteOptimize(emoteSlice, {
-            animated: emote.animated,
-          });
+          return await emoteOptimize(emoteSlice);
         })
       );
 

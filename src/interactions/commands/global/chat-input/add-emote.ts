@@ -99,19 +99,19 @@ export default new ChatInputCommandHandler(
 
     switch (subcommandUsed) {
       case "bylink":
-        addEmoteLink(interaction, feedback);
+        await addEmoteLink(interaction, feedback);
         break;
       case "byname":
-        addEmoteName(interaction, feedback);
+        await addEmoteName(interaction, feedback);
         break;
       case "bychannel":
-        addEmoteChannel(interaction, feedback);
+        await addEmoteChannel(interaction, feedback);
         break;
       case "subemotes":
-        addSubEmoteChannel(interaction, feedback);
+        await addSubEmoteChannel(interaction, feedback);
         break;
       default:
-        feedback.error("Subcommand not supported yet.");
+        await feedback.error("Subcommand not supported yet.");
         break;
     }
   }

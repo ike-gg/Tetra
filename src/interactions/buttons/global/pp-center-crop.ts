@@ -37,12 +37,10 @@ const PPCenterCropContinuity = new PPCenterCropButtonInteraction(
 
       await ProcessingEmoteService.deleteSlices(processingEmoteKey);
 
-      const emote = await ProcessingEmoteService.getEmote(processingEmoteKey);
       const emoteBuffer =
         await ProcessingEmoteService.getOriginalBuffer(processingEmoteKey);
 
       const processedEmoteBuffer = await emoteOptimize(emoteBuffer, {
-        animated: emote.animated,
         transform: "center",
       });
 

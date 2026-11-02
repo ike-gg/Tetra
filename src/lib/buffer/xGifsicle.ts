@@ -5,7 +5,7 @@ import sharp from "sharp";
 
 import { execBunBuffer, execBunBufferSymbol } from "./x-gifsicle-support";
 
-export type Arguments = (string | number | Symbol)[];
+export type Arguments = (string | number | symbol)[];
 export type FrameDimensions = {
   width: number;
   height: number;
@@ -17,18 +17,38 @@ export type CroppingPoints = {
   y2: number;
 };
 
-type ActionLog = Awaited<ReturnType<xGifsicle["metadata"]>> & {
-  action: string;
-};
-
 interface ProcessOptions {
   saveToBuffer?: boolean;
 }
 
+/** Browsers and Discord play frames with delay < 20ms at 100ms. */
+export const normalizeFrameDelay = (delayMs: number) => (delayMs < 20 ? 100 : delayMs);
+
+/**
+ * Keeps every `dropFactor`-th frame. Each kept frame gets the SUM of the delays
+ * it replaces, so total duration and uneven timing are preserved.
+ * Requires `-U` before the input.
+ */
+export const buildFrameDropArgs = (delaysMs: number[], dropFactor: number): Arguments => {
+  const frames = delaysMs.length;
+  const args: Arguments = [];
+
+  let next = 0;
+  for (let i = 0; i < frames; ) {
+    next += dropFactor;
+    const end = Math.min(frames, Math.max(i + 1, Math.round(next)));
+    const groupDelayMs = delaysMs.slice(i, end).reduce((a, b) => a + b, 0);
+
+    // gifsicle expects centiseconds
+    args.push("--delay", Math.max(2, Math.round(groupDelayMs / 10)), `#${i}`);
+    i = end;
+  }
+
+  return args;
+};
+
 export class xGifsicle {
   public fileBuffer: Buffer;
-  private staticArgs: Arguments = [];
-  public actionLog: ActionLog[] = [];
 
   get size() {
     return this.fileBuffer.byteLength;
@@ -69,6 +89,14 @@ export class xGifsicle {
     });
   }
 
+  async resizeFit(maxSide: number) {
+    const { width, height } = await this.metadata();
+    if (width <= maxSide && height <= maxSide) return this;
+
+    await this.process(["--resize-fit", `${maxSide}x${maxSide}`]);
+    return this;
+  }
+
   async lossy(lossyFactor: number) {
     const args: Arguments = [`--lossy=${lossyFactor}`];
     await this.process(args);
@@ -76,9 +104,7 @@ export class xGifsicle {
   }
 
   async colors(colorsFactor: number) {
-    // const args: Arguments = ["--colors", colorsFactor];
-    this.staticArgs = ["--colors", colorsFactor];
-    await this.process([]);
+    await this.process(["--colors", colorsFactor]);
     return this;
   }
 
@@ -138,19 +164,11 @@ export class xGifsicle {
     return this;
   }
 
-  async frameRate(delayFactor: number) {
-    const { frames, delay } = await this.metadata();
+  async frameRate(dropFactor: number) {
+    if (dropFactor <= 1) return this;
 
-    const args: Arguments = [];
-
-    const newDelay = Math.round(delay * delayFactor);
-    for (let x = 0; x <= frames; x += delayFactor) {
-      args.push(`--delay`);
-      args.push(newDelay);
-      args.push(`#${Math.round(x)}`);
-    }
-
-    await this.process(args, ["-U"]);
+    const { delays } = await this.metadata();
+    await this.process(buildFrameDropArgs(delays, dropFactor), ["-U"]);
     return this;
   }
 
@@ -159,16 +177,19 @@ export class xGifsicle {
       animated: true,
     }).metadata();
 
-    const delay = metadata.delay![0] / 10;
-    const frames = metadata.pages!;
-    const height = metadata.height! / frames;
+    const frames = metadata.pages ?? 1;
     const width = metadata.width!;
-    const duration = frames * delay;
-    const fps = Math.round(1 / (delay / 100));
+    const height = metadata.pageHeight ?? metadata.height! / frames;
+
+    const delays = Array.from({ length: frames }, (_, i) =>
+      normalizeFrameDelay(metadata.delay?.[i] ?? 100)
+    );
+    const duration = delays.reduce((a, b) => a + b, 0);
+    const fps = frames / (duration / 1000);
     const { size, prettySize } = this;
 
     return {
-      delay,
+      delays,
       frames,
       height,
       width,
@@ -189,43 +210,23 @@ export class xGifsicle {
     const args: Arguments = [
       "--no-warnings",
       ..._argsBeforeInput,
-      // execBuffer.input,
-
       execBunBufferSymbol.input,
       ..._args,
-      ...this.staticArgs,
       "-O3",
       "-o",
-      // execBuffer.output,
-
       execBunBufferSymbol.output,
     ];
 
-    try {
-      // const newBuffer = await execBuffer({
-      //   input: this.fileBuffer,
-      //   bin: xgifsicle,
-      //   args,
-      // });
-      const newBuffer = await execBunBuffer({
-        input: this.fileBuffer,
-        bin: gifsiclebin,
-        args,
-      });
-      if (options.saveToBuffer) {
-        this.fileBuffer = newBuffer;
-        this.actionLog.push({
-          ...(await this.metadata()),
-          action: [..._argsBeforeInput, ..._args, ...this.staticArgs]
-            .splice(0, 5)
-            .join(", "),
-        });
-      }
-      return newBuffer;
-    } catch (err: any) {
-      console.log(err);
-      err.message = err.stderr || err.message;
-      throw new Error(err);
+    const newBuffer = await execBunBuffer({
+      input: this.fileBuffer,
+      bin: gifsiclebin,
+      args,
+    });
+
+    if (options.saveToBuffer) {
+      this.fileBuffer = newBuffer;
     }
+
+    return newBuffer;
   }
 }

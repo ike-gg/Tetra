@@ -1,14 +1,10 @@
 const isValidURL = (url: string): Boolean => {
   try {
-    new URL(url);
-    // check if url has a http or https protocol
-    if (!url.includes("http://") && !url.includes("https://")) {
-      return false;
-    }
-  } catch (error) {
+    const { protocol } = new URL(url);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
     return false;
   }
-  return true;
 };
 
 export default isValidURL;

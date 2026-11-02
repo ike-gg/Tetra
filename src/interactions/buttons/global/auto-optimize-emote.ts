@@ -38,12 +38,9 @@ const AutoOptimizeEmoteContinuity = new AutoOptimizeEmoteButtonInteraction(
 
       await feedback.working();
 
-      const emote = await ProcessingEmoteService.getEmote(processingEmoteKey);
       const emoteBuffer = await ProcessingEmoteService.getBuffer(processingEmoteKey);
 
-      const optimizedEmoteBuffer = await emoteOptimize(emoteBuffer, {
-        animated: emote.animated,
-      });
+      const optimizedEmoteBuffer = await emoteOptimize(emoteBuffer);
 
       await ProcessingEmoteService.updateBuffer(processingEmoteKey, optimizedEmoteBuffer);
       await ProcessingEmoteService.updateOptimizedBuffer(

@@ -8,6 +8,7 @@ import { EmbeddedError } from "@/constants/errors";
 import { Messages } from "@/constants/messages";
 import { TIME } from "@/constants/time";
 import getBufferFromUrl from "@/emotes/source/getBufferFromUrl";
+import { normalizeEmoteBuffer } from "@/lib/buffer/normalize-emote-buffer";
 import { redisClient } from "@/redis";
 import { Emote, EmoteSchema } from "@/types";
 import parseDiscordRegexName from "@/utils/discord/parseDiscordRegexName";
@@ -41,11 +42,13 @@ export class ProcessingEmoteService {
   static async store(emote: Emote) {
     const emoteKey = randomUUIDv7();
 
-    const emoteBuffer = await getBufferFromUrl(emote.file.url, {
+    const downloadedBuffer = await getBufferFromUrl(emote.file.url, {
       maxRetries: 3,
       msBetweenRetries: 1000,
       maxBufferSize: MAX_SUPPORTED_SIZE,
     });
+
+    const { buffer: emoteBuffer, animated } = await normalizeEmoteBuffer(downloadedBuffer);
 
     const tempDir = TempFileManager.create();
 
@@ -61,6 +64,7 @@ export class ProcessingEmoteService {
       buffer,
       emote: {
         ...emote,
+        animated,
         name: parseDiscordRegexName(emote.name),
       },
     };

@@ -28,18 +28,28 @@ async function getBufferFromUrl(
       const response = await fetch(url);
 
       if (!response.ok) {
+        // 4xx won't succeed on retry
+        if (response.status >= 400 && response.status < 500) {
+          throw new EmbeddedError({
+            title: "Failed to fetch source file.",
+            description: `The source responded with ${response.status}. Maybe the URL is invalid or the file was removed.`,
+          });
+        }
         throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
       }
 
+      const tooLarge = new EmbeddedError({
+        title: "Resource too large",
+        description:
+          "The resource you are trying to fetch is too large to be processed by Tetra.",
+      });
+
+      const declaredSize = Number(response.headers.get("content-length"));
+      if (maxBufferSize && declaredSize > maxBufferSize) throw tooLarge;
+
       const buffer = await response.buffer();
 
-      if (maxBufferSize && buffer.byteLength > maxBufferSize) {
-        throw new EmbeddedError({
-          title: "Resource too large",
-          description:
-            "The resource you are trying to fetch is too large to be processed by Tetra.",
-        });
-      }
+      if (maxBufferSize && buffer.byteLength > maxBufferSize) throw tooLarge;
 
       return buffer;
     } catch (error) {
