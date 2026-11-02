@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import finishTask from "./finishTask";
+import finishTask from "./finish-task";
 
 const tasksRouter = Router();
 

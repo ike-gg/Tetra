@@ -1,14 +1,14 @@
 import { ApplicationCommandType, ContextMenuCommandBuilder } from "discord.js";
 
 import { prepareEmote } from "@/emotes/prepare-emote";
-import getEmoteFromUrl from "@/emotes/source/file/getEmoteFromUrl";
-import getGiphyGif from "@/emotes/source/file/getGiphyGif";
-import getImgurFile from "@/emotes/source/file/getImgurFile";
-import getTenorGif from "@/emotes/source/file/getTenorGif";
+import getEmoteFromUrl from "@/emotes/source/file/get-emote-from-url";
+import getGiphyGif from "@/emotes/source/file/get-giphy-gif";
+import getImgurFile from "@/emotes/source/file/get-imgur-file";
+import getTenorGif from "@/emotes/source/file/get-tenor-gif";
 import { ContextMenuMessageCommandHandler } from "@/interactions";
 import { Emote } from "@/types";
-import isValidURL from "@/utils/isValidURL";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import isValidURL from "@/utils/is-valid-url";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new ContextMenuCommandBuilder()
   .setName("File to emote")

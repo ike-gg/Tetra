@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-import getBufferFromUrl from "@/emotes/source/getBufferFromUrl";
+import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 import { discordOauth } from "@/index";
 import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
 import { discordRestApi } from "@/lib/discord-rest-api";
@@ -12,7 +12,7 @@ import { getEmoteUrl } from "@/utils/discord";
 
 import { db } from "../../../db";
 import { removedEmotes } from "../../../db/schema";
-import { TetraAPIError } from "../../TetraAPIError";
+import { TetraAPIError } from "../../tetra-api-error";
 
 const getGuildParams = z.object({
   guildId: z.string(),

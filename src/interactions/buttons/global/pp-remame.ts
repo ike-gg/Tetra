@@ -17,8 +17,8 @@ import {
   ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
-import parseDiscordRegexName from "@/utils/discord/parseDiscordRegexName";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import parseDiscordRegexName from "@/utils/discord/parse-discord-regex-name";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 export const PPRenameContinuitySchema = z.object({
   processingEmoteKey: z.string(),

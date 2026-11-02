@@ -7,7 +7,7 @@ import {
 } from "@/interactions/commands/global/chat-input/media";
 
 import { EmbeddedError } from "../../constants/errors";
-import isValidURL from "../../utils/isValidURL";
+import isValidURL from "../../utils/is-valid-url";
 
 const apiResponseSchema = z.object({
   mediaURLs: z.array(z.string().url()),

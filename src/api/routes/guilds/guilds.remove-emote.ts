@@ -9,7 +9,7 @@ import { getEmoteUrl } from "@/utils/discord";
 
 import { db } from "../../../db";
 import { EmoteOrigin, emotes, removedEmotes } from "../../../db/schema";
-import { TetraAPIError } from "../../TetraAPIError";
+import { TetraAPIError } from "../../tetra-api-error";
 
 const getGuildParams = z.object({
   guildId: z.string(),

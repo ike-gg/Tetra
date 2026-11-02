@@ -5,7 +5,7 @@ import { addEmoteChannel } from "@/interactions/subcommands/add-emote-by-channel
 import { addEmoteLink } from "@/interactions/subcommands/add-emote-by-link";
 import { addEmoteName } from "@/interactions/subcommands/add-emote-by-name";
 import addSubEmoteChannel from "@/interactions/subcommands/add-sub-emote-by-channel";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new SlashCommandBuilder()
   .setName("addemote")

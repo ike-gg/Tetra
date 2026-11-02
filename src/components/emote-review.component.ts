@@ -15,10 +15,10 @@ import PPStretchToFitContinuity from "@/interactions/buttons/global/pp-stretch-t
 import SubmitEmoteContinuity from "@/interactions/buttons/global/submit-emote";
 import PPSplitContinuity from "@/interactions/select-menu/global/pp-split";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
-import { guildParsePremium } from "@/utils/discord/guildParsePremium";
-import { TetraEmbed } from "@/utils/embedMessages/TetraEmbed";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
-import multilineText from "@/utils/multilineText";
+import { guildParsePremium } from "@/utils/discord/guild-parse-premium";
+import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import multilineText from "@/utils/multiline-text";
 
 interface EmoteReviewComponentOptions {
   processingEmoteKey: string;

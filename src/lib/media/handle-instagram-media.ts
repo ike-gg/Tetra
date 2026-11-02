@@ -5,7 +5,7 @@ import {
 
 import { EmbeddedError } from "../../constants/errors";
 import { getRemoteResourceDetails } from "../../utils";
-import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
+import { fetchCobaltAPI } from "./helper/fetch-cobalt-api";
 
 // for ig cobalt is used,
 // it supports only: static posts and reels

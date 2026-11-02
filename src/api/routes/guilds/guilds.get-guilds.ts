@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express";
 
 import { discordOauth, shardingManager } from "@/index";
 
-import { TetraAPIError } from "../../TetraAPIError";
+import { TetraAPIError } from "../../tetra-api-error";
 
 const transformGuildOauth = (guild: OAuth.PartialGuild) => {
   const { features, ...rest } = guild;

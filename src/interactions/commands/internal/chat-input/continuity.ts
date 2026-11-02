@@ -2,7 +2,7 @@ import { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder } from "discord.js
 
 import { ChatInputCommandHandler } from "@/interactions";
 import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new SlashCommandBuilder()
   .setName("continuity")

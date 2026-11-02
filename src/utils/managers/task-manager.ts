@@ -1,5 +1,5 @@
 import { randomBytes } from "crypto";
-import * as TaskTypes from "../../types/TaskTypes";
+import * as TaskTypes from "../../types/task-types";
 import { PrismaClient } from "@prisma/client";
 import { isDevelopment } from "../../env";
 

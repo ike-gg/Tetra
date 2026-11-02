@@ -7,11 +7,11 @@ import { MAX_SUPPORTED_SIZE } from "@/constants";
 import { EmbeddedError } from "@/constants/errors";
 import { Messages } from "@/constants/messages";
 import { TIME } from "@/constants/time";
-import getBufferFromUrl from "@/emotes/source/getBufferFromUrl";
+import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 import { normalizeEmoteBuffer } from "@/lib/buffer/normalize-emote-buffer";
 import { redisClient } from "@/redis";
 import { Emote, EmoteSchema } from "@/types";
-import parseDiscordRegexName from "@/utils/discord/parseDiscordRegexName";
+import parseDiscordRegexName from "@/utils/discord/parse-discord-regex-name";
 
 import { TempFileManager } from "#/files/temp-file-manager";
 

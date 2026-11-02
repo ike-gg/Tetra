@@ -1,6 +1,6 @@
 import { spawn } from "bun";
 
-import { Arguments } from "./xGifsicle";
+import { Arguments } from "./x-gifsicle";
 
 // Placeholders resolved to stdin/stdout ("-"), so no temp files are needed.
 const input = Symbol("inputPath");

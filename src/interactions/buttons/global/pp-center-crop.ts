@@ -8,7 +8,7 @@ import {
   ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 export const PPCenterCropContinuitySchema = z.object({
   processingEmoteKey: z.string(),

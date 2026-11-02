@@ -4,8 +4,8 @@ import { z } from "zod";
 
 import { discordRestApi } from "@/lib/discord-rest-api";
 
-import { basicGuildParsePremium } from "../../../utils/discord/guildParsePremium";
-import { TetraAPIError } from "../../TetraAPIError";
+import { basicGuildParsePremium } from "../../../utils/discord/guild-parse-premium";
+import { TetraAPIError } from "../../tetra-api-error";
 
 const getGuildQuerySchema = z.object({
   guildId: z.string(),

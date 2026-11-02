@@ -1,5 +1,5 @@
 import { Emote } from "../../../types";
-import isValidURL from "../../../utils/isValidURL";
+import isValidURL from "../../../utils/is-valid-url";
 
 const getGiphyGif = async (giphyUrl: string): Promise<Emote> => {
   if (!isValidURL(giphyUrl)) throw new Error("Provided URL is not valid.");

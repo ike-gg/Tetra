@@ -2,8 +2,8 @@ import { PlatformResult } from "@/interactions/commands/global/chat-input/media"
 
 import { EmbeddedError } from "../../constants/errors";
 import { getRemoteResourceDetails } from "../../utils";
-import { TwitchManager } from "../../utils/managers/TwitchManager";
-import { fetchCobaltAPI } from "./helper/fetchCobaltAPI";
+import { TwitchManager } from "../../utils/managers/twitch-manager";
+import { fetchCobaltAPI } from "./helper/fetch-cobalt-api";
 
 export const handleTwitchClip = async (_url: string): Promise<PlatformResult> => {
   const url = new URL(_url);

@@ -8,8 +8,8 @@ import { discordOauth } from "@/index";
 import { db } from "../../../db";
 import { sessions, users } from "../../../db/schema";
 import { env } from "../../../env";
-import { TetraAPIError } from "../../TetraAPIError";
-import { API_CONSTANTS } from "../../constants/API_CONSTANTS";
+import { TetraAPIError } from "../../tetra-api-error";
+import { API_CONSTANTS } from "../../constants/api-constants";
 
 import { ApiConsole } from "#/loggers";
 

@@ -7,7 +7,7 @@ import {
   SelectMenuInteraction,
 } from "discord.js";
 import { Emote, ExtractedEmote } from ".";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/feedback-manager";
 
 export interface Base {
   id: string;

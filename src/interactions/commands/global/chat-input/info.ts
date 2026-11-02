@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 
 import { APP } from "@/constants";
-import { APP_EMOTES } from "@/constants/app_emotes";
+import { APP_EMOTES } from "@/constants/app-emotes";
 import { ChatInputCommandHandler } from "@/interactions";
 import { URLButton } from "@/utils/discord/components/url-button";
 

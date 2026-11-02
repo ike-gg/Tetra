@@ -9,7 +9,7 @@ import { discordRestApi } from "@/lib/discord-rest-api";
 
 import { db } from "../../../db";
 import { removedEmotes } from "../../../db/schema";
-import { TetraAPIError } from "../../TetraAPIError";
+import { TetraAPIError } from "../../tetra-api-error";
 
 const getGuildParams = z.object({
   guildId: z.string(),

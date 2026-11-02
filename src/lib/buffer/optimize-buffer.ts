@@ -3,10 +3,10 @@ import sharp from "sharp";
 
 import { MAX_EMOTE_SIZE } from "@/constants";
 import { EmbeddedError } from "@/constants/errors";
-import { AutoXGifsicle, EMOTE_MAX_SIDE } from "@/lib/buffer/AutoXGifsicle";
+import { AutoXGifsicle, EMOTE_MAX_SIDE } from "@/lib/buffer/auto-x-gifsicle";
 import { normalizeEmoteBuffer } from "@/lib/buffer/normalize-emote-buffer";
 import { FittingOption } from "@/types";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 import { CoreConsole } from "#/loggers";
 

@@ -15,7 +15,7 @@ import {
   ContextMenuMessageCommandHandler,
   GenericButtonInteractionHandler,
 } from "../interactions";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/feedback-manager";
 
 export interface TetraClient extends Client {
   chatInputCommands: Collection<string, ChatInputCommandHandler>;

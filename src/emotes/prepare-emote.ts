@@ -2,7 +2,7 @@ import { EmoteOptimizationComponent } from "@/components/emote-optimization.comp
 import { MAX_EMOTE_SIZE } from "@/constants";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import { Emote } from "@/types";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 import { editEmoteByUser } from "./edit-emote-by-user";
 

@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "discord.js";
 
 import { ChatInputCommandHandler } from "@/interactions";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new SlashCommandBuilder()
   .setName("entitlementlist")

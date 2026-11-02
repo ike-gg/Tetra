@@ -1,6 +1,6 @@
 import { Emote } from "../../../types";
 import { BTTVResponseById } from "../../../types/bttv";
-import bttvTransformSourceUrl from "./helpers/bttvTransformSourceUrl";
+import bttvTransformSourceUrl from "./helpers/bttv-transform-source-url";
 import { bttvGetUrlById } from "./helpers/constants";
 import fetch from "node-fetch";
 

@@ -17,7 +17,7 @@ import { EmbeddedError } from "../../constants/errors";
 import { Messages } from "../../constants/messages";
 import { isDevelopment } from "../../env";
 import { TetraClient } from "../../types";
-import { TetraEmbed, TetraEmbedContent } from "../embedMessages/TetraEmbed";
+import { TetraEmbed, TetraEmbedContent } from "../embed-messages/tetra-embed";
 
 import { CoreConsole } from "#/loggers";
 

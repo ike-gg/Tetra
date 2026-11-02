@@ -11,8 +11,8 @@ import { MAX_EMOTE_SIZE } from "@/constants";
 import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
 import AutoOptimizeEmoteContinuity from "@/interactions/buttons/global/auto-optimize-emote";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
-import { TetraEmbed } from "@/utils/embedMessages/TetraEmbed";
-import multilineText from "@/utils/multilineText";
+import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
+import multilineText from "@/utils/multiline-text";
 
 interface EmoteOptimizationComponentOptions {
   processingEmoteKey: string;

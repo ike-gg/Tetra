@@ -7,7 +7,7 @@ import {
   ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { EmoteSchema } from "@/types";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 export const SelectEmoteContinuitySchema = z.object({
   emote: EmoteSchema,

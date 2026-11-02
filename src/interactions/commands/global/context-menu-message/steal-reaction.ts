@@ -5,7 +5,7 @@ import { Messages } from "@/constants/messages";
 import { ContextMenuMessageCommandHandler } from "@/interactions";
 import { EmoteStorageService } from "@/services/emote-storage.service";
 import { emotesFromReactions } from "@/utils/discord/emotes-from-reactions";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new ContextMenuCommandBuilder()
   .setName("Steal reaction")

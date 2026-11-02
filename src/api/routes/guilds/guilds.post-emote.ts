@@ -8,8 +8,8 @@ import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
 import { discordRestApi } from "@/lib/discord-rest-api";
 import { getEmoteUrl } from "@/utils/discord/get-emote-url";
 
-import getBufferFromUrl from "../../../emotes/source/getBufferFromUrl";
-import { TetraAPIError } from "../../TetraAPIError";
+import getBufferFromUrl from "../../../emotes/source/get-buffer-from-url";
+import { TetraAPIError } from "../../tetra-api-error";
 
 const getGuildParams = z.object({
   guildId: z.string(),

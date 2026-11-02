@@ -4,8 +4,8 @@ import prettyBytes from "pretty-bytes";
 import { supportedMediaPlatforms } from "@/interactions/commands/global/chat-input/media";
 
 import { MAX_EMOTE_SIZE } from ".";
-import { TetraEmbedContent } from "../utils/embedMessages/TetraEmbed";
-import multilineText from "../utils/multilineText";
+import { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
+import multilineText from "../utils/multiline-text";
 
 type T = TetraEmbedContent;
 

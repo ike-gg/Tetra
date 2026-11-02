@@ -2,10 +2,10 @@ import { ChatInputCommandInteraction } from "discord.js";
 
 import { EmoteListComponent } from "@/components/emote-list.component";
 import { Messages } from "@/constants/messages";
-import stvGetEmotesFromChannel from "@/emotes/source/7tv/stvGetEmotesFromChannel";
+import stvGetEmotesFromChannel from "@/emotes/source/7tv/stv-get-emotes-from-channel";
 import { EmoteStorageService } from "@/services/emote-storage.service";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
-import { TwitchManager } from "@/utils/managers/TwitchManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import { TwitchManager } from "@/utils/managers/twitch-manager";
 
 export const addEmoteChannel = async (
   interaction: ChatInputCommandInteraction,

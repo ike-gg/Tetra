@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 
 import { Messages } from "@/constants/messages";
-import getBufferFromUrl from "@/emotes/source/getBufferFromUrl";
+import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 import { ChatInputCommandHandler } from "@/interactions";
 import {
   handleInstagramMedia,
@@ -16,14 +16,14 @@ import {
   handleTwitchClip,
   handleTwitterMedia,
 } from "@/lib/media";
-import { renderSlideshow } from "@/lib/media/helper/renderSlideshow";
+import { renderSlideshow } from "@/lib/media/helper/render-slideshow";
 import { URLButton } from "@/utils/discord/components/url-button";
-import { guildParsePremium } from "@/utils/discord/guildParsePremium";
-import { TetraEmbed } from "@/utils/embedMessages/TetraEmbed";
-import { formatDate } from "@/utils/formatDate";
-import isValidURL from "@/utils/isValidURL";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
-import { removeQueryFromUrl } from "@/utils/removeQueryFromUrl";
+import { guildParsePremium } from "@/utils/discord/guild-parse-premium";
+import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
+import { formatDate } from "@/utils/format-date";
+import isValidURL from "@/utils/is-valid-url";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import { removeQueryFromUrl } from "@/utils/remove-query-from-url";
 
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";

@@ -2,13 +2,13 @@ import { ChatInputCommandInteraction } from "discord.js";
 
 import { EmbeddedError } from "@/constants/errors";
 import { prepareEmote } from "@/emotes/prepare-emote";
-import stvGetEmoteById from "@/emotes/source/7tv/stvGetEmoteById";
-import bttvGetEmoteById from "@/emotes/source/bttv/bttvGetEmoteById";
-import ffzGetEmoteById from "@/emotes/source/ffz/ffzGetEmoteById";
-import getEmoteFromUrl from "@/emotes/source/file/getEmoteFromUrl";
+import stvGetEmoteById from "@/emotes/source/7tv/stv-get-emote-by-id";
+import bttvGetEmoteById from "@/emotes/source/bttv/bttv-get-emote-by-id";
+import ffzGetEmoteById from "@/emotes/source/ffz/ffz-get-emote-by-id";
+import getEmoteFromUrl from "@/emotes/source/file/get-emote-from-url";
 import { Emote } from "@/types";
-import isValidURL from "@/utils/isValidURL";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import isValidURL from "@/utils/is-valid-url";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 /** Matches `cdn.7tv.app` for `7tv.app`, but not `my7tvfan.com`. */
 const isDomain = (hostname: string, roots: string[]) =>

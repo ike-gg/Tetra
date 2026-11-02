@@ -2,7 +2,7 @@ import { Interaction } from "discord.js";
 
 import { ChatInputCommandHandler, ContextMenuMessageCommandHandler } from ".";
 import { TetraClient } from "../types";
-import { FeedbackManager } from "../utils/managers/FeedbackManager";
+import { FeedbackManager } from "../utils/managers/feedback-manager";
 import { BaseContinuity } from "./continuity/base-continuity";
 import { interactionLogger } from "./interaction-logger";
 

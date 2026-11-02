@@ -2,8 +2,8 @@ import { ApplicationCommandType, ContextMenuCommandBuilder } from "discord.js";
 
 import { Messages } from "@/constants/messages";
 import { ContextMenuMessageCommandHandler } from "@/interactions";
-import findEmotesInMessage from "@/utils/discord/findEmotesInMessage";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import findEmotesInMessage from "@/utils/discord/find-emotes-in-message";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new ContextMenuCommandBuilder()
   .setName("Save to Panel")

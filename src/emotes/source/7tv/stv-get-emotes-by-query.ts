@@ -3,8 +3,8 @@ import { stvGetGraphqlUrl } from "./helpers/constants";
 import { Emote } from "../../../types";
 import { STVResponseGQL } from "../../../types/7tv";
 import sleep from "../../../utils/sleep";
-import stvGetGraphqlRequestOptions from "./helpers/stvGetGraphqlRequestOptions";
-import stvTransformSourceUrl from "./helpers/stvTransformSourceUrl";
+import stvGetGraphqlRequestOptions from "./helpers/stv-get-graphql-request-options";
+import stvTransformSourceUrl from "./helpers/stv-transform-source-url";
 import { Messages } from "../../../constants/messages";
 
 const stvGetEmotesByQuery = async (query: string): Promise<Emote[]> => {

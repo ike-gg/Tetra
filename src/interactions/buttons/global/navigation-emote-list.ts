@@ -6,7 +6,7 @@ import {
   BaseContinuity,
   ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
-import { FeedbackManager } from "@/utils/managers/FeedbackManager";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 export const NavigationEmoteListContinuitySchema = z.object({
   storageKey: z.string(),

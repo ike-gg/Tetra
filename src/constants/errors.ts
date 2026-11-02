@@ -1,4 +1,4 @@
-import { TetraEmbedContent } from "../utils/embedMessages/TetraEmbed";
+import { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
 
 export enum ErrorType {
   WARNING = "warning",

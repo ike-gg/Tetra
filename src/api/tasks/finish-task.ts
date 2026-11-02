@@ -6,8 +6,8 @@ import { internalClient } from "@/bot";
 
 import { discordOauth } from "../..";
 import { Messages } from "../../constants/messages";
-import { TetraEmbed } from "../../utils/embedMessages/TetraEmbed";
-import { TetraAPIError } from "../TetraAPIError";
+import { TetraEmbed } from "../../utils/embed-messages/tetra-embed";
+import { TetraAPIError } from "../tetra-api-error";
 
 const schema = z.object({
   emote: z.string().refine((value) => value.length % 4),
