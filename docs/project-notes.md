@@ -57,7 +57,7 @@ Two kinds of processes:
 - `bun run dev` – watch, `bun run start` – production
 - `bun run deploy:dev` – register commands on `DEV_GUILDS`; `bun run deployCommands` – globally
 - `bun run db:push` / `db:studio` – Drizzle
-- Typecheck: `npx tsc --noEmit -p .` (no script; currently 8 pre-existing errors, mostly unused variables + a `@discordjs/rest` version conflict)
+- Typecheck: `npx tsc --noEmit -p .` (no script yet; passes with 0 errors)
 - No tests, no linter.
 
 Environment variables are validated in `src/env.ts` (Zod + a readable error table). Twitch/Tenor/Imgur API keys and `SESSION_KEYS` are required even when the API is disabled.
@@ -72,7 +72,6 @@ Environment variables are validated in `src/env.ts` (Zod + a readable error tabl
 2. **SSRF in `POST /guilds/:guildId/emote`**: any URL goes to a server-side `fetch` (localhost, cloud metadata). Also applies to `/addemote bylink`.
 3. **OAuth without `state`** (login CSRF); `console.log(session)` logs the session token in `/auth/callback`.
 4. Cookie: hardcoded `domain: "localhost"`, `secure` without `trust proxy`, `signed: false`; sessions never expire and there is no logout; no rate limiting (commented out).
-5. **`.env-old` is not in `.gitignore`** (only `.env` and a few variants are ignored). Use `.env*` + `!.env.example`.
 
 ### 🟠 Bugs
 
@@ -117,7 +116,7 @@ Environment variables are validated in `src/env.ts` (Zod + a readable error tabl
 - **Mixed state stores**: continuity in Postgres, processing in Redis + local disk. Temp files will break when scaling beyond one machine.
 - **No queue/concurrency limit** for sharp/gifsicle/ffmpeg: a few large files at once will hog shard CPU.
 - **No tests.** Easiest start: `src/lib/buffer` (pure buffer functions), e.g. `bun test` with a few fixture GIFs.
-- Add `typecheck` and `format` scripts to `package.json` and fix the 8 `tsc` errors so typecheck can be a gate.
+- Add `typecheck` and `format` scripts to `package.json` so typecheck can be a CI gate.
 - `ShardingManager("./src/bot.ts")` depends on the working directory; prefer `path.join(import.meta.dir, "bot.ts")`.
 
 ## Agent pitfalls

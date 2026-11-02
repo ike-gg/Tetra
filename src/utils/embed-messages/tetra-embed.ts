@@ -1,5 +1,4 @@
 import { EmbedBuilder, EmbedData } from "discord.js";
-import { getRandomLoadingEmote } from "../../constants/messages";
 
 interface ExtraEmbedData extends EmbedData {
   hideTitle?: boolean;

@@ -5,7 +5,7 @@ import path from "path";
 
 import { TempFileManager } from "#/files/temp-file-manager";
 
-export const watermarkVideo = async (video: Buffer, id: string): Promise<Buffer> => {
+export const watermarkVideo = async (video: Buffer, _id: string): Promise<Buffer> => {
   return new Promise((resolve, reject) => {
     const pid = randomUUID();
     const tempDir = TempFileManager.create();

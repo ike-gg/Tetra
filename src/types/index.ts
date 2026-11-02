@@ -3,7 +3,7 @@ import {
   ButtonInteraction,
   Collection,
   CommandInteraction,
-  SelectMenuInteraction,
+  StringSelectMenuInteraction,
   Client,
 } from "discord.js";
 import { z } from "zod";
@@ -34,8 +34,8 @@ export interface ExecutableButtonInteraction extends ButtonInteraction {
   execute(interaction: ButtonInteraction, client?: TetraClient): void;
 }
 
-export interface ExecutableSelectMenu extends SelectMenuInteraction {
-  execute(interaction: SelectMenuInteraction, client?: TetraClient): void;
+export interface ExecutableSelectMenu extends StringSelectMenuInteraction {
+  execute(interaction: StringSelectMenuInteraction, client?: TetraClient): void;
 }
 
 export const SupportedEmoteOriginSchema = z.enum([

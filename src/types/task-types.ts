@@ -4,7 +4,7 @@ import {
   ContextMenuCommandInteraction,
   Guild,
   MessageComponentInteraction,
-  SelectMenuInteraction,
+  StringSelectMenuInteraction,
 } from "discord.js";
 import { Emote, ExtractedEmote } from ".";
 import { FeedbackManager } from "../utils/managers/feedback-manager";
@@ -16,7 +16,7 @@ export interface Base {
     | CommandInteraction
     | ButtonInteraction
     | ContextMenuCommandInteraction
-    | SelectMenuInteraction;
+    | StringSelectMenuInteraction;
   feedback?: FeedbackManager;
   message?: MessageComponentInteraction;
   webAccess?: boolean;

@@ -60,7 +60,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (!userInGuild)
       throw new TetraAPIError(401, "Not authorized. Not found user in guild.");
 
-    const hasPermissions = userInGuild.permissions.has("ManageEmojisAndStickers");
+    const hasPermissions = userInGuild.permissions.has("ManageGuildExpressions");
 
     if (!hasPermissions)
       throw new TetraAPIError(401, "Not authorized. Missing permissions in guild.");

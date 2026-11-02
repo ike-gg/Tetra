@@ -3,12 +3,13 @@ import { randomUUID } from "crypto";
 import {
   ButtonInteraction,
   CommandInteraction,
-  SelectMenuBuilder,
-  SelectMenuInteraction,
+  StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
   ButtonStyle,
   BaseMessageOptions,
   isJSONEncodable,
   DiscordAPIError,
+  MessageFlags,
 } from "discord.js";
 
 import SubmitErrorLogGenericButton from "@/interactions/buttons/generic/submit-error-log";
@@ -34,7 +35,10 @@ export class FeedbackManager {
   public relatedTask?: string;
 
   constructor(
-    public interaction: CommandInteraction | ButtonInteraction | SelectMenuInteraction,
+    public interaction:
+      | CommandInteraction
+      | ButtonInteraction
+      | StringSelectMenuInteraction,
     options?: {
       ephemeral?: boolean;
     }
@@ -76,7 +80,10 @@ export class FeedbackManager {
       if (!(this.interaction instanceof CommandInteraction)) {
         await this.interaction.update(content);
       } else {
-        await this.interaction.reply(content);
+        await this.interaction.reply({
+          ...content,
+          flags: this.ephemeral ? MessageFlags.Ephemeral : undefined,
+        });
       }
     }
   }
@@ -183,7 +190,7 @@ export class FeedbackManager {
   }
 
   async updateComponents(
-    components: ActionRowBuilder<ButtonBuilder | SelectMenuBuilder>[]
+    components: ActionRowBuilder<ButtonBuilder | StringSelectMenuBuilder>[]
   ) {
     await this.sendMessage({
       components: components,

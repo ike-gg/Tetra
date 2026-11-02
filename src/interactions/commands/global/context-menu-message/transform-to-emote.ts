@@ -19,7 +19,7 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
 
   await feedback.working();
 
-  if (!interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
+  if (!interaction.memberPermissions?.has("ManageGuildExpressions")) {
     await feedback.missingPermissions();
     return;
   }

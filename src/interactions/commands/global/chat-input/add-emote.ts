@@ -88,7 +88,7 @@ export default new ChatInputCommandHandler(
   async (interaction: ChatInputCommandInteraction) => {
     const feedback = new FeedbackManager(interaction);
 
-    if (!interaction.memberPermissions?.has("ManageEmojisAndStickers")) {
+    if (!interaction.memberPermissions?.has("ManageGuildExpressions")) {
       await feedback.missingPermissions();
       return;
     }

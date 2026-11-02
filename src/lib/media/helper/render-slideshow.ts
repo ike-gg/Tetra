@@ -58,8 +58,8 @@ export const renderSlideshow = async (
     })
       .audio(`${tempDirPath}/audio.mp3`)
       .save(`${tempDirPath}/final.mp4`)
-      .on("error", (err: any, stdout: any, stderr: any) => {
-        console.log(err, stdout);
+      .on("error", (err: any, _stdout: any, stderr: any) => {
+        console.log(err, stderr);
         reject(new EmbeddedError("Error occurred while rendering slideshow"));
       })
       .on("end", async () => {

@@ -1,5 +1,3 @@
-import { Downloader } from "tiktokapi-src";
-
 interface TikTokVideo {
   video: string;
   author?: string;

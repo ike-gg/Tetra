@@ -21,10 +21,6 @@ export default new ChatInputCommandHandler(command, async (interaction, client) 
     (await client.shard!.fetchClientValues("guilds.cache.size")) as number[]
   ).reduce((a: number, b: number) => a + b, 0);
 
-  const usersCount = (
-    (await client.shard!.fetchClientValues("users.cache.size")) as number[]
-  ).reduce((a: number, b: number) => a + b, 0);
-
   const componentsRow = new ActionRowBuilder<ButtonBuilder>();
 
   componentsRow.addComponents(
