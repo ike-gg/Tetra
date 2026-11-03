@@ -75,7 +75,7 @@ Environment variables are validated in `src/env.ts` (Zod + a readable error tabl
 
 ### 🟠 Bugs
 
-1. **`stv-get-emotes-by-query.ts`: infinite loop.** `while (data.errors || tries > 5)`: if 7TV keeps returning GQL errors the loop never ends (a new request every 1 s). Should be `data.errors && tries < 5`. Also `Messages.EMOTE_NOT_FOUND.toString()` yields `"[object Object]"`.
+1. ~~**`stv-get-emotes-by-query.ts`: infinite loop**~~ – fixed (max 3 tries, then an `EmbeddedError`). Note: as of 2026-11-03 7TV search returns `LOAD_ERROR failed to search` on both v3 (`7tv.io/v3/gql`) and v4 (`api.7tv.app/v4/gql`); v3 is legacy, so plan a move to v4 (`emotes.search(query, page, perPage, sort)`).
 2. **`interaction-logger.ts`: ID precision loss.** `id: Number(interaction.id)`, but a snowflake (~1.3e18) > `Number.MAX_SAFE_INTEGER`. Stored IDs are rounded, PK collisions are possible (the insert fails silently in `catch`). The column should be `bigint({ mode: "bigint" })` or `varchar`. Also `input` is stored as a JSON string inside `jsonb`.
 3. **`interaction-handler.ts`: command handlers are not awaited** and the `try {} catch {}` is empty. Command errors end up as unhandled rejections with no feedback to the user. Same in `events/interaction-create.ts` (`interactionHandler` without `await`).
 4. **`events/guild-emoji-delete.ts`**:

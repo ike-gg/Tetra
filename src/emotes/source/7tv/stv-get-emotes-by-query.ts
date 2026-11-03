@@ -1,11 +1,15 @@
 import fetch from "node-fetch";
-import { stvGetGraphqlUrl } from "./helpers/constants";
+
+import { EmbeddedError } from "../../../constants/errors";
+import { Messages } from "../../../constants/messages";
 import { Emote } from "../../../types";
 import { STVResponseGQL } from "../../../types/7tv";
 import sleep from "../../../utils/sleep";
+import { stvGetGraphqlUrl } from "./helpers/constants";
 import stvGetGraphqlRequestOptions from "./helpers/stv-get-graphql-request-options";
 import stvTransformSourceUrl from "./helpers/stv-transform-source-url";
-import { Messages } from "../../../constants/messages";
+
+const MAX_TRIES = 3;
 
 const stvGetEmotesByQuery = async (query: string): Promise<Emote[]> => {
   let data: STVResponseGQL;
@@ -17,19 +21,21 @@ const stvGetEmotesByQuery = async (query: string): Promise<Emote[]> => {
     data = await response.json();
 
     if (data.errors?.at(0)?.message.includes("70429")) {
-      throw new Error(Messages.EMOTE_NOT_FOUND.toString());
+      throw new EmbeddedError(Messages.EMOTE_NOT_FOUND);
     }
 
     if (data.errors) {
       tries++;
-      await sleep(1000);
+      if (tries < MAX_TRIES) await sleep(1000);
     }
-  } while (data.errors || tries > 5);
+  } while (data.errors && tries < MAX_TRIES);
 
   if (data.errors) {
-    throw new Error(
-      `Request failed, try again in a while. \`STV_REQUEST_QUERY_FAILED5\``
-    );
+    throw new EmbeddedError({
+      title: "7TV is unavailable",
+      description:
+        "7TV search is not responding right now. Try again later or use another source (BTTV, FFZ).",
+    });
   }
 
   const emotes: Emote[] = data.data.emotes.items.map((emote) => {
