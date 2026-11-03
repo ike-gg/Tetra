@@ -1,6 +1,6 @@
 import { EmbeddedError } from "@/constants/errors";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 import { Messages } from "../constants/messages";
 import { guildParsePremium } from "../utils/discord/guild-parse-premium";

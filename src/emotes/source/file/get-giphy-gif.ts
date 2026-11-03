@@ -1,4 +1,4 @@
-import { Emote } from "../../../types";
+import type { Emote } from "../../../types";
 import isValidURL from "../../../utils/is-valid-url";
 
 const getGiphyGif = async (giphyUrl: string): Promise<Emote> => {

@@ -1,4 +1,9 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, TextChannel } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  type TextChannel,
+} from "discord.js";
 
 import { GenericButtonInteractionHandler } from "../..";
 
@@ -36,9 +41,9 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
 
     try {
       const user = {
-        username: interaction.user?.username ?? "unknown user",
-        avatarURL: interaction.user?.avatarURL?.() ?? "",
-        id: interaction.user?.id ?? "unknown id",
+        username: interaction.user.username,
+        avatarURL: interaction.user.avatarURL() ?? "",
+        id: interaction.user.id,
       };
 
       const guild = {

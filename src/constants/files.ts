@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 
 const resolveDir = (dir: string) => path.join(import.meta.dir, dir);
 

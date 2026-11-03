@@ -1,8 +1,9 @@
-import { Emote } from "../../../types";
-import { BTTVResponseById } from "../../../types/bttv";
+import fetch from "node-fetch";
+
+import type { Emote } from "../../../types";
+import type { BTTVResponseById } from "../../../types/bttv";
 import bttvTransformSourceUrl from "./helpers/bttv-transform-source-url";
 import { bttvGetUrlById } from "./helpers/constants";
-import fetch from "node-fetch";
 
 const bttvGetEmoteById = async (emoteId: string): Promise<Emote> => {
   const response = await fetch(bttvGetUrlById(emoteId));

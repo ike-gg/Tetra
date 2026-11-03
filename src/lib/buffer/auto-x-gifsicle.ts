@@ -1,7 +1,7 @@
 import { MAX_EMOTE_SIZE } from "@/constants";
 import { EmbeddedError } from "@/constants/errors";
 
-import { Arguments, buildFrameDropArgs, xGifsicle } from "./x-gifsicle";
+import { type Arguments, buildFrameDropArgs, xGifsicle } from "./x-gifsicle";
 
 /** Discord stores and displays emotes at max 128px anyway. */
 export const EMOTE_MAX_SIDE = 128;

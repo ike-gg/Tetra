@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { Response, NextFunction, Request } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import { isProduction } from "@/env";
@@ -7,9 +7,9 @@ import { discordOauth } from "@/index";
 
 import { db } from "../../db";
 import { sessions, users } from "../../db/schema";
-import { TetraAPIError } from "../tetra-api-error";
 import { API_CONSTANTS } from "../constants/api-constants";
 import { sessionSchema } from "../routes/auth/auth-router";
+import { TetraAPIError } from "../tetra-api-error";
 
 import { ApiConsole } from "#/loggers";
 

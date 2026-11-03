@@ -1,9 +1,9 @@
 import {
   ActionRowBuilder,
-  BaseMessageOptions,
+  type BaseMessageOptions,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
+  type EmbedBuilder,
   StringSelectMenuBuilder,
 } from "discord.js";
 
@@ -17,7 +17,7 @@ import PPSplitContinuity from "@/interactions/select-menu/global/pp-split";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import { guildParsePremium } from "@/utils/discord/guild-parse-premium";
 import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 import multilineText from "@/utils/multiline-text";
 
 interface EmoteReviewComponentOptions {

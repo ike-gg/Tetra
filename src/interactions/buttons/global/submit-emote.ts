@@ -1,11 +1,11 @@
-import { ButtonInteraction } from "discord.js";
+import type { ButtonInteraction } from "discord.js";
 import { z } from "zod";
 
 import { addEmoteToGuild } from "@/emotes/add-emote-to-guild";
 import { addSlicesToGuild } from "@/emotes/add-slices-to-guild";
 import {
   BaseContinuity,
-  ContinuityHandler,
+  type ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";

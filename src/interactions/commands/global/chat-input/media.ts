@@ -125,10 +125,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
   const { fileLimit } = guildParsePremium(interaction.guild!);
   const feedback = new FeedbackManager(interaction);
 
-  const itemUrl = input
-    .split(" ")
-    .filter((i) => isValidURL(i))
-    .at(0);
+  const itemUrl = input.split(" ").find((i) => isValidURL(i));
 
   if (!itemUrl) {
     await feedback.error(Messages.INVALID_REFERENCE);
@@ -164,7 +161,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
       return;
     }
 
-    let mediaToUpload: AttachmentBuilder[] = [];
+    const mediaToUpload: AttachmentBuilder[] = [];
 
     if (isSlideshow) {
       await feedback.info("Downloading slideshow assets...");
@@ -197,13 +194,13 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     }
 
     if (!isSlideshow) {
-      media.forEach((m) =>
+      for (const m of media) {
         mediaToUpload.push(
           new AttachmentBuilder(m.source, {
             name: `tetra_${interaction.id}.${m.type}`,
           })
-        )
-      );
+        );
+      }
     }
 
     const metadataRow = new ActionRowBuilder<ButtonBuilder>();
@@ -241,7 +238,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
           .setEmoji({
             name: "👤",
           })
-          .setLabel("@" + author)
+          .setLabel(`@${author}`)
           .setDisabled(true)
       );
 

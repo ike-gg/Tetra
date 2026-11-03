@@ -1,6 +1,6 @@
 import { spawn } from "bun";
 
-import { Arguments } from "./x-gifsicle";
+import type { Arguments } from "./x-gifsicle";
 
 // Placeholders resolved to stdin/stdout ("-"), so no temp files are needed.
 const input = Symbol("inputPath");
@@ -62,7 +62,11 @@ export const execBunBuffer = async (opts: {
     ]);
 
     if (timedOut) {
-      throw new GifsicleError(`gifsicle timed out after ${timeoutMs}ms`, exitCode, stderr);
+      throw new GifsicleError(
+        `gifsicle timed out after ${timeoutMs}ms`,
+        exitCode,
+        stderr
+      );
     }
 
     if (exitCode !== 0 || stdout.byteLength === 0) {

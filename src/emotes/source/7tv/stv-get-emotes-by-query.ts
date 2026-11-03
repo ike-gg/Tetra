@@ -2,8 +2,8 @@ import fetch from "node-fetch";
 
 import { EmbeddedError } from "../../../constants/errors";
 import { Messages } from "../../../constants/messages";
-import { Emote } from "../../../types";
-import { STVResponseGQL } from "../../../types/7tv";
+import type { Emote } from "../../../types";
+import type { STVResponseGQL } from "../../../types/7tv";
 import sleep from "../../../utils/sleep";
 import { stvGetGraphqlUrl } from "./helpers/constants";
 import stvGetGraphqlRequestOptions from "./helpers/stv-get-graphql-request-options";

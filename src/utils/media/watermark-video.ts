@@ -1,7 +1,7 @@
+import * as fs from "node:fs";
+import path from "node:path";
 import { randomUUID } from "crypto";
 import ffmpeg from "ffmpeg";
-import * as fs from "fs";
-import path from "path";
 
 import { TempFileManager } from "#/files/temp-file-manager";
 
@@ -39,7 +39,7 @@ export const watermarkVideo = async (video: Buffer, _id: string): Promise<Buffer
           reject(new Error("Failed to read video?"));
         }
       });
-    } catch (error) {
+    } catch {
       reject(new Error("FFMPEG failed."));
     }
   });

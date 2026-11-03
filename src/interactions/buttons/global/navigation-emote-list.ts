@@ -1,10 +1,10 @@
-import { ButtonInteraction } from "discord.js";
+import type { ButtonInteraction } from "discord.js";
 import { z } from "zod";
 
 import { EmoteListComponent } from "@/components/emote-list.component";
 import {
   BaseContinuity,
-  ContinuityHandler,
+  type ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
@@ -27,7 +27,7 @@ export class NavigationEmoteListButtonInteraction extends BaseContinuity<Navigat
 }
 
 const NavigationEmoteListContinuity = new NavigationEmoteListButtonInteraction(
-  async function ({ interaction, data }) {
+  async ({ interaction, data }) => {
     const feedback = new FeedbackManager(interaction);
 
     await feedback.removeComponents();

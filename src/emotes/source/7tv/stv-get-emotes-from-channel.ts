@@ -1,7 +1,8 @@
 import fetch from "node-fetch";
+
+import type { Emote } from "../../../types";
+import type { STVSetEmotes } from "../../../types/7tv";
 import { stvGetUrlByChannel } from "./helpers/constants";
-import { STVSetEmotes } from "../../../types/7tv";
-import { Emote } from "../../../types";
 import stvTransformSourceUrl from "./helpers/stv-transform-source-url";
 
 const stvGetEmotesFromChannel = async (channelId: string): Promise<Emote[]> => {

@@ -1,11 +1,11 @@
-import { GuildEmoji } from "discord.js";
+import type { GuildEmoji } from "discord.js";
 import prettyBytes from "pretty-bytes";
 
 import { supportedMediaPlatforms } from "@/interactions/commands/global/chat-input/media";
 
-import { MAX_EMOTE_SIZE } from ".";
-import { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
+import type { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
 import multilineText from "../utils/multiline-text";
+import { MAX_EMOTE_SIZE } from ".";
 
 type T = TetraEmbedContent;
 

@@ -1,6 +1,6 @@
 import {
   ActionRowBuilder,
-  ButtonBuilder,
+  type ButtonBuilder,
   EmbedBuilder,
   formatEmoji,
   hyperlink,

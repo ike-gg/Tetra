@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import * as z from "zod";
 
-import { PlatformResult } from "@/interactions/commands/global/chat-input/media";
+import type { PlatformResult } from "@/interactions/commands/global/chat-input/media";
 
 import { EmbeddedError } from "../../constants/errors";
 
@@ -25,7 +25,7 @@ export const handleStreamableMedia = async (_url: string): Promise<PlatformResul
 
     if (request.status !== 200) {
       const error = await request.text();
-      throw new EmbeddedError("Streamable API error: " + error);
+      throw new EmbeddedError(`Streamable API error: ${error}`);
     }
 
     const response = await request.json();

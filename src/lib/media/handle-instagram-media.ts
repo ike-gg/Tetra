@@ -1,4 +1,4 @@
-import {
+import type {
   MediaOutput,
   PlatformHandlerCallback,
 } from "@/interactions/commands/global/chat-input/media";

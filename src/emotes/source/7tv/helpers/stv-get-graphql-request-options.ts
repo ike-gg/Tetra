@@ -1,4 +1,4 @@
-import { RequestInit } from "node-fetch";
+import type { RequestInit } from "node-fetch";
 
 export default (query: string, ignoreTags: boolean = false): RequestInit => {
   return {

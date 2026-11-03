@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 import { eq } from "drizzle-orm";
-import { NextFunction, Request, Response, Router } from "express";
+import { type NextFunction, type Request, type Response, Router } from "express";
 import { z } from "zod";
 
 import { discordOauth } from "@/index";
@@ -8,8 +8,8 @@ import { discordOauth } from "@/index";
 import { db } from "../../../db";
 import { sessions, users } from "../../../db/schema";
 import { env } from "../../../env";
-import { TetraAPIError } from "../../tetra-api-error";
 import { API_CONSTANTS } from "../../constants/api-constants";
+import { TetraAPIError } from "../../tetra-api-error";
 
 import { ApiConsole } from "#/loggers";
 
@@ -52,7 +52,7 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
       where: (users, { eq }) => eq(users.discord_id, userData.id),
     });
 
-    let userId;
+    let userId: number;
 
     if (existingUser) {
       await db
@@ -93,7 +93,7 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
 
     req.session = session;
 
-    res.redirect(env.FRONTEND_URL + "/panel");
+    res.redirect(`${env.FRONTEND_URL}/panel`);
   } catch (error) {
     ApiConsole.dev.error(error);
     if (error instanceof z.ZodError) {

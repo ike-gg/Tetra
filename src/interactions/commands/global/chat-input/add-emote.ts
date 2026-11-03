@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+import { type ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
 
 import { ChatInputCommandHandler } from "@/interactions";
 import { addEmoteChannel } from "@/interactions/subcommands/add-emote-by-channel";

@@ -1,6 +1,6 @@
-import OAuth from "discord-oauth2";
 import { PermissionsBitField } from "discord.js";
-import { NextFunction, Request, Response } from "express";
+import type OAuth from "discord-oauth2";
+import type { NextFunction, Request, Response } from "express";
 
 import { discordOauth, shardingManager } from "@/index";
 
@@ -15,7 +15,7 @@ export const guildsGetGuilds = async (req: Request, res: Response, _: NextFuncti
   let userGuilds: OAuth.PartialGuild[];
   try {
     userGuilds = await discordOauth.getUserGuilds(req.accessToken!);
-  } catch (error) {
+  } catch {
     throw new TetraAPIError(401, "Unauthorized", "OAUTH_FAILED_GET_USER_GUILDS");
   }
 

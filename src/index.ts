@@ -1,5 +1,5 @@
-import DiscordOauth2 from "discord-oauth2";
 import { ShardingManager } from "discord.js";
+import DiscordOauth2 from "discord-oauth2";
 
 import { initApi } from "./api";
 import { env, isProduction } from "./env";
@@ -29,6 +29,9 @@ shardingManager.on("shardCreate", (shard) => {
   BotConsole.success(`Launched shard ${shard.id}`);
 });
 
-shardingManager.spawn();
+shardingManager.spawn().catch((error) => {
+  CoreConsole.error("Failed to spawn shards:", error);
+  process.exit(1);
+});
 
 export { discordOauth, shardingManager };

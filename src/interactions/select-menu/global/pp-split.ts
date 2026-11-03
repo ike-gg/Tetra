@@ -1,5 +1,5 @@
-import { StringSelectMenuInteraction } from "discord.js";
-import sharp, { SharpOptions } from "sharp";
+import type { StringSelectMenuInteraction } from "discord.js";
+import sharp, { type SharpOptions } from "sharp";
 import { z } from "zod";
 
 import { MAX_EMOTE_SIZE } from "@/constants";
@@ -8,7 +8,7 @@ import { editEmoteByUser } from "@/emotes/edit-emote-by-user";
 import { emoteOptimize } from "@/emotes/emote-optimize";
 import {
   BaseContinuity,
-  ContinuityHandler,
+  type ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";

@@ -1,8 +1,8 @@
-import { Interaction } from "discord.js";
+import type { Interaction } from "discord.js";
 
-import { ChatInputCommandHandler, ContextMenuMessageCommandHandler } from ".";
-import { TetraClient } from "../types";
+import type { TetraClient } from "../types";
 import { FeedbackManager } from "../utils/managers/feedback-manager";
+import type { ChatInputCommandHandler, ContextMenuMessageCommandHandler } from ".";
 import { BaseContinuity } from "./continuity/base-continuity";
 import { interactionLogger } from "./interaction-logger";
 
@@ -11,7 +11,7 @@ export const interactionHandler = async (
   client: TetraClient
 ) => {
   if (interaction.isChatInputCommand()) {
-    interactionLogger(interaction);
+    void interactionLogger(interaction);
 
     const command = client.chatInputCommands.get(
       interaction.commandName
@@ -20,12 +20,14 @@ export const interactionHandler = async (
     if (!command) return;
 
     try {
-      command.handler(interaction, client);
-    } catch {}
+      await command.handler(interaction, client);
+    } catch (error) {
+      await new FeedbackManager(interaction).handleError(error);
+    }
   }
 
   if (interaction.isMessageContextMenuCommand()) {
-    interactionLogger(interaction);
+    void interactionLogger(interaction);
 
     const command = client.contextMenuMessageCommands.get(
       interaction.commandName
@@ -34,8 +36,10 @@ export const interactionHandler = async (
     if (!command) return;
 
     try {
-      command.handler(interaction, client);
-    } catch {}
+      await command.handler(interaction, client);
+    } catch (error) {
+      await new FeedbackManager(interaction).handleError(error);
+    }
   }
 
   const isContinuityInteraction =
@@ -48,7 +52,7 @@ export const interactionHandler = async (
     const originalUserId = interaction.message.interactionMetadata?.user.id;
 
     if (currentUserId !== originalUserId) {
-      interaction.deferUpdate();
+      await interaction.deferUpdate();
       return;
     }
 
@@ -75,11 +79,7 @@ export const interactionHandler = async (
       continuityInteraction.name
     );
 
-    if (
-      globalButtonInteraction &&
-      globalButtonInteraction.handler &&
-      interaction.isButton()
-    ) {
+    if (globalButtonInteraction?.handler && interaction.isButton()) {
       try {
         const data = await globalButtonInteraction.getContext(continuityInteraction.id);
         await globalButtonInteraction.handler({ client, interaction, data });
@@ -94,11 +94,7 @@ export const interactionHandler = async (
       continuityInteraction.name
     );
 
-    if (
-      globalSelectMenuInteraction &&
-      globalSelectMenuInteraction.handler &&
-      interaction.isStringSelectMenu()
-    ) {
+    if (globalSelectMenuInteraction?.handler && interaction.isStringSelectMenu()) {
       try {
         const data = await globalSelectMenuInteraction.getContext(
           continuityInteraction.id

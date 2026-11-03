@@ -5,8 +5,8 @@ import { MAX_EMOTE_SIZE } from "@/constants";
 import { EmbeddedError } from "@/constants/errors";
 import { AutoXGifsicle, EMOTE_MAX_SIDE } from "@/lib/buffer/auto-x-gifsicle";
 import { normalizeEmoteBuffer } from "@/lib/buffer/normalize-emote-buffer";
-import { FittingOption } from "@/types";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import type { FittingOption } from "@/types";
+import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 import { CoreConsole } from "#/loggers";
 
@@ -64,7 +64,9 @@ const optimizeStatic = async (
   const resized = await image.png({ compressionLevel: 9 }).toBuffer();
   if (resized.byteLength <= targetSize) return resized;
 
-  const paletted = await sharp(resized).png({ palette: true, compressionLevel: 9 }).toBuffer();
+  const paletted = await sharp(resized)
+    .png({ palette: true, compressionLevel: 9 })
+    .toBuffer();
   if (paletted.byteLength <= targetSize) return paletted;
 
   throw new EmbeddedError({

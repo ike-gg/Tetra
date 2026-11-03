@@ -1,12 +1,12 @@
 import { randomBytes } from "crypto";
 import { DiscordAPIError } from "discord.js";
-import { NextFunction, Request, Response, Router } from "express";
+import { type NextFunction, type Request, type Response, Router } from "express";
 
-import { TetraAPIError } from "./tetra-api-error";
 import { checkUserAuth } from "./middleware/auth";
 import { authRouter } from "./routes/auth/auth-router";
 import { guildsRouter } from "./routes/guilds/guilds-router";
 import { meRouter } from "./routes/me/me-router";
+import { TetraAPIError } from "./tetra-api-error";
 
 import { ApiConsole } from "#/loggers";
 

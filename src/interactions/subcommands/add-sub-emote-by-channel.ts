@@ -1,9 +1,9 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 
 import { EmoteListComponent } from "@/components/emote-list.component";
 import { Messages } from "@/constants/messages";
 import { EmoteStorageService } from "@/services/emote-storage.service";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 import { TwitchManager } from "@/utils/managers/twitch-manager";
 
 const addSubEmoteChannel = async (

@@ -1,5 +1,5 @@
 import { isDevelopment } from "../env";
-import { TetraClient } from "../types";
+import type { TetraClient } from "../types";
 
 import { InteractionsFileManager } from "#/files/interactions-file-manager";
 

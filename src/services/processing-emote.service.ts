@@ -1,6 +1,6 @@
+import * as fs from "node:fs";
+import path from "node:path";
 import { randomUUIDv7 } from "bun";
-import * as fs from "fs";
-import path from "path";
 import { z } from "zod";
 
 import { MAX_SUPPORTED_SIZE } from "@/constants";
@@ -10,7 +10,7 @@ import { TIME } from "@/constants/time";
 import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 import { normalizeEmoteBuffer } from "@/lib/buffer/normalize-emote-buffer";
 import { redisClient } from "@/redis";
-import { Emote, EmoteSchema } from "@/types";
+import { type Emote, EmoteSchema } from "@/types";
 import parseDiscordRegexName from "@/utils/discord/parse-discord-regex-name";
 
 import { TempFileManager } from "#/files/temp-file-manager";
@@ -48,7 +48,8 @@ export class ProcessingEmoteService {
       maxBufferSize: MAX_SUPPORTED_SIZE,
     });
 
-    const { buffer: emoteBuffer, animated } = await normalizeEmoteBuffer(downloadedBuffer);
+    const { buffer: emoteBuffer, animated } =
+      await normalizeEmoteBuffer(downloadedBuffer);
 
     const tempDir = TempFileManager.create();
 

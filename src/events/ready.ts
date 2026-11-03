@@ -1,6 +1,6 @@
-import { Events } from "discord.js";
+import type { Events } from "discord.js";
 
-import { EventHandler } from ".";
+import type { EventHandler } from ".";
 
 import { BotConsole } from "#/loggers";
 

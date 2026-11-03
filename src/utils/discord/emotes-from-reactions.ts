@@ -1,6 +1,6 @@
-import { ReactionManager } from "discord.js";
+import type { ReactionManager } from "discord.js";
 
-import { Emote } from "../../types";
+import type { Emote } from "../../types";
 
 export const emotesFromReactions = (
   reactions: ReactionManager,
@@ -17,13 +17,11 @@ export const emotesFromReactions = (
     } = emote as {
       id: string;
       name: string;
-      animated: boolean;
+      animated: boolean | null;
     };
 
-    const animated = isEmoteAnimated === null ? false : true;
-
-    let link = `https://cdn.discordapp.com/emojis/${id}`;
-    animated ? (link += ".gif") : (link += ".webp");
+    const animated = isEmoteAnimated === true;
+    const link = `https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "webp"}`;
 
     return {
       name,

@@ -13,12 +13,17 @@
     "deploy:dev": "bun run src/deploy/deploy-commands-dev.ts",
     "deployCommands": "bun run src/deploy/deploy-commands-global.ts",
     "db:push": "npx drizzle-kit push",
-    "db:studio": "npx drizzle-kit studio"
+    "db:studio": "npx drizzle-kit studio",
+    "lint": "biome lint",
+    "format": "biome format --write",
+    "check": "biome check",
+    "check:fix": "biome check --write",
+    "typecheck": "tsc --noEmit"
   },
   "author": "ike",
   "license": "ISC",
   "devDependencies": {
-    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@biomejs/biome": "2.6.4",
     "@types/bun": "^1.2.2",
     "@types/cheerio": "^0.22.31",
     "@types/cookie-parser": "^1.4.3",
@@ -40,7 +45,6 @@
     "@types/sharp": "^0.31.0",
     "@types/tmp": "^0.2.3",
     "drizzle-kit": "^0.30.2",
-    "prettier": "3.3.3",
     "prisma": "^5.4.2",
     "ts-node": "^10.9.1",
     "tsx": "^4.19.2",

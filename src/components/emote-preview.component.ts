@@ -1,6 +1,6 @@
 import { EmbedBuilder } from "@discordjs/builders";
 
-import { Emote } from "@/types";
+import type { Emote } from "@/types";
 
 interface EmotePreviewEmbedOptions {
   prefixName?: string;

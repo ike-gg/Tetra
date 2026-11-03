@@ -1,4 +1,4 @@
-import { Interaction } from "discord.js";
+import type { Interaction } from "discord.js";
 
 export const parseEntitlementsData = (interaction: Interaction) => {
   const entitlements = interaction.entitlements;

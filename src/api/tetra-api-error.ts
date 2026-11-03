@@ -6,7 +6,7 @@ export class TetraAPIError extends Error {
   constructor(code: number, message?: string, reference?: string) {
     if (!message) message = "An error occurred";
     if (message && message.length > 128) {
-      message = message.slice(0, 128) + "...";
+      message = `${message.slice(0, 128)}...`;
     }
     super(message);
     this.code = code;

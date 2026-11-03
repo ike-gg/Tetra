@@ -47,7 +47,7 @@ Two kinds of processes:
 - Everything in the repo is in **English**: code, comments, docs, commit messages.
 - File and directory names: **kebab-case** (`get-emote-from-url.ts`). Exception: API routes `guilds.get-guild.ts` (`resource.action`). Components: `*.component.ts`, services: `*.service.ts`.
 - Aliases: `@/*` → `src/*`, `#/*` → `src/helpers/*`. New code uses aliases instead of `../../..`.
-- Import order is enforced by Prettier (`@trivago/prettier-plugin-sort-imports`): external → `@/` → relative → `#/`. `printWidth: 90`.
+- Formatting, import order and linting: **Biome** (`biome.json`), no Prettier/ESLint. Import groups: external → `@/` → relative → `#/`, `lineWidth: 90`. Type-aware promise rules (`noFloatingPromises`, `noMisusedPromises`) are on: await promises or mark fire-and-forget with `void`.
 - Comments: **sparse**, only where they explain "why".
 - Validate external input/data with Zod.
 - User-facing strings: shared ones live in `src/constants/messages.ts`.
@@ -57,8 +57,9 @@ Two kinds of processes:
 - `bun run dev` – watch, `bun run start` – production
 - `bun run deploy:dev` – register commands on `DEV_GUILDS`; `bun run deployCommands` – globally
 - `bun run db:push` / `db:studio` – Drizzle
-- Typecheck: `npx tsc --noEmit -p .` (no script yet; passes with 0 errors)
-- No tests, no linter.
+- `bun run check` – Biome lint + format + imports (`check:fix` applies fixes), `bun run lint`, `bun run format`
+- `bun run typecheck` – `tsc --noEmit` (Biome doesn't type-check; both must pass)
+- No tests yet.
 
 Environment variables are validated in `src/env.ts` (Zod + a readable error table). Twitch/Tenor/Imgur API keys and `SESSION_KEYS` are required even when the API is disabled.
 
@@ -116,7 +117,7 @@ Environment variables are validated in `src/env.ts` (Zod + a readable error tabl
 - **Mixed state stores**: continuity in Postgres, processing in Redis + local disk. Temp files will break when scaling beyond one machine.
 - **No queue/concurrency limit** for sharp/gifsicle/ffmpeg: a few large files at once will hog shard CPU.
 - **No tests.** Easiest start: `src/lib/buffer` (pure buffer functions), e.g. `bun test` with a few fixture GIFs.
-- Add `typecheck` and `format` scripts to `package.json` so typecheck can be a CI gate.
+- Add CI running `bun run check` and `bun run typecheck`.
 - `ShardingManager("./src/bot.ts")` depends on the working directory; prefer `path.join(import.meta.dir, "bot.ts")`.
 
 ## Agent pitfalls

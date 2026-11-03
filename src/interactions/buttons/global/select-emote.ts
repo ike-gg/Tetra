@@ -1,10 +1,10 @@
-import { ButtonInteraction } from "discord.js";
+import type { ButtonInteraction } from "discord.js";
 import { z } from "zod";
 
 import { prepareEmote } from "@/emotes/prepare-emote";
 import {
   BaseContinuity,
-  ContinuityHandler,
+  type ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { EmoteSchema } from "@/types";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";

@@ -1,4 +1,4 @@
-import { APIEmoji, type BaseImageURLOptions } from "discord.js";
+import type { APIEmoji, BaseImageURLOptions } from "discord.js";
 
 type Emote = APIEmoji | { id: string; isAnimated: boolean };
 

@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 
 import { env } from "../../../env";
-import { Emote } from "../../../types";
+import type { Emote } from "../../../types";
 
 interface ImgurImageProperty {
   link: string;

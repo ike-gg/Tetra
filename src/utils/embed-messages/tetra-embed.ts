@@ -1,4 +1,4 @@
-import { EmbedBuilder, EmbedData } from "discord.js";
+import { EmbedBuilder, type EmbedData } from "discord.js";
 
 interface ExtraEmbedData extends EmbedData {
   hideTitle?: boolean;
@@ -19,8 +19,6 @@ export class TetraEmbed {
   }
 
   private stack: EmbedBuilder[] = [];
-
-  constructor() {}
 
   append(embed: EmbedBuilder) {
     this.stack.push(embed);

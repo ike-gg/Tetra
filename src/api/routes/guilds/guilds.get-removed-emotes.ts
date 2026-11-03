@@ -1,7 +1,7 @@
-import OAuth from "discord-oauth2";
-import { APIGuild, PermissionsBitField } from "discord.js";
+import { type APIGuild, PermissionsBitField } from "discord.js";
+import type OAuth from "discord-oauth2";
 import { eq } from "drizzle-orm";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import { discordOauth } from "@/index";

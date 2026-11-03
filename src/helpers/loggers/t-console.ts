@@ -5,38 +5,38 @@ import { isDevelopment } from "@/env";
 export abstract class TConsole {
   abstract get prefix(): string;
 
-  static log(...args: any[]) {
+  static log(...args: unknown[]) {
     console.log(chalk.black(`• [${this.getPrefix()}] -`, ...args));
   }
 
-  static warn(...args: any[]) {
+  static warn(...args: unknown[]) {
     console.warn(chalk.yellow(`! [${this.getPrefix()}]  -`, ...args));
   }
 
-  static error(...args: any[]) {
+  static error(...args: unknown[]) {
     console.error(chalk.red(`⨯ [${this.getPrefix()}] -`, ...args));
   }
 
-  static info(...args: any[]) {
+  static info(...args: unknown[]) {
     console.info(chalk.blue(`ℹ [${this.getPrefix()}] -`, ...args));
   }
 
-  static success(...args: any[]) {
+  static success(...args: unknown[]) {
     console.info(chalk.green(`✓ [${this.getPrefix()}] -`, ...args));
   }
 
   static get dev() {
     return {
-      log: (...args: any[]) => isDevelopment && this.log("🔨", ...args),
-      warn: (...args: any[]) => isDevelopment && this.warn("🔨", ...args),
-      error: (...args: any[]) => isDevelopment && this.error("🔨", ...args),
-      info: (...args: any[]) => isDevelopment && this.info("🔨", ...args),
-      success: (...args: any[]) => isDevelopment && this.success("🔨", ...args),
+      log: (...args: unknown[]) => isDevelopment && this.log("🔨", ...args),
+      warn: (...args: unknown[]) => isDevelopment && this.warn("🔨", ...args),
+      error: (...args: unknown[]) => isDevelopment && this.error("🔨", ...args),
+      info: (...args: unknown[]) => isDevelopment && this.info("🔨", ...args),
+      success: (...args: unknown[]) => isDevelopment && this.success("🔨", ...args),
     };
   }
 
   private static getPrefix(): string {
-    const instance = new (this as any)();
+    const instance = new (this as unknown as new () => TConsole)();
     return `${instance.prefix}`;
   }
 }

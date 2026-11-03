@@ -3,7 +3,7 @@ import { RefreshingAuthProvider } from "@twurple/auth";
 import { rawDataSymbol } from "@twurple/common";
 
 import { env } from "../../env";
-import { Emote } from "../../types";
+import type { Emote } from "../../types";
 
 const authProvider = new RefreshingAuthProvider({
   clientId: env.TWITCH_CLIENT_ID,
@@ -120,7 +120,7 @@ export class TwitchManager {
 
     if (!segmentedClip) return null;
 
-    const previewIndex = segmentedClip.findIndex((s) => s === "preview");
+    const previewIndex = segmentedClip.indexOf("preview");
     const clipInternalId = segmentedClip.slice(0, previewIndex).join("-");
 
     const clipSource = new URL(url.origin);
@@ -134,9 +134,9 @@ export class TwitchManager {
 
     return {
       ...clipData[rawDataSymbol],
-      fullhd: clipSourceUrl + ".mp4",
-      hd: clipSourceUrl + "-720.mp4",
-      sd: clipSourceUrl + "-480.mp4",
+      fullhd: `${clipSourceUrl}.mp4`,
+      hd: `${clipSourceUrl}-720.mp4`,
+      sd: `${clipSourceUrl}-480.mp4`,
     };
   }
 }

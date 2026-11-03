@@ -1,5 +1,5 @@
-import { APIEmoji, APIGuild } from "discord.js";
-import { NextFunction, Request, Response } from "express";
+import type { APIEmoji, APIGuild } from "discord.js";
+import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import { discordRestApi } from "@/lib/discord-rest-api";

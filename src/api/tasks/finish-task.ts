@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import * as z from "zod";
 
 import { internalClient } from "@/bot";
@@ -23,8 +23,8 @@ const schema = z.object({
 export default async (req: Request, res: Response, next: NextFunction) => {
   const prisma = new PrismaClient();
   try {
-    const accessToken = res.locals["accessToken"] as string;
-    const taskId = req.params["taskid"];
+    const accessToken = res.locals.accessToken as string;
+    const taskId = req.params.taskid;
 
     if (!taskId) throw new TetraAPIError(400, "Bad request, task missing.");
 
@@ -33,7 +33,7 @@ export default async (req: Request, res: Response, next: NextFunction) => {
     if (!body.success)
       throw new TetraAPIError(
         400,
-        "Bad request, payload verification failed." + body.error.toString()
+        `Bad request, payload verification failed.${body.error.toString()}`
       );
 
     const { emote: emoteBase64, guildId, name } = body.data;

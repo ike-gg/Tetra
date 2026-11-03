@@ -1,6 +1,7 @@
-import { randomBytes } from "crypto";
-import * as TaskTypes from "../../types/task-types";
 import { PrismaClient } from "@prisma/client";
+import { randomBytes } from "crypto";
+
+import type * as TaskTypes from "../../types/task-types";
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
@@ -88,7 +89,7 @@ class TaskManager {
 
   verify(taskId: string, guildId: string, userId: string) {
     const desiredTask = this.tasks.find((task) => task.id === taskId);
-    if (!desiredTask || !desiredTask.interaction) return false;
+    if (!desiredTask?.interaction) return false;
     return (
       desiredTask.interaction.guildId === guildId &&
       desiredTask.interaction.user.id === userId

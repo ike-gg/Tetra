@@ -3,7 +3,7 @@ import sharp from "sharp";
 import { EmoteReviewComponent } from "@/components/emote-review.component";
 import { EmbeddedError } from "@/constants/errors";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 interface EditEmoteByUserOptions {
   processingEmoteKey: string;

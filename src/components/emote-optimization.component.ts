@@ -1,9 +1,9 @@
 import {
   ActionRowBuilder,
-  BaseMessageOptions,
+  type BaseMessageOptions,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
+  type EmbedBuilder,
 } from "discord.js";
 import prettyBytes from "pretty-bytes";
 

@@ -1,8 +1,8 @@
+import { tmpdir } from "node:os";
+import path from "node:path";
 import chalk from "chalk";
 import { Table } from "console-table-printer";
 import dotenv from "dotenv";
-import { tmpdir } from "os";
-import path from "path";
 import { z } from "zod";
 
 import { CoreConsole } from "#/loggers";
@@ -98,7 +98,7 @@ const envSchema = z.object({
   IMGUR_CLIENT_ID: z.string().describe("Imgur Client ID"),
 });
 
-let { data, error } = envSchema.safeParse(process.env);
+const { data, error } = envSchema.safeParse(process.env);
 
 if (error) {
   const table = new Table({

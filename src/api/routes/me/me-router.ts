@@ -1,4 +1,4 @@
-import { NextFunction, Response, Router, Request } from "express";
+import { type NextFunction, type Request, type Response, Router } from "express";
 
 import { checkUserAuth } from "../../middleware/auth";
 

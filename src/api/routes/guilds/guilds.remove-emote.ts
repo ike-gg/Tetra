@@ -1,6 +1,11 @@
-import OAuth from "discord-oauth2";
-import { APIEmoji, APIGuild, DiscordAPIError, PermissionsBitField } from "discord.js";
-import { NextFunction, Request, Response } from "express";
+import {
+  type APIEmoji,
+  type APIGuild,
+  DiscordAPIError,
+  PermissionsBitField,
+} from "discord.js";
+import type OAuth from "discord-oauth2";
+import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import { discordOauth } from "@/index";

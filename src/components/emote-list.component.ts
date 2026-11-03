@@ -1,7 +1,7 @@
 import {
   ActionRowBuilder,
-  APIEmbed,
-  BaseMessageOptions,
+  type APIEmbed,
+  type BaseMessageOptions,
   ButtonBuilder,
   ButtonStyle,
 } from "discord.js";

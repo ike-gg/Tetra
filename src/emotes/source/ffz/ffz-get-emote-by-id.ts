@@ -1,7 +1,8 @@
-import { Emote } from "../../../types";
-import { FFZResponseById } from "../../../types/ffz";
-import { ffzGetUrlById } from "./helpers/constants";
 import fetch from "node-fetch";
+
+import type { Emote } from "../../../types";
+import type { FFZResponseById } from "../../../types/ffz";
+import { ffzGetUrlById } from "./helpers/constants";
 
 const ffzGetEmoteById = async (emoteId: string): Promise<Emote> => {
   const response = await fetch(ffzGetUrlById(emoteId));
@@ -18,7 +19,7 @@ const ffzGetEmoteById = async (emoteId: string): Promise<Emote> => {
 
   const { id, name, owner, urls, animated } = data.emote;
 
-  const isAnimated = animated ? true : false;
+  const isAnimated = !!animated;
 
   let urlPreview: string | undefined;
   let urlSource: string | undefined;

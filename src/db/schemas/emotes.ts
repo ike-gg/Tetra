@@ -1,13 +1,13 @@
 import { relations } from "drizzle-orm";
 import {
+  bigint,
+  boolean,
+  pgEnum,
   pgTable,
   serial,
-  varchar,
-  timestamp,
-  boolean,
-  bigint,
-  pgEnum,
   text,
+  timestamp,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 export enum EmoteOrigin {
@@ -19,10 +19,10 @@ export enum EmoteOrigin {
   CUSTOM = "CUSTOM",
 }
 
-export function enumToPgEnum<T extends Record<string, any>>(
+export function enumToPgEnum<T extends Record<string, string>>(
   myEnum: T
 ): [T[keyof T], ...T[keyof T][]] {
-  return Object.values(myEnum).map((value: any) => `${value}`) as any;
+  return Object.values(myEnum) as [T[keyof T], ...T[keyof T][]];
 }
 
 export const roleEnum = pgEnum("origin", enumToPgEnum(EmoteOrigin));

@@ -1,4 +1,4 @@
-import {
+import type {
   ButtonBuilder,
   ButtonComponentData,
   ButtonInteraction,
@@ -8,7 +8,7 @@ import {
   SharedSlashCommand,
 } from "discord.js";
 
-import { TetraClient } from "@/types";
+import type { TetraClient } from "@/types";
 
 export class ChatInputCommandHandler {
   constructor(

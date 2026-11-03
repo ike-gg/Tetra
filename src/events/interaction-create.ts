@@ -1,9 +1,9 @@
-import { Events } from "discord.js";
+import type { Events } from "discord.js";
 
 import { interactionHandler } from "@/interactions/interaction-handler";
 
-import { EventHandler } from ".";
 import { internalClient } from "../bot";
+import type { EventHandler } from ".";
 
 import { BotConsole } from "#/loggers";
 
@@ -14,7 +14,7 @@ export const interactionCreateHandler: EventHandler<Events.InteractionCreate> = 
 
   if (!inGuild) {
     if (!interaction.isRepliable()) return;
-    interaction.reply("This command can only be used in a server.");
+    await interaction.reply("This command can only be used in a server.");
     return;
   }
 
@@ -27,7 +27,7 @@ export const interactionCreateHandler: EventHandler<Events.InteractionCreate> = 
 
   if (supportedInteraction) {
     try {
-      interactionHandler(interaction, internalClient);
+      await interactionHandler(interaction, internalClient);
     } catch (error) {
       BotConsole.error("Failed to handle interaction:", error);
     }

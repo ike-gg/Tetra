@@ -1,4 +1,4 @@
-import { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
+import type { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
 
 export enum ErrorType {
   WARNING = "warning",
@@ -10,7 +10,7 @@ interface EmbeddedErrorOptions {
   type: ErrorType;
   unsupportedFeature: boolean;
   unexpected: boolean;
-  origin: any;
+  origin: unknown;
 }
 
 const defaultOptions: EmbeddedErrorOptions = {

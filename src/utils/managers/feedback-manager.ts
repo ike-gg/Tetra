@@ -1,15 +1,15 @@
-import { ActionRowBuilder, EmbedBuilder, ButtonBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
 import { randomUUID } from "crypto";
 import {
-  ButtonInteraction,
-  CommandInteraction,
-  StringSelectMenuBuilder,
-  StringSelectMenuInteraction,
+  type BaseMessageOptions,
+  type ButtonInteraction,
   ButtonStyle,
-  BaseMessageOptions,
-  isJSONEncodable,
+  CommandInteraction,
   DiscordAPIError,
+  isJSONEncodable,
   MessageFlags,
+  type StringSelectMenuBuilder,
+  type StringSelectMenuInteraction,
 } from "discord.js";
 
 import SubmitErrorLogGenericButton from "@/interactions/buttons/generic/submit-error-log";
@@ -17,8 +17,8 @@ import SubmitErrorLogGenericButton from "@/interactions/buttons/generic/submit-e
 import { EmbeddedError } from "../../constants/errors";
 import { Messages } from "../../constants/messages";
 import { isDevelopment } from "../../env";
-import { TetraClient } from "../../types";
-import { TetraEmbed, TetraEmbedContent } from "../embed-messages/tetra-embed";
+import type { TetraClient } from "../../types";
+import { TetraEmbed, type TetraEmbedContent } from "../embed-messages/tetra-embed";
 
 import { CoreConsole } from "#/loggers";
 
@@ -43,7 +43,7 @@ export class FeedbackManager {
       ephemeral?: boolean;
     }
   ) {
-    let ephemeral = options?.ephemeral || false;
+    const ephemeral = options?.ephemeral || false;
 
     this.client = interaction.client as TetraClient;
     this.ephemeral = ephemeral;
@@ -138,7 +138,7 @@ export class FeedbackManager {
     });
   }
 
-  async handleError(error: any) {
+  async handleError(error: unknown) {
     if (error instanceof EmbeddedError) {
       await this.error(error.embed);
     } else if (error instanceof UnhandledError) {
@@ -152,7 +152,7 @@ export class FeedbackManager {
       await this.unhandledError(error);
     } else if (error instanceof DiscordAPIError) {
       // Missing Permissions
-      if (error.code == 50013) {
+      if (error.code === 50013) {
         await this.botMissingPermissions();
         return;
       }
@@ -173,7 +173,7 @@ export class FeedbackManager {
     });
   }
 
-  async unhandledError(error: any) {
+  async unhandledError(error: unknown) {
     const trackingId = randomUUID();
     CoreConsole.error(`[ ${trackingId} ]`, error);
     await this.error({

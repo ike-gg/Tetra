@@ -1,15 +1,18 @@
+import * as fs from "node:fs";
+import path from "node:path";
 import { Collection } from "discord.js";
-import * as fs from "fs";
-import path from "path";
 
 import { FILE_PATH } from "@/constants/files";
 import {
-  GenericButtonInteractionHandler,
   ChatInputCommandHandler,
   ContextMenuMessageCommandHandler,
+  GenericButtonInteractionHandler,
 } from "@/interactions";
-import { SelectEmoteButtonInteraction } from "@/interactions/buttons/global/select-emote";
-import { BaseContinuity } from "@/interactions/continuity/base-continuity";
+import type { SelectEmoteButtonInteraction } from "@/interactions/buttons/global/select-emote";
+import {
+  type AnyContinuity,
+  BaseContinuity,
+} from "@/interactions/continuity/base-continuity";
 
 import { CoreConsole } from "#/loggers";
 
@@ -18,14 +21,14 @@ type CommandHandler =
   | ContextMenuMessageCommandHandler
   | GenericButtonInteractionHandler
   | SelectEmoteButtonInteraction
-  | BaseContinuity<any>;
+  | AnyContinuity;
 
 type CommandHandlerClass =
   | typeof ChatInputCommandHandler
   | typeof ContextMenuMessageCommandHandler
   | typeof GenericButtonInteractionHandler
   | typeof SelectEmoteButtonInteraction
-  | typeof BaseContinuity<any>;
+  | typeof BaseContinuity;
 
 export class InteractionsFileManager {
   static getFilesFromDirectory(directory: string): string[] {
@@ -103,14 +106,14 @@ export class InteractionsFileManager {
   }
 
   static async getGlobalButtonInteractions() {
-    return this.getCommandsFromDirectory<BaseContinuity<any>>(
+    return this.getCommandsFromDirectory<AnyContinuity>(
       FILE_PATH.GLOBAL_BUTTON_INTERACTIONS,
       BaseContinuity
     );
   }
 
   static async getGlobalSelectMenuInteractions() {
-    return this.getCommandsFromDirectory<BaseContinuity<any>>(
+    return this.getCommandsFromDirectory<AnyContinuity>(
       FILE_PATH.SELECT_MENU_INTERACTIONS,
       BaseContinuity
     );

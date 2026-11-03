@@ -1,15 +1,20 @@
-import { MessageComponentInteraction } from "discord.js";
+import type { MessageComponentInteraction } from "discord.js";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { db } from "@/db";
 import { continuity } from "@/db/schemas/continuity";
-import { TetraClient } from "@/types";
+import type { TetraClient } from "@/types";
 
 export type ContinuityHandler<
-  T = any,
+  T = unknown,
+  // biome-ignore lint/suspicious/noExplicitAny: subclasses narrow this to Button/StringSelectMenu interactions
   U extends MessageComponentInteraction = any,
 > = (ctx: { interaction: U; client: TetraClient; data: T }) => Promise<void>;
+
+/** Any continuity regardless of its data type, for registries and loaders. */
+// biome-ignore lint/suspicious/noExplicitAny: `unknown` would reject handlers typed with specific data
+export type AnyContinuity = BaseContinuity<any>;
 
 export abstract class BaseContinuity<T> {
   static decodeButtonId(buttonId: string) {
@@ -45,7 +50,7 @@ export abstract class BaseContinuity<T> {
     try {
       const parsed = this.schema.parse(result.data);
       return parsed;
-    } catch (error) {
+    } catch {
       throw new Error(
         `Got invalid continuity data from db, validation failed:
 ${JSON.stringify(result.data, null, 2)}`

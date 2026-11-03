@@ -1,28 +1,28 @@
-import {
+import type {
   AutocompleteInteraction,
   ButtonInteraction,
+  Client,
   Collection,
   CommandInteraction,
   StringSelectMenuInteraction,
-  Client,
 } from "discord.js";
 import { z } from "zod";
 
-import { BaseContinuity } from "@/interactions/continuity/base-continuity";
+import type { AnyContinuity } from "@/interactions/continuity/base-continuity";
 
-import {
+import type {
   ChatInputCommandHandler,
   ContextMenuMessageCommandHandler,
   GenericButtonInteractionHandler,
 } from "../interactions";
-import { FeedbackManager } from "../utils/managers/feedback-manager";
+import type { FeedbackManager } from "../utils/managers/feedback-manager";
 
 export interface TetraClient extends Client {
   chatInputCommands: Collection<string, ChatInputCommandHandler>;
   contextMenuMessageCommands: Collection<string, ContextMenuMessageCommandHandler>;
   genericButtonInteractions: Collection<string, GenericButtonInteractionHandler>;
-  globalButtonInteractions: Collection<string, BaseContinuity<any>>;
-  globalSelectMenuInteractions: Collection<string, BaseContinuity<any>>;
+  globalButtonInteractions: Collection<string, AnyContinuity>;
+  globalSelectMenuInteractions: Collection<string, AnyContinuity>;
 }
 
 export interface ExecutableCommandInteraction extends CommandInteraction {

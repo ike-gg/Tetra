@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder } from "discord.js";
+import { ActionRowBuilder, type ButtonBuilder, SlashCommandBuilder } from "discord.js";
 
 import { ChatInputCommandHandler } from "@/interactions";
 import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
@@ -15,5 +15,5 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents([button!]);
 
-  feedback.sendMessage({ components: [row] });
+  await feedback.sendMessage({ components: [row] });
 });

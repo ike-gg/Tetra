@@ -4,7 +4,7 @@ import { chunk } from "lodash";
 import { EmbeddedError } from "@/constants/errors";
 import { TIME } from "@/constants/time";
 import { redisClient } from "@/redis";
-import { Emote, EmoteSchema } from "@/types";
+import { type Emote, EmoteSchema } from "@/types";
 
 export class EmoteStorageService {
   static emotesPerPage = 5;

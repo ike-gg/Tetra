@@ -1,4 +1,4 @@
-import { PlatformResult } from "@/interactions/commands/global/chat-input/media";
+import type { PlatformResult } from "@/interactions/commands/global/chat-input/media";
 
 import { EmbeddedError } from "../../constants/errors";
 import { getRemoteResourceDetails } from "../../utils";

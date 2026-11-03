@@ -4,7 +4,7 @@ import { MAX_SUPPORTED_SIZE } from "@/constants";
 import { EmbeddedError } from "@/constants/errors";
 import { getRemoteResourceDetails } from "@/utils";
 
-import { Emote } from "../../../types";
+import type { Emote } from "../../../types";
 
 const getEmoteFromUrl = async (sourceUrl: string): Promise<Emote> => {
   // Best-effort HEAD check; some hosts don't support it. The file is validated again on download.

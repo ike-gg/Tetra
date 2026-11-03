@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 
 import { EmoteListComponent } from "@/components/emote-list.component";
 import { Messages } from "@/constants/messages";
@@ -6,8 +6,8 @@ import stvGetEmotesByQuery from "@/emotes/source/7tv/stv-get-emotes-by-query";
 import bttvGetEmotesByQuery from "@/emotes/source/bttv/bttv-get-emotes-by-query";
 import ffzGetEmotesByQuery from "@/emotes/source/ffz/ffz-get-emotes-by-query";
 import { EmoteStorageService } from "@/services/emote-storage.service";
-import { Emote } from "@/types";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import type { Emote } from "@/types";
+import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 export const addEmoteName = async (
   interaction: ChatInputCommandInteraction,

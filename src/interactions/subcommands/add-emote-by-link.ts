@@ -1,4 +1,4 @@
-import { ChatInputCommandInteraction } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 
 import { EmbeddedError } from "@/constants/errors";
 import { prepareEmote } from "@/emotes/prepare-emote";
@@ -6,9 +6,9 @@ import stvGetEmoteById from "@/emotes/source/7tv/stv-get-emote-by-id";
 import bttvGetEmoteById from "@/emotes/source/bttv/bttv-get-emote-by-id";
 import ffzGetEmoteById from "@/emotes/source/ffz/ffz-get-emote-by-id";
 import getEmoteFromUrl from "@/emotes/source/file/get-emote-from-url";
-import { Emote } from "@/types";
+import type { Emote } from "@/types";
 import isValidURL from "@/utils/is-valid-url";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
+import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 /** Matches `cdn.7tv.app` for `7tv.app`, but not `my7tvfan.com`. */
 const isDomain = (hostname: string, roots: string[]) =>
@@ -48,7 +48,7 @@ export const addEmoteLink = async (
       const emoteId = emoteUrl
         .split("/")
         .map((path) => parseInt(path, 10))
-        .filter((num) => !isNaN(num))
+        .filter((num) => !Number.isNaN(num))
         .sort((a, b) => b - a)[0];
 
       if (!emoteId) throw cantFindReference;

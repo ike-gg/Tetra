@@ -1,7 +1,7 @@
 import fetch from "node-fetch";
 import * as z from "zod";
 
-import {
+import type {
   MediaOutput,
   PlatformHandlerCallback,
 } from "@/interactions/commands/global/chat-input/media";
@@ -32,7 +32,7 @@ export const handleTwitterMedia: PlatformHandlerCallback = async (_url) => {
       if (responseType?.includes("application/json")) {
         const errorResponse = await request.json();
         if ("error" in errorResponse) {
-          throw new Error("Twitter API error: " + errorResponse.error);
+          throw new Error(`Twitter API error: ${errorResponse.error}`);
         } else {
           throw new Error("Twitter API error");
         }

@@ -24,4 +24,4 @@ class DeployConsole extends TConsole {
   }
 }
 
-export { ApiConsole, CoreConsole, BotConsole, DeployConsole };
+export { ApiConsole, BotConsole, CoreConsole, DeployConsole };

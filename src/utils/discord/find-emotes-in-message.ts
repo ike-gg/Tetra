@@ -1,4 +1,4 @@
-import { Emote } from "../../types";
+import type { Emote } from "../../types";
 
 const emoteRegex = /((?<!\\)<:[^:]+:(\d+)>)/gmu;
 const animatedEmoteRegex = /((?<!\\)<a:[^:]+:(\d+)>)/gmu;
@@ -21,14 +21,9 @@ const findEmotesInMessage = (message: string, username: string): Emote[] => {
     //['a' if emote is animated : emote name : emote id (reference to URL)]
     const emoteData: string[] = emote.slice(1, -1).split(":");
 
-    let name, animated, link, id;
-
-    emoteData[0] === "a" ? (animated = true) : (animated = false);
-    name = emoteData[1];
-    id = emoteData[2];
-
-    link = `https://cdn.discordapp.com/emojis/${id}`;
-    animated ? (link += ".gif") : (link += ".webp");
+    const [prefix, name, id] = emoteData;
+    const animated = prefix === "a";
+    const link = `https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "webp"}`;
 
     return {
       name,

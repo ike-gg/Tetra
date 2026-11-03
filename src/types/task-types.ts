@@ -1,4 +1,4 @@
-import {
+import type {
   ButtonInteraction,
   CommandInteraction,
   ContextMenuCommandInteraction,
@@ -6,8 +6,9 @@ import {
   MessageComponentInteraction,
   StringSelectMenuInteraction,
 } from "discord.js";
-import { Emote, ExtractedEmote } from ".";
-import { FeedbackManager } from "../utils/managers/feedback-manager";
+
+import type { FeedbackManager } from "../utils/managers/feedback-manager";
+import type { Emote, ExtractedEmote } from ".";
 
 export interface Base {
   id: string;

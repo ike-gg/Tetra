@@ -1,7 +1,7 @@
-import OAuth from "discord-oauth2";
-import { APIGuild, DiscordAPIError, PermissionsBitField } from "discord.js";
+import { type APIGuild, DiscordAPIError, PermissionsBitField } from "discord.js";
+import type OAuth from "discord-oauth2";
 import { eq } from "drizzle-orm";
-import { NextFunction, Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
@@ -69,7 +69,7 @@ export const guildsRestoreEmote = async (
       },
     });
 
-    if (!removedEmote || !removedEmote.emote) {
+    if (!removedEmote?.emote) {
       throw new TetraAPIError(404, "Emote not found", "EMOTE_NOT_FOUND");
     }
 

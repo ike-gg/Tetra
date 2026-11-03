@@ -1,4 +1,4 @@
-import { ClientEvents } from "discord.js";
+import type { ClientEvents } from "discord.js";
 
 import { guildEmojiDeleteHandler } from "./guild-emoji-delete";
 import { interactionCreateHandler } from "./interaction-create";

@@ -1,8 +1,9 @@
 import { randomUUIDv7 } from "bun";
 import {
   ActionRowBuilder,
-  ButtonInteraction,
-  Client,
+  type ButtonInteraction,
+  type Client,
+  type Interaction,
   InteractionCollector,
   ModalBuilder,
   TextInputBuilder,
@@ -14,7 +15,7 @@ import { internalClient } from "@/bot";
 import { editEmoteByUser } from "@/emotes/edit-emote-by-user";
 import {
   BaseContinuity,
-  ContinuityHandler,
+  type ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import parseDiscordRegexName from "@/utils/discord/parse-discord-regex-name";
@@ -76,7 +77,7 @@ const PPRenameContinuity = new PPRenameButtonInteraction(
         filter: (i) => i.user.id === interaction.user.id,
       });
 
-      collector.on("collect", async (collectedInteraction) => {
+      const onCollect = async (collectedInteraction: Interaction) => {
         if (!collectedInteraction.isModalSubmit()) return;
         if (!(collectedInteraction.customId === modalId)) return;
 
@@ -98,6 +99,10 @@ const PPRenameContinuity = new PPRenameButtonInteraction(
         }
 
         collector.stop();
+      };
+
+      collector.on("collect", (collectedInteraction) => {
+        void onCollect(collectedInteraction);
       });
     } catch (error) {
       await feedback.handleError(error);

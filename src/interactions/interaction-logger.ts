@@ -1,4 +1,4 @@
-import { CommandInteraction } from "discord.js";
+import type { CommandInteraction } from "discord.js";
 
 import { db } from "@/db";
 import { interactions } from "@/db/schema";
@@ -9,14 +9,15 @@ export const interactionLogger = async (interaction: CommandInteraction) => {
   try {
     const { guild, user, id } = interaction;
 
-    let command = [interaction.commandName];
+    const command = [interaction.commandName];
 
     if (interaction.isChatInputCommand()) {
       try {
-        // getSubcommand can throw an error if there is no subcommand so we just wrapping it with try catch
         const subcommand = interaction.options.getSubcommand();
         if (subcommand) command.push(subcommand);
-      } catch {}
+      } catch {
+        // getSubcommand throws when the command has no subcommand.
+      }
     }
 
     const commandName = command.join(".");

@@ -1,10 +1,10 @@
-import { Events } from "discord.js";
+import type { Events } from "discord.js";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { EmoteOrigin, emotes, removedEmotes } from "@/db/schema";
 
-import { EventHandler } from ".";
+import type { EventHandler } from ".";
 
 import { BotConsole } from "#/loggers";
 

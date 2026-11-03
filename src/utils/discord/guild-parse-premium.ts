@@ -1,4 +1,4 @@
-import { APIGuild, Guild, GuildPremiumTier } from "discord.js";
+import { type APIGuild, type Guild, GuildPremiumTier } from "discord.js";
 
 const parseFileLimit = (tier: GuildPremiumTier): number => {
   switch (tier) {

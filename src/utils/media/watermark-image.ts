@@ -1,4 +1,4 @@
-import path from "path";
+import path from "node:path";
 import sharp from "sharp";
 
 export const watermarkImage = async (image: Buffer): Promise<Buffer> => {

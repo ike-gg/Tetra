@@ -6,7 +6,7 @@ import getGiphyGif from "@/emotes/source/file/get-giphy-gif";
 import getImgurFile from "@/emotes/source/file/get-imgur-file";
 import getTenorGif from "@/emotes/source/file/get-tenor-gif";
 import { ContextMenuMessageCommandHandler } from "@/interactions";
-import { Emote } from "@/types";
+import type { Emote } from "@/types";
 import isValidURL from "@/utils/is-valid-url";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
@@ -46,7 +46,7 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
     };
   }
 
-  const targetEmbed = embeds.filter((embed) => embed.url && embed.provider).at(0);
+  const targetEmbed = embeds.find((embed) => embed.url && embed.provider);
   if (targetEmbed) {
     const { url, provider } = targetEmbed;
     if (!url || !provider) return;
