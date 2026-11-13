@@ -19,6 +19,8 @@ Per emote the script resamples the animation at 16 evenly spaced moments (long a
 4. Color: idle glyphs are dim and mostly gray with a little of the emote's color (`IDLE_BRIGHTNESS`, `IDLE_SATURATION`). Near the cursor they blend into full color (`REVEAL_RADIUS`; the mouse position is smoothed in JS).
 5. Intro: after load, cells appear in a ring expanding from the bottom center, trailed by a band of the brand orange `#f64f02` (`WAVE_COLOR`, `INTRO_DURATION_MS`).
 
-JS only loads the atlas, uploads the textures, and sets uniforms each frame (time, scroll, mouse, intro progress). With `prefers-reduced-motion` the scroll, the emote animation and the intro are disabled. The radial vignette that keeps the hero text readable is a plain CSS gradient `div` in `src/routes/index.tsx`.
+6. Page scroll: the canvas is fixed; scrolling the page advances the plane at `PAGE_PARALLAX` of the scroll speed (reads as very distant) and dims the field down to `SCROLLED_DIM` over one viewport, so sections below stay readable.
+
+JS only loads the atlas, uploads the textures, and sets uniforms each frame (time, scroll, page scroll, mouse, intro progress). With `prefers-reduced-motion` the scroll, the emote animation and the intro are disabled. The radial vignette that keeps the hero text readable is a plain CSS gradient `div` in `src/routes/index.tsx`.
 
 Tried and rejected: bending the plane into a cone/bowl (looked worse than the flat tilt).

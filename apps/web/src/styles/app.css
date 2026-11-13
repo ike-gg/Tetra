@@ -1,11 +1,106 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Geist";
+  src: url("../assets/fonts/geist-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("../assets/fonts/geist-italic-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("../assets/fonts/geist-mono-variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Display serif with a single weight, meant for accents and large headings */
+@font-face {
+  font-family: "Geist Serif";
+  src: url("../assets/fonts/geist-serif-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Geist Serif", "Times New Roman", Times, serif;
+  --font-mono: "Geist Mono", ui-monospace, Menlo, monospace;
+
+  /* Brand scale built around #f64f02 (500) at a fixed hue, chroma kept inside sRGB */
+  --color-brand-50: oklch(0.97 0.014 38);
+  --color-brand-100: oklch(0.94 0.03 38);
+  --color-brand-200: oklch(0.885 0.06 38);
+  --color-brand-300: oklch(0.81 0.105 38);
+  --color-brand-400: oklch(0.73 0.165 38);
+  --color-brand-500: oklch(0.655 0.214 38);
+  --color-brand-600: oklch(0.58 0.19 38);
+  --color-brand-700: oklch(0.49 0.16 38);
+  --color-brand-800: oklch(0.41 0.135 38);
+  --color-brand-900: oklch(0.34 0.11 38);
+  --color-brand-950: oklch(0.25 0.085 38);
+
+  /* Tailwind's neutral lightness steps with a faint tint of the brand hue */
+  --color-neutral-50: oklch(0.985 0.002 38);
+  --color-neutral-100: oklch(0.97 0.003 38);
+  --color-neutral-200: oklch(0.922 0.004 38);
+  --color-neutral-300: oklch(0.87 0.005 38);
+  --color-neutral-400: oklch(0.708 0.007 38);
+  --color-neutral-500: oklch(0.556 0.007 38);
+  --color-neutral-600: oklch(0.439 0.007 38);
+  --color-neutral-700: oklch(0.371 0.006 38);
+  --color-neutral-800: oklch(0.269 0.005 38);
+  --color-neutral-900: oklch(0.205 0.004 38);
+  --color-neutral-950: oklch(0.145 0.003 38);
+
+  --color-background: var(--color-neutral-950);
+  --color-surface: var(--color-neutral-900);
+  --color-foreground: var(--color-neutral-100);
+  --color-muted: var(--color-neutral-400);
+  --color-border: var(--color-neutral-800);
+  --color-primary: var(--color-brand-500);
+  --color-primary-hover: var(--color-brand-400);
+  --color-primary-foreground: var(--color-neutral-950);
+
+  --animate-hero-rise: hero-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-hero-blink: hero-blink 1s steps(1) infinite;
+
+  @keyframes hero-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+      filter: blur(8px);
+    }
+  }
+
+  @keyframes hero-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
 @layer base {
   html {
     color-scheme: dark;
   }
 
   body {
-    @apply bg-neutral-950 text-neutral-100 antialiased;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  ::selection {
+    @apply bg-brand-500/40 text-foreground;
   }
 }

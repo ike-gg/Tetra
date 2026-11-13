@@ -15,6 +15,7 @@ type AtlasLayout = {
 const GLYPHS = " .:-=+*#%@";
 const GLYPH_TEXTURE_W = 32;
 const GLYPH_TEXTURE_H = 48;
+const GLYPH_FONT = `bold ${GLYPH_TEXTURE_H * 0.8}px "Geist Mono", ui-monospace, Menlo, monospace`;
 
 // All sizes in CSS pixels
 const CHAR_W = 7;
@@ -22,6 +23,10 @@ const CHAR_H = 11;
 const EMOTE_SIZE = 220;
 const REVEAL_RADIUS = 220;
 const SCROLL_SPEED = 45;
+// Page scroll moves the background this much slower, so it feels very far away
+const PAGE_PARALLAX = 0.12;
+// Brightness left after scrolling one viewport down, so sections below stay readable
+const SCROLLED_DIM = 0.3;
 
 // Horizon height as a multiple of the viewport height; lower = stronger tilt
 const HORIZON = 1.9;
@@ -56,6 +61,7 @@ uniform float uHorizon;
 uniform float uIdleBrightness;
 uniform float uIdleSaturation;
 uniform float uIntro;
+uniform float uDim;
 uniform vec2 uMouse;
 uniform float uReveal;
 uniform float uRevealRadius;
@@ -132,7 +138,7 @@ void main() {
   float flash = shown * (1.0 - smoothstep(threshold + 0.04, threshold + 0.3, uIntro * 1.15));
   color = mix(color, WAVE_COLOR * mix(0.8, 1.4, luma), flash);
 
-  outColor = vec4(background + color * glyph * fade * shown, 1.0);
+  outColor = vec4(background + color * glyph * fade * shown * uDim, 1.0);
 }
 `;
 
@@ -145,7 +151,7 @@ const createGlyphCanvas = () => {
   if (!context) throw new Error("2D canvas is not available");
 
   context.fillStyle = "#fff";
-  context.font = `bold ${GLYPH_TEXTURE_H * 0.8}px ui-monospace, Menlo, monospace`;
+  context.font = GLYPH_FONT;
   context.textAlign = "center";
   context.textBaseline = "middle";
 
@@ -251,6 +257,8 @@ export function EmoteBackground() {
         fetch(ATLAS_LAYOUT_URL).then(
           (response) => response.json() as Promise<AtlasLayout>
         ),
+        // The glyph canvas is drawn once, so the brand font has to be ready before that
+        document.fonts.load(GLYPH_FONT).catch(() => undefined),
       ]);
       if (disposed) return;
 
@@ -281,6 +289,7 @@ export function EmoteBackground() {
       const uEmoteSize = uniform("uEmoteSize");
       const uAtlasLod = uniform("uAtlasLod");
       const uScroll = uniform("uScroll");
+      const uDim = uniform("uDim");
       const uMouse = uniform("uMouse");
       const uReveal = uniform("uReveal");
       const uRevealRadius = uniform("uRevealRadius");
@@ -314,7 +323,10 @@ export function EmoteBackground() {
         mouse.y += (mouse.targetY - mouse.y) * 0.15;
         reveal += (revealTarget - reveal) * 0.08;
 
-        const scroll = reducedMotion ? 0 : (time / 1000) * SCROLL_SPEED;
+        const pageScroll = window.scrollY;
+        const autoScroll = reducedMotion ? 0 : (time / 1000) * SCROLL_SPEED;
+        const scroll = autoScroll + pageScroll * PAGE_PARALLAX;
+        const scrolled = Math.min(pageScroll / window.innerHeight, 1);
         introStart ??= time;
         const intro = reducedMotion
           ? 1
@@ -324,6 +336,7 @@ export function EmoteBackground() {
         gl.uniform2f(uCharSize, CHAR_W * dpr, CHAR_H * dpr);
         gl.uniform1f(uEmoteSize, EMOTE_SIZE * dpr);
         gl.uniform1f(uScroll, scroll * dpr);
+        gl.uniform1f(uDim, 1 - (1 - SCROLLED_DIM) * scrolled);
         gl.uniform2f(uMouse, mouse.x * dpr, height - mouse.y * dpr);
         gl.uniform1f(uReveal, reveal);
         gl.uniform1f(uIntro, 1 - (1 - intro) ** 3);
