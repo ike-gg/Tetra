@@ -74,36 +74,46 @@ export const guildsRemoveEmote = async (req: Request, res: Response, _: NextFunc
       throw new TetraAPIError(400, "Invalid emote", "INVALID_EMOTE");
     }
 
-    const [insertedEmote] = await db
-      .insert(emotes)
-      .values({
-        externalId: emote.id,
-        isAnimated: emote.animated ?? false,
-        name: emote.name ?? "Emote",
-        origin: EmoteOrigin.DISCORD,
-        previewUrl: getEmoteUrl(emote, { size: 128 }),
-        url: getEmoteUrl(emote),
-      })
-      .returning();
+    const discordEmoteId = emote.id;
 
-    const [insertedRemovedEmote] = await db
-      .insert(removedEmotes)
-      .values({
-        deletedWithPanel: true,
-        emoteId: insertedEmote.id,
-        guildId: guild.id,
-      })
-      .returning();
+    // Both rows are written before the Discord delete, so the GuildEmojiDelete event
+    // finds this record and skips it.
+    const { insertedEmote, insertedRemovedEmote } = await db.transaction(async (tx) => {
+      const [insertedEmote] = await tx
+        .insert(emotes)
+        .values({
+          externalId: discordEmoteId,
+          isAnimated: emote.animated ?? false,
+          name: emote.name ?? "Emote",
+          origin: EmoteOrigin.DISCORD,
+          previewUrl: getEmoteUrl(emote, { size: 128 }),
+          url: getEmoteUrl(emote),
+        })
+        .returning();
+
+      const [insertedRemovedEmote] = await tx
+        .insert(removedEmotes)
+        .values({
+          deletedWithPanel: true,
+          emoteId: insertedEmote.id,
+          guildId: guild.id,
+        })
+        .returning();
+
+      return { insertedEmote, insertedRemovedEmote };
+    });
 
     try {
       await discordRestApi.guilds.deleteEmoji(guildId, emote.id);
     } catch {
       // The emote still exists on Discord, so it must not be offered for restore.
       try {
-        await db
-          .delete(removedEmotes)
-          .where(eq(removedEmotes.id, insertedRemovedEmote.id));
-        await db.delete(emotes).where(eq(emotes.id, insertedEmote.id));
+        await db.transaction(async (tx) => {
+          await tx
+            .delete(removedEmotes)
+            .where(eq(removedEmotes.id, insertedRemovedEmote.id));
+          await tx.delete(emotes).where(eq(emotes.id, insertedEmote.id));
+        });
       } catch (cleanupError) {
         ApiConsole.error(
           `Failed to clean up records of emote ${emote.id} after a failed delete in guild ${guildId}:`,

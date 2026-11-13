@@ -48,12 +48,12 @@ export const removedEmotes = pgTable("removed_emotes", {
 });
 
 export const removedEmotesRelations = relations(removedEmotes, ({ one }) => ({
-  emote: one(emotes),
+  emote: one(emotes, {
+    fields: [removedEmotes.emoteId],
+    references: [emotes.id],
+  }),
 }));
 
-export const emotesRelation = relations(emotes, ({ one }) => ({
-  removed: one(removedEmotes, {
-    fields: [emotes.id],
-    references: [removedEmotes.emoteId],
-  }),
+export const emotesRelation = relations(emotes, ({ many }) => ({
+  removed: many(removedEmotes),
 }));
