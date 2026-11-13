@@ -6,6 +6,8 @@ import type { ChatInputCommandHandler, ContextMenuMessageCommandHandler } from "
 import { BaseContinuity } from "./continuity/base-continuity";
 import { interactionLogger } from "./interaction-logger";
 
+import { BotConsole } from "#/loggers";
+
 export const interactionHandler = async (
   interaction: Interaction,
   client: TetraClient
@@ -65,8 +67,12 @@ export const interactionHandler = async (
     if (genericButtonInteraction && interaction.isButton()) {
       try {
         await genericButtonInteraction.handler(interaction, client);
-      } catch {
-        await feedback.error("An error occurred while executing the button interaction.");
+      } catch (error) {
+        BotConsole.error(
+          `Generic button "${interaction.customId}" failed (user ${interaction.user.id}):`,
+          error
+        );
+        await feedback.handleError(error);
       }
       return;
     }
@@ -86,6 +92,7 @@ export const interactionHandler = async (
       } catch (error) {
         await feedback.handleError(error);
       }
+      return;
     }
 
     // Global Select Menu Interactions
