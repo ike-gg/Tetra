@@ -53,8 +53,10 @@ export const guildsGetGuild = async (req: Request, res: Response, _: NextFunctio
 
     const { emoteLimit, level } = basicGuildParsePremium(guild);
 
-    const emoteAnimated = emotes.filter((e) => e.animated).length;
-    const emoteStatic = emotes.filter((e) => !e.animated).length;
+    // Managed emojis (e.g. Twitch integration) do not take slots
+    const slotEmotes = emotes.filter((e) => !e.managed);
+    const emoteAnimated = slotEmotes.filter((e) => e.animated).length;
+    const emoteStatic = slotEmotes.filter((e) => !e.animated).length;
 
     const stats = {
       animated: {

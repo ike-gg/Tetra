@@ -18,7 +18,6 @@ import {
 } from "@/lib/media";
 import { renderSlideshow } from "@/lib/media/helper/render-slideshow";
 import { URLButton } from "@/utils/discord/components/url-button";
-import { guildParsePremium } from "@/utils/discord/guild-parse-premium";
 import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
 import { formatDate } from "@/utils/format-date";
 import isValidURL from "@/utils/is-valid-url";
@@ -122,7 +121,8 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
 
   if (!input) return;
 
-  const { fileLimit } = guildParsePremium(interaction.guild!);
+  // Discord sends the real limit (guild boost level, perks) with every interaction
+  const fileLimit = interaction.attachmentSizeLimit;
   const feedback = new FeedbackManager(interaction);
 
   const itemUrl = input.split(" ").find((i) => isValidURL(i));

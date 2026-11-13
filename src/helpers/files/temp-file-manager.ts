@@ -26,7 +26,11 @@ export class TempFileManager {
 
   private static sweeper: ReturnType<typeof setInterval> | undefined;
 
-  /** Clears the temp directory on startup, except persistent dirs that may still be in use. */
+  /**
+   * On startup, removes leftover timer dirs (`tetra-tmp-*`) whose timers died with the old
+   * process. Never touches entries without a `tetra-` prefix (the temp dir may be the
+   * system one), and keeps persistent dirs (`tetra-keep-*`), which the sweeper handles.
+   */
   static cleanup() {
     try {
       if (!fs.existsSync(this.tempDirPath)) {
@@ -37,10 +41,10 @@ export class TempFileManager {
         return;
       }
 
-      FileConsole.dev.log(`Clearing temp directory: ${this.tempDirPath}`);
+      FileConsole.dev.log(`Removing leftover temp directories from: ${this.tempDirPath}`);
 
       for (const name of fs.readdirSync(this.tempDirPath)) {
-        if (name.startsWith(PERSISTENT_PREFIX)) continue;
+        if (!name.startsWith(TEMP_PREFIX)) continue;
         fs.rmSync(path.join(this.tempDirPath, name), { recursive: true, force: true });
       }
     } catch (error) {
