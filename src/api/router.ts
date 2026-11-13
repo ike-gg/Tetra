@@ -38,8 +38,10 @@ router.use((error: Error, _: Request, res: Response, __: NextFunction) => {
   }
 
   if (error instanceof DiscordAPIError) {
-    res.status(409).json({
-      error: `Discord Error: ${error.message}`,
+    const apiError = new TetraAPIError(400, error.message, "DISCORD_API_ERROR");
+    res.status(apiError.code).json({
+      error: apiError.message,
+      reference: apiError.reference,
     });
     return;
   }
