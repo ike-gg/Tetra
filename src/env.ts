@@ -68,6 +68,11 @@ const envSchema = z.object({
     .transform((val) => val.split(","))
     .describe("Comma separated list of keys for session"),
 
+  COOKIE_DOMAIN: z
+    .string()
+    .optional()
+    .describe("Domain of the session cookie, e.g. .tetra.lol; host-only when not set"),
+
   PORT: z.string().default("3002").describe("Port for the API to listen on"),
 
   INVITE_LINK: z.string().url().describe("Discord Bot invite link"),

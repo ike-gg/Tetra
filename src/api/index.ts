@@ -14,6 +14,9 @@ export const initApi = () => {
 
   const app = express();
 
+  // Behind a reverse proxy in production; needed for `secure` cookies
+  if (isProduction) app.set("trust proxy", 1);
+
   app.use((_, res, next) => {
     res.setHeader("X-Powered-By", "Tetra Core");
     next();
@@ -33,7 +36,7 @@ export const initApi = () => {
       httpOnly: true,
       // max age 1 year
       maxAge: 365 * 24 * 60 * 60 * 1000,
-      domain: "localhost",
+      domain: env.COOKIE_DOMAIN,
     })
   );
 
