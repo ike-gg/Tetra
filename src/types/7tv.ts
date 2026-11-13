@@ -41,8 +41,13 @@ export interface STVResponseGQL {
       count: number;
       items: STVEmote[];
     };
-  };
+  } | null;
   errors?: {
     message: string;
+    // Syntax and validation errors only have `locations`; errors from the backend also
+    // have `path` and/or `extensions`.
+    locations?: unknown[];
+    path?: unknown[];
+    extensions?: unknown;
   }[];
 }

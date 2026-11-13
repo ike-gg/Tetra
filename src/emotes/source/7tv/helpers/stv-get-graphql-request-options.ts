@@ -1,15 +1,10 @@
 import type { RequestInit } from "node-fetch";
 
-export default (query: string, ignoreTags: boolean = false): RequestInit => {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      //filter: {case_sensitive: false, exact_match: ${exact_match}, ignore_tags: true}
-      query: `{
-    emotes(query: "${query}", limit: 100, filter: {ignore_tags: ${ignoreTags}}) {
+// The search text is sent as a variable: interpolating it into the document breaks the
+// query on `"` and `\`.
+const SEARCH_QUERY = `
+  query ($query: String!, $ignoreTags: Boolean) {
+    emotes(query: $query, limit: 100, filter: { ignore_tags: $ignoreTags }) {
       count
       items {
         id
@@ -23,7 +18,18 @@ export default (query: string, ignoreTags: boolean = false): RequestInit => {
         }
       }
     }
-  }`,
+  }
+`;
+
+export default (query: string, ignoreTags: boolean = false): RequestInit => {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      query: SEARCH_QUERY,
+      variables: { query, ignoreTags },
     }),
   };
 };
