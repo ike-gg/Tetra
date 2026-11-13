@@ -12,6 +12,7 @@
       "!**/bun.lock",
       "!**/*.md",
       "!**/routeTree.gen.ts",
+      "!**/emote-atlas.json",
       "!**/.output",
       "!**/.tanstack",
       "!**/dist"
