@@ -6,9 +6,11 @@ import { z } from "zod";
 import { discordOauth } from "@/index";
 import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
 import { discordRestApi } from "@/lib/discord-rest-api";
+import { assertAllowedEmoteSourceUrl, UrlNotAllowedError } from "@/lib/network/url-guard";
 import { getEmoteUrl } from "@/utils/discord/get-emote-url";
 
 import getBufferFromUrl from "../../../emotes/source/get-buffer-from-url";
+import { EMOTE_NAME_REGEX } from "../../constants/api-constants";
 import { TetraAPIError } from "../../tetra-api-error";
 
 const getGuildParams = z.object({
@@ -16,7 +18,7 @@ const getGuildParams = z.object({
 });
 
 const bodyPostEmote = z.object({
-  name: z.string(),
+  name: z.string().regex(EMOTE_NAME_REGEX),
   file: z.string().url(),
   fitting: z.enum(["fill", "cover", "contain"]).optional(),
 });
@@ -64,8 +66,12 @@ export const guildsPostEmote = async (req: Request, res: Response, _: NextFuncti
     let emoteBuffer: Buffer;
 
     try {
+      await assertAllowedEmoteSourceUrl(file);
       emoteBuffer = await getBufferFromUrl(file);
-    } catch {
+    } catch (error) {
+      if (error instanceof UrlNotAllowedError) {
+        throw new TetraAPIError(400, error.message, "URL_NOT_ALLOWED");
+      }
       throw new TetraAPIError(
         400,
         "Failed to download data of the provided emote",

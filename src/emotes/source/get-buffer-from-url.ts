@@ -1,7 +1,7 @@
 import { sleep } from "bun";
-import fetch from "node-fetch";
 
 import { EmbeddedError } from "@/constants/errors";
+import { safeFetch } from "@/lib/network/url-guard";
 
 interface GetBufferOptions {
   maxRetries: number;
@@ -25,7 +25,7 @@ async function getBufferFromUrl(
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(url);
+      const response = await safeFetch(url);
 
       if (!response.ok) {
         // 4xx won't succeed on retry
@@ -47,7 +47,7 @@ async function getBufferFromUrl(
       const declaredSize = Number(response.headers.get("content-length"));
       if (maxBufferSize && declaredSize > maxBufferSize) throw tooLarge;
 
-      const buffer = await response.buffer();
+      const buffer = Buffer.from(await response.arrayBuffer());
 
       if (maxBufferSize && buffer.byteLength > maxBufferSize) throw tooLarge;
 

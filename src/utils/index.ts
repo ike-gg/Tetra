@@ -1,6 +1,8 @@
+import { safeFetch } from "@/lib/network/url-guard";
+
 export const getRemoteResourceDetails = async (url: string) => {
   try {
-    const response = await fetch(url, {
+    const response = await safeFetch(url, {
       method: "HEAD",
     });
 
