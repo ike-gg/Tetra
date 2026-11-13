@@ -6,6 +6,7 @@ import { checkUserAuth } from "./middleware/auth";
 import { authRouter } from "./routes/auth/auth-router";
 import { guildsRouter } from "./routes/guilds/guilds-router";
 import { meRouter } from "./routes/me/me-router";
+import { tasksRouter } from "./routes/tasks/tasks-router";
 import { TetraAPIError } from "./tetra-api-error";
 
 import { ApiConsole } from "#/loggers";
@@ -25,6 +26,7 @@ router.use("/me", meRouter);
 router.use(checkUserAuth({ fetchUserData: true }));
 
 router.use("/guilds", guildsRouter);
+router.use("/tasks", tasksRouter);
 
 router.use((error: Error, _: Request, res: Response, __: NextFunction) => {
   if (error instanceof TetraAPIError) {

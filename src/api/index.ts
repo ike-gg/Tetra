@@ -52,7 +52,8 @@ export const initApi = () => {
     })
   );
 
-  app.use(express.json());
+  // Editor tasks send the emote as a base64 data URL
+  app.use(express.json({ limit: "2mb" }));
 
   app.use((req, _, next) => {
     ApiConsole.info(`${req.method.toUpperCase()}::${req.url}`);
