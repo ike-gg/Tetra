@@ -1,9 +1,39 @@
-import type { CommandInteraction } from "discord.js";
+import type { CommandInteraction, CommandInteractionOption } from "discord.js";
 
 import { db } from "@/db";
 import { interactions } from "@/db/schema";
 
 import { BotConsole } from "#/loggers";
+
+/** Plain data only: resolved users, channels and attachments are dropped. */
+const serializeOption = (option: CommandInteractionOption): Record<string, unknown> => ({
+  name: option.name,
+  type: option.type,
+  ...(option.value !== undefined && { value: option.value }),
+  ...(option.focused && { focused: true }),
+  ...(option.options && { options: option.options.map(serializeOption) }),
+});
+
+/** Never throws: if the options cannot be serialized, the interaction is logged without input. */
+const getLoggedInput = (interaction: CommandInteraction) => {
+  try {
+    const rawOptions =
+      interaction.isChatInputCommand() || interaction.isContextMenuCommand()
+        ? interaction.options.data
+        : [];
+    const options = rawOptions.map(serializeOption);
+
+    // Round trip guarantees JSON-safe data for jsonb (bigint values become strings)
+    return JSON.parse(
+      JSON.stringify({ options }, (_, value) =>
+        typeof value === "bigint" ? value.toString() : value
+      )
+    ) as Record<string, unknown>;
+  } catch (error) {
+    BotConsole.error("Failed to serialize interaction options:", error);
+    return null;
+  }
+};
 
 export const interactionLogger = async (interaction: CommandInteraction) => {
   try {
@@ -30,8 +60,8 @@ export const interactionLogger = async (interaction: CommandInteraction) => {
       command: commandName,
       guildId: guild?.id,
       userId: user.id,
-      id: Number(id),
-      input: JSON.stringify("options" in interaction ? interaction.options : null),
+      id: BigInt(id),
+      input: getLoggedInput(interaction),
     });
   } catch (e) {
     BotConsole.error("Error occured while logging interaction:", e);

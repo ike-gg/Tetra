@@ -1,6 +1,8 @@
 import { ShardingManager } from "discord.js";
 import DiscordOauth2 from "discord-oauth2";
 
+import { startContinuityCleanup } from "@/interactions/continuity/cleanup-continuity";
+
 import { initApi } from "./api";
 import { env, isProduction } from "./env";
 
@@ -11,6 +13,8 @@ if (isProduction) {
   CoreConsole.warn("Running in production mode.");
   TempFileManager.cleanup();
 } else CoreConsole.info("Running in development mode.");
+
+startContinuityCleanup();
 
 if (env.API_ENABLED) initApi();
 
