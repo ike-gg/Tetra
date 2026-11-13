@@ -2,6 +2,7 @@ import { Client, GatewayIntentBits, Options } from "discord.js";
 
 import { env } from "@/env";
 import { importInteractions } from "@/interactions/import-interactions";
+import { exitWhenManagerIsGone } from "@/lib/shards/exit-when-manager-is-gone";
 
 import { clientEvents } from "./events";
 import type { TetraClient } from "./types";
@@ -20,6 +21,9 @@ const client = new Client({
 clientEvents.forEach((callback, event) => {
   client.on(event, callback);
 });
+
+// A shard must never outlive its manager (it would stay logged in with old code)
+exitWhenManagerIsGone(() => client.destroy());
 
 // Interactions must be loaded before login, otherwise early interactions find no handler.
 const start = async () => {
