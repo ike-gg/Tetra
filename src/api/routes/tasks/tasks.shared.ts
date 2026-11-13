@@ -1,8 +1,8 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, notExists } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { editorTasks } from "@/db/schema";
+import { editorTasks, emotes, removedEmotes } from "@/db/schema";
 
 import { TetraAPIError } from "../../tetra-api-error";
 
@@ -30,3 +30,39 @@ export const toApiEditorTask = (task: UserTask) => {
   const { id, guildId, userId, emoteId, emote, createdAt } = task;
   return { id, guildId, userId, emoteId, emote, createdAt };
 };
+
+/**
+ * Deletes the user's task together with its `emotes` row, unless something else still
+ * references that row. Returns false when the task does not exist or is not the user's.
+ */
+export const deleteUserTask = (taskId: string, userId: string) =>
+  db.transaction(async (tx) => {
+    const [deleted] = await tx
+      .delete(editorTasks)
+      .where(and(eq(editorTasks.id, taskId), eq(editorTasks.userId, userId)))
+      .returning({ emoteId: editorTasks.emoteId });
+
+    if (!deleted) return false;
+
+    await tx
+      .delete(emotes)
+      .where(
+        and(
+          eq(emotes.id, deleted.emoteId),
+          notExists(
+            tx
+              .select({ id: removedEmotes.id })
+              .from(removedEmotes)
+              .where(eq(removedEmotes.emoteId, emotes.id))
+          ),
+          notExists(
+            tx
+              .select({ id: editorTasks.id })
+              .from(editorTasks)
+              .where(eq(editorTasks.emoteId, emotes.id))
+          )
+        )
+      );
+
+    return true;
+  });

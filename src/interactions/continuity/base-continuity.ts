@@ -2,6 +2,8 @@ import type { MessageComponentInteraction } from "discord.js";
 import { eq } from "drizzle-orm";
 import type { z } from "zod";
 
+import { EmbeddedError } from "@/constants/errors";
+import { Messages } from "@/constants/messages";
 import { db } from "@/db";
 import { continuity } from "@/db/schemas/continuity";
 import type { TetraClient } from "@/types";
@@ -44,7 +46,8 @@ export abstract class BaseContinuity<T> {
     });
 
     if (!result) {
-      throw new Error(`No data found for continuity in db (${this.metadata.name}:${id})`);
+      // The row is gone (e.g. cleaned up), so the message is stale rather than broken
+      throw new EmbeddedError(Messages.INTERACTION_TIMEOUT);
     }
 
     try {

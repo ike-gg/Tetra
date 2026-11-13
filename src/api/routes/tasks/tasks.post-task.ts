@@ -1,18 +1,15 @@
 import { type APIGuild, DiscordAPIError, PermissionsBitField } from "discord.js";
 import type OAuth from "discord-oauth2";
-import { eq } from "drizzle-orm";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-import { db } from "@/db";
-import { editorTasks } from "@/db/schema";
 import { discordOauth } from "@/index";
 import { discordRestApi } from "@/lib/discord-rest-api";
 import { getEmoteUrl } from "@/utils/discord/get-emote-url";
 
 import { EMOTE_NAME_REGEX } from "../../constants/api-constants";
 import { TetraAPIError } from "../../tetra-api-error";
-import { findUserTask, taskParamsSchema } from "./tasks.shared";
+import { deleteUserTask, findUserTask, taskParamsSchema } from "./tasks.shared";
 
 const DISCORD_ERROR_FILE_TOO_LARGE = 50138;
 
@@ -71,7 +68,7 @@ export const tasksPostTask = async (req: Request, res: Response, _: NextFunction
       name,
     });
 
-    await db.delete(editorTasks).where(eq(editorTasks.id, task.id));
+    await deleteUserTask(task.id, task.userId);
 
     res.json({
       message: `Emote ${createdEmote.name} created in ${guild.name}!`,

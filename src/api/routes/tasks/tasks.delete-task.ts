@@ -1,23 +1,16 @@
-import { and, eq } from "drizzle-orm";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-import { db } from "@/db";
-import { editorTasks } from "@/db/schema";
-
 import { TetraAPIError } from "../../tetra-api-error";
-import { taskParamsSchema } from "./tasks.shared";
+import { deleteUserTask, taskParamsSchema } from "./tasks.shared";
 
 export const tasksDeleteTask = async (req: Request, res: Response, _: NextFunction) => {
   try {
     const { taskId } = taskParamsSchema.parse(req.params);
 
-    const deleted = await db
-      .delete(editorTasks)
-      .where(and(eq(editorTasks.id, taskId), eq(editorTasks.userId, req.user!.id)))
-      .returning({ id: editorTasks.id });
+    const deleted = await deleteUserTask(taskId, req.user!.id);
 
-    if (deleted.length === 0) {
+    if (!deleted) {
       throw new TetraAPIError(404, "Task not found", "TASK_NOT_FOUND");
     }
 

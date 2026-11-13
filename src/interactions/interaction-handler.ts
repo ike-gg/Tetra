@@ -1,4 +1,7 @@
-import type { Interaction } from "discord.js";
+import { type Interaction, MessageFlags } from "discord.js";
+
+import { Messages } from "@/constants/messages";
+import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
 
 import type { TetraClient } from "../types";
 import { FeedbackManager } from "../utils/managers/feedback-manager";
@@ -110,6 +113,17 @@ export const interactionHandler = async (
       } catch (error) {
         await feedback.handleError(error);
       }
+      return;
     }
+
+    // No handler: usually an old message whose button was renamed or removed
+    BotConsole.dev.warn(
+      `No handler for component "${interaction.customId}" (user ${interaction.user.id}).`
+    );
+
+    await interaction.reply({
+      embeds: [TetraEmbed.error(Messages.INTERACTION_TIMEOUT)],
+      flags: MessageFlags.Ephemeral,
+    });
   }
 };
