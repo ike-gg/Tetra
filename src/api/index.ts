@@ -2,10 +2,11 @@ import cookieSession from "cookie-session";
 import cors from "cors";
 import express from "express";
 
-// import rateLimit from "express-rate-limit";
-
 import { env, isProduction } from "../env";
+import { SESSION_MAX_IDLE } from "./constants/api-constants";
+import { apiRateLimiter, authRateLimiter } from "./middleware/rate-limit";
 import { apiErrorHandler, router } from "./router";
+import { startSessionCleanup } from "./session-cleanup";
 
 import { ApiConsole } from "#/loggers";
 
@@ -13,6 +14,8 @@ export const initApi = () => {
   const PORT = env.PORT;
 
   const app = express();
+
+  startSessionCleanup();
 
   // Behind a reverse proxy in production; needed for `secure` cookies
   if (isProduction) app.set("trust proxy", 1);
@@ -22,20 +25,17 @@ export const initApi = () => {
     next();
   });
 
-  // const limiter = rateLimit({
-  //   windowMs: 30000,
-  //   max: 20,
-  // });
-
   app.use(
     cookieSession({
       name: "tetra-session",
       keys: env.SESSION_KEYS,
+      // Not signed: the cookie holds a random token that is checked against the database
       signed: false,
       secure: isProduction,
       httpOnly: true,
-      // max age 1 year
-      maxAge: 365 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+      // Sliding: the cookie is re-sent when the session is touched (see auth middleware)
+      maxAge: SESSION_MAX_IDLE,
       domain: env.COOKIE_DOMAIN,
     })
   );
@@ -43,17 +43,13 @@ export const initApi = () => {
   app.use(
     cors({
       credentials: true,
-      origin: [
-        "https://tetra.lol",
-        "http://localhost:3001",
-        "http://localhost:3000",
-        "https://www.tetra.lol",
-        "https://panel.tetra.lol",
-        "https://tetra.lol",
-        "https://dev.tetra.lol",
-      ],
+      origin: env.CORS_ORIGINS,
     })
   );
+
+  // After CORS: preflight requests are not counted and 429 responses carry CORS headers
+  app.use("/api/auth", authRateLimiter);
+  app.use("/api", apiRateLimiter);
 
   // Editor tasks send the emote as a base64 data URL (256 KB file ≈ 350 KB)
   // Not only tasks are send via API. Dont change it

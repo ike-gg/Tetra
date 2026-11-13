@@ -4,10 +4,15 @@ import { z } from "zod";
 
 import { isProduction } from "@/env";
 import { discordOauth } from "@/index";
+import { decryptToken, encryptToken } from "@/lib/crypto/token-crypto";
 
 import { db } from "../../db";
 import { sessions, users } from "../../db/schema";
-import { API_CONSTANTS } from "../constants/api-constants";
+import {
+  API_CONSTANTS,
+  SESSION_MAX_IDLE,
+  SESSION_TOUCH_INTERVAL,
+} from "../constants/api-constants";
 import { sessionSchema } from "../routes/auth/auth-router";
 import { TetraAPIError } from "../tetra-api-error";
 
@@ -41,6 +46,25 @@ export const checkUserAuth = (options: CheckAuthOptions = {}) => {
         return next(new TetraAPIError(401, "Unauthorized", "INVALID_SESSION"));
       }
 
+      const idleMs = Date.now() - currentSession.last_used_at.getTime();
+
+      if (idleMs > SESSION_MAX_IDLE) {
+        await db.delete(sessions).where(eq(sessions.id, currentSession.id));
+        req.session = null;
+        return next(new TetraAPIError(401, "Session expired", "SESSION_EXPIRED"));
+      }
+
+      // Sliding expiry: a write at most once per interval instead of one per request
+      if (idleMs > SESSION_TOUCH_INTERVAL) {
+        await db
+          .update(sessions)
+          .set({ last_used_at: new Date() })
+          .where(eq(sessions.id, currentSession.id));
+
+        // cookie-session only re-sends the cookie (with a new expiry) when its content changes
+        if (req.session) req.session.refreshed_at = Date.now();
+      }
+
       let currentUser = await db.query.users.findFirst({
         where: eq(users.id, currentSession.user_id),
       });
@@ -61,14 +85,14 @@ export const checkUserAuth = (options: CheckAuthOptions = {}) => {
           const token = await discordOauth.tokenRequest({
             grantType: "refresh_token",
             scope: API_CONSTANTS.DISCORD_SCOPES,
-            refreshToken: currentUser.refresh_token,
+            refreshToken: decryptToken(currentUser.refresh_token),
           });
 
           const [newUser] = await db
             .update(users)
             .set({
-              access_token: token.access_token,
-              refresh_token: token.refresh_token,
+              access_token: encryptToken(token.access_token),
+              refresh_token: encryptToken(token.refresh_token),
               token_expires_at: new Date(Date.now() + token.expires_in * 1000),
             })
             .where(eq(users.id, currentUser.id))
@@ -82,11 +106,22 @@ export const checkUserAuth = (options: CheckAuthOptions = {}) => {
         }
       }
 
-      req.accessToken = currentUser.access_token;
+      let accessToken: string;
+
+      try {
+        accessToken = decryptToken(currentUser.access_token);
+      } catch {
+        // Stored with another key or damaged: the user has to log in again
+        req.session = null;
+        ApiConsole.error("Failed to decrypt the stored access token.");
+        return next(new TetraAPIError(401, "Unauthorized", "INVALID_ACCESS_TOKEN"));
+      }
+
+      req.accessToken = accessToken;
 
       if (fetchUserData) {
         try {
-          const userProfile = await discordOauth.getUser(currentUser.access_token);
+          const userProfile = await discordOauth.getUser(accessToken);
           req.user = userProfile;
         } catch (error) {
           req.session = undefined;

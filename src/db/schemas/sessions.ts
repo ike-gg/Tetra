@@ -9,4 +9,6 @@ export const sessions = pgTable("sessions", {
     .references(() => users.id),
   session_token: varchar("session_token", { length: 255 }).notNull(),
   created_at: timestamp("created_at").defaultNow(),
+  // Sliding session expiry is measured from this (see API session constants)
+  last_used_at: timestamp("last_used_at").notNull().defaultNow(),
 });

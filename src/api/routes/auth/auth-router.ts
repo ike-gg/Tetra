@@ -4,6 +4,7 @@ import { type NextFunction, type Request, type Response, Router } from "express"
 import { z } from "zod";
 
 import { discordOauth } from "@/index";
+import { encryptToken } from "@/lib/crypto/token-crypto";
 
 import { db } from "../../../db";
 import { sessions, users } from "../../../db/schema";
@@ -92,8 +93,8 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
       await db
         .update(users)
         .set({
-          access_token: token.access_token,
-          refresh_token: token.refresh_token,
+          access_token: encryptToken(token.access_token),
+          refresh_token: encryptToken(token.refresh_token),
           token_expires_at: new Date(Date.now() + token.expires_in * 1000),
         })
         .where(eq(users.discord_id, userData.id));
@@ -104,8 +105,8 @@ authRouter.get("/callback", async (req: Request, res: Response, _: NextFunction)
         .insert(users)
         .values({
           discord_id: userData.id,
-          access_token: token.access_token,
-          refresh_token: token.refresh_token,
+          access_token: encryptToken(token.access_token),
+          refresh_token: encryptToken(token.refresh_token),
           token_expires_at: new Date(Date.now() + token.expires_in * 1000),
         })
         .returning();

@@ -9,6 +9,27 @@ import { CoreConsole } from "#/loggers";
 
 dotenv.config();
 
+const parseEncryptionKey = (value: string) => {
+  const key = /^[0-9a-fA-F]{64}$/.test(value)
+    ? Buffer.from(value, "hex")
+    : /^[A-Za-z0-9+/]{43}=?$/.test(value)
+      ? Buffer.from(value, "base64")
+      : null;
+
+  return key?.length === 32 ? key : null;
+};
+
+const parseOrigins = (value: string) =>
+  value
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map((origin) => {
+      const url = new URL(origin);
+      if (url.protocol !== "http:" && url.protocol !== "https:") throw new Error();
+      return url.origin;
+    });
+
 const envSchema = z.object({
   ENV: z
     .enum(["development", "production"])
@@ -67,6 +88,43 @@ const envSchema = z.object({
     .string()
     .transform((val) => val.split(","))
     .describe("Comma separated list of keys for session"),
+
+  CORS_ORIGINS: z
+    .string()
+    .optional()
+    .transform((value, ctx) => {
+      if (!value) return undefined;
+
+      try {
+        return parseOrigins(value);
+      } catch {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Must be comma separated http(s) URLs",
+        });
+        return z.NEVER;
+      }
+    })
+    .describe("Comma separated origins allowed by CORS, defaults to FRONTEND_URL"),
+
+  TOKEN_ENCRYPTION_KEY: z
+    .string()
+    .transform((value, ctx) => {
+      const key = parseEncryptionKey(value);
+
+      if (!key) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Must be 32 bytes as base64 or hex, e.g. `openssl rand -base64 32`",
+        });
+        return z.NEVER;
+      }
+
+      return key;
+    })
+    .describe(
+      "Key (32 bytes, base64 or hex) that encrypts Discord tokens in the database"
+    ),
 
   COOKIE_DOMAIN: z
     .string()
@@ -156,7 +214,10 @@ if (error) {
   process.exit(1);
 }
 
-export const env = data!;
+export const env = {
+  ...data!,
+  CORS_ORIGINS: data!.CORS_ORIGINS ?? [new URL(data!.FRONTEND_URL).origin],
+};
 
 export const isDevelopment = env.ENV === "development";
 export const isProduction = env.ENV === "production";
