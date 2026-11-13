@@ -56,7 +56,8 @@ export const initApi = () => {
   );
 
   // Editor tasks send the emote as a base64 data URL (256 KB file ≈ 350 KB)
-  app.use(express.json({ limit: "1mb" }));
+  // Not only tasks are send via API. Dont change it
+  app.use(express.json({ limit: "2mb" }));
 
   app.use((req, _, next) => {
     ApiConsole.info(`${req.method.toUpperCase()}::${req.url}`);

@@ -39,7 +39,7 @@ export const guildEmojiDeleteHandler: EventHandler<Events.GuildEmojiDelete> = as
         .returning();
 
       await db.insert(removedEmotes).values({
-        deletedWithPanel: true,
+        deletedWithPanel: false,
         emoteId: insertedEmote.id,
         guildId: removedEmote.guild.id,
       });
@@ -54,7 +54,7 @@ export const guildEmojiDeleteHandler: EventHandler<Events.GuildEmojiDelete> = as
     // if emote found but not assigned to the guild
     if (!emote.removed) {
       await db.insert(removedEmotes).values({
-        deletedWithPanel: true,
+        deletedWithPanel: false,
         emoteId: emote.id,
         guildId: removedEmote.guild.id,
       });

@@ -5,6 +5,7 @@ import {
   PermissionsBitField,
 } from "discord.js";
 import type OAuth from "discord-oauth2";
+import { eq } from "drizzle-orm";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
@@ -15,6 +16,8 @@ import { getEmoteUrl } from "@/utils/discord";
 import { db } from "../../../db";
 import { EmoteOrigin, emotes, removedEmotes } from "../../../db/schema";
 import { TetraAPIError } from "../../tetra-api-error";
+
+import { ApiConsole } from "#/loggers";
 
 const getGuildParams = z.object({
   guildId: z.string(),
@@ -83,15 +86,31 @@ export const guildsRemoveEmote = async (req: Request, res: Response, _: NextFunc
       })
       .returning();
 
-    await db.insert(removedEmotes).values({
-      deletedWithPanel: true,
-      emoteId: insertedEmote.id,
-      guildId: guild.id,
-    });
+    const [insertedRemovedEmote] = await db
+      .insert(removedEmotes)
+      .values({
+        deletedWithPanel: true,
+        emoteId: insertedEmote.id,
+        guildId: guild.id,
+      })
+      .returning();
 
     try {
       await discordRestApi.guilds.deleteEmoji(guildId, emote.id);
     } catch {
+      // The emote still exists on Discord, so it must not be offered for restore.
+      try {
+        await db
+          .delete(removedEmotes)
+          .where(eq(removedEmotes.id, insertedRemovedEmote.id));
+        await db.delete(emotes).where(eq(emotes.id, insertedEmote.id));
+      } catch (cleanupError) {
+        ApiConsole.error(
+          `Failed to clean up records of emote ${emote.id} after a failed delete in guild ${guildId}:`,
+          cleanupError
+        );
+      }
+
       throw new TetraAPIError(400, "Failed to delete emote", "GUILD_EMOTE_DELETE_FAILED");
     }
 
