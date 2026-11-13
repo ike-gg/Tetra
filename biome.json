@@ -6,7 +6,16 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/temp", "!**/bun.lock", "!**/*.md"]
+    "includes": [
+      "**",
+      "!**/temp",
+      "!**/bun.lock",
+      "!**/*.md",
+      "!**/routeTree.gen.ts",
+      "!**/.output",
+      "!**/.tanstack",
+      "!**/dist"
+    ]
   },
   "formatter": {
     "enabled": true,
@@ -76,6 +85,11 @@
         "noThisInStatic": "off",
         "noStaticOnlyClass": "off"
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   }
 }

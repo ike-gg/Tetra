@@ -1,0 +1,11 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "allowJs": true,
+    "paths": {
+      "#/*": ["./src/helpers/*"],
+      "@/*": ["./src/*"]
+    }
+  }
+}

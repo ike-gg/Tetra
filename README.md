@@ -38,7 +38,9 @@ Additionally Tetra offers a few other smaller but equally exciting features, suc
 
 ## Getting Started
 
-Requires [Bun](https://bun.sh), PostgreSQL and Redis. `ffmpeg` must be installed for the `/media` slideshow feature.
+Requires [Bun](https://bun.sh) and Docker (for local Postgres and Redis).
+
+This is a monorepo: `apps/core` is the Discord bot with the REST API, `apps/web` is the website and panel. Documentation lives in [docs](docs/project-notes.md).
 
 1. Clone repo and install dependencies
 
@@ -48,49 +50,31 @@ cd Tetra
 bun install
 ```
 
-2. Create a `.env` file (see [Environment variables](#environment-variables))
+2. Create `apps/core/.env` from `apps/core/.env.example` (variables are described in [docs/core.md](docs/core.md#environment-variables))
 
-3. Create the database tables
+3. Start Postgres and Redis, then create the database tables
 
 ```
-bun run db:push
+bun db:up
+bun db:push
 ```
 
 4. Register slash commands
 
 ```
-bun run deploy:dev        # only on the guilds listed in DEV_GUILDS
-bun run deployCommands    # globally
+bun --filter @tetra/core deploy:dev        # only on the guilds listed in DEV_GUILDS
+bun --filter @tetra/core deployCommands    # globally
 ```
 
-5. Run the bot
+5. Run everything
 
 ```
-bun run dev      # watch mode
-bun run start    # production
+bun dev    # core (bot + API on :3002) and web (:3000)
 ```
 
-Before committing run `bun run check` (Biome) and `bun run typecheck`.
-
-### Environment variables
-
-The app validates them on startup and prints what is wrong. Required:
-
-| Variable | What it is |
-|---|---|
-| `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN` | Discord bot application |
-| `DISCORD_OAUTH_CLIENT_ID`, `DISCORD_OAUTH_CLIENT_SECRET` | OAuth2 login for the web panel |
-| `POSTGRES_URL`, `REDIS_URL` | Database and Redis connection URLs |
-| `BACKEND_URL`, `FRONTEND_URL` | Public URLs of this app (OAuth redirect) and of the panel |
-| `SESSION_KEYS` | Comma separated list of secrets for the session cookie |
-| `TOKEN_ENCRYPTION_KEY` | 32 bytes (base64 or hex) that encrypt Discord tokens in the database. Create one with `openssl rand -base64 32`. Do not lose it: stored tokens cannot be read without it |
-| `INVITE_LINK` | Bot invite link |
-| `TWITCH_CLIENT_ID`, `TWITCH_SECRET_KEY`, `TENOR_API_KEY`, `IMGUR_CLIENT_ID` | API keys of the emote sources |
-
-Optional: `ENV` (`development` or `production`, default `development`), `API_ENABLED` (`true` to serve the panel API), `PORT` (default `3002`), `CORS_ORIGINS` (comma separated, default `FRONTEND_URL`), `COOKIE_DOMAIN`, `TEMP_DIR_PATH`, `DEV_GUILDS` (comma separated guild IDs for `deploy:dev`), `ERROR_LOG_CHANNEL_ID` (channel for the "Send developers log" button), `COBALT_URL` and `COBALT_API_KEY` (for `/media`).
+Before committing run `bun check` (Biome) and `bun typecheck`.
 
 ---
-
 
 ## Contributing
 

@@ -1,29 +1,14 @@
 {
   "compilerOptions": {
-    // Enable latest features
-    "lib": ["ESNext"],
     "target": "ESNext",
     "module": "ESNext",
-    "moduleDetection": "force",
-    "allowJs": true,
-
-    // path mapping
-    "paths": {
-      "#/*": ["./src/helpers/*"],
-      "@/*": ["./src/*"]
-    },
-
-    // Bundler mode
     "moduleResolution": "bundler",
+    "moduleDetection": "force",
     "allowImportingTsExtensions": true,
     "noEmit": true,
-
-    // Best practices
     "strict": true,
     "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
-
-    // Some stricter flags
     "noUnusedLocals": true,
     "noUnusedParameters": true
   }
