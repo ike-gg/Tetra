@@ -5,7 +5,7 @@ import express from "express";
 // import rateLimit from "express-rate-limit";
 
 import { env, isProduction } from "../env";
-import { router } from "./router";
+import { apiErrorHandler, router } from "./router";
 
 import { ApiConsole } from "#/loggers";
 
@@ -55,8 +55,8 @@ export const initApi = () => {
     })
   );
 
-  // Editor tasks send the emote as a base64 data URL
-  app.use(express.json({ limit: "2mb" }));
+  // Editor tasks send the emote as a base64 data URL (256 KB file ≈ 350 KB)
+  app.use(express.json({ limit: "1mb" }));
 
   app.use((req, _, next) => {
     ApiConsole.info(`${req.method.toUpperCase()}::${req.url}`);
@@ -64,6 +64,9 @@ export const initApi = () => {
   });
 
   app.use("/api", router);
+
+  // Errors raised before the router, e.g. by the JSON body parser
+  app.use(apiErrorHandler);
 
   app.listen(PORT, () => {
     ApiConsole.log(`Listening on ${env.BACKEND_URL}`);

@@ -28,21 +28,43 @@ router.use(checkUserAuth({ fetchUserData: true }));
 router.use("/guilds", guildsRouter);
 router.use("/tasks", tasksRouter);
 
-router.use((error: Error, _: Request, res: Response, __: NextFunction) => {
+const sendApiError = (res: Response, error: TetraAPIError) => {
+  res.status(error.code).json({
+    error: error.message,
+    reference: error.reference,
+  });
+};
+
+/** Body parser (http-errors) error, e.g. a body over the JSON limit. */
+const isBodyParserError = (error: unknown): error is Error & { type: string } =>
+  error instanceof Error && "type" in error && typeof error.type === "string";
+
+export const apiErrorHandler = (
+  error: Error,
+  _: Request,
+  res: Response,
+  __: NextFunction
+) => {
   if (error instanceof TetraAPIError) {
-    res.status(error.code).json({
-      error: error.message,
-      reference: error.reference,
-    });
+    sendApiError(res, error);
     return;
   }
 
   if (error instanceof DiscordAPIError) {
-    const apiError = new TetraAPIError(400, error.message, "DISCORD_API_ERROR");
-    res.status(apiError.code).json({
-      error: apiError.message,
-      reference: apiError.reference,
-    });
+    sendApiError(res, new TetraAPIError(400, error.message, "DISCORD_API_ERROR"));
+    return;
+  }
+
+  if (isBodyParserError(error) && error.type === "entity.too.large") {
+    sendApiError(
+      res,
+      new TetraAPIError(413, "Request body too large", "PAYLOAD_TOO_LARGE")
+    );
+    return;
+  }
+
+  if (isBodyParserError(error) && error.type === "entity.parse.failed") {
+    sendApiError(res, new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA"));
     return;
   }
 
@@ -53,6 +75,6 @@ router.use((error: Error, _: Request, res: Response, __: NextFunction) => {
     error: "Internal Server Error",
     reference: ref,
   });
+};
 
-  return;
-});
+router.use(apiErrorHandler);
