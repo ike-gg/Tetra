@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import { Accent } from "@/components/ui/accent";
+import { Button } from "@/components/ui/button";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+
 const INVITE_URL = "https://tetra.lol/invite";
 
 // Same ramp as the background shader, so the decode effect reads as part of it
@@ -97,17 +102,12 @@ export function Hero() {
       />
 
       <div className="flex max-w-3xl flex-col items-center text-center">
-        <p className="motion-safe:animate-hero-rise mb-8 inline-flex items-center gap-2 border border-border bg-background/60 px-3 py-1 font-mono text-muted text-xs backdrop-blur-sm [animation-delay:200ms]">
-          <span className="relative flex size-1.5">
-            <span className="absolute inline-flex size-full animate-ping bg-primary opacity-75" />
-            <span className="relative inline-flex size-1.5 bg-primary" />
-          </span>
-          emote manager for discord
-        </p>
-
-        <h1 className="motion-safe:animate-hero-rise text-balance font-semibold text-5xl leading-[1.05] tracking-tight sm:text-7xl [animation-delay:350ms]">
+        <Heading
+          level={1}
+          className="motion-safe:animate-hero-rise [animation-delay:350ms]"
+        >
           Your chat&apos;s{" "}
-          <span className="relative inline-block font-normal font-serif text-primary">
+          <Accent className="relative inline-block">
             <span aria-hidden className="invisible">
               emotes
             </span>
@@ -119,34 +119,29 @@ export function Hero() {
             >
               emotes
             </span>
-          </span>
+          </Accent>
           , now on Discord.
-        </h1>
+        </Heading>
 
-        <p className="motion-safe:animate-hero-rise mt-6 max-w-xl text-balance text-lg text-muted [animation-delay:500ms]">
+        <Text
+          size="lg"
+          tone="muted"
+          className="motion-safe:animate-hero-rise mt-6 max-w-xl text-balance [animation-delay:500ms]"
+        >
           Add any emote from 7TV, BTTV, FFZ or a link with one command. Tetra squeezes it
           under Discord&apos;s 256&nbsp;KB limit, so it just works.
-        </p>
+        </Text>
 
         <div className="motion-safe:animate-hero-rise mt-10 flex flex-col items-center gap-3 sm:flex-row [animation-delay:650ms]">
-          <a
-            href={INVITE_URL}
-            className="group relative inline-flex h-12 items-center gap-2 bg-primary px-6 font-medium text-primary-foreground shadow-[0_0_40px_-8px_var(--color-brand-500)] transition hover:bg-primary-hover hover:shadow-[0_0_60px_-4px_var(--color-brand-500)] focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:outline-offset-4"
-          >
+          <Button variant="primary" size="lg" glow render={<a href={INVITE_URL} />}>
             Add to Discord
-            <span
-              aria-hidden
-              className="font-mono transition-transform group-hover:translate-x-1"
-            >
+            <span aria-hidden className="font-mono group-hover/button:translate-x-0.5">
               →
             </span>
-          </a>
-          <Link
-            to="/panel"
-            className="inline-flex h-12 items-center border border-border bg-background/60 px-6 font-medium text-foreground backdrop-blur-sm transition hover:border-neutral-600 hover:bg-surface/80"
-          >
+          </Button>
+          <Button size="lg" render={<Link to="/panel" />}>
             Open panel
-          </Link>
+          </Button>
         </div>
 
         <div className="motion-safe:animate-hero-rise mt-14 w-full max-w-md [animation-delay:800ms]">

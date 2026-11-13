@@ -1,5 +1,11 @@
 import { Link } from "@tanstack/react-router";
 
+import { Accent } from "@/components/ui/accent";
+import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+
 const INVITE_URL = "https://tetra.lol/invite";
 
 const FEATURES = [
@@ -34,39 +40,34 @@ const STEPS = [
   { command: ":catJAM:", text: "Use it right away. Manage the rest from the panel." },
 ];
 
-function SectionLabel({ index, children }: { index: string; children: string }) {
-  return (
-    <p className="font-mono text-muted text-xs tracking-widest">
-      <span className="text-brand-500">[{index}]</span> / {children}
-    </p>
-  );
-}
-
 export function HomeSections() {
   return (
     <div className="relative bg-linear-to-b from-transparent via-background/85 via-30% to-background">
       <section className="mx-auto max-w-6xl px-6 pt-40 pb-28">
-        <SectionLabel index="01">features</SectionLabel>
-        <h2 className="mt-4 max-w-2xl text-balance font-semibold text-4xl tracking-tight sm:text-5xl">
-          Built for chats that speak in{" "}
-          <span className="font-normal font-serif text-primary">emotes</span>.
-        </h2>
+        <Eyebrow index="01">features</Eyebrow>
+        <Heading level={2} className="mt-4 max-w-2xl">
+          Built for chats that speak in <Accent>emotes</Accent>.
+        </Heading>
 
         <div className="mt-14 grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
           {FEATURES.map((feature) => (
             <article
               key={feature.title}
-              className="group flex flex-col gap-6 bg-background p-8 transition-colors hover:bg-surface"
+              className="group flex flex-col gap-6 bg-background p-8 hover:bg-surface"
             >
               <pre
                 aria-hidden
-                className="font-mono text-muted text-sm leading-tight transition-colors group-hover:text-brand-500"
+                className="font-mono text-muted text-sm leading-tight group-hover:text-brand-500"
               >
                 {feature.art.join("\n")}
               </pre>
               <div>
-                <h3 className="font-medium text-lg">{feature.title}</h3>
-                <p className="mt-2 text-muted">{feature.body}</p>
+                <Heading level={3} size="sm">
+                  {feature.title}
+                </Heading>
+                <Text tone="muted" className="mt-2">
+                  {feature.body}
+                </Text>
               </div>
             </article>
           ))}
@@ -74,11 +75,10 @@ export function HomeSections() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-28">
-        <SectionLabel index="02">how it works</SectionLabel>
-        <h2 className="mt-4 max-w-2xl text-balance font-semibold text-4xl tracking-tight sm:text-5xl">
-          Three steps, <span className="font-normal font-serif text-primary">zero</span>{" "}
-          resizing.
-        </h2>
+        <Eyebrow index="02">how it works</Eyebrow>
+        <Heading level={2} className="mt-4 max-w-2xl">
+          Three steps, <Accent>zero</Accent> resizing.
+        </Heading>
 
         <ol className="mt-14 grid gap-10 sm:grid-cols-3">
           {STEPS.map((step, index) => (
@@ -90,7 +90,7 @@ export function HomeSections() {
               <code className="w-fit border border-border bg-surface px-2 py-1 font-mono text-foreground text-sm">
                 {step.command}
               </code>
-              <p className="text-muted">{step.text}</p>
+              <Text tone="muted">{step.text}</Text>
             </li>
           ))}
         </ol>
@@ -107,24 +107,19 @@ export function HomeSections() {
             ).join("\n")}
           </pre>
           <div className="relative">
-            <h2 className="mx-auto max-w-xl text-balance font-semibold text-4xl tracking-tight sm:text-5xl">
-              Give your server{" "}
-              <span className="font-normal font-serif text-primary">better</span> emotes.
-            </h2>
-            <p className="mx-auto mt-4 max-w-md text-muted">Takes a minute to set up.</p>
+            <Heading level={2} className="mx-auto max-w-xl">
+              Give your server <Accent>better</Accent> emotes.
+            </Heading>
+            <Text tone="muted" className="mx-auto mt-4 max-w-md">
+              Takes a minute to set up.
+            </Text>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <a
-                href={INVITE_URL}
-                className="inline-flex h-12 items-center gap-2 bg-primary px-6 font-medium text-primary-foreground transition hover:bg-primary-hover"
-              >
+              <Button variant="primary" size="lg" render={<a href={INVITE_URL} />}>
                 Add to Discord <span aria-hidden>→</span>
-              </a>
-              <Link
-                to="/panel"
-                className="inline-flex h-12 items-center border border-border px-6 font-medium transition hover:border-neutral-600"
-              >
+              </Button>
+              <Button size="lg" render={<Link to="/panel" />}>
                 Open panel
-              </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -135,10 +130,10 @@ export function HomeSections() {
           <span className="text-brand-500">tetra</span> · emote manager for discord
         </span>
         <nav className="flex gap-6">
-          <a href={INVITE_URL} className="transition hover:text-foreground">
+          <a href={INVITE_URL} className="hover:text-foreground">
             invite
           </a>
-          <Link to="/panel" className="transition hover:text-foreground">
+          <Link to="/panel" className="hover:text-foreground">
             panel
           </Link>
         </nav>

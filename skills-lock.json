@@ -1,6 +1,12 @@
 {
   "version": 2,
   "skills": {
+    "apple-design": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "skillPath": "skills/apple-design/SKILL.md",
+      "computedHash": "163ba8b42c7d9d5ccb08674266d4727c9ec610b9d876c906b1f29ce5e0d933da"
+    },
     "ui-sdk": {
       "source": "vercel-labs/ui",
       "sourceType": "github",

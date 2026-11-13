@@ -133,10 +133,16 @@
 @layer base {
   html {
     color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  /* Headings get the brand voice but no size: size comes from <Heading> or a class */
+  :where(h1, h2, h3, h4, h5, h6) {
+    @apply font-semibold tracking-tight text-balance;
   }
 
   ::selection {

@@ -8,6 +8,7 @@ The visual and verbal identity of Tetra. Tokens live in `apps/web/src/styles/app
 2. **Emotes are the color.** The interface stays dark and quiet so that emotes, the product's content, carry the color and the energy.
 3. **ASCII as an accent.** Monospace glyphs and character art nod to chat and to the emote background. Use them as seasoning, not as the main course.
 4. **One loud color.** Orange marks what matters on a screen. Everything else is neutral.
+5. **Native, not a website.** Tetra should feel like an installed app, as little like a browser page as possible. See [Native feel](#native-feel).
 
 ## Color
 
@@ -34,7 +35,7 @@ Three roles. Dark only (`color-scheme: dark`); there is no light theme.
 | Geist Serif | `font-serif` | Accent only: one or two words in a heading, usually in `text-primary`. Display face, single weight (400), never for body text or UI. |
 | Geist Mono | `font-mono` | ASCII art, labels, commands, code, small technical captions. |
 
-- Headings: Geist semibold, tight tracking (`tracking-tight`), balanced wrapping (`text-balance`).
+- Headings: Geist semibold, tight tracking (`tracking-tight`), balanced wrapping (`text-balance`). In code: `Heading`, `Text`, `Accent` and `Eyebrow` from `apps/web/src/components/ui/` (see [web.md](web.md#ui-components)).
 - The serif accent is the brand's one flourish per heading: "Your chat's *emotes*, now on Discord."
 - Small labels and eyebrows: Geist Mono, `text-xs`, wide tracking, lowercase or uppercase consistently within a block.
 - Fonts are self-hosted from the `geist` npm package (OFL) in `apps/web/src/assets/fonts/`.
@@ -43,7 +44,19 @@ Three roles. Dark only (`color-scheme: dark`); there is no light theme.
 
 - **Border radius is always 0.** All Tailwind `--radius-*` tokens are 0 and ui-sdk's `--ui-radius` is 0. Do not use `rounded-full` either (it bypasses the tokens), not even for dots, avatars or pills: they are square too.
 - Structure comes from **1px hairlines** (`border-border`) instead of shadows or rounded cards. Grids of cards share borders (`gap-px` on a `bg-border` container).
-- Shadows are not part of the language. The one exception is the orange glow on the main call to action.
+- Shadows are not part of the language. The one exception is a tight orange glow (`glow` on `Button`, `0 0 18px -4px brand-500`) on the page's main call to action. It doesn't change on hover.
+
+## Native feel
+
+The web panel should feel like a native desktop app. Controls behave like OS controls, not like links on a marketing page:
+
+- **No transitions on interactive states.** Hover, press and selection change color instantly. No `transition` / `duration-*` on buttons, list items, tabs or cards.
+- **Default cursor on controls.** Buttons and button-like links keep the arrow cursor (`cursor-default`), not the pointing hand. Disabled controls show `not-allowed`, pending ones `wait`. Inline text links inside prose may keep the pointer.
+- **Instant press feedback.** Every control has an `active` state one step darker than its hover state.
+- **No text selection on chrome.** Buttons and controls are `select-none`; content (emote names, text the user may copy) stays selectable.
+- **Focus rings only from the keyboard** (`focus-visible`), never on mouse click.
+- **No tap highlight** on touch devices (set globally).
+- Animation is for content and signature moments (the background, the intro wave, the ASCII decode), never for the feedback of a control.
 
 ## ASCII
 
@@ -56,7 +69,7 @@ Three roles. Dark only (`color-scheme: dark`); there is no light theme.
 
 - Entrances: short rise and un-blur (`animate-hero-rise`, 0.9s, staggered by about 150 ms).
 - Signature moments: the radial orange wave when the background appears, the ASCII decode of an accent word, a blinking block cursor.
-- Hover: color and position shifts (an arrow nudging right), no scaling.
+- Hover: instant color or position changes, no transitions, no scaling (see [Native feel](#native-feel)).
 - Everything respects `prefers-reduced-motion`: content appears instantly and the background stops moving.
 
 ## Imagery

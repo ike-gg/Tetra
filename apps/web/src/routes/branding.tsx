@@ -1,6 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { Accent } from "@/components/ui/accent";
+import { Button } from "@/components/ui/button";
+import { Eyebrow } from "@/components/ui/eyebrow";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+
 export const Route = createFileRoute("/branding")({
   head: () => ({
     meta: [{ title: "Branding · Tetra" }],
@@ -85,7 +91,15 @@ const PRINCIPLES = [
   ],
   ["ASCII as an accent", "Monospace glyphs nod to chat. Seasoning, not the main course."],
   ["One loud color", "Orange marks what matters. Everything else is neutral."],
+  [
+    "Native, not a website",
+    "Instant states, default cursor, no web-page flourishes on controls.",
+  ],
 ];
+
+const BUTTON_VARIANTS = ["primary", "secondary", "ghost"] as const;
+const BUTTON_SIZES = ["sm", "md", "lg"] as const;
+const HEADING_SIZES = ["display", "xl", "lg", "md", "sm"] as const;
 
 const VOICE = [
   ["Do", "Add any emote with one command."],
@@ -134,7 +148,7 @@ function BrandingPage() {
       <div className="mx-auto max-w-6xl px-6 pb-24">
         <header className="flex flex-col gap-12 py-24">
           <div className="flex h-6 items-center justify-between font-mono text-muted text-xs">
-            <Link to="/" className="transition hover:text-foreground">
+            <Link to="/" className="hover:text-foreground">
               ← <span className="text-brand-500">tetra</span>
             </Link>
             <span>docs/branding.md · rev. 2026-11</span>
@@ -167,7 +181,7 @@ function BrandingPage() {
               Square, dark and quiet, so the emotes can be loud. This sheet is the
               rendered version of{" "}
               <code className="font-mono text-foreground">docs/branding.md</code>.
-              Components land here later.
+              Components are in sheet 08.
             </p>
           </div>
         </header>
@@ -175,7 +189,10 @@ function BrandingPage() {
         <Section index="01" title="Principles" note="Four rules every screen follows.">
           <ol className="grid gap-px border border-border bg-border sm:grid-cols-2">
             {PRINCIPLES.map(([title, body], index) => (
-              <li key={title} className="flex flex-col gap-2 bg-background p-6">
+              <li
+                key={title}
+                className="flex flex-col gap-2 bg-background p-6 sm:odd:last:col-span-2"
+              >
                 <span className="font-mono text-brand-500 text-xs">0{index + 1}</span>
                 <h3 className="font-medium">{title}</h3>
                 <p className="text-muted text-sm">{body}</p>
@@ -332,7 +349,7 @@ function BrandingPage() {
           <dl className="grid gap-4 sm:grid-cols-2">
             <Spec label="entrance">Rise and un-blur, 0.9s, staggered ~150 ms</Spec>
             <Spec label="signature">Orange wave, ASCII decode, block cursor</Spec>
-            <Spec label="hover">Color and position shifts, no scaling</Spec>
+            <Spec label="hover">Instant color changes, no transitions, no scaling</Spec>
             <Spec label="reduced motion">
               Content appears instantly, background stops
             </Spec>
@@ -361,6 +378,77 @@ function BrandingPage() {
             </li>
             <li>Never claim what isn&apos;t verified: pricing, permissions, numbers.</li>
           </ul>
+        </Section>
+
+        <Section
+          index="08"
+          title="Components"
+          note="components/ui. Built on ui-sdk where it ships the behavior."
+        >
+          <div className="flex flex-col gap-px border border-border bg-border">
+            <div className="flex flex-col gap-6 bg-background p-6">
+              <p className="font-mono text-muted text-xs">
+                &lt;Button variant size glow render&gt;
+              </p>
+              {BUTTON_VARIANTS.map((variant) => (
+                <div key={variant} className="flex flex-wrap items-center gap-3">
+                  <span className="w-20 font-mono text-muted text-xs">{variant}</span>
+                  {BUTTON_SIZES.map((size) => (
+                    <Button key={size} variant={variant} size={size}>
+                      Button {size}
+                    </Button>
+                  ))}
+                  <Button variant={variant} disabled>
+                    Disabled
+                  </Button>
+                </div>
+              ))}
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="w-20 font-mono text-muted text-xs">glow</span>
+                <Button variant="primary" size="lg" glow>
+                  Main call to action
+                </Button>
+                <span className="font-mono text-muted text-xs">one per page</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-6 bg-background p-6">
+              <p className="font-mono text-muted text-xs">
+                &lt;Heading level size&gt; · level is the outline, size is the look
+              </p>
+              {HEADING_SIZES.map((size) => (
+                <div key={size} className="flex items-baseline gap-4">
+                  <span className="w-20 shrink-0 font-mono text-muted text-xs">
+                    {size}
+                  </span>
+                  <Heading level={3} size={size}>
+                    Emotes, <Accent>squared</Accent>.
+                  </Heading>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid gap-px bg-border sm:grid-cols-2">
+              <div className="flex flex-col gap-3 bg-background p-6">
+                <p className="font-mono text-muted text-xs">&lt;Text size tone&gt;</p>
+                <Text size="lg">Large text for intros.</Text>
+                <Text>Default body text.</Text>
+                <Text size="sm" tone="muted">
+                  Small muted text for secondary details.
+                </Text>
+              </div>
+              <div className="flex flex-col gap-3 bg-background p-6">
+                <p className="font-mono text-muted text-xs">
+                  &lt;Eyebrow index&gt; · &lt;Accent&gt;
+                </p>
+                <Eyebrow index="01">features</Eyebrow>
+                <Eyebrow>emote manager for discord</Eyebrow>
+                <Text>
+                  One <Accent>accent</Accent> word per heading.
+                </Text>
+              </div>
+            </div>
+          </div>
         </Section>
       </div>
     </div>
