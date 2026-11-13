@@ -2,7 +2,7 @@
 
 Website and panel (`apps/web`). Paths in this document are relative to `apps/web`.
 
-**Stack:** TanStack Start (Vite), TanStack Router (file-based routes), React 19, TanStack Query, Tailwind CSS v4.
+**Stack:** TanStack Start (Vite), TanStack Router (file-based routes), React 19, TanStack Query, Tailwind CSS v4, ui-sdk (unstyled accessible components, see [UI components](#ui-components-ui-sdk)).
 
 ## Rendering
 
@@ -26,10 +26,23 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 
 ## Styling
 
-Tailwind v4, configured in CSS (`@theme` in `src/styles/app.css`); dark only.
+Tailwind v4, configured in CSS (`@theme` in `src/styles/app.css`); dark only. The design rules behind the tokens are in [branding.md](branding.md) (rendered at `/branding`).
 
 - **Fonts:** `font-sans` = Geist (default for everything), `font-serif` = Geist Serif (display serif with a single 400 weight, use only as an accent for headings), `font-mono` = Geist Mono (ASCII-art accents, also used by the homepage background glyphs).
-- **Colors** (OKLCH): `brand-50…950` built around `#f64f02` (`brand-500`); `neutral-*` is Tailwind's scale with a faint tint of the brand hue. Prefer the semantic tokens: `background`, `surface`, `foreground`, `muted`, `border`, `primary`, `primary-hover`, `primary-foreground`. Text on `primary` is dark (`primary-foreground`), white on the orange fails contrast.
+- **Radius:** every `--radius-*` token and `--ui-radius` is 0; never use `rounded-full`.
+- **Colors** (OKLCH): `brand-50…950` built around `#f64f02` (`brand-500`); `neutral-*` is Tailwind's scale with a faint tint of the brand hue. `signal-300/400/500` is the rare cool accent. Prefer the semantic tokens: `background`, `surface`, `foreground`, `muted`, `border`, `primary`, `primary-hover`, `primary-foreground`, `signal`, `signal-foreground`. Text on `primary` is dark (`primary-foreground`), white on the orange fails contrast.
+
+## UI components (ui-sdk)
+
+`@ui-sdk/react` + `@ui-sdk/core` (Vercel Labs, beta, pinned to an exact version): unstyled components with keyboard, focus and ARIA handled (dialog, menu, select, tabs, toast, combobox, image-cropper…), plus `@ui-sdk/core` behaviors for building components it doesn't ship.
+
+- **Before using it**, follow the ui-sdk skill (`.claude/skills/ui-sdk`, loaded automatically by Claude Code). Then read `node_modules/@ui-sdk/react/docs/llms.txt` and only the pages the task needs (e.g. `docs/components/select.md`). To build a new component, also search `node_modules/@ui-sdk/react/docs/core.md` by heading (it's huge, don't read it whole) and read `rendering.md` next to it.
+- Import each component from its own entry (`@ui-sdk/react/dialog`); there is no root import.
+- **Default look:** `@ui-sdk/core/web.css`, imported by `src/styles/panel.css` as `@import "@ui-sdk/core/web.css" layer(components);`. Inside the components layer it sits above Tailwind's preflight (which would reset it otherwise) and below utilities, so Tailwind classes win. `panel.css` is imported only in `src/routes/panel.lazy.tsx`, so the homepage doesn't download it: a side-effect import in a non-lazy route file ends up in every page's HTML.
+- Its `--ui-*` tokens are mapped to our theme in `src/styles/app.css`; restyle parts with Tailwind on top (`data-slot` and state attributes like `data-open:`), never `!important`.
+- `@layer ui-sdk;` stays at the very top of `app.css`, above `@import "tailwindcss"`: ui-sdk injects some behavior CSS into that layer at runtime.
+- Our own `color-scheme: dark` overrides web.css's light/dark switching.
+- Route files may use TanStack's dotted names (`panel.lazy.tsx`), an exception to kebab-case.
 
 ## Topic docs
 

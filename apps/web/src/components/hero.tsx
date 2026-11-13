@@ -97,10 +97,10 @@ export function Hero() {
       />
 
       <div className="flex max-w-3xl flex-col items-center text-center">
-        <p className="motion-safe:animate-hero-rise mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-background/60 px-3 py-1 font-mono text-muted text-xs backdrop-blur-sm [animation-delay:200ms]">
+        <p className="motion-safe:animate-hero-rise mb-8 inline-flex items-center gap-2 border border-border bg-background/60 px-3 py-1 font-mono text-muted text-xs backdrop-blur-sm [animation-delay:200ms]">
           <span className="relative flex size-1.5">
-            <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex size-1.5 rounded-full bg-primary" />
+            <span className="absolute inline-flex size-full animate-ping bg-primary opacity-75" />
+            <span className="relative inline-flex size-1.5 bg-primary" />
           </span>
           emote manager for discord
         </p>
@@ -131,7 +131,7 @@ export function Hero() {
         <div className="motion-safe:animate-hero-rise mt-10 flex flex-col items-center gap-3 sm:flex-row [animation-delay:650ms]">
           <a
             href={INVITE_URL}
-            className="group relative inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-6 font-medium text-primary-foreground shadow-[0_0_40px_-8px_var(--color-brand-500)] transition hover:bg-primary-hover hover:shadow-[0_0_60px_-4px_var(--color-brand-500)] focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:outline-offset-4"
+            className="group relative inline-flex h-12 items-center gap-2 bg-primary px-6 font-medium text-primary-foreground shadow-[0_0_40px_-8px_var(--color-brand-500)] transition hover:bg-primary-hover hover:shadow-[0_0_60px_-4px_var(--color-brand-500)] focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:outline-offset-4"
           >
             Add to Discord
             <span
@@ -143,7 +143,7 @@ export function Hero() {
           </a>
           <Link
             to="/panel"
-            className="inline-flex h-12 items-center rounded-lg border border-border bg-background/60 px-6 font-medium text-foreground backdrop-blur-sm transition hover:border-neutral-600 hover:bg-surface/80"
+            className="inline-flex h-12 items-center border border-border bg-background/60 px-6 font-medium text-foreground backdrop-blur-sm transition hover:border-neutral-600 hover:bg-surface/80"
           >
             Open panel
           </Link>
@@ -152,7 +152,7 @@ export function Hero() {
         <div className="motion-safe:animate-hero-rise mt-14 w-full max-w-md [animation-delay:800ms]">
           <div
             aria-hidden
-            className="rounded-lg border border-border bg-background/70 px-4 py-3 text-left font-mono text-sm backdrop-blur-sm"
+            className="border border-border bg-background/70 px-4 py-3 text-left font-mono text-sm backdrop-blur-sm"
           >
             <span className="text-brand-500">/</span>
             <span className="text-foreground">addemote</span>{" "}

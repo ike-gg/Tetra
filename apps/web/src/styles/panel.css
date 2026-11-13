@@ -1,0 +1,3 @@
+/* Nested into Tailwind's components layer: above preflight, which would otherwise reset
+   web.css, and below utilities, so Tailwind classes still win. */
+@import "@ui-sdk/core/web.css" layer(components);

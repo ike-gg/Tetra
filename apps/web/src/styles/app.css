@@ -1,3 +1,6 @@
+/* ui-sdk injects a little behavior CSS into this layer at runtime; keep it the lowest */
+@layer ui-sdk;
+
 @import "tailwindcss";
 
 @font-face {
@@ -64,6 +67,21 @@
   --color-neutral-900: oklch(0.205 0.004 38);
   --color-neutral-950: oklch(0.145 0.003 38);
 
+  /* Signal: cool counterpoint to the brand orange, used rarely (see docs/branding.md) */
+  --color-signal-300: oklch(0.89 0.08 215);
+  --color-signal-400: oklch(0.81 0.13 215);
+  --color-signal-500: oklch(0.72 0.12 215);
+
+  /* Square corners are part of the brand: every radius token is 0 */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-2xl: 0;
+  --radius-3xl: 0;
+  --radius-4xl: 0;
+
   --color-background: var(--color-neutral-950);
   --color-surface: var(--color-neutral-900);
   --color-foreground: var(--color-neutral-100);
@@ -72,6 +90,8 @@
   --color-primary: var(--color-brand-500);
   --color-primary-hover: var(--color-brand-400);
   --color-primary-foreground: var(--color-neutral-950);
+  --color-signal: var(--color-signal-400);
+  --color-signal-foreground: var(--color-neutral-950);
 
   --animate-hero-rise: hero-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-hero-blink: hero-blink 1s steps(1) infinite;
@@ -89,6 +109,25 @@
       opacity: 0;
     }
   }
+}
+
+/* Themes ui-sdk's web.css (loaded by the panel only) with our tokens */
+:root {
+  --ui-background: var(--color-background);
+  --ui-foreground: var(--color-foreground);
+  --ui-muted: var(--color-neutral-800);
+  --ui-muted-foreground: var(--color-muted);
+  --ui-border: var(--color-border);
+  --ui-input: var(--color-neutral-700);
+  --ui-primary: var(--color-primary);
+  --ui-primary-foreground: var(--color-primary-foreground);
+  --ui-destructive: oklch(0.704 0.191 22.2);
+  --ui-ring: color-mix(in oklch, var(--color-brand-500) 45%, transparent);
+  --ui-ring-border: var(--color-brand-500);
+  --ui-radius: 0;
+  --ui-font-size: 0.875rem;
+  --ui-font-sans: var(--font-sans);
+  --ui-font-mono: var(--font-mono);
 }
 
 @layer base {

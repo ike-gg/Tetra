@@ -4,6 +4,7 @@ Project description and lasting knowledge for people and agents working on this 
 
 - [core.md](core.md) – Discord bot + REST API (`apps/core`)
 - [web.md](web.md) – website and panel (`apps/web`)
+- [branding.md](branding.md) – visual and verbal identity (rendered at `/branding`)
 
 ## What Tetra is
 
@@ -17,7 +18,9 @@ Bun workspaces, one `bun.lock` in the root.
 |---|---|
 | `apps/core` | `@tetra/core`: Discord bot (sharded) + REST API for the panel. One deployable process tree. |
 | `apps/web` | `@tetra/web`: TanStack Start app. Static homepage + client-only panel. |
-| `docs/` | Project documentation (this file, `core.md`, `web.md`). |
+| `CLAUDE.md` | Entry point for agents: links to the docs below and the rules that apply everywhere. |
+| `.claude/skills/`, `skills-lock.json` | Project agent skills, installed with the `skills` CLI (`npx skills add <repo> --skill <name> --agent claude-code`, update with `npx skills update`). Copies are committed; the lock file records their source and hash. |
+| `docs/` | Project documentation (this file, `core.md`, `web.md`, topic docs in `docs/web/`). |
 | `docker/` | Dockerfiles, always built with the repo root as context. |
 | `docker-compose.yml` | Local Postgres + Redis; `core` under the `full` profile. |
 | `tsconfig.base.json`, `biome.json` | Shared TypeScript and Biome config. |

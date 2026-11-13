@@ -52,7 +52,7 @@ export function HomeSections() {
           <span className="font-normal font-serif text-primary">emotes</span>.
         </h2>
 
-        <div className="mt-14 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2">
+        <div className="mt-14 grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
           {FEATURES.map((feature) => (
             <article
               key={feature.title}
@@ -87,7 +87,7 @@ export function HomeSections() {
                 <span className="text-brand-500">0{index + 1}</span>
                 <span aria-hidden className="h-px flex-1 bg-border" />
               </div>
-              <code className="w-fit rounded-md border border-border bg-surface px-2 py-1 font-mono text-foreground text-sm">
+              <code className="w-fit border border-border bg-surface px-2 py-1 font-mono text-foreground text-sm">
                 {step.command}
               </code>
               <p className="text-muted">{step.text}</p>
@@ -97,7 +97,7 @@ export function HomeSections() {
       </section>
 
       <section className="mx-auto max-w-6xl px-6 py-28">
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-surface px-8 py-20 text-center">
+        <div className="relative overflow-hidden border border-border bg-surface px-8 py-20 text-center">
           <pre
             aria-hidden
             className="pointer-events-none absolute inset-0 select-none overflow-hidden font-mono text-[10px] text-brand-500/10 leading-[11px]"
@@ -115,13 +115,13 @@ export function HomeSections() {
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <a
                 href={INVITE_URL}
-                className="inline-flex h-12 items-center gap-2 rounded-lg bg-primary px-6 font-medium text-primary-foreground transition hover:bg-primary-hover"
+                className="inline-flex h-12 items-center gap-2 bg-primary px-6 font-medium text-primary-foreground transition hover:bg-primary-hover"
               >
                 Add to Discord <span aria-hidden>→</span>
               </a>
               <Link
                 to="/panel"
-                className="inline-flex h-12 items-center rounded-lg border border-border px-6 font-medium transition hover:border-neutral-600"
+                className="inline-flex h-12 items-center border border-border px-6 font-medium transition hover:border-neutral-600"
               >
                 Open panel
               </Link>

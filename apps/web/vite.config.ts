@@ -3,7 +3,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const staticPages = ["/"];
+const staticPages = ["/", "/branding"];
 
 export default defineConfig({
   server: {
