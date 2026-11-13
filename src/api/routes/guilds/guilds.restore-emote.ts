@@ -1,6 +1,6 @@
 import { type APIGuild, DiscordAPIError, PermissionsBitField } from "discord.js";
 import type OAuth from "discord-oauth2";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
@@ -16,7 +16,7 @@ import { TetraAPIError } from "../../tetra-api-error";
 
 const getGuildParams = z.object({
   guildId: z.string(),
-  restoreId: z.string(),
+  restoreId: z.coerce.number().int().positive(),
 });
 
 export const guildsRestoreEmote = async (
@@ -63,7 +63,7 @@ export const guildsRestoreEmote = async (
     }
 
     const removedEmote = await db.query.removedEmotes.findFirst({
-      where: eq(removedEmotes.id, Number(restoreId)),
+      where: and(eq(removedEmotes.id, restoreId), eq(removedEmotes.guildId, guildId)),
       with: {
         emote: true,
       },
@@ -87,7 +87,7 @@ export const guildsRestoreEmote = async (
 
     const preview = getEmoteUrl(createdEmote);
 
-    await db.delete(removedEmotes).where(eq(removedEmotes.id, Number(restoreId)));
+    await db.delete(removedEmotes).where(eq(removedEmotes.id, removedEmote.id));
 
     res.json({
       message: `Emote ${createdEmote.name} restored in ${guild.name}!`,
