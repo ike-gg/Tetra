@@ -12,7 +12,7 @@ A Discord bot for managing emotes. Main feature: adding an emote from 7TV / BTTV
 
 Two kinds of processes:
 
-- **Manager process** (`src/index.ts`): `ShardingManager`, Discord OAuth, the **Express API** (when `API_ENABLED`). Exports `discordOauth` and `shardingManager`, which the API imports from `@/index`.
+- **Manager process** (`src/index.ts`): startup flow, the **Express API** (when `API_ENABLED`) and shard lifecycle. `shardingManager` and `discordOauth` live in `src/lib/sharding-manager` and `src/lib/discord-oauth`, which the API imports (never `@/index`).
 - **Shard processes** (`src/bot.ts`): discord.js client, events, interactions. Exports `internalClient`.
 
 ⚠️ Never import `@/bot` from API code (manager process): it creates and logs in a second client. To talk to Discord from the API use `discordRestApi` (`src/lib/discord-rest-api`) or `shardingManager.broadcastEval`.

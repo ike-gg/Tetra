@@ -38,54 +38,59 @@ Additionally Tetra offers a few other smaller but equally exciting features, suc
 
 ## Getting Started
 
-1. Clone repo
+Requires [Bun](https://bun.sh), PostgreSQL and Redis. `ffmpeg` must be installed for the `/media` slideshow feature.
+
+1. Clone repo and install dependencies
 
 ```
 git clone https://github.com/ike-gg/Tetra
+cd Tetra
+bun install
 ```
 
-2. Install dependencies
+2. Create a `.env` file (see [Environment variables](#environment-variables))
+
+3. Create the database tables
 
 ```
-npm install
+bun run db:push
 ```
 
-3. Create .env file and fill it with your credentials
-
-4. Deploy global commands and push prisma schema
+4. Register slash commands
 
 ```
-npm run deploy && npm run prisma:push
+bun run deploy:dev        # only on the guilds listed in DEV_GUILDS
+bun run deployCommands    # globally
 ```
 
-5. Run bot
+5. Run the bot
 
 ```
-npm run start
+bun run dev      # watch mode
+bun run start    # production
 ```
+
+Before committing run `bun run check` (Biome) and `bun run typecheck`.
+
+### Environment variables
+
+The app validates them on startup and prints what is wrong. Required:
+
+| Variable | What it is |
+|---|---|
+| `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN` | Discord bot application |
+| `DISCORD_OAUTH_CLIENT_ID`, `DISCORD_OAUTH_CLIENT_SECRET` | OAuth2 login for the web panel |
+| `POSTGRES_URL`, `REDIS_URL` | Database and Redis connection URLs |
+| `BACKEND_URL`, `FRONTEND_URL` | Public URLs of this app (OAuth redirect) and of the panel |
+| `SESSION_KEYS` | Comma separated list of secrets for the session cookie |
+| `TOKEN_ENCRYPTION_KEY` | 32 bytes (base64 or hex) that encrypt Discord tokens in the database. Create one with `openssl rand -base64 32`. Do not lose it: stored tokens cannot be read without it |
+| `INVITE_LINK` | Bot invite link |
+| `TWITCH_CLIENT_ID`, `TWITCH_SECRET_KEY`, `TENOR_API_KEY`, `IMGUR_CLIENT_ID` | API keys of the emote sources |
+
+Optional: `ENV` (`development` or `production`, default `development`), `API_ENABLED` (`true` to serve the panel API), `PORT` (default `3002`), `CORS_ORIGINS` (comma separated, default `FRONTEND_URL`), `COOKIE_DOMAIN`, `TEMP_DIR_PATH`, `DEV_GUILDS` (comma separated guild IDs for `deploy:dev`), `ERROR_LOG_CHANNEL_ID` (channel for the "Send developers log" button), `COBALT_URL` and `COBALT_API_KEY` (for `/media`).
 
 ---
 
-## Roadmap
-
-- [x] Import emotes from 7TV, FFZ, BTTV
-  - [x] by name
-  - [x] by link (even with direct link to source)
-  - [x] by channel emote set (limited to 7TV)
-- [x] Automatically emote optimization
-- [x] Optional emote scaling option
-- [x] Context Commands for "stealing" emotes from messages and reactions
-- [x] Media command to extract media files from various socialmedia platform posts (Twitter, Instagram, Tiktok)
-- [ ] Fully integrated ~~[Tetra Web](https://github.com/ike-gg/Tetra-web)~~ [Tetra Panel](https://github.com/ike-gg/Tetra-panel)
-  - [x] Emote search engine using 7TV, BTTV and FZZ apis
-  - [x] Server scope emote managmenet from panel level
-  - [x] Manual adjustment
-  - [ ] Mass import / emote queue (dealing with discord api limits)
-  - [ ] Sync Twitch channel with you discord server
-- [ ] Tetra Premium 🤭
-- [ ] ~~Users without permission can make request to add emote~~ (?)
-
----
 
 ## Contributing
 
