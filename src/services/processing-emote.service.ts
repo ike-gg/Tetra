@@ -32,6 +32,9 @@ const ProcessingEmoteSchema = z.object({
 
 type ProcessingEmote = z.infer<typeof ProcessingEmoteSchema>;
 
+// The state expires this long after its last write; its files live exactly as long.
+const STATE_TTL_SECONDS = (TIME.MINUTE * 15) / 1000;
+
 export class ProcessingEmoteService {
   static emoteKeyPrefix = "emote-processing";
 
@@ -39,7 +42,25 @@ export class ProcessingEmoteService {
     return `${this.emoteKeyPrefix}:${key}`;
   }
 
+  private static async persist(key: string, state: ProcessingEmote) {
+    await redisClient.set(
+      this.getRedisKey(key),
+      JSON.stringify(state),
+      "EX",
+      STATE_TTL_SECONDS
+    );
+  }
+
+  /** Each shard is a separate process, so liveness is checked in Redis, not in memory. */
+  private static startFileSweeper() {
+    TempFileManager.startSweeper(
+      async (key) => (await redisClient.exists(this.getRedisKey(key))) === 1
+    );
+  }
+
   static async store(emote: Emote) {
+    this.startFileSweeper();
+
     const emoteKey = randomUUIDv7();
 
     const downloadedBuffer = await getBufferFromUrl(emote.file.url, {
@@ -51,7 +72,7 @@ export class ProcessingEmoteService {
     const { buffer: emoteBuffer, animated } =
       await normalizeEmoteBuffer(downloadedBuffer);
 
-    const tempDir = TempFileManager.create();
+    const tempDir = TempFileManager.createPersistent(emoteKey);
 
     const originalBuffer = path.join(tempDir, "original");
     const buffer = path.join(tempDir, "buffer");
@@ -70,13 +91,7 @@ export class ProcessingEmoteService {
       },
     };
 
-    const redisKey = this.getRedisKey(emoteKey);
-    await redisClient.set(
-      redisKey,
-      JSON.stringify(payload),
-      "EX",
-      (TIME.MINUTE * 15) / 1000
-    );
+    await this.persist(emoteKey, payload);
 
     return emoteKey;
   }
@@ -95,12 +110,7 @@ export class ProcessingEmoteService {
   static async setCustomName(emoteProcessingKey: string, customName: string) {
     const emoteProcessing = await this.get(emoteProcessingKey);
     emoteProcessing.customName = customName;
-    await redisClient.set(
-      this.getRedisKey(emoteProcessingKey),
-      JSON.stringify(emoteProcessing),
-      "EX",
-      (TIME.MINUTE * 15) / 1000
-    );
+    await this.persist(emoteProcessingKey, emoteProcessing);
   }
 
   static async readBufferSafely(bufferPath: string) {
@@ -155,18 +165,13 @@ export class ProcessingEmoteService {
   static async updateOptimizedBuffer(emoteProcessingKey: string, buffer: Buffer) {
     const emoteProcessing = await this.get(emoteProcessingKey);
 
-    const tempDir = TempFileManager.create();
+    const tempDir = TempFileManager.createPersistent(emoteProcessingKey);
     const optimizedBufferPath = path.join(tempDir, "optimized");
     fs.writeFileSync(optimizedBufferPath, buffer);
 
     emoteProcessing.optimizedBuffer = optimizedBufferPath;
 
-    await redisClient.set(
-      this.getRedisKey(emoteProcessingKey),
-      JSON.stringify(emoteProcessing),
-      "EX",
-      (TIME.MINUTE * 15) / 1000
-    );
+    await this.persist(emoteProcessingKey, emoteProcessing);
   }
 
   static async updateBuffer(emoteProcessingKey: string, buffer: Buffer) {
@@ -177,6 +182,9 @@ export class ProcessingEmoteService {
     await this.readBufferSafely(oldBufferPath);
 
     fs.writeFileSync(oldBufferPath, buffer);
+
+    // A changed buffer is a write like the others, so the state expires 15 min after it.
+    await redisClient.expire(this.getRedisKey(emoteProcessingKey), STATE_TTL_SECONDS);
   }
 
   static async updateSlices(
@@ -186,31 +194,33 @@ export class ProcessingEmoteService {
   ) {
     const emoteProcessing = await this.get(emoteProcessingKey);
 
-    const tempDir = TempFileManager.create();
+    // Replacing slices must not leave stale `slice_N` files in the shared dir
+    const slicesDir = path.join(
+      TempFileManager.createPersistent(emoteProcessingKey),
+      "slices"
+    );
+    fs.rmSync(slicesDir, { recursive: true, force: true });
+    fs.mkdirSync(slicesDir);
+
     const paths: string[] = [];
 
     await Promise.all(
       slices.map(async (slice, i) => {
-        const slicePath = path.join(tempDir, `slice_${i}`);
+        const slicePath = path.join(slicesDir, `slice_${i}`);
         fs.writeFileSync(slicePath, slice);
         paths.push(slicePath);
       })
     );
 
-    const previewBufferPath = path.join(tempDir, "preview");
+    const previewBufferPath = path.join(slicesDir, "preview");
     await fs.writeFileSync(previewBufferPath, previewBuffer);
 
     emoteProcessing.slices = {
       parts: paths,
-      previewBuffer: path.join(tempDir, "preview"),
+      previewBuffer: previewBufferPath,
     };
 
-    await redisClient.set(
-      this.getRedisKey(emoteProcessingKey),
-      JSON.stringify(emoteProcessing),
-      "EX",
-      (TIME.MINUTE * 15) / 1000
-    );
+    await this.persist(emoteProcessingKey, emoteProcessing);
   }
 
   static async deleteSlices(emoteProcessingKey: string) {
@@ -218,11 +228,6 @@ export class ProcessingEmoteService {
     const { slices } = emoteProcessing;
     if (!slices) return;
     emoteProcessing.slices = undefined;
-    await redisClient.set(
-      this.getRedisKey(emoteProcessingKey),
-      JSON.stringify(emoteProcessing),
-      "EX",
-      (TIME.MINUTE * 15) / 1000
-    );
+    await this.persist(emoteProcessingKey, emoteProcessing);
   }
 }
