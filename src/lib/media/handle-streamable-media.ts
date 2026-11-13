@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import * as z from "zod";
 
 import type { PlatformResult } from "@/interactions/commands/global/chat-input/media";

@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 import type { Emote } from "../../../types";
 import type { STVSetEmotes } from "../../../types/7tv";
 import { stvGetUrlByChannel } from "./helpers/constants";

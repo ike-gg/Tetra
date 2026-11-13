@@ -5,8 +5,8 @@ import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
-import { discordOauth } from "@/index";
 import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
+import { discordOauth } from "@/lib/discord-oauth";
 import { discordRestApi } from "@/lib/discord-rest-api";
 import { getEmoteUrl } from "@/utils/discord";
 

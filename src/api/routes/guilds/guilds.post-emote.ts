@@ -3,8 +3,8 @@ import type OAuth from "discord-oauth2";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-import { discordOauth } from "@/index";
 import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
+import { discordOauth } from "@/lib/discord-oauth";
 import { discordRestApi } from "@/lib/discord-rest-api";
 import { assertAllowedEmoteSourceUrl, UrlNotAllowedError } from "@/lib/network/url-guard";
 import { getEmoteUrl } from "@/utils/discord/get-emote-url";

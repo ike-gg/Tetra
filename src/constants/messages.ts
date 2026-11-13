@@ -63,6 +63,11 @@ Make sure Tetra has the following permissions:
     title: "This action can only be used in a server.",
   };
 
+  static readonly ERROR_LOG_UNAVAILABLE: T = {
+    title: "Error log unavailable",
+    description: "Sending error logs is not set up for this bot.",
+  };
+
   static readonly TASK_IN_EDITOR: T = {
     title: "Emote ready in the editor",
     description: multilineText(

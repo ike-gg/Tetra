@@ -2,8 +2,13 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  MessageFlags,
   type TextChannel,
 } from "discord.js";
+
+import { Messages } from "@/constants/messages";
+import { env } from "@/env";
+import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
 
 import { GenericButtonInteractionHandler } from "../..";
 
@@ -24,6 +29,18 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
         .setStyle(ButtonStyle.Danger),
   },
   async (interaction, client) => {
+    const errorLogChannelId = env.ERROR_LOG_CHANNEL_ID;
+
+    if (!errorLogChannelId) {
+      CoreConsole.warn("ERROR_LOG_CHANNEL_ID is not set, cannot send the error log.");
+
+      await interaction.reply({
+        embeds: [TetraEmbed.error(Messages.ERROR_LOG_UNAVAILABLE)],
+        flags: MessageFlags.Ephemeral,
+      });
+      return;
+    }
+
     await interaction.update({
       components: [
         new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -63,6 +80,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
         async (
           client,
           {
+            channelId,
             user,
             guild,
             originalInteractionId,
@@ -73,7 +91,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
           const { EmbedBuilder } = await import("discord.js");
 
           const errorSnapshotsChannel = (await client.channels.fetch(
-            "1075586205070151710"
+            channelId
           )) as TextChannel | null;
 
           if (!errorSnapshotsChannel) return;
@@ -115,6 +133,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
         },
         {
           context: {
+            channelId: errorLogChannelId,
             user,
             guild,
             originalInteractionId,
@@ -126,40 +145,6 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
     } catch (error) {
       CoreConsole.error("Error with logging an snapshot of error", error);
     }
-
-    // try {
-    //   const errorSnapshotsChannel = (await client.channels.fetch(
-    //     "1075586205070151710"
-    //   )) as TextChannel;
-
-    //   if (!errorSnapshotsChannel) return;
-
-    //   const { user, guild } = interaction;
-    //   const originalInteraction = interaction.message.interaction;
-    //   const errorEmbedMessage = interaction.message.embeds[0];
-
-    //   await errorSnapshotsChannel.send({
-    //     embeds: [
-    //       TetraEmbed.attention({
-    //         title: originalInteraction?.id ?? "undefined initial interaction id",
-    //         description:
-    //           originalInteraction?.commandName ?? "undefined initial command name",
-    //         author: {
-    //           name: user.username,
-    //           iconURL: user.avatarURL() ?? "",
-    //         },
-    //         footer: {
-    //           text: `${guild?.name} - ${guild?.id} (${guild?.memberCount})`,
-    //           iconURL: guild?.iconURL() ?? "",
-    //         },
-    //         timestamp: new Date(),
-    //       }),
-    //       errorEmbedMessage,
-    //     ],
-    //   });
-    // } catch (error) {
-    //   CoreConsole.error("Error with logging an snapshot of error", error);
-    // }
   }
 );
 

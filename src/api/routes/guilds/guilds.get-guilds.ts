@@ -2,7 +2,8 @@ import { PermissionsBitField } from "discord.js";
 import type OAuth from "discord-oauth2";
 import type { NextFunction, Request, Response } from "express";
 
-import { discordOauth, shardingManager } from "@/index";
+import { discordOauth } from "@/lib/discord-oauth";
+import { shardingManager } from "@/lib/sharding-manager";
 
 import { TetraAPIError } from "../../tetra-api-error";
 

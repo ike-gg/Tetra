@@ -1,5 +1,5 @@
+import { randomUUID } from "node:crypto";
 import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
-import { randomUUID } from "crypto";
 import {
   type BaseMessageOptions,
   type ButtonInteraction,
@@ -16,7 +16,7 @@ import SubmitErrorLogGenericButton from "@/interactions/buttons/generic/submit-e
 
 import { EmbeddedError } from "../../constants/errors";
 import { Messages } from "../../constants/messages";
-import { isDevelopment } from "../../env";
+import { env, isDevelopment } from "../../env";
 import type { TetraClient } from "../../types";
 import { TetraEmbed, type TetraEmbedContent } from "../embed-messages/tetra-embed";
 
@@ -106,7 +106,7 @@ export class FeedbackManager {
       new ButtonBuilder()
         .setStyle(ButtonStyle.Link)
         .setLabel(`Open Tetra Panel`)
-        .setURL("https://panel.tetra.lol")
+        .setURL(`${env.FRONTEND_URL}/panel`)
     );
     await this.sendMessage({
       embeds: [TetraEmbed.panel(content)],

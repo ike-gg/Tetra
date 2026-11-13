@@ -73,17 +73,6 @@ export class TempFileManager {
     return this.makeDir(`${PERSISTENT_PREFIX}${key}`);
   }
 
-  static remove(id: string) {
-    const subTempDir = path.join(this.tempDirPath, id);
-
-    if (!fs.existsSync(subTempDir)) {
-      return;
-    }
-
-    fs.rmSync(subTempDir, { recursive: true, force: true });
-    FileConsole.dev.success(`Removed temp directory manually: ${subTempDir}`);
-  }
-
   /**
    * Removes persistent dirs whose key is no longer alive, and timer dirs that outlived
    * their timer (e.g. lost on restart). Other shards' live dirs are kept because

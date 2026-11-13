@@ -3,8 +3,8 @@ import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
 import { isProduction } from "@/env";
-import { discordOauth } from "@/index";
 import { decryptToken, encryptToken } from "@/lib/crypto/token-crypto";
+import { discordOauth } from "@/lib/discord-oauth";
 
 import { db } from "../../db";
 import { sessions, users } from "../../db/schema";

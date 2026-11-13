@@ -1,10 +1,10 @@
-import { randomBytes, timingSafeEqual } from "crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { type NextFunction, type Request, type Response, Router } from "express";
 import { z } from "zod";
 
-import { discordOauth } from "@/index";
 import { encryptToken } from "@/lib/crypto/token-crypto";
+import { discordOauth } from "@/lib/discord-oauth";
 
 import { db } from "../../../db";
 import { sessions, users } from "../../../db/schema";

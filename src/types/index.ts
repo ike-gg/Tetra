@@ -1,11 +1,4 @@
-import type {
-  AutocompleteInteraction,
-  ButtonInteraction,
-  Client,
-  Collection,
-  CommandInteraction,
-  StringSelectMenuInteraction,
-} from "discord.js";
+import type { Client, Collection } from "discord.js";
 import { z } from "zod";
 
 import type { AnyContinuity } from "@/interactions/continuity/base-continuity";
@@ -23,19 +16,6 @@ export interface TetraClient extends Client {
   genericButtonInteractions: Collection<string, GenericButtonInteractionHandler>;
   globalButtonInteractions: Collection<string, AnyContinuity>;
   globalSelectMenuInteractions: Collection<string, AnyContinuity>;
-}
-
-export interface ExecutableCommandInteraction extends CommandInteraction {
-  execute(interaction: CommandInteraction, client?: TetraClient): void;
-  autocomplete(interaction: AutocompleteInteraction, client?: TetraClient): void;
-}
-
-export interface ExecutableButtonInteraction extends ButtonInteraction {
-  execute(interaction: ButtonInteraction, client?: TetraClient): void;
-}
-
-export interface ExecutableSelectMenu extends StringSelectMenuInteraction {
-  execute(interaction: StringSelectMenuInteraction, client?: TetraClient): void;
 }
 
 export const SupportedEmoteOriginSchema = z.enum([
@@ -67,13 +47,6 @@ export const EmoteSchema = z.object({
 });
 
 export type Emote = z.infer<typeof EmoteSchema>;
-
-export interface ExtractedEmote extends Emote {
-  data: Buffer;
-  finalData: Buffer;
-  slices?: Buffer[];
-  optimizedBuffer?: Buffer;
-}
 
 export interface FoundEmotesDiscord {
   name: string;

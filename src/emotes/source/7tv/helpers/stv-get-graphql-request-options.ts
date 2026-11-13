@@ -1,5 +1,3 @@
-import type { RequestInit } from "node-fetch";
-
 // The search text is sent as a variable: interpolating it into the document breaks the
 // query on `"` and `\`.
 const SEARCH_QUERY = `

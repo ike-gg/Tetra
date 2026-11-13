@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 import { EmbeddedError } from "../../../constants/errors";
 import { Messages } from "../../../constants/messages";
 import type { Emote } from "../../../types";
@@ -25,7 +23,7 @@ type SearchAttempt =
   | { status: "transient"; reason: string };
 
 const trySearch = async (query: string): Promise<SearchAttempt> => {
-  let response: Awaited<ReturnType<typeof fetch>>;
+  let response: Response;
 
   try {
     response = await fetch(stvGetGraphqlUrl, stvGetGraphqlRequestOptions(query));

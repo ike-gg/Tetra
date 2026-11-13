@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 import type { Emote } from "../../../types";
 import type { FFZResponseById } from "../../../types/ffz";
 import { ffzGetUrlById } from "./helpers/constants";

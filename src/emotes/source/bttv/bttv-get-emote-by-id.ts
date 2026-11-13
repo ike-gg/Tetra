@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 import type { Emote } from "../../../types";
 import type { BTTVResponseById } from "../../../types/bttv";
 import bttvTransformSourceUrl from "./helpers/bttv-transform-source-url";

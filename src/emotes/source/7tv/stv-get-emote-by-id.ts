@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 import type { Emote } from "../../../types";
 import type { STVEmote } from "../../../types/7tv";
 import { stvGetUrlById } from "./helpers/constants";

@@ -143,6 +143,13 @@ const envSchema = z.object({
       `Used for development purposes, comma separated list of guild IDs, see ${chalk.underline("src/deploy-commands-dev.ts")}`
     ),
 
+  ERROR_LOG_CHANNEL_ID: z
+    .string()
+    .optional()
+    .describe(
+      "ID of the Discord channel that receives error logs sent with the 'Send developers log' button; the button is unavailable when not set"
+    ),
+
   COBALT_URL: z
     .string()
     .url()

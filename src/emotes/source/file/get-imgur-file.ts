@@ -1,5 +1,3 @@
-import fetch from "node-fetch";
-
 import { env } from "../../../env";
 import type { Emote } from "../../../types";
 

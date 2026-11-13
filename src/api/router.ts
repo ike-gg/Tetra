@@ -1,4 +1,4 @@
-import { randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
 import { DiscordAPIError } from "discord.js";
 import { type NextFunction, type Request, type Response, Router } from "express";
 

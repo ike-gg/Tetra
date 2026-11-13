@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm";
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-import { discordOauth } from "@/index";
+import { discordOauth } from "@/lib/discord-oauth";
 import { discordRestApi } from "@/lib/discord-rest-api";
 import { getEmoteUrl } from "@/utils/discord";
 

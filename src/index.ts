@@ -1,7 +1,5 @@
-import { ShardingManager } from "discord.js";
-import DiscordOauth2 from "discord-oauth2";
-
 import { startContinuityCleanup } from "@/interactions/continuity/cleanup-continuity";
+import { shardingManager } from "@/lib/sharding-manager";
 
 import { initApi } from "./api";
 import { env, isProduction } from "./env";
@@ -17,17 +15,6 @@ if (isProduction) {
 startContinuityCleanup();
 
 if (env.API_ENABLED) initApi();
-
-const discordOauth = new DiscordOauth2({
-  clientId: env.DISCORD_OAUTH_CLIENT_ID,
-  clientSecret: env.DISCORD_OAUTH_CLIENT_SECRET,
-  version: "v10",
-});
-
-const shardingManager = new ShardingManager("./src/bot.ts", {
-  token: env.DISCORD_BOT_TOKEN,
-  totalShards: "auto",
-});
 
 // Shards are child processes: if the manager dies without killing them they stay logged in.
 // `bun --watch` restarts the manager in place without running these hooks; shards then
@@ -58,5 +45,3 @@ shardingManager.spawn().catch((error) => {
   CoreConsole.error("Failed to spawn shards:", error);
   process.exit(1);
 });
-
-export { discordOauth, shardingManager };
