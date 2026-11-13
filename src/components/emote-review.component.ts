@@ -9,6 +9,7 @@ import {
 
 import { Messages } from "@/constants/messages";
 import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
+import OpenInEditorEmoteContinuity from "@/interactions/buttons/global/open-in-editor-emote";
 import PPCenterCropContinuity from "@/interactions/buttons/global/pp-center-crop";
 import PPRenameContinuity from "@/interactions/buttons/global/pp-remame";
 import PPStretchToFitContinuity from "@/interactions/buttons/global/pp-stretch-to-fit";
@@ -171,8 +172,6 @@ export const EmoteReviewComponent = async ({
 
   selectMenuSplit.options.length > 0 && splitRow.addComponents(selectMenuSplit);
 
-  // Manual adjustment row
-
   // Submit row
 
   const submitRow = new ActionRowBuilder<ButtonBuilder>();
@@ -188,6 +187,20 @@ export const EmoteReviewComponent = async ({
       .setLabel(`Add emote as "${emoteName}"`)
       .setStyle(ButtonStyle.Success)
   );
+
+  if (emote.animated) {
+    const { buttonId: openInEditorButtonId } = await OpenInEditorEmoteContinuity.create({
+      processingEmoteKey,
+    });
+
+    submitRow.addComponents(
+      new ButtonBuilder()
+        .setCustomId(openInEditorButtonId)
+        .setEmoji("✏️")
+        .setLabel("Open in editor")
+        .setStyle(ButtonStyle.Secondary)
+    );
+  }
 
   submitRow.addComponents(CancelInteractionGenericButton.metadata.getButton());
 

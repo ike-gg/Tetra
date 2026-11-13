@@ -59,6 +59,17 @@ Make sure Tetra has the following permissions:
   static readonly INVALID_REFERENCE: T = "Invalid URL.";
   static readonly FILE_NOT_FOUND: T = "File not found.";
   static readonly URL_NOT_FOUND: T = "URL not found.";
+  static readonly ERROR_GUILD_ONLY: T = {
+    title: "This action can only be used in a server.",
+  };
+
+  static readonly TASK_IN_EDITOR: T = {
+    title: "Emote ready in the editor",
+    description: multilineText(
+      "Open the editor in Tetra Panel to adjust the emote and add it to this server.",
+      "You may need to log in with Discord first."
+    ),
+  };
 
   //emote case
   static readonly MULTIPLE_EMOTES_NOT_SUPPORTED: T = {

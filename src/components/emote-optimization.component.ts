@@ -10,6 +10,7 @@ import prettyBytes from "pretty-bytes";
 import { MAX_EMOTE_SIZE } from "@/constants";
 import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
 import AutoOptimizeEmoteContinuity from "@/interactions/buttons/global/auto-optimize-emote";
+import OpenInEditorEmoteContinuity from "@/interactions/buttons/global/open-in-editor-emote";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
 import multilineText from "@/utils/multiline-text";
@@ -68,14 +69,16 @@ export const EmoteOptimizationComponent = async ({
       .setStyle(isWayTooBig ? ButtonStyle.Secondary : ButtonStyle.Primary)
   );
 
+  const { buttonId: openInEditorButtonId } = await OpenInEditorEmoteContinuity.create({
+    processingEmoteKey,
+  });
+
   decisionRow.addComponents(
     new ButtonBuilder()
-      .setCustomId("manual-adjustment")
-      .setEmoji("📝")
-      .setLabel("Manual adjustment (coming soon)")
+      .setCustomId(openInEditorButtonId)
+      .setEmoji("✏️")
+      .setLabel("Open in editor")
       .setStyle(isWayTooBig ? ButtonStyle.Primary : ButtonStyle.Secondary)
-      // TODO: not ready yet
-      .setDisabled(true)
   );
 
   decisionRow.addComponents(CancelInteractionGenericButton.metadata.getButton());
