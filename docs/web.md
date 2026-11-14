@@ -31,7 +31,7 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/lib/use-element-size.ts` | `useElementSize(ref)`: an element's content size via `ResizeObserver` (null until measured). |
 | `src/lib/relative-time.ts` | `relativeTime()`: "5 minutes ago" via `Intl.RelativeTimeFormat`. |
 | `src/lib/latest-task.ts` | `createLatestTask`: runs only the newest request (aborts the one in flight, discards stale results by version). |
-| `src/components/panel/` | Panel UI: `PanelScreen` (app header + one centered column, for states without navigation), `PanelLogin`, `PanelPlaceholder` (temporary logged-in screen). |
+| `src/components/panel/` | Panel UI: `PanelScreen` (app header + one column centered horizontally below a top margin, never centered vertically, for states without navigation), `PanelLogin`, `PanelPlaceholder` (temporary logged-in screen). |
 | `src/lib/session.ts` | Session query options (`sessionQueryOptions`, `meQueryOptions`), `isUnauthorized`, `loginUrl`, `panelReturnPath`, `logout`. |
 | `src/types/` | Ambient declarations for untyped packages (`gifsicle-wasm-browser`). |
 | `src/lib/format-bytes.ts` | `formatBytes()`: KB/MB in binary units, as Discord states its limits. |

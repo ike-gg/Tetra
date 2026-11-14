@@ -58,6 +58,7 @@ The web panel should feel like a native desktop app. Controls behave like OS con
 - **Focus rings only from the keyboard** (`focus-visible`), never on mouse click.
 - **No tap highlight** on touch devices (set globally).
 - Panel controls (sliders, segmented controls, fields) follow the same rules: square thumbs and segments, orange only for the active fill, values in Geist Mono with tabular numbers, and anything derived from a control (like a size estimate) updates live while it is dragged, not on release.
+- **No vertically centered screens.** App screens (login, loading, errors, empty states) start below a fixed top margin, like a page the browser lays out on its own, never centered vertically in the viewport. Centering horizontally is fine.
 - Animation is for content and signature moments (the background, the intro wave, the emote drop), never for the feedback of a control.
 
 ## ASCII
