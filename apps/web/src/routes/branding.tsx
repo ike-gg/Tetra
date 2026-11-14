@@ -1,11 +1,20 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
+import { Notice } from "@/components/ui/notice";
+import {
+  SegmentedControl,
+  SegmentedControlItem,
+} from "@/components/ui/segmented-control";
+import { SizeMeter } from "@/components/ui/size-meter";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
+import { TextField } from "@/components/ui/text-field";
 
 export const Route = createFileRoute("/branding")({
   head: () => ({
@@ -448,8 +457,95 @@ function BrandingPage() {
                 </Text>
               </div>
             </div>
+
+            <ControlsSheet />
           </div>
         </Section>
+      </div>
+    </div>
+  );
+}
+
+const KB = 1024;
+
+function ControlsSheet() {
+  const [view, setView] = useState("preview");
+  const [size, setSize] = useState(96);
+  const [name, setName] = useState("catJAM");
+  const [trimEdges, setTrimEdges] = useState(true);
+  const nameError = /^[A-Za-z0-9_]{2,32}$/.test(name)
+    ? undefined
+    : "2–32 letters, numbers or _.";
+
+  return (
+    <div className="grid gap-px bg-border sm:grid-cols-2">
+      <div className="flex flex-col gap-3 bg-background p-6">
+        <p className="font-mono text-muted text-xs">
+          &lt;SegmentedControl&gt; · &lt;Slider&gt; · &lt;Switch&gt;
+        </p>
+        <SegmentedControl
+          aria-label="View"
+          value={view}
+          onValueChange={(next) => next && setView(next)}
+        >
+          <SegmentedControlItem value="preview">Preview</SegmentedControlItem>
+          <SegmentedControlItem value="crop">Crop</SegmentedControlItem>
+        </SegmentedControl>
+        <Slider
+          label="Size"
+          value={size}
+          onValueChange={setSize}
+          min={32}
+          max={128}
+          step={8}
+          format={(value) => `${value} px`}
+          className="mt-3"
+        />
+        <Switch
+          label="Trim empty edges"
+          description="Cut transparent borders around the emote."
+          checked={trimEdges}
+          onCheckedChange={setTrimEdges}
+          className="mt-3"
+        />
+      </div>
+      <div className="flex flex-col gap-3 bg-background p-6">
+        <p className="font-mono text-muted text-xs">
+          &lt;TextField prefix suffix error&gt;
+        </p>
+        <TextField
+          label="Emote name"
+          value={name}
+          onValueChange={setName}
+          prefix=":"
+          suffix=":"
+          error={nameError}
+          description="Clear it to see the inline error."
+        />
+      </div>
+      <div className="flex flex-col gap-6 bg-background p-6 sm:col-span-2">
+        <p className="font-mono text-muted text-xs">
+          &lt;SizeMeter value limit max&gt; · bar ends at the original size
+        </p>
+        <div className="grid gap-8 sm:grid-cols-2">
+          <SizeMeter value={338 * KB} limit={256 * KB} max={338 * KB} />
+          <SizeMeter value={212 * KB} limit={256 * KB} max={338 * KB} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-3 bg-background p-6 sm:col-span-2">
+        <p className="font-mono text-muted text-xs">
+          &lt;Notice title action&gt; · a heads-up that doesn&apos;t block
+        </p>
+        <Notice
+          title="This GIF is 7.40 MB, our editor is made for smaller ones"
+          action={
+            <Button variant="ghost" size="sm">
+              Continue anyway
+            </Button>
+          }
+        >
+          You can keep going, but processing may be slow or fail.
+        </Notice>
       </div>
     </div>
   );

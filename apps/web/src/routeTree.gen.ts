@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BrandingRouteImport } from './routes/branding'
+import { Route as EditorRouteImport } from './routes/editor'
 import { Route as PanelRouteImport } from './routes/panel'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const BrandingRoute = BrandingRouteImport.update({
   path: '/branding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditorRoute = EditorRouteImport.update({
+  id: '/editor',
+  path: '/editor',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/editor.lazy').then((d) => d.Route))
 const PanelRoute = PanelRouteImport.update({
   id: '/panel',
   path: '/panel',
@@ -32,30 +38,34 @@ const PanelRoute = PanelRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
+  '/editor': typeof EditorRoute
   '/panel': typeof PanelRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
+  '/editor': typeof EditorRoute
   '/panel': typeof PanelRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
+  '/editor': typeof EditorRoute
   '/panel': typeof PanelRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/branding' | '/panel'
+  fullPaths: '/' | '/branding' | '/editor' | '/panel'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/branding' | '/panel'
-  id: '__root__' | '/' | '/branding' | '/panel'
+  to: '/' | '/branding' | '/editor' | '/panel'
+  id: '__root__' | '/' | '/branding' | '/editor' | '/panel'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BrandingRoute: typeof BrandingRoute
+  EditorRoute: typeof EditorRoute
   PanelRoute: typeof PanelRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrandingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/editor': {
+      id: '/editor'
+      path: '/editor'
+      fullPath: '/editor'
+      preLoaderRoute: typeof EditorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/panel': {
       id: '/panel'
       path: '/panel'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BrandingRoute: BrandingRoute,
+  EditorRoute: EditorRoute,
   PanelRoute: PanelRoute,
 }
 export const routeTree = rootRouteImport

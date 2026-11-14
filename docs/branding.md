@@ -23,6 +23,7 @@ Three roles. Dark only (`color-scheme: dark`); there is no light theme.
 - **Brand scale** `brand-50…950`: fixed hue 38, chroma kept inside sRGB. `brand-400` is the hover of `brand-500`.
 - **Neutrals** `neutral-50…950`: Tailwind's lightness steps with a faint tint of hue 38, so grays feel warm next to the orange. Text: `foreground` (`neutral-100`), secondary text `muted` (`neutral-400`).
 - **Signal** `signal-300/400/500`: hue 215, the cool counterpoint to orange. At most one signal element per view, never on the same element as orange, never for primary actions or large fills.
+- **Danger** `danger` (`oklch(0.704 0.191 22.2)`): only for errors and invalid fields (border + message). Not a brand color, never for decoration or buttons. "Over the limit" is not an error, it's what matters on the screen, so it uses orange.
 - **Text on orange is dark** (`primary-foreground`): white on `#f64f02` fails contrast. Same for `signal-foreground`.
 - **Contrast**: body text at least 4.5:1, control edges and focus rings 3:1.
 - Prefer semantic tokens (`background`, `surface`, `foreground`, `muted`, `border`, `primary`, `signal`) over raw scale steps.
@@ -56,6 +57,7 @@ The web panel should feel like a native desktop app. Controls behave like OS con
 - **No text selection on chrome.** Buttons and controls are `select-none`; content (emote names, text the user may copy) stays selectable.
 - **Focus rings only from the keyboard** (`focus-visible`), never on mouse click.
 - **No tap highlight** on touch devices (set globally).
+- Panel controls (sliders, segmented controls, fields) follow the same rules: square thumbs and segments, orange only for the active fill, values in Geist Mono with tabular numbers, and anything derived from a control (like a size estimate) updates live while it is dragged, not on release.
 - Animation is for content and signature moments (the background, the intro wave, the ASCII decode), never for the feedback of a control.
 
 ## ASCII
@@ -73,6 +75,8 @@ The web panel should feel like a native desktop app. Controls behave like OS con
 - Everything respects `prefers-reduced-motion`: content appears instantly and the background stops moving.
 
 ## Imagery
+
+- Emote previews sit on `bg-checker`, a low-contrast neutral checkerboard, so transparency is visible without competing with the emote.
 
 - The animated ASCII emote field is the brand's backdrop (see [web/background.md](web/background.md)). It stays far behind the content: dimmed, slowly drifting, colored only near the cursor.
 - Real emotes appear in color only as product content (previews, the panel), not as decoration in the UI chrome.

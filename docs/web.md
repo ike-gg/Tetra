@@ -8,6 +8,7 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 
 - **SPA mode** with selected pages prerendered. There is no server at runtime: the build output is static files.
 - **Homepage** (`/`) and other public pages: prerendered to HTML at build time. Add their paths to `staticPages` in `vite.config.ts`.
+- **Editor** (`/editor`): public, no account. Prerendered intro + upload screen; the editor itself runs only in the browser (see [web/editor.md](web/editor.md)).
 - **Panel** (`/panel/*`): client-only (`ssr: false` on the route). Served by the SPA shell `_shell.html`; the host must rewrite unknown paths to it.
 - The shell is rendered with `spa.maskPath: "/panel"` so it doesn't collide with the prerendered `/`.
 - In `vite dev` every route renders on the client, including `/`.
@@ -22,6 +23,13 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/styles/app.css` | Tailwind entry: fonts, theme tokens, base styles. |
 | `src/assets/fonts/` | Self-hosted Geist woff2 files (copied from the `geist` npm package, OFL). |
 | `src/components/ui/` | Design-system components (see [UI components](#ui-components)). |
+| `src/components/editor/` | The emote editor (shared by `/editor` and `/panel`), see [web/editor.md](web/editor.md). |
+| `src/lib/gif/` | GIF parsing, the gifsicle (WASM) runner and the edit → command pipeline, see [web/editor.md](web/editor.md). |
+| `src/lib/download-blob.ts` | Saves a `Blob` as a file through a temporary link. |
+| `src/lib/latest-task.ts` | `createLatestTask`: runs only the newest request (aborts the one in flight, discards stale results by version). |
+| `src/types/` | Ambient declarations for untyped packages (`gifsicle-wasm-browser`). |
+| `public/panel/` | The panel mockup's sample GIF. |
+| `src/lib/format-bytes.ts` | `formatBytes()`: KB/MB in binary units, as Discord states its limits. |
 | `src/lib/cn.ts` | `cn()`: `clsx` + `tailwind-merge`, so a passed `className` overrides variant classes. |
 | `src/components/emote-background.tsx` | Homepage background, see [web/background.md](web/background.md). |
 | `scripts/build-emote-atlas.ts` | Generates the background's emote atlas into `public/`. |
@@ -31,8 +39,9 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 Tailwind v4, configured in CSS (`@theme` in `src/styles/app.css`); dark only. The design rules behind the tokens are in [branding.md](branding.md) (rendered at `/branding`).
 
 - **Fonts:** `font-sans` = Geist (default for everything), `font-serif` = Geist Serif (display serif with a single 400 weight, use only as an accent for headings), `font-mono` = Geist Mono (ASCII-art accents, also used by the homepage background glyphs).
+- **Utilities:** `bg-checker` = the quiet transparency checkerboard behind emote previews (defined with `@utility` in `app.css`).
 - **Radius:** every `--radius-*` token and `--ui-radius` is 0; never use `rounded-full`.
-- **Colors** (OKLCH): `brand-50…950` built around `#f64f02` (`brand-500`); `neutral-*` is Tailwind's scale with a faint tint of the brand hue. `signal-300/400/500` is the rare cool accent. Prefer the semantic tokens: `background`, `surface`, `foreground`, `muted`, `border`, `primary`, `primary-hover`, `primary-foreground`, `signal`, `signal-foreground`. Text on `primary` is dark (`primary-foreground`), white on the orange fails contrast.
+- **Colors** (OKLCH): `brand-50…950` built around `#f64f02` (`brand-500`); `neutral-*` is Tailwind's scale with a faint tint of the brand hue. `signal-300/400/500` is the rare cool accent. Prefer the semantic tokens: `background`, `surface`, `foreground`, `muted`, `border`, `primary`, `primary-hover`, `primary-foreground`, `signal`, `signal-foreground`, `danger` (errors and invalid fields only, also mapped to ui-sdk's `--ui-destructive`). Text on `primary` is dark (`primary-foreground`), white on the orange fails contrast.
 
 ## UI components
 
@@ -43,6 +52,14 @@ Our components live in `src/components/ui/`, one file per component, kebab-case.
 - `Text` – paragraph, `size` (`lg` | `md` | `sm` | `xs`) and `tone` (`default` | `muted`).
 - `Accent` – the serif brand word inside a heading.
 - `Eyebrow` – mono label above a heading; `index="01"` renders `[01] /`.
+- `SegmentedControl` + `SegmentedControlItem` – wraps ui-sdk's segmented control; for switching between a few views or modes. The indicator jumps without a transition (native feel). `onValueChange` passes `string | null`.
+- `Slider` – labeled single-value slider (ui-sdk `Field` + `Slider`): `label`, `value`, `onValueChange`, `min`, `max`, `step`, `format`. Square white thumb, orange fill, value in mono on the right. `onValueChange` fires on every drag step so derived numbers follow the thumb live. For a range or a custom track (the trim timeline), compose ui-sdk's slider parts directly.
+- `TextField` – label + input + description/error (ui-sdk `Field`, `InputGroup`, `Input`). `prefix`/`suffix` render mono affixes (`:name:`); `error` replaces the description and marks the field invalid. Validate inline as the user types, never only on submit.
+- `Switch` – labeled on/off row (ui-sdk `Switch` inside a `<label>`): `label`, `checked`, `onCheckedChange`, optional `description`. For settings that apply immediately.
+- `Notice` – non-blocking heads-up: mono `[!]` in orange, `title`, body, optional `action` on the right. Bordered box by default; as a full-width bar under a toolbar pass `className="border-x-0 border-t-0"`. Errors that stop a task stay inline in `text-danger` instead.
+- `SizeMeter` – file size against a limit (ui-sdk `Meter`): `value`, `limit` (bytes), optional `max` where the bar ends (pass the original size so the overflow reads as a distance to cover). Shows size / limit in KB/MB, % of the limit, a tick at the limit and the part over it in orange, with "X over · reduce by Y%" or "Fits · X to spare". Screen readers get one sentence via `getValueLabel`.
+
+These components are styled entirely with Tailwind, without relying on ui-sdk's `web.css`, so they look the same on prerendered pages (like `/branding`) that don't load it.
 
 Raw `h1`–`h6` get only font weight, tracking and balanced wrapping from `@layer base` (no size), so unstyled content still looks on-brand.
 
@@ -54,17 +71,18 @@ Components accept `className` for layout (margins, width, animation); don't use 
 
 - **Before using it**, follow the ui-sdk skill (`.claude/skills/ui-sdk`, loaded automatically by Claude Code). Then read `node_modules/@ui-sdk/react/docs/llms.txt` and only the pages the task needs (e.g. `docs/components/select.md`). To build a new component, also search `node_modules/@ui-sdk/react/docs/core.md` by heading (it's huge, don't read it whole) and read `rendering.md` next to it.
 - Import each component from its own entry (`@ui-sdk/react/dialog`); there is no root import.
-- **Default look:** `@ui-sdk/core/web.css`, imported by `src/styles/panel.css` as `@import "@ui-sdk/core/web.css" layer(components);`. Inside the components layer it sits above Tailwind's preflight (which would reset it otherwise) and below utilities, so Tailwind classes win. `panel.css` is imported only in `src/routes/panel.lazy.tsx`, so the homepage doesn't download it: a side-effect import in a non-lazy route file ends up in every page's HTML.
+- **Default look:** `@ui-sdk/core/web.css`, imported by `src/styles/ui-sdk.css` as `@import "@ui-sdk/core/web.css" layer(components);`. Inside the components layer it sits above Tailwind's preflight (which would reset it otherwise) and below utilities, so Tailwind classes win. `ui-sdk.css` is imported only in lazy route files (`panel.lazy.tsx`, `editor.lazy.tsx`), so other pages don't download it: a side-effect import in a non-lazy route file ends up in every page's HTML. Some parts rely on it for layout (image cropper handles), the components in `components/ui/` don't.
 - Its `--ui-*` tokens are mapped to our theme in `src/styles/app.css`; restyle parts with Tailwind on top (`data-slot` and state attributes like `data-open:`), never `!important`.
 - `@layer ui-sdk;` stays at the very top of `app.css`, above `@import "tailwindcss"`: ui-sdk injects some behavior CSS into that layer at runtime.
 - Our own `color-scheme: dark` overrides web.css's light/dark switching.
-- Route files may use TanStack's dotted names (`panel.lazy.tsx`), an exception to kebab-case.
+- Route files may use TanStack's dotted names (`panel.lazy.tsx`, `editor.lazy.tsx`), an exception to kebab-case.
 
 ## Topic docs
 
 Read only when working on the area.
 
 - [web/background.md](web/background.md) – homepage emote background: WebGL ASCII shader and the generated emote atlas.
+- [web/editor.md](web/editor.md) – the emote editor (`/editor` and `/panel`): layout, local GIF processing with gifsicle WASM, pipeline, verified gifsicle behavior.
 
 ## Talking to the API
 

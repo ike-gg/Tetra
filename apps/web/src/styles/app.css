@@ -92,6 +92,7 @@
   --color-primary-foreground: var(--color-neutral-950);
   --color-signal: var(--color-signal-400);
   --color-signal-foreground: var(--color-neutral-950);
+  --color-danger: oklch(0.704 0.191 22.2);
 
   --animate-hero-rise: hero-rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-hero-blink: hero-blink 1s steps(1) infinite;
@@ -111,6 +112,18 @@
   }
 }
 
+/* Transparency backdrop for emote previews, quiet enough not to compete with the emote */
+@utility bg-checker {
+  background-color: var(--color-neutral-900);
+  background-image: conic-gradient(
+    var(--color-neutral-800) 25%,
+    transparent 0 50%,
+    var(--color-neutral-800) 0 75%,
+    transparent 0
+  );
+  background-size: 16px 16px;
+}
+
 /* Themes ui-sdk's web.css (loaded by the panel only) with our tokens */
 :root {
   --ui-background: var(--color-background);
@@ -121,7 +134,7 @@
   --ui-input: var(--color-neutral-700);
   --ui-primary: var(--color-primary);
   --ui-primary-foreground: var(--color-primary-foreground);
-  --ui-destructive: oklch(0.704 0.191 22.2);
+  --ui-destructive: var(--color-danger);
   --ui-ring: color-mix(in oklch, var(--color-brand-500) 45%, transparent);
   --ui-ring-border: var(--color-brand-500);
   --ui-radius: 0;
