@@ -13,6 +13,7 @@ import { type ReactNode, useState } from "react";
 import { BrandLink } from "@/components/brand-link";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { PanelUserMenu } from "@/components/panel/panel-user-menu";
+import { Toaster } from "@/components/ui/toaster";
 import { guildsQueryOptions } from "@/lib/guilds";
 
 const ICON_BUTTON =
@@ -92,6 +93,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
           <div className="mx-auto w-full max-w-5xl">{children}</div>
         </main>
       </div>
+      <Toaster />
     </div>
   );
 }

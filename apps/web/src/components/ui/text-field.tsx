@@ -14,6 +14,9 @@ type TextFieldProps = {
   prefix?: ReactNode;
   suffix?: ReactNode;
   placeholder?: string;
+  // For a field whose purpose the layout already shows (a search box); still named for
+  // screen readers
+  hideLabel?: boolean;
   className?: string;
 };
 
@@ -26,13 +29,18 @@ export function TextField({
   prefix,
   suffix,
   placeholder,
+  hideLabel = false,
   className,
 }: TextFieldProps) {
   const affix = "shrink-0 select-none font-mono text-muted text-sm";
 
   return (
     <Field invalid={Boolean(error)} className={cn("flex flex-col gap-1.5", className)}>
-      <FieldLabel className="font-medium text-foreground text-sm">{label}</FieldLabel>
+      <FieldLabel
+        className={cn("font-medium text-foreground text-sm", hideLabel && "sr-only")}
+      >
+        {label}
+      </FieldLabel>
       <InputGroup
         className={cn(
           "flex h-9 items-center gap-1 border border-neutral-700 bg-neutral-900 px-2.5",

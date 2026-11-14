@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 
+import { Emote } from "@/components/emote/emote";
+import { EmoteMenu } from "@/components/emote/emote-menu";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { Accent } from "@/components/ui/accent";
@@ -19,6 +21,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
+import { Toaster, toast } from "@/components/ui/toaster";
+import type { PanelEmote } from "@/lib/emote";
 
 export const Route = createFileRoute("/branding")({
   head: () => ({
@@ -466,6 +470,7 @@ function BrandingPage() {
             </div>
 
             <ControlsSheet />
+            <EmotesSheet />
           </div>
         </Section>
       </div>
@@ -475,6 +480,81 @@ function BrandingPage() {
 }
 
 const KB = 1024;
+
+const sevenTvEmote = (id: string, name: string, animated = false): PanelEmote => ({
+  key: `7tv:${id}`,
+  id,
+  name,
+  previewUrl: `https://cdn.7tv.app/emote/${id}/2x.webp`,
+  url: `https://cdn.7tv.app/emote/${id}/4x.webp`,
+  animated,
+  source: "7tv",
+});
+
+const DEMO_EMOTES = [
+  sevenTvEmote("01FFMS6Q4G0009CAK0J14692AY", "HUH"),
+  sevenTvEmote("01F6QWHR20000EB9BSAR8G1DKZ", "PauseChamp"),
+  sevenTvEmote("01H876RPX8000918ZGPJMBHB7Z", "MONKA"),
+  sevenTvEmote("01H96150H00003CY09NFH3G999", "gaga", true),
+];
+
+function EmotesSheet() {
+  return (
+    <div className="grid gap-px bg-border sm:grid-cols-2">
+      <div className="flex flex-col gap-3 bg-background p-6">
+        <p className="font-mono text-muted text-xs">
+          &lt;EmoteMenu kind&gt; &lt;Emote emote&gt; · right-click, long-press or
+          Shift+F10
+        </p>
+        <EmoteMenu kind="task">
+          <ul className="m-0 grid list-none grid-cols-4 gap-1 p-0">
+            {DEMO_EMOTES.map((emote) => (
+              <li key={emote.key} className="flex min-w-0">
+                <Emote emote={emote} className="w-full" />
+              </li>
+            ))}
+          </ul>
+        </EmoteMenu>
+        <Text size="sm" tone="muted">
+          One component for every emote in the panel. The list&apos;s menu decides the
+          actions; a click selects.
+        </Text>
+      </div>
+      <div className="flex flex-col items-start gap-3 bg-background p-6">
+        <p className="font-mono text-muted text-xs">
+          &lt;Toaster&gt; · toast() · toast.promise()
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" onClick={() => toast.success("Added catJAM to My Server")}>
+            Success
+          </Button>
+          <Button
+            size="sm"
+            onClick={() =>
+              toast.error("Couldn't add catJAM to My Server", {
+                description: "Discord said: Maximum number of emojis reached (50)",
+              })
+            }
+          >
+            Error
+          </Button>
+          <Button
+            size="sm"
+            onClick={() =>
+              toast.promise(new Promise((resolve) => setTimeout(resolve, 1500)), {
+                loading: "Restoring catJAM…",
+                success: "Restored catJAM on My Server",
+              })
+            }
+          >
+            Loading
+          </Button>
+        </div>
+      </div>
+      <Toaster />
+    </div>
+  );
+}
 
 function ControlsSheet() {
   const [view, setView] = useState("preview");

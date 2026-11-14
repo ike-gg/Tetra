@@ -1,4 +1,6 @@
+import { Emote } from "@/components/emote/emote";
 import { Button } from "@/components/ui/button";
+import { fromTask } from "@/lib/emote";
 import { relativeTime } from "@/lib/relative-time";
 import type { Task } from "@/lib/tasks";
 
@@ -24,17 +26,7 @@ export function TaskTile({ task, guildName, actionHintId }: TaskTileProps) {
 
   return (
     <li className="flex items-center gap-3 bg-background p-3">
-      <span className="flex size-16 shrink-0 items-center justify-center overflow-hidden bg-checker">
-        <img
-          src={emote.previewUrl}
-          alt=""
-          loading="lazy"
-          draggable={false}
-          width={64}
-          height={64}
-          className="size-full object-contain p-1"
-        />
-      </span>
+      <Emote emote={fromTask(task)} showName={false} className="w-16 shrink-0 p-0" />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <p className="truncate font-medium text-sm">{emote.name}</p>
         <p className="font-mono text-muted text-xs sm:truncate">

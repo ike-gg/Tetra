@@ -2,7 +2,7 @@
 
 Website and panel (`apps/web`). Paths in this document are relative to `apps/web`.
 
-**Stack:** TanStack Start (Vite), TanStack Router (file-based routes), React 19, TanStack Query, Tailwind CSS v4, ui-sdk (unstyled accessible components, see [ui-sdk](#ui-sdk)).
+**Stack:** TanStack Start (Vite), TanStack Router (file-based routes), React 19, TanStack Query, TanStack Virtual (long emote lists), Tailwind CSS v4, ui-sdk (unstyled accessible components, see [ui-sdk](#ui-sdk)).
 
 ## Rendering
 
@@ -33,7 +33,9 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/lib/latest-task.ts` | `createLatestTask`: runs only the newest request (aborts the one in flight, discards stale results by version). |
 | `src/components/panel/` | Panel UI: `PanelScreen` (app header + one column centered horizontally below a top margin, never centered vertically, for states without navigation: session check, login), `PanelLogin`, `PanelLayout` (logged-in chrome, see [Panel layout](#panel-layout)), `PanelNav`, `PanelUserMenu`, `GuildIcon` (ui-sdk `Avatar`, server icon or Discord-style initials), `GuildTile`, `TaskTile` + `TaskList`, `PanelLoading` / `PanelError` (Spinner + text, inline error + Retry), `GuildsError`. |
 | `src/lib/session.ts` | Session query options (`sessionQueryOptions`, `meQueryOptions`), `isUnauthorized`, `loginUrl`, `panelReturnPath`, `logout`. |
-| `src/lib/guilds.ts` | `guildsQueryOptions` (`["guilds"]`, `GET /api/guilds`), types derived from it (`GuildLists`, `Guild`, `ManagedGuild`), `guildIconUrl`, `guildInitials`, `findGuild`. |
+| `src/lib/guilds.ts` | `guildsQueryOptions` (`["guilds"]`, `GET /api/guilds`), types derived from it (`GuildLists`, `Guild`, `ManagedGuild`), `guildIconUrl`, `guildInitials`, `findGuild`, `sortByName`; `guildQueryOptions(id)` (`["guilds", id]`, one server with its emotes, `GuildDetails`, `GuildEmote`) and `removedEmotesQueryOptions(id)` (`["guilds", id, "removed"]`, `RemovedEmote`). Invalidating `["guilds"]` without `exact` hits all three. |
+| `src/components/emote/` | `Emote` (the one emote tile), `EmoteMenu` (a list's context menu and per-emote state), `EmoteGrid` (virtualized grid), `EmoteInfo`. See [web/emote.md](web/emote.md). |
+| `src/lib/emote.ts`, `src/lib/emote-mutations.ts` | `PanelEmote` model + adapters from API shapes; add / remove / restore hooks with toasts and cache updates, `emoteErrorMessage`. |
 | `src/lib/tasks.ts` | `tasksQueryOptions` (`["tasks"]`, `GET /api/tasks`), `Task`. |
 | `src/types/` | Ambient declarations for untyped packages (`gifsicle-wasm-browser`). |
 | `src/lib/format-bytes.ts` | `formatBytes()`: KB/MB in binary units, as Discord states its limits. |
@@ -70,11 +72,13 @@ Our components live in `src/components/ui/`, one file per component, kebab-case.
 - `Eyebrow` – mono label above a heading; `index="01"` renders `[01] /`.
 - `SegmentedControl` + `SegmentedControlItem` – wraps ui-sdk's segmented control; for switching between a few views or modes. The indicator jumps without a transition (native feel). `onValueChange` passes `string | null`.
 - `Slider` – labeled single-value slider (ui-sdk `Field` + `Slider`): `label`, `value`, `onValueChange`, `min`, `max`, `step`, `format`. Square white thumb, orange fill, value in mono on the right. `onValueChange` fires on every drag step so derived numbers follow the thumb live. For a range or a custom track (the trim timeline), compose ui-sdk's slider parts directly.
-- `TextField` – label + input + description/error (ui-sdk `Field`, `InputGroup`, `Input`). `prefix`/`suffix` render mono affixes (`:name:`); `error` replaces the description and marks the field invalid. Validate inline as the user types, never only on submit.
+- `TextField` – label + input + description/error (ui-sdk `Field`, `InputGroup`, `Input`). `prefix`/`suffix` render mono affixes (`:name:`); `hideLabel` keeps the label for screen readers only (a search box); `error` replaces the description and marks the field invalid. Validate inline as the user types, never only on submit.
 - `Switch` – labeled on/off row (ui-sdk `Switch` inside a `<label>`): `label`, `checked`, `onCheckedChange`, optional `description`. For settings that apply immediately.
 - `Notice` – non-blocking heads-up: mono `[!]` in orange, `title`, body, optional `action` on the right. Bordered box by default; as a full-width bar under a toolbar pass `className="border-x-0 border-t-0"`. Errors that stop a task stay inline in `text-danger` instead.
 - `Spinner` – braille dots chasing around one cell (`⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`, 120 ms per frame), in orange, `aria-hidden`. Braille frames all have the same width and weight; an ASCII-ramp version was tried and rejected because the glyphs jumped. Always pair it with text saying what's happening; with reduced motion it stands still.
 - `SlotMeter` – emoji slots of one type (ui-sdk `Meter`): `label`, `used`, `limit`. Mono label and `used/limit`, thin bar; bar and number turn orange in the last 10% of slots (at least 1). Screen readers get "47 of 50, 3 free" / "50 of 50, full".
+- `Menu` parts (`menu.tsx`) – ui-sdk's menu with our look: `MenuContent`, `MenuSubContent`, `MenuItem` (`variant`: `default` | `destructive` (orange, never `danger`) | `info` (a read-only line: disabled but not dimmed, still reachable by keyboard)), `MenuSubTrigger` (ASCII `▸`), `MenuRadioItem` (orange square for the checked one), `MenuGroupLabel` (mono), `MenuSeparator`; the unstyled parts (`Menu`, `MenuContextTrigger`, `MenuSub`, `MenuGroup`, `MenuRadioGroup`, `createMenuController`) are re-exported. Popups keep 8px from the viewport edges; under 640px submenus open below their trigger. Pinned in full, so it looks the same without web.css.
+- `Toaster` + `toast` (`toaster.tsx`) – ui-sdk toasts: a region bottom right, always expanded (up to 4, newest at the bottom), square, `bg-surface`. The type shows as a mono glyph: Spinner (loading), `✓` orange (success), `!` danger (error). Mounted once in `PanelLayout` (and on `/branding`); call `toast()`, `toast.success/error`, `toast.promise()` from anywhere.
 - `SizeMeter` – file size against a limit (ui-sdk `Meter`): `value`, `limit` (bytes), optional `max` where the bar ends (pass the original size so the overflow reads as a distance to cover). Shows size / limit in KB/MB, % of the limit, a tick at the limit and the part over it in orange, with "X over · reduce by Y%" or "Fits · X to spare". Screen readers get one sentence via `getValueLabel`.
 
 These components are styled entirely with Tailwind, without relying on ui-sdk's `web.css`, so they look the same on prerendered pages (like `/branding`) that don't load it.
@@ -96,6 +100,7 @@ Components accept `className` for layout (margins, width, animation); don't use 
 - Our own `color-scheme: dark` overrides web.css's light/dark switching.
 - Form parts (slider, switch, input…) render hidden inputs with `position: absolute` (`hiddenInputStyle` in `@ui-sdk/core` `foundation/forms/form.js`). Inside a scroll container, give the container or an ancestor `position: relative`: otherwise they're placed against the page and make it scroll (the editor's sidebar did, even under an `overflow: hidden` root).
 - Route files may use TanStack's dotted names and `$params` (`panel.lazy.tsx`, `editor.$key.lazy.tsx`, `panel.servers.$guildId.tsx`), an exception to kebab-case.
+- `web.css` draws icons with pseudo-elements on parts without an `svg` child: a chevron `::after` on a submenu trigger (`menu-trigger` inside `menu-content`) and an × `::before` on `toast-close`. Ours bring their own glyphs and hide these (`after:hidden`, `before:hidden`).
 - `web.css` styles `menu-trigger`, `drawer-trigger` and `drawer-close` as bordered buttons and `drawer-content` with padding, a border and a shadow; the panel pins border, background, height, padding and shadow on them with Tailwind.
 
 ## Topic docs
@@ -103,6 +108,7 @@ Components accept `className` for layout (margins, width, animation); don't use 
 Read only when working on the area.
 
 - [web/background.md](web/background.md) – homepage emote background: WebGL ASCII shader and the generated emote atlas.
+- [web/emote.md](web/emote.md) – the emote component: `PanelEmote` model and adapters, the list's context menu and its actions, mutations and cache, the virtualized grid.
 - [web/editor.md](web/editor.md) – the editor (`/editor`, reused in `/panel`): screen and layout, fitting, local library, the GIF (gifsicle) and image (jSquash) engines, decisions, testing, panel integration.
 
 ## Talking to the API
@@ -139,6 +145,7 @@ const guild = await unwrap(api.guilds[":guildId"].$get({ param: { guildId } }));
 - **Sidebar** (`PanelNav`): Home, Tasks (pending count from the tasks query, hidden at 0), Editor (the public `/editor` for now), then "Servers": `guildsWithUserPermissions` in a fixed alphabetical order (`sortByName` from `lib/guilds.ts`, also used by Home; a recently-opened-first order was tried and rejected because the list reshuffled), and "Add server" (`INVITE_URL`, new tab). Active row: `data-status=active` from TanStack's `Link` → surface fill + a 2px orange left edge. From `md` it's a sticky aside (`top-12`, own scroll); the window scrolls the content, so router scroll restoration keeps working. No overscroll anywhere in the panel: `html:has([data-panel-root])` sets `overscroll-behavior: none` (`PanelLayout` and `PanelScreen` carry the attribute), and the sidebar and drawer scroll containers have `overscroll-none`.
 - **Narrow screens**: the same `PanelNav` in a left ui-sdk `Drawer` (controlled, opened from the ≡ button in the header, closed by `onNavigate` when a link is followed). The drawer element sits inside the header; don't give the header `backdrop-filter` or a transform, it would become the containing block of the drawer's fixed viewport. `PanelNav` renders twice there (hidden aside + drawer), so it uses `useId` for its heading id.
 - **Content**: `main` with `pt-8`/`sm:pt-12`, max width `5xl`, normal flow. Loading, empty, error and not-found states are inline, never vertically centered.
+- **Toasts**: `PanelLayout` mounts the `Toaster`; panel code calls `toast` directly.
 
 ### Panel routes
 
@@ -146,9 +153,9 @@ const guild = await unwrap(api.guilds[":guildId"].$get({ param: { guildId } }));
 |---|---|---|
 | `/panel` | `panel.index.tsx` | Home: greeting; pending tasks (only if any, first 4 + "View all"); "Your servers" grid of `GuildTile` (icon, name, two `SlotMeter`s) + an "Add Tetra to a server" tile with the count of `guildsWithoutBotAvailableToAdd`; a quiet line listing `guildsWithBot` (Tetra there, no Manage Expressions). No manageable servers → explanation + primary invite button. |
 | `/panel/tasks` | `panel.tasks.tsx` | All pending tasks (`TaskList`), or "nothing to fix". |
-| `/panel/servers/$guildId` | `panel.servers.$guildId.tsx` | Placeholder: icon, name, slot meters, "lands here next". Looked up in the guilds cache (no `GET /guilds/:id` yet); an id in `guildsWithBot` gets "you can't manage emotes on X", any other id "Server not found", both inline. Opening a server calls `markGuildOpened`. |
+| `/panel/servers/$guildId` | `panel.servers.$guildId.tsx` | A server's emotes. The id is checked in the guilds cache first: an id in `guildsWithBot` gets "you can't manage emotes on X", any other id "Server not found", both inline. Then `GET /guilds/:id`: header (icon, name, boost level, emote and managed counts, `SlotMeter`s from the live `stats`, from the list until loaded), a toolbar (Emotes / Removed as `?view=removed`, search by name, All / Static / Animated, Newest (snowflake order; removed: newest removal) / A–Z; all client-side and instant), and an `EmoteGrid` inside `EmoteMenu` (`kind` `server` or `removed`). States: loading, error with Retry, "No emotes yet" / "Nothing to restore", no matches with Clear search. See [web/emote.md](web/emote.md). |
 
-- Tasks: "Fix in editor" is rendered disabled (`focusableWhenDisabled`, described by the "lands soon" note) because `/panel/editor/$taskId` doesn't exist and a typed `Link` can't point at a missing route. Enable it when that route lands. A task's server name comes from `findGuild` over all three guild lists, "unknown server" otherwise.
+- Tasks: "Fix in editor" is rendered disabled (`focusableWhenDisabled`, described by the "lands soon" note) because `/panel/editor/$taskId` doesn't exist and a typed `Link` can't point at a missing route. Enable it when that route lands. A task's server name comes from `findGuild` over all three guild lists, "unknown server" otherwise. The task's preview is an `Emote` (`TaskList` wraps the list in `EmoteMenu kind="task"`: copy, open, info).
 - Server grid uses `gap-px p-px` with an `outline` on each tile instead of a `bg-border` container, so a short last row doesn't show filled holes; grid items need `min-w-0` or long names push the tile wider than the screen.
 - `GET /api/guilds` answers 500 while the bot's shards start: `GuildsError` says so and offers Retry.
 

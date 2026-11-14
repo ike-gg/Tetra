@@ -40,3 +40,28 @@ export const findGuild = (lists: GuildLists | undefined, guildId: string) =>
 /** Fixed alphabetical order, so the sidebar and Home never reshuffle. */
 export const sortByName = <T extends { name: string }>(guilds: T[]) =>
   [...guilds].sort((a, b) => a.name.localeCompare(b.name));
+
+const fetchGuild = (guildId: string) =>
+  unwrap(api.guilds[":guildId"].$get({ param: { guildId } }));
+
+/** One server with its emotes, fetched live from Discord (`["guilds", guildId]`). */
+export const guildQueryOptions = (guildId: string) =>
+  queryOptions({
+    queryKey: ["guilds", guildId],
+    queryFn: () => fetchGuild(guildId),
+  });
+
+export type GuildDetails = Awaited<ReturnType<typeof fetchGuild>>;
+export type GuildEmote = GuildDetails["emotes"][number];
+
+const fetchRemovedEmotes = (guildId: string) =>
+  unwrap(api.guilds[":guildId"].removed.$get({ param: { guildId } }));
+
+/** Emotes removed from a server that Tetra can put back (`["guilds", guildId, "removed"]`). */
+export const removedEmotesQueryOptions = (guildId: string) =>
+  queryOptions({
+    queryKey: ["guilds", guildId, "removed"],
+    queryFn: () => fetchRemovedEmotes(guildId),
+  });
+
+export type RemovedEmote = Awaited<ReturnType<typeof fetchRemovedEmotes>>[number];
