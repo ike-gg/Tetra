@@ -33,6 +33,7 @@ services:
       - "3002"
     environment:
       ENV: production
+      API_ENABLED: "true"
       PORT: 3002
       POSTGRES_URL: postgres://tetra:${SERVICE_PASSWORD_POSTGRES}@postgres:5432/tetra
       REDIS_URL: redis://redis:6379
