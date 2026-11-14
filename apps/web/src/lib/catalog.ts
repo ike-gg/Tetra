@@ -2,6 +2,9 @@ import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { ApiError, api, unwrap } from "@/lib/api";
 import { emoteErrorMessage } from "@/lib/emote-mutations";
+import { searchFfz } from "@/lib/providers/ffz";
+import { ProviderError, type SearchPage } from "@/lib/providers/provider-request";
+import { searchSevenTv } from "@/lib/providers/seventv";
 
 const fetchResolved = (url: string) =>
   unwrap(api.emotes.resolve.$get({ query: { url } }));
@@ -23,26 +26,54 @@ export type SearchProvider = "7tv" | "ffz" | "bttv";
 
 export const SEARCH_PROVIDERS: SearchProvider[] = ["7tv", "ffz", "bttv"];
 
-const fetchSearchPage = (provider: SearchProvider, query: string, page: number) =>
-  unwrap(api.emotes.search.$get({ query: { provider, query, page } }));
+// 7TV and FFZ allow CORS, so the browser asks them directly; BTTV still goes through core
+const fetchSearchPage = (
+  provider: SearchProvider,
+  query: string,
+  page: number,
+  signal: AbortSignal
+): Promise<SearchPage> => {
+  if (provider === "7tv") return searchSevenTv(query, page, signal);
+  if (provider === "ffz") return searchFfz(query, page, signal);
+  return unwrap(
+    api.emotes.search.$get({ query: { provider, query, page } }, { init: { signal } })
+  );
+};
 
 /** Pages of a provider's search; an empty query lists popular emotes. */
 export const searchEmotesQueryOptions = (provider: SearchProvider, query: string) =>
   infiniteQueryOptions({
     queryKey: ["emote-search", provider, query],
-    queryFn: ({ pageParam }) => fetchSearchPage(provider, query, pageParam),
+    queryFn: ({ pageParam, signal }) =>
+      fetchSearchPage(provider, query, pageParam, signal),
     initialPageParam: 1,
     getNextPageParam: (last) => last.nextPage ?? undefined,
     staleTime: 5 * 60 * 1000,
-    retry: 1,
+    // Retrying a changed API or a rate limit right away only makes it worse
+    retry: (failures, error) =>
+      failures < 1 && !(error instanceof ProviderError && error.kind !== "unreachable"),
   });
 
 /** Pasted text worth resolving without asking: a link or a Discord emoji mention. */
 export const looksLikeEmoteLink = (text: string) =>
   /^https?:\/\/\S+$/i.test(text) || /^<a?:\w{2,32}:\d+>$/.test(text);
 
+const providerErrorMessage = ({ provider, kind }: ProviderError) => {
+  switch (kind) {
+    case "unreachable":
+      return `Couldn't reach ${provider}. Check your connection and try again.`;
+    case "rate-limited":
+      return `${provider} got too many searches from you. Wait a minute and try again.`;
+    case "failed":
+      return `${provider} didn't answer properly. Try again in a moment.`;
+    case "changed":
+      return `${provider} answered in a shape Tetra doesn't know. Its API may have changed.`;
+  }
+};
+
 /** A sentence for the line under the link field, from the lookup's error code. */
 export const lookupErrorMessage = (error: unknown) => {
+  if (error instanceof ProviderError) return providerErrorMessage(error);
   if (!(error instanceof ApiError)) return emoteErrorMessage(error);
   switch (error.reference) {
     case "UNSUPPORTED_LINK":
