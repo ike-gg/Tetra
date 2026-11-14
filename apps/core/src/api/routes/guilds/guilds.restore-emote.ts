@@ -1,6 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { MAX_SUPPORTED_SIZE } from "@/constants";
+import { ResourceTooLargeError } from "@/constants/errors";
 import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
 import { discordRestApi } from "@/lib/discord-rest-api";
@@ -39,8 +41,11 @@ export const guildsRestoreEmote = authFactory.createHandlers(
 
     let emoteBuffer: Buffer;
     try {
-      emoteBuffer = await getBufferFromUrl(emote.url);
-    } catch {
+      emoteBuffer = await getBufferFromUrl(emote.url, {
+        maxBufferSize: MAX_SUPPORTED_SIZE,
+      });
+    } catch (error) {
+      if (error instanceof ResourceTooLargeError) throw error;
       // Deleted emote images stay on the Discord CDN only for a while
       throw new TetraAPIError(
         400,

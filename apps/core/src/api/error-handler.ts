@@ -4,7 +4,11 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
-import { EmoteTooLargeError } from "@/constants/errors";
+import {
+  EmoteTooLargeError,
+  ResourceTooLargeError,
+  UnsupportedEmoteFileError,
+} from "@/constants/errors";
 
 import { API_CONSTANTS } from "./constants/api-constants";
 import { DEFAULT_RETURN_PATH, frontendUrl } from "./routes/auth/auth.shared";
@@ -20,6 +24,9 @@ const sendApiError = (c: Context, error: TetraAPIError) =>
     { error: error.message, reference: error.reference },
     error.code as ContentfulStatusCode
   );
+
+const invalidEmoteFile = (message: string) =>
+  new TetraAPIError(400, message, "INVALID_EMOTE_FILE");
 
 const emoteTooLarge = () =>
   new TetraAPIError(
@@ -59,11 +66,7 @@ export const mapDiscordApiError = (error: DiscordAPIError): TetraAPIError | null
     case RESTJSONErrorCodes.FileUploadedExceedsMaximumSize:
       return emoteTooLarge();
     case RESTJSONErrorCodes.InvalidFileUploaded:
-      return new TetraAPIError(
-        400,
-        "Discord rejected the emote file",
-        "INVALID_EMOTE_FILE"
-      );
+      return invalidEmoteFile("Discord rejected the emote file");
     case RESTJSONErrorCodes.InvalidFormBodyOrContentType:
       return isNameFieldError(error)
         ? new TetraAPIError(400, "Discord rejected the emote name", "INVALID_EMOTE_NAME")
@@ -90,6 +93,17 @@ export const apiErrorHandler = (error: Error, c: Context) => {
   if (error instanceof TetraAPIError) return sendApiError(c, error);
 
   if (error instanceof EmoteTooLargeError) return sendApiError(c, emoteTooLarge());
+
+  if (error instanceof UnsupportedEmoteFileError) {
+    return sendApiError(c, invalidEmoteFile("The emote file is not a supported image"));
+  }
+
+  if (error instanceof ResourceTooLargeError) {
+    return sendApiError(
+      c,
+      new TetraAPIError(413, "The source file is too large to process", "FILE_TOO_LARGE")
+    );
+  }
 
   if (error instanceof DiscordAPIError) {
     return sendApiError(

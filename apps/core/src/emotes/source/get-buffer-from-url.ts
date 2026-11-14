@@ -1,12 +1,14 @@
 import { sleep } from "bun";
 
-import { EmbeddedError } from "@/constants/errors";
+import { EmbeddedError, ResourceTooLargeError } from "@/constants/errors";
 import { safeFetch } from "@/lib/network/url-guard";
 
 interface GetBufferOptions {
   maxRetries: number;
   msBetweenRetries: number;
   maxBufferSize?: number;
+  /** Per attempt, covers redirects and reading the body. */
+  timeoutMs?: number;
 }
 
 type GetBufferOptionsArg = Partial<GetBufferOptions>;
@@ -16,42 +18,73 @@ const DEFAULT_OPTIONS: GetBufferOptions = {
   msBetweenRetries: 1000,
 };
 
+/** The source answered with a 4xx; retrying won't help. */
+export class SourceRespondedError extends EmbeddedError {
+  constructor(public readonly status: number) {
+    super({
+      title: "Failed to fetch source file.",
+      description: `The source responded with ${status}. Maybe the URL is invalid or the file was removed.`,
+    });
+    this.name = "SourceRespondedError";
+  }
+}
+
+// Reads the body chunk by chunk, so a missing or false Content-Length can't make us
+// buffer more than the limit
+const readBody = async (response: Response, maxBufferSize?: number) => {
+  if (!maxBufferSize || !response.body) {
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (maxBufferSize && buffer.byteLength > maxBufferSize) {
+      throw new ResourceTooLargeError();
+    }
+    return buffer;
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+
+  for (let chunk = await reader.read(); !chunk.done; chunk = await reader.read()) {
+    const { value } = chunk;
+    size += value.byteLength;
+    if (size > maxBufferSize) {
+      void reader.cancel().catch(() => undefined);
+      throw new ResourceTooLargeError();
+    }
+    chunks.push(value);
+  }
+
+  return Buffer.concat(chunks, size);
+};
+
 async function getBufferFromUrl(
   url: string,
   options?: GetBufferOptionsArg
 ): Promise<Buffer> {
   const config = { ...DEFAULT_OPTIONS, ...options };
-  const { maxRetries, msBetweenRetries, maxBufferSize } = config;
+  const { maxRetries, msBetweenRetries, maxBufferSize, timeoutMs } = config;
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const response = await safeFetch(url);
+      const response = await safeFetch(
+        url,
+        timeoutMs ? { signal: AbortSignal.timeout(timeoutMs) } : undefined
+      );
 
       if (!response.ok) {
-        // 4xx won't succeed on retry
         if (response.status >= 400 && response.status < 500) {
-          throw new EmbeddedError({
-            title: "Failed to fetch source file.",
-            description: `The source responded with ${response.status}. Maybe the URL is invalid or the file was removed.`,
-          });
+          throw new SourceRespondedError(response.status);
         }
         throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
       }
 
-      const tooLarge = new EmbeddedError({
-        title: "Resource too large",
-        description:
-          "The resource you are trying to fetch is too large to be processed by Tetra.",
-      });
-
       const declaredSize = Number(response.headers.get("content-length"));
-      if (maxBufferSize && declaredSize > maxBufferSize) throw tooLarge;
+      if (maxBufferSize && declaredSize > maxBufferSize) {
+        void response.body?.cancel().catch(() => undefined);
+        throw new ResourceTooLargeError();
+      }
 
-      const buffer = Buffer.from(await response.arrayBuffer());
-
-      if (maxBufferSize && buffer.byteLength > maxBufferSize) throw tooLarge;
-
-      return buffer;
+      return await readBody(response, maxBufferSize);
     } catch (error) {
       if (error instanceof EmbeddedError) {
         throw error;

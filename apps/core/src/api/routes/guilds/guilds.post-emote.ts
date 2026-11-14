@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { MAX_SUPPORTED_SIZE } from "@/constants";
+import { ResourceTooLargeError } from "@/constants/errors";
 import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
 import { discordRestApi } from "@/lib/discord-rest-api";
 import { assertAllowedEmoteSourceUrl, UrlNotAllowedError } from "@/lib/network/url-guard";
@@ -33,11 +35,12 @@ export const guildsPostEmote = authFactory.createHandlers(
 
     try {
       await assertAllowedEmoteSourceUrl(file);
-      emoteBuffer = await getBufferFromUrl(file);
+      emoteBuffer = await getBufferFromUrl(file, { maxBufferSize: MAX_SUPPORTED_SIZE });
     } catch (error) {
       if (error instanceof UrlNotAllowedError) {
         throw new TetraAPIError(400, error.message, "URL_NOT_ALLOWED");
       }
+      if (error instanceof ResourceTooLargeError) throw error;
       throw new TetraAPIError(
         400,
         "Failed to download data of the provided emote",

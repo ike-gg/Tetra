@@ -1,6 +1,6 @@
 import sharp from "sharp";
 
-import { EmbeddedError } from "@/constants/errors";
+import { UnsupportedEmoteFileError } from "@/constants/errors";
 
 const DISCORD_STATIC_FORMATS = ["png", "jpeg", "gif", "webp"];
 
@@ -22,10 +22,7 @@ export const normalizeEmoteBuffer = async (
   try {
     metadata = await sharp(buffer, { animated: true }).metadata();
   } catch {
-    throw new EmbeddedError({
-      title: "Not supported file.",
-      description: "The file you are trying to upload is not a supported image.",
-    });
+    throw new UnsupportedEmoteFileError();
   }
 
   const format = metadata.format ?? "unknown";
