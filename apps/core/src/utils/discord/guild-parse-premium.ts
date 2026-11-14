@@ -1,6 +1,6 @@
 import { type APIGuild, type Guild, GuildPremiumTier } from "discord.js";
 
-const parseEmoteLimit = (tier: GuildPremiumTier): number => {
+const tierEmojiLimit = (tier: GuildPremiumTier): number => {
   switch (tier) {
     case GuildPremiumTier.Tier3:
       return 250;
@@ -13,8 +13,18 @@ const parseEmoteLimit = (tier: GuildPremiumTier): number => {
   }
 };
 
+/**
+ * Emoji slots per type (static and animated count separately). `MORE_EMOJI` is an
+ * undocumented feature of some old partnered/verified guilds that raises the base to 200,
+ * the same rule discord.py uses for `Guild.emoji_limit`.
+ */
+export const getEmojiSlotLimit = (
+  tier: GuildPremiumTier,
+  features: readonly string[] = []
+): number => Math.max(features.includes("MORE_EMOJI") ? 200 : 50, tierEmojiLimit(tier));
+
 export const guildParsePremium = (guild: Guild) => {
-  const emoteLimit = parseEmoteLimit(guild.premiumTier);
+  const emoteLimit = getEmojiSlotLimit(guild.premiumTier, guild.features);
 
   // Managed emojis (e.g. Twitch integration) do not take slots
   const discordEmotes = guild.emojis.cache.filter((e) => !e.managed);
@@ -39,7 +49,7 @@ export const guildParsePremium = (guild: Guild) => {
 };
 
 export const basicGuildParsePremium = (guild: APIGuild) => {
-  const emoteLimit = parseEmoteLimit(guild.premium_tier);
+  const emoteLimit = getEmojiSlotLimit(guild.premium_tier, guild.features);
 
   return {
     emoteLimit,

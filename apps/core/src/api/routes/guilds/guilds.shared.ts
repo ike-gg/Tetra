@@ -1,4 +1,4 @@
-import { PermissionsBitField } from "discord.js";
+import { type Client, type GuildPremiumTier, PermissionsBitField } from "discord.js";
 import { z } from "zod";
 
 import { discordOauth } from "@/lib/discord-oauth";
@@ -41,4 +41,47 @@ export const getManageableGuild = async (guildId: string, accessToken: string) =
   }
 
   return guildResult.value;
+};
+
+export type ShardGuildEmojiSlots = {
+  id: string;
+  static: number;
+  animated: number;
+  premiumTier: GuildPremiumTier;
+  features: string[];
+};
+
+/**
+ * Runs inside the shards through `broadcastEval`: it is serialized, so it must not use
+ * anything from module scope. Returns only the requested guilds the shard has, with
+ * emoji counts instead of emoji objects to keep the IPC payload small. Application
+ * emojis live in `client.application.emojis`, not in `guild.emojis`, so they are not
+ * counted; managed emojis (Twitch integration) don't take slots.
+ */
+export const collectGuildEmojiSlots = (
+  client: Client,
+  { guildIds }: { guildIds: string[] }
+): ShardGuildEmojiSlots[] => {
+  const result: ShardGuildEmojiSlots[] = [];
+  for (const id of guildIds) {
+    const guild = client.guilds.cache.get(id);
+    if (!guild) continue;
+    let staticCount = 0;
+    let animatedCount = 0;
+    for (const emoji of guild.emojis.cache.values()) {
+      if (emoji.managed) continue;
+      if (emoji.animated) animatedCount++;
+      else staticCount++;
+    }
+    result.push({
+      id,
+      static: staticCount,
+      animated: animatedCount,
+      premiumTier: guild.premiumTier,
+      features: (guild.features as string[]).filter(
+        (feature) => feature === "MORE_EMOJI"
+      ),
+    });
+  }
+  return result;
 };
