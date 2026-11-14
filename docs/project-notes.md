@@ -19,6 +19,7 @@ Bun workspaces, one `bun.lock` in the root.
 | `apps/core` | `@tetra/core`: Discord bot (sharded) + REST API for the panel. One deployable process tree. |
 | `apps/web` | `@tetra/web`: TanStack Start app. Static homepage + client-only panel. |
 | `CLAUDE.md` | Entry point for agents: links to the docs below and the rules that apply everywhere. |
+| `.claude/agents/` | Project subagents `core` and `web`, one per app. They read the docs at the start of each task instead of copying them, so keep rules in `docs/`, not in the agent files. |
 | `.claude/skills/`, `skills-lock.json` | Project agent skills, installed with the `skills` CLI (`npx skills add <repo> --skill <name> --agent claude-code`, update with `npx skills update`). Copies are committed; the lock file records their source and hash. |
 | `docs/` | Project documentation (this file, `core.md`, `web.md`, topic docs in `docs/web/`). |
 | `docker/` | Dockerfiles, always built with the repo root as context. |
@@ -39,7 +40,7 @@ Shared code goes to `packages/*` once there is any (nothing yet). Package names 
 
 ## Scripts (root)
 
-- `bun dev` – all apps; `bun dev:core`, `bun dev:web` – one app
+- `bun dev` – core and web side by side through `concurrently` (prefixed logs; when one exits, the other is stopped too); `bun dev:core`, `bun dev:web` – one app. Not `bun --filter '@tetra/*' dev`: `--filter` runs scripts in dependency order, and web depends on `@tetra/core` (for the API types), so web would wait forever for core's never-ending `--watch`.
 - `bun build:web` – production build of the web app
 - `bun db:up` / `bun db:down` – compose Postgres + Redis
 - `bun db:push` / `bun db:studio` – Drizzle (core)

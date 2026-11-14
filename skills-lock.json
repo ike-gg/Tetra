@@ -1,6 +1,12 @@
 {
   "version": 2,
   "skills": {
+    "ai-seo": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "skillPath": "skills/ai-seo/SKILL.md",
+      "computedHash": "5b5dbb143389784211c56e357e20bd44a12c3a0245dbf6dcfbb40348daaaf4ef"
+    },
     "animate": {
       "source": "emilkowalski/skills",
       "sourceType": "github",

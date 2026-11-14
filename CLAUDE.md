@@ -14,6 +14,10 @@ The documentation lives in `docs/`. Read the overview, then only the doc for the
 
 App docs link to deeper topic docs; follow those links only when the task needs them.
 
+## Subagents
+
+`.claude/agents/` has two project subagents: **core** (`apps/core`: bot, API, database) and **web** (`apps/web`: site, editor, panel). Delegate work in an app to its agent. For a feature that spans both, run `core` first (it defines the API and reports the shapes), then `web` with that report; run them in parallel only when the API doesn't change. Each agent commits its own files.
+
 ## Rules that apply everywhere
 
 - Everything written to the repo is in **English** (code, comments, docs, commits), whatever language the chat is in.

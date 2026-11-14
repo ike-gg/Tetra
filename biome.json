@@ -13,6 +13,9 @@
       "!**/*.md",
       "!**/routeTree.gen.ts",
       "!**/emote-atlas.json",
+      "!videos/*/assets/lib/matter.min.js",
+      "!videos/*/assets/emotes.json",
+      "!videos/*/.hyperframes",
       "!**/.output",
       "!**/.tanstack",
       "!**/dist"
