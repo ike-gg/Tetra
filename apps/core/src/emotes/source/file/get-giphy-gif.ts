@@ -13,7 +13,8 @@ const getGiphyGif = async (giphyUrl: string): Promise<Emote> => {
   }
 
   if (hostname === "giphy.com") {
-    gifId = pathname.split("-").at(-1) || null;
+    // `/gifs/<slug>-<id>` or `/gifs/<id>`
+    gifId = pathname.split("/").filter(Boolean).at(-1)?.split("-").at(-1) || null;
   }
 
   if (!gifId) throw new Error("No gif id found.");
