@@ -16,7 +16,6 @@ import { ApiError } from "@/lib/api";
 import { fromTask, SOURCE_LABELS } from "@/lib/emote";
 import { formatBytes } from "@/lib/format-bytes";
 import { findGuild, type GuildLists, guildsQueryOptions } from "@/lib/guilds";
-import type { StillFormat } from "@/lib/image/render-image";
 import { DISCORD_EMOTE_LIMIT } from "@/lib/media/edit";
 import type { MediaFile } from "@/lib/media/media-file";
 import { useAddTaskEmote } from "@/lib/task-mutations";
@@ -25,9 +24,6 @@ import { type Task, taskFileQueryOptions, taskQueryOptions } from "@/lib/tasks";
 export const Route = createLazyFileRoute("/panel/tasks/$taskId")({
   component: PanelTaskEditor,
 });
-
-// Core's task endpoint takes GIF, PNG and WebP data URLs, not JPEG
-const TASK_FORMATS: readonly StillFormat[] = ["png", "webp"];
 
 const fetchedFrom = (task: Task) => {
   const { source } = fromTask(task);
@@ -244,7 +240,6 @@ function TaskEditor({ task, source }: { task: Task; source: MediaFile }) {
       source={source}
       initialName={task.emote.name}
       discordOnly
-      outputFormats={TASK_FORMATS}
       // Fills the panel's content area under its 48px header
       className="min-h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-3rem)]"
       notice={notice}

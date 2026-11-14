@@ -27,9 +27,13 @@ export function useMediaRender(
   const task = useRef<{ request: (edit: Edit) => void } | null>(null);
   const latest = useRef(edit);
   latest.current = edit;
-  // Fixed for an editor's lifetime, so it doesn't restart the task
+  // Read by each run, so a change (Discord mode drops JPEG) doesn't restart the task
   const allowedFormats = useRef(formats);
-  const editKey = JSON.stringify(edit);
+  allowedFormats.current = formats;
+  // GIFs stay GIFs: only a still image renders again when the formats change
+  const requestKey = JSON.stringify([edit, source.kind === "image" ? formats : null]);
+  const latestKey = useRef(requestKey);
+  latestKey.current = requestKey;
   const requestedKey = useRef<string | null>(null);
 
   useEffect(() => {
@@ -55,7 +59,7 @@ export function useMediaRender(
       }
     );
     task.current = current;
-    requestedKey.current = JSON.stringify(latest.current);
+    requestedKey.current = latestKey.current;
     current.request(latest.current);
 
     return () => {
@@ -67,10 +71,10 @@ export function useMediaRender(
 
   useEffect(() => {
     // On mount the source effect above has already requested this edit
-    if (requestedKey.current === editKey) return;
-    requestedKey.current = editKey;
+    if (requestedKey.current === requestKey) return;
+    requestedKey.current = requestKey;
     task.current?.request(latest.current);
-  }, [editKey]);
+  }, [requestKey]);
 
   return state;
 }

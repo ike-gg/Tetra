@@ -3,6 +3,7 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { toast } from "@/components/ui/toaster";
 import { ApiError, api, unwrap } from "@/lib/api";
+import { toEmoteDataUrl } from "@/lib/emote-data-url";
 import { emoteErrorMessage } from "@/lib/emote-mutations";
 import {
   holdSlotCounts,
@@ -11,21 +12,6 @@ import {
   slotTypeOfPreview,
 } from "@/lib/guild-slots";
 import { type Task, tasksQueryOptions } from "@/lib/tasks";
-
-// Core takes these three only; the editor never renders JPEG for a task
-const DATA_URL_TYPES = /^data:image\/(gif|png|webp);base64,/;
-
-const toDataUrl = (blob: Blob) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const url = String(reader.result);
-      if (DATA_URL_TYPES.test(url)) resolve(url);
-      else reject(new Error("Only GIF, PNG and WebP can be added."));
-    };
-    reader.onerror = () => reject(reader.error);
-    reader.readAsDataURL(blob);
-  });
 
 // The task is gone from the server either way: drop it from every cache, so Home and
 // Tasks don't show it until their refetch lands
@@ -60,7 +46,7 @@ export function useAddTaskEmote(task: Task, guildName: string) {
       unwrap(
         api.tasks[":taskId"].$post({
           param: { taskId: task.id },
-          json: { emote: await toDataUrl(blob), name },
+          json: { emote: await toEmoteDataUrl(blob), name },
         })
       ),
     onSuccess: async ({ preview }) => {

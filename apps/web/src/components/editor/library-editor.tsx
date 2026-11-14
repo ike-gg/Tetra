@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { type ReactNode, useMemo } from "react";
+import { lazy, type ReactNode, Suspense, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
@@ -15,9 +15,19 @@ import { saveEdit } from "@/lib/media/local-library";
 
 import { EDITOR_HOSTS, type EditorHost } from "./editor-host";
 import { type EditorWork, MediaEditor } from "./media-editor";
+import { useCanAddToServer } from "./use-can-add-to-server";
 import { useMediaFile } from "./use-media-file";
 
 const SAVE_DELAY_MS = 400;
+
+// Only for a session with servers: the public editor doesn't load the panel's add flow
+const AddToServerMenu = lazy(() =>
+  import("./add-to-server-menu").then((module) => ({ default: module.AddToServerMenu }))
+);
+// The panel mounts its own; the public editor needs one only for adding
+const Toaster = lazy(() =>
+  import("@/components/ui/toaster").then((module) => ({ default: module.Toaster }))
+);
 
 type LibraryEditorProps = {
   fileKey: string;
@@ -32,6 +42,7 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
   const config = EDITOR_HOSTS[host];
   const navigate = useNavigate();
   const stored = useQuery(libraryFileQueryOptions(fileKey));
+  const canAdd = useCanAddToServer();
   const media = useMediaFile(stored.data?.blob, stored.data?.entry.fileName ?? "");
 
   // Settings are saved shortly after the last change, not on every slider step
@@ -74,56 +85,79 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
   const { file } = media;
   const { saved } = stored.data;
   const newFile = (
-    <Button variant="ghost" size="sm" onClick={() => void navigate({ to: config.start })}>
+    <Button
+      variant="ghost"
+      size="sm"
+      // On a phone the public toolbar's "Editor" crumb does the same
+      className={host === "public" ? "max-sm:hidden" : undefined}
+      onClick={() => void navigate({ to: config.start })}
+    >
       New file
     </Button>
   );
 
   return (
-    <MediaEditor
-      key={file.url}
-      source={file}
-      // The panel's header has the breadcrumb already
-      section={host === "public" ? { label: "Editor", to: "/editor" } : undefined}
-      toolbarStart={host === "panel" ? newFile : undefined}
-      // Fills the panel's content area under its 48px header
-      className={
-        host === "panel"
-          ? "min-h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-3rem)]"
-          : undefined
-      }
-      initialEdit={saved?.edit}
-      initialName={saved?.name}
-      initialDiscord={saved?.discord ?? config.discordByDefault}
-      onWorkChange={save}
-      actions={({ result, name, nameValid }) => (
-        <>
-          {host === "public" && newFile}
-          <Button
-            variant="primary"
-            size="sm"
-            glow
-            disabled={!result}
-            onClick={() =>
-              result &&
-              downloadBlob(
-                result.blob,
-                `${nameValid ? name : file.name}.${result.extension}`
-              )
-            }
-          >
-            Download
-          </Button>
-        </>
+    <>
+      {host === "public" && canAdd && (
+        <Suspense fallback={null}>
+          <Toaster />
+        </Suspense>
       )}
-      sizeNote={({ fits, result }) => (
-        <Text size="xs" tone="muted">
-          {fits || !result
-            ? `Discord accepts emotes up to ${formatBytes(DISCORD_EMOTE_LIMIT)}.`
-            : `Discord won't take emotes over ${formatBytes(DISCORD_EMOTE_LIMIT)}. You can still download it.`}
-        </Text>
-      )}
-    />
+      <MediaEditor
+        key={file.url}
+        source={file}
+        // The panel's header has the breadcrumb already
+        section={host === "public" ? { label: "Editor", to: "/editor" } : undefined}
+        toolbarStart={host === "panel" ? newFile : undefined}
+        // Fills the panel's content area under its 48px header
+        className={
+          host === "panel"
+            ? "min-h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-3rem)]"
+            : undefined
+        }
+        initialEdit={saved?.edit}
+        initialName={saved?.name}
+        initialDiscord={saved?.discord ?? config.discordByDefault}
+        onWorkChange={save}
+        actions={(state) => {
+          const { result, name, nameValid } = state;
+          // Emote mode with servers to add to: adding is the main action, Download steps back
+          const adding = canAdd && state.discord;
+          return (
+            <>
+              {host === "public" && newFile}
+              {adding && (
+                <Suspense fallback={null}>
+                  <AddToServerMenu state={state} animated={file.info.frames > 1} />
+                </Suspense>
+              )}
+              <Button
+                variant={adding ? "secondary" : "primary"}
+                size="sm"
+                glow={!adding}
+                disabled={!result}
+                onClick={() =>
+                  result &&
+                  downloadBlob(
+                    result.blob,
+                    `${nameValid ? name : file.name}.${result.extension}`
+                  )
+                }
+              >
+                Download
+              </Button>
+            </>
+          );
+        }}
+        sizeNote={({ fits, result }) => (
+          <Text size="xs" tone="muted">
+            {fits || !result
+              ? `Discord accepts emotes up to ${formatBytes(DISCORD_EMOTE_LIMIT)}.`
+              : `Discord won't take emotes over ${formatBytes(DISCORD_EMOTE_LIMIT)}. You can still download it.`}
+          </Text>
+        )}
+      />
+    </>
   );
 }
 

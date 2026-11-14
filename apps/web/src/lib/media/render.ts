@@ -19,6 +19,9 @@ export type MediaRender = {
 
 export const STILL_FORMATS: readonly StillFormat[] = ["png", "webp", "jpeg"];
 
+// What Discord emotes may be: core's upload endpoints take GIF, PNG and WebP data URLs
+export const EMOTE_FORMATS: readonly StillFormat[] = ["png", "webp"];
+
 const LABELS: Record<string, string> = { png: "PNG", webp: "WebP", jpeg: "JPEG" };
 const EXTENSIONS: Record<string, string> = { png: "png", webp: "webp", jpeg: "jpg" };
 

@@ -1,3 +1,4 @@
+import { toDiscordEmoteName } from "@/lib/emote";
 import { parseGif } from "@/lib/gif/parse-gif";
 
 export type MediaInfo = {
@@ -39,8 +40,6 @@ export const ACCEPTED_TYPES = [
 // still opens such files but warns that it isn't built for them
 export const LARGE_FILE_BYTES = 5 * 1024 * 1024;
 
-const NAME_CHARS = /[^A-Za-z0-9_]/g;
-
 // Discord emote names: 2–32 letters, numbers or underscores
 export const emoteNameError = (name: string) => {
   if (name.length < 2) return "At least 2 characters.";
@@ -56,12 +55,11 @@ export const fileNameError = (name: string) => {
   return undefined;
 };
 
+// Starts as a valid emote name, also when the editor isn't in emote mode: it's a fine
+// file name too. A name with no letters or digits left becomes "emote".
 const nameFromFile = (fileName: string) => {
-  const name = fileName
-    .replace(/\.[^.]+$/, "")
-    .replace(NAME_CHARS, "_")
-    .slice(0, 32);
-  return name.length >= 2 ? name : "emote";
+  const name = toDiscordEmoteName(fileName.replace(/\.[^.]+$/, ""));
+  return /[A-Za-z0-9]/.test(name) ? name : "emote";
 };
 
 const isGif = (bytes: Uint8Array) =>

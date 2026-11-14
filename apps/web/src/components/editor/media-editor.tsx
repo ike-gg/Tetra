@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 
 import { BrandLink } from "@/components/brand-link";
 import { Button } from "@/components/ui/button";
@@ -40,7 +40,12 @@ import {
   LARGE_FILE_BYTES,
   type MediaFile,
 } from "@/lib/media/media-file";
-import { type MediaRender, renderMedia, STILL_FORMATS } from "@/lib/media/render";
+import {
+  EMOTE_FORMATS,
+  type MediaRender,
+  renderMedia,
+  STILL_FORMATS,
+} from "@/lib/media/render";
 
 import { CanvasWindow } from "./canvas-window";
 import { FITTING_LABELS, FittingPicker } from "./fitting-picker";
@@ -53,6 +58,8 @@ import { useMediaRender } from "./use-media-render";
 type View = "preview" | "crop";
 
 export type MediaEditorState = {
+  // Discord emote mode: the name is an emote name and the result fits Discord's rules
+  discord: boolean;
   name: string;
   nameValid: boolean;
   result: MediaRender | null;
@@ -78,7 +85,7 @@ type MediaEditorProps = {
   initialDiscord?: boolean;
   // Always an emote: the checks are on and the switch is hidden
   discordOnly?: boolean;
-  // What a still image may become; the panel's task endpoint rejects JPEG
+  // What a still image may become; Discord emote mode keeps only EMOTE_FORMATS of these
   outputFormats?: readonly StillFormat[];
   // Height and layout; the editor takes the full viewport by default
   className?: string;
@@ -118,12 +125,21 @@ export function MediaEditor({
   const [autoFitting, setAutoFitting] = useState(false);
   const fitController = useRef<AbortController | null>(null);
 
-  const { result, pending, error } = useMediaRender(source, edit, outputFormats);
+  // Core rejects JPEG emotes, so emote mode never renders one
+  const formats = useMemo(
+    () =>
+      discord
+        ? outputFormats.filter((format) => EMOTE_FORMATS.includes(format))
+        : outputFormats,
+    [discord, outputFormats]
+  );
+  const { result, pending, error } = useMediaRender(source, edit, formats);
   const frames = useFilmStrip(source);
 
   const nameError = discord ? emoteNameError(name) : fileNameError(name);
   const bytes = result?.bytes ?? source.bytes;
   const state: MediaEditorState = {
+    discord,
     name,
     nameValid: !nameError,
     result,
@@ -193,7 +209,7 @@ export function MediaEditor({
           source,
           { ...edit, settings },
           controller.signal,
-          outputFormats
+          formats
         );
         URL.revokeObjectURL(render.url);
         if (render.bytes <= DISCORD_EMOTE_LIMIT) break;
@@ -258,8 +274,9 @@ export function MediaEditor({
               >
                 {section.label}
               </Link>
-              <span className="text-neutral-600">/</span>
-              <span className="truncate font-medium">
+              {/* On a phone the name field shows it; the toolbar needs the room */}
+              <span className="text-neutral-600 max-sm:hidden">/</span>
+              <span className="truncate font-medium max-sm:hidden">
                 {nameError ? source.name : name}
               </span>
             </nav>
@@ -267,7 +284,13 @@ export function MediaEditor({
             toolbarStart
           )}
           <div className="ml-auto flex min-w-0 items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={reset}>
+            {/* Next to a breadcrumb a phone has room for the page's actions only */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={section ? "max-sm:hidden" : undefined}
+              onClick={reset}
+            >
               Reset
             </Button>
             {actions(state)}
@@ -501,7 +524,7 @@ export function MediaEditor({
                 <div className="flex flex-col gap-5">
                   {still && (
                     <FormatPicker
-                      formats={outputFormats}
+                      formats={formats}
                       value={settings.format}
                       onValueChange={setSetting("format")}
                       result={result}
@@ -592,6 +615,8 @@ function FormatPicker({
   onValueChange: (value: OutputFormat) => void;
   result: MediaRender | null;
 }) {
+  // A saved format that isn't allowed here (JPEG in emote mode) renders as Auto
+  const shown = value === "auto" || formats.includes(value) ? value : "auto";
   const hint = {
     auto: result
       ? `Smallest of the formats that keep its quality: ${result.formatLabel}.`
@@ -599,14 +624,14 @@ function FormatPicker({
     png: "Lossless, keeps transparency. Compression doesn't apply.",
     webp: "Small, keeps transparency.",
     jpeg: "For photos. Transparent areas turn white.",
-  }[value];
+  }[shown];
 
   return (
     <div className="flex flex-col gap-1.5">
       <span className="font-medium text-foreground text-sm">Format</span>
       <SegmentedControl
         aria-label="Format"
-        value={value}
+        value={shown}
         onValueChange={(next) => next && onValueChange(next as OutputFormat)}
         className="flex w-full"
       >

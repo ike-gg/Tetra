@@ -3,6 +3,7 @@ import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-q
 import { toast } from "@/components/ui/toaster";
 import { ApiError, api, unwrap } from "@/lib/api";
 import { type Fitting, type PanelEmote, toDiscordEmoteName } from "@/lib/emote";
+import { toEmoteDataUrl } from "@/lib/emote-data-url";
 import {
   holdSlotCounts,
   refreshSlotCounts,
@@ -61,6 +62,9 @@ export const emoteErrorMessage = (error: unknown) => {
       return "The original file is over 10 MB, too big for Tetra to fetch.";
     case "UNSUPPORTED_FILE_TYPE":
       return "The original isn't a GIF, PNG, WebP or JPEG image.";
+    case "NO_SESSION":
+    case "SESSION_EXPIRED":
+      return "Your session ended. Log in again, then add it.";
     case "RATE_LIMITED":
       return "That's a lot at once. Wait a moment and try again.";
     // Any Discord error core doesn't map to its own code
@@ -112,6 +116,50 @@ export function useAddEmote() {
       () => false
     );
   };
+}
+
+type UploadVariables = { blob: Blob; name: string; guild: ManagedGuild };
+
+/**
+ * "Add to server" from the editor: uploads the finished result as it is, without core
+ * optimizing it again. Resolves to whether it worked; the toast already told the user.
+ */
+export function useUploadEmote() {
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: async ({ blob, name, guild }: UploadVariables) =>
+      unwrap(
+        api.guilds[":guildId"].emote.upload.$post({
+          param: { guildId: guild.id },
+          json: { emote: await toEmoteDataUrl(blob), name },
+        })
+      ),
+    onSuccess: async ({ preview }, { guild }) => {
+      await holdSlotCounts(queryClient, guild.id);
+      shiftSlotCounts(queryClient, guild.id, slotTypeOfPreview(preview), 1);
+    },
+    onSettled: (_data, _error, { guild }) => refreshSlotCounts(queryClient, guild.id),
+  });
+
+  const upload = (variables: UploadVariables): Promise<boolean> => {
+    const label = `:${variables.name}:`;
+    const request = mutation.mutateAsync(variables);
+    toast.promise(request, {
+      loading: `Adding ${label} to ${variables.guild.name}…`,
+      success: { title: `Added ${label} to ${variables.guild.name}` },
+      error: (error) => ({
+        title: `Couldn't add ${label} to ${variables.guild.name}`,
+        description: emoteErrorMessage(error),
+      }),
+    });
+    return request.then(
+      () => true,
+      () => false
+    );
+  };
+
+  return { upload, pending: mutation.isPending };
 }
 
 /** Removes an emote from its server: gone from the grid at once, back if it fails. */

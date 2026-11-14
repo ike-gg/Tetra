@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Fragment, type ReactElement, type ReactNode } from "react";
 
 import { EmoteInfo } from "@/components/emote/emote-info";
-import { GuildIcon } from "@/components/panel/guild-icon";
+import { ServerMenuItems } from "@/components/panel/server-menu-items";
 import {
   MenuGroup,
   MenuGroupLabel,
@@ -19,7 +19,7 @@ import { toast } from "@/components/ui/toaster";
 import type { Fitting, PanelEmote } from "@/lib/emote";
 import { downloadEmote, useEditInQuickEditor } from "@/lib/emote-file";
 import { useAddEmote, useRemoveEmote, useRestoreEmote } from "@/lib/emote-mutations";
-import { guildsQueryOptions, type ManagedGuild, sortByName } from "@/lib/guilds";
+import { guildsQueryOptions, type ManagedGuild } from "@/lib/guilds";
 
 /**
  * Where a list of emotes is shown. It decides which actions the menu offers:
@@ -242,7 +242,7 @@ function Hint({ children }: { children?: ReactNode }) {
   );
 }
 
-/** The user's manageable servers as menu items, with free slots for the emote's type. */
+/** "Add to server" for an emote with a source URL: core fetches and fits it. */
 export function AddToServerItems({
   emote,
   fitting,
@@ -250,43 +250,13 @@ export function AddToServerItems({
   emote: PanelEmote;
   fitting: Fitting;
 }) {
-  const guilds = useQuery(guildsQueryOptions);
   const add = useAddEmote();
-  const slots = emote.animated ? "animated" : "static";
-  const targets = sortByName(guilds.data?.guildsWithUserPermissions ?? []);
-
   return (
-    <>
-      {guilds.status === "pending" && (
-        <MenuItem variant="info">Loading servers…</MenuItem>
-      )}
-      {guilds.status === "error" && (
-        <MenuItem variant="info">Couldn&apos;t load your servers</MenuItem>
-      )}
-      {guilds.status === "success" && targets.length === 0 && (
-        <MenuItem variant="info">No servers you can manage</MenuItem>
-      )}
-      {targets.map((target) => {
-        const free = target.emojis.limit - target.emojis[slots];
-        const here = target.id === emote.guildId;
-        return (
-          <MenuItem
-            key={target.id}
-            label={target.name}
-            // Full servers stay listed (and focusable) so it's clear why they can't take it
-            disabled={free <= 0}
-            onSelect={() => void add({ emote, guild: target, fitting })}
-          >
-            <GuildIcon guild={target} size="sm" />
-            <span className="min-w-0 truncate">{target.name}</span>
-            <span className="ml-auto shrink-0 pl-4 font-mono text-muted text-xs tabular-nums">
-              {here ? "here · " : ""}
-              {free <= 0 ? `${slots} full` : `${free} free`}
-            </span>
-          </MenuItem>
-        );
-      })}
-    </>
+    <ServerMenuItems
+      animated={emote.animated}
+      hereId={emote.guildId}
+      onPick={(guild) => void add({ emote, guild, fitting })}
+    />
   );
 }
 
