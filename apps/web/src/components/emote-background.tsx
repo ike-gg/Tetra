@@ -73,6 +73,9 @@ const SCROLL_SPEED = 45;
 const PAGE_PARALLAX = 0.12;
 // Brightness left after scrolling one viewport down, so sections below stay readable
 const SCROLLED_DIM = 0.3;
+// Over the last part of the page (in viewport heights) the field fades out completely, so
+// overscrolling past the end (macOS rubber band) uncovers nothing behind the footer
+const END_FADE = 0.5;
 
 // Horizon height as a multiple of the viewport height; lower = stronger tilt
 const HORIZON = 1.9;
@@ -540,6 +543,9 @@ export function EmoteBackground() {
         const autoScroll = reducedMotion ? 0 : (time / 1000) * SCROLL_SPEED;
         const scroll = autoScroll + pageScroll * PAGE_PARALLAX;
         const scrolled = Math.min(pageScroll / window.innerHeight, 1);
+        const toEnd =
+          document.documentElement.scrollHeight - window.innerHeight - pageScroll;
+        const endFade = Math.min(Math.max(toEnd / (window.innerHeight * END_FADE), 0), 1);
         introStart ??= time;
         const intro = reducedMotion
           ? 1
@@ -549,7 +555,7 @@ export function EmoteBackground() {
         gl.uniform2f(uCharSize, CHAR_W * dpr, CHAR_H * dpr);
         gl.uniform1f(uEmoteSize, EMOTE_SIZE * dpr);
         gl.uniform1f(uScroll, scroll * dpr);
-        gl.uniform1f(uDim, 1 - (1 - SCROLLED_DIM) * scrolled);
+        gl.uniform1f(uDim, (1 - (1 - SCROLLED_DIM) * scrolled) * endFade);
         gl.uniform2f(uMouse, mouse.x * dpr, height - mouse.y * dpr);
         uploadTrail(width, height, dpr);
         uploadDent(width, height, dpr);

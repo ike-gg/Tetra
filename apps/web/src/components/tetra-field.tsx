@@ -107,6 +107,9 @@ export function TetraField({ revealAll, originRef }: TetraFieldProps) {
       inside: false,
     };
     let visible = false;
+    // Set on cleanup: late callbacks (fonts, observers) must not restart a loop that
+    // would keep drawing over the live one
+    let disposed = false;
     let cursorRadius = 0;
     let allRadius = 0;
     let frame = 0;
@@ -200,6 +203,7 @@ export function TetraField({ revealAll, originRef }: TetraFieldProps) {
     };
 
     const tick = (time: number) => {
+      if (disposed) return;
       const dt = lastTime ? time - lastTime : 16;
       lastTime = time;
       // The cursor reveal grows until it covers the word's half-diagonal
@@ -237,7 +241,7 @@ export function TetraField({ revealAll, originRef }: TetraFieldProps) {
     };
 
     const wake = () => {
-      if (frame) return;
+      if (frame || disposed) return;
       lastTime = 0;
       frame = requestAnimationFrame(tick);
     };
@@ -265,6 +269,7 @@ export function TetraField({ revealAll, originRef }: TetraFieldProps) {
     });
     // The glyphs and the word are drawn with the brand fonts; start once they have loaded
     void document.fonts.ready.then(() => {
+      if (disposed) return;
       resizeObserver.observe(area);
       visibility.observe(area);
     });
@@ -272,6 +277,7 @@ export function TetraField({ revealAll, originRef }: TetraFieldProps) {
     area.addEventListener("pointerleave", onPointerLeave);
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
       wakeRef.current = () => undefined;
       resizeObserver.disconnect();
@@ -281,11 +287,12 @@ export function TetraField({ revealAll, originRef }: TetraFieldProps) {
     };
   }, [originRef]);
 
+  // No box around the field: the glyphs fade out towards every edge into the page
   return (
     <canvas
       ref={canvasRef}
       aria-hidden
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      className="pointer-events-none absolute inset-0 h-full w-full [mask-image:radial-gradient(ellipse_closest-side,black_45%,transparent)]"
     />
   );
 }

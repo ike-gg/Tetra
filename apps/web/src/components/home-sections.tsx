@@ -111,7 +111,7 @@ function CallToAction() {
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-28">
-      <div className="relative overflow-hidden border border-border bg-surface px-8 py-20 text-center">
+      <div className="relative overflow-hidden px-8 py-32 text-center">
         <TetraField revealAll={reveal} originRef={buttonRef} />
         <div className="relative">
           <Heading level={2} className="mx-auto max-w-xl">
@@ -127,7 +127,11 @@ function CallToAction() {
               render={<a href={INVITE_URL} />}
               onPointerEnter={() => setReveal(true)}
               onPointerLeave={() => setReveal(false)}
-              onFocus={() => setReveal(true)}
+              // Keyboard focus only: a clicked link keeps focus, and returning to the tab
+              // re-fires focus on it, which left the reveal stuck on
+              onFocus={(event) =>
+                setReveal(event.currentTarget.matches(":focus-visible"))
+              }
               onBlur={() => setReveal(false)}
             >
               Add to Discord <span aria-hidden>→</span>
