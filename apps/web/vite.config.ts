@@ -4,6 +4,8 @@ import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 const staticPages = ["/", "/branding", "/editor", "/logo"];
+// Server routes (src/routes/robots[.]txt.ts, sitemap[.]xml.ts), prerendered to plain files
+const staticFiles = ["/robots.txt", "/sitemap.xml"];
 
 export default defineConfig({
   server: {
@@ -39,10 +41,19 @@ export default defineConfig({
         autoStaticPathsDiscovery: false,
         crawlLinks: false,
       },
-      pages: staticPages.map((path) => ({
-        path,
-        prerender: { enabled: true, outputPath: `${path.replace(/\/$/, "")}/index.html` },
-      })),
+      pages: [
+        ...staticPages.map((path) => ({
+          path,
+          prerender: {
+            enabled: true,
+            outputPath: `${path.replace(/\/$/, "")}/index.html`,
+          },
+        })),
+        ...staticFiles.map((path) => ({
+          path,
+          prerender: { enabled: true, outputPath: path },
+        })),
+      ],
     }),
     viteReact(),
   ],

@@ -13,6 +13,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BrandingRouteImport } from './routes/branding'
 import { Route as LogoRouteImport } from './routes/logo'
 import { Route as PanelRouteImport } from './routes/panel'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as StaticLogoRouteImport } from './routes/static-logo'
 import { Route as EditorIndexRouteImport } from './routes/editor.index'
 import { Route as EditorKeyRouteImport } from './routes/editor.$key'
@@ -44,6 +46,16 @@ const PanelRoute = PanelRouteImport.update({
   path: '/panel',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/panel.lazy').then((d) => d.Route))
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StaticLogoRoute = StaticLogoRouteImport.update({
   id: '/static-logo',
   path: '/static-logo',
@@ -104,6 +116,8 @@ export interface FileRoutesByFullPath {
   '/branding': typeof BrandingRoute
   '/logo': typeof LogoRoute
   '/panel': typeof PanelRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
@@ -119,6 +133,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
   '/logo': typeof LogoRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
@@ -136,6 +152,8 @@ export interface FileRoutesById {
   '/branding': typeof BrandingRoute
   '/logo': typeof LogoRoute
   '/panel': typeof PanelRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
@@ -154,6 +172,8 @@ export interface FileRouteTypes {
     | '/branding'
     | '/logo'
     | '/panel'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
@@ -169,6 +189,8 @@ export interface FileRouteTypes {
     | '/'
     | '/branding'
     | '/logo'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
@@ -185,6 +207,8 @@ export interface FileRouteTypes {
     | '/branding'
     | '/logo'
     | '/panel'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
@@ -202,6 +226,8 @@ export interface RootRouteChildren {
   BrandingRoute: typeof BrandingRoute
   LogoRoute: typeof LogoRoute
   PanelRoute: typeof PanelRouteWithChildren
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   StaticLogoRoute: typeof StaticLogoRoute
   EditorKeyRoute: typeof EditorKeyRoute
   EditorIndexRoute: typeof EditorIndexRoute
@@ -235,6 +261,20 @@ declare module '@tanstack/react-router' {
       path: '/panel'
       fullPath: '/panel'
       preLoaderRoute: typeof PanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/static-logo': {
@@ -337,6 +377,8 @@ const rootRouteChildren: RootRouteChildren = {
   BrandingRoute: BrandingRoute,
   LogoRoute: LogoRoute,
   PanelRoute: PanelRouteWithChildren,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   StaticLogoRoute: StaticLogoRoute,
   EditorKeyRoute: EditorKeyRoute,
   EditorIndexRoute: EditorIndexRoute,

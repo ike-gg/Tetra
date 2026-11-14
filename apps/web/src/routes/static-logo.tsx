@@ -21,7 +21,7 @@ import { NOINDEX_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/static-logo")({
   head: () => ({
-    meta: [{ title: "Static logo · Tetra" }, NOINDEX_META],
+    meta: [{ title: "Mark · tetra" }, NOINDEX_META],
   }),
   component: StaticLogoPage,
 });

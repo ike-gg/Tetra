@@ -8,7 +8,7 @@ import { DISCORD_EMOTE_LIMIT } from "@/lib/media/edit";
 import { NOINDEX_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/panel/editor/")({
-  head: () => ({ meta: [{ title: "Editor · Panel · Tetra" }, NOINDEX_META] }),
+  head: () => ({ meta: [{ title: "Editor · tetra" }, NOINDEX_META] }),
   component: PanelEditorStart,
 });
 

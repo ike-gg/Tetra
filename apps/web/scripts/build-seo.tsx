@@ -1,5 +1,4 @@
 // Runs after `vite build` (part of the `build` script) and writes into dist/client:
-// - robots.txt and sitemap.xml for SITE_URL (`VITE_SITE_URL`)
 // - og/<page>.png, a 1200×630 Open Graph image for every page in SEO_PAGES
 // The images are drawn with satori (JSX → SVG) and rasterized with resvg. Everything is
 // seeded, so the same input gives byte-identical files.
@@ -13,7 +12,6 @@ import satori, { type Font } from "satori";
 import { decompress } from "wawoff2";
 
 import {
-  absoluteUrl,
   OG_IMAGE_SIZE,
   ogImagePath,
   SEO_PAGES,
@@ -22,28 +20,6 @@ import {
 } from "../src/lib/seo";
 
 const outDir = join(import.meta.dir, "..", "dist", "client");
-
-// --- robots.txt + sitemap.xml ---------------------------------------------------------
-
-// Google picks the longest matching rule, so `Allow: /panel/$` (the shell) beats
-// `Disallow: /panel/`, and `/panel` and `/editor` match no Disallow at all.
-const robots = `User-agent: *
-Allow: /
-Allow: /panel/$
-Allow: /editor/$
-Disallow: /panel/
-Disallow: /editor/
-
-Sitemap: ${SITE_URL}/sitemap.xml
-`;
-
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${Object.values(SEO_PAGES)
-  .map((page) => `  <url><loc>${absoluteUrl(page.path)}</loc></url>`)
-  .join("\n")}
-</urlset>
-`;
 
 // --- colors ---------------------------------------------------------------------------
 
@@ -361,8 +337,6 @@ function OgImage({ pageKey, seed }: { pageKey: SeoPageKey; seed: number }) {
 }
 
 await mkdir(join(outDir, "og"), { recursive: true });
-await writeFile(join(outDir, "robots.txt"), robots);
-await writeFile(join(outDir, "sitemap.xml"), sitemap);
 
 const keys = Object.keys(SEO_PAGES) as SeoPageKey[];
 await Promise.all(
@@ -374,4 +348,4 @@ await Promise.all(
   })
 );
 
-console.log(`seo: robots.txt, sitemap.xml and ${keys.length} OG images for ${SITE_URL}`);
+console.log(`seo: ${keys.length} OG images for ${SITE_URL}`);

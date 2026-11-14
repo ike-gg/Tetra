@@ -4,5 +4,5 @@ import { NOINDEX_META } from "@/lib/seo";
 
 // The editor and its engines load with the lazy half of the route
 export const Route = createFileRoute("/panel/editor/$key")({
-  head: () => ({ meta: [{ title: "Editor · Panel · Tetra" }, NOINDEX_META] }),
+  head: () => ({ meta: [{ title: "Editor · tetra" }, NOINDEX_META] }),
 });

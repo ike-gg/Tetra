@@ -9,7 +9,7 @@ import { NOINDEX_META } from "@/lib/seo";
 import { tasksQueryOptions } from "@/lib/tasks";
 
 export const Route = createFileRoute("/panel/tasks/")({
-  head: () => ({ meta: [{ title: "Tasks · Panel · Tetra" }, NOINDEX_META] }),
+  head: () => ({ meta: [{ title: "Tasks · tetra" }, NOINDEX_META] }),
   component: PanelTasks,
 });
 

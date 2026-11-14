@@ -3,7 +3,7 @@ export const SITE_URL: string = (
   import.meta.env.VITE_SITE_URL || "https://tetra.lol"
 ).replace(/\/+$/, "");
 
-export const SITE_NAME = "Tetra";
+export const SITE_NAME = "tetra";
 
 type SeoPage = {
   path: string;
@@ -17,34 +17,34 @@ type SeoPage = {
 export const SEO_PAGES = {
   home: {
     path: "/",
-    title: "Tetra · Add any emote to Discord",
+    title: "tetra",
     description:
       "Add emotes from 7TV, BTTV, FFZ or any link to your Discord server. Tetra shrinks them to fit Discord's limits.",
     og: { eyebrow: "discord bot", heading: "Add any emote.", accent: "That's it." },
   },
   editor: {
     path: "/editor",
-    title: "Image/GIF quick editor · Tetra",
+    title: "Editor · tetra",
     description:
       "Crop, trim, resize and compress GIFs and images in your browser. Made for Discord's 256 KB emote limit, works for anything.",
     og: { eyebrow: "editor", heading: "Make any GIF", accent: "fit." },
   },
   branding: {
     path: "/branding",
-    title: "Branding · Tetra",
+    title: "Branding · tetra",
     description:
       "How Tetra looks and talks: colors, type, square shapes, ASCII accents, motion, voice and every UI component.",
     og: { eyebrow: "branding", heading: "Square, dark and", accent: "orange." },
   },
   logo: {
     path: "/logo",
-    title: "Logo · Tetra",
+    title: "Logo · tetra",
     description: "The Tetra mark: a plain square that emotes fall into, one by one.",
     og: { eyebrow: "logo", heading: "A square full of", accent: "emotes." },
   },
   panel: {
     path: "/panel",
-    title: "Panel · Tetra",
+    title: "Panel · tetra",
     description:
       "Manage your servers' emotes in the browser: add them from 7TV and FFZ, restore removed ones, fix the ones that didn't fit.",
     og: { eyebrow: "panel", heading: "Your emotes,", accent: "one panel." },

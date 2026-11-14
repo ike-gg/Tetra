@@ -48,7 +48,7 @@ const POPULAR_TITLES: Record<SearchProvider, string> = {
 };
 
 export const Route = createFileRoute("/panel/browse")({
-  head: () => ({ meta: [{ title: "Browse · Panel · Tetra" }, NOINDEX_META] }),
+  head: () => ({ meta: [{ title: "Browse · tetra" }, NOINDEX_META] }),
   // 7TV is the default, so it stays out of the URL
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
     provider:
@@ -164,8 +164,7 @@ function PanelBrowse() {
             </Button>
           }
         >
-          Something's off on their side; we're on it. Paste a BTTV link into Quick add
-          instead.
+          Something's off on their side; Use 7TV or FFZ instead for now.
         </Notice>
       )}
     </div>
