@@ -1,14 +1,11 @@
 import { z } from "zod";
 
 import { redisClient } from "@/redis";
+import { boundedRedisCall } from "@/redis/bounded-call";
 
 import { discordOauth } from ".";
 
-import { CoreConsole } from "#/loggers";
-
 const CACHE_TTL_SECONDS = 60;
-// Past this, Redis counts as down for this request and Discord is asked directly
-const REDIS_TIMEOUT_MS = 250;
 
 const userGuildSchema = z.object({
   id: z.string(),
@@ -23,27 +20,8 @@ export type UserGuild = z.infer<typeof userGuildSchema>;
 
 const cacheKey = (discordUserId: string) => `oauth-user-guilds:${discordUserId}`;
 
-const withTimeout = <T>(promise: Promise<T>) =>
-  Promise.race([
-    promise,
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("Redis timeout")), REDIS_TIMEOUT_MS).unref()
-    ),
-  ]);
-
-// ioredis queues commands while disconnected, so a down Redis would otherwise stall
-const redisCall = async <T>(run: () => Promise<T>): Promise<T | null> => {
-  if (redisClient.status !== "ready") return null;
-  try {
-    return await withTimeout(run());
-  } catch (error) {
-    CoreConsole.dev.warn(
-      "User guilds cache unavailable:",
-      error instanceof Error ? error.message : error
-    );
-    return null;
-  }
-};
+const redisCall = <T>(run: () => Promise<T>) =>
+  boundedRedisCall("User guilds cache", run);
 
 const readCache = async (discordUserId: string) => {
   const raw = await redisCall(() => redisClient.get(cacheKey(discordUserId)));

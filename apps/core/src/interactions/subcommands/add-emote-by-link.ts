@@ -6,13 +6,10 @@ import stvGetEmoteById from "@/emotes/source/7tv/stv-get-emote-by-id";
 import bttvGetEmoteById from "@/emotes/source/bttv/bttv-get-emote-by-id";
 import ffzGetEmoteById from "@/emotes/source/ffz/ffz-get-emote-by-id";
 import getEmoteFromUrl from "@/emotes/source/file/get-emote-from-url";
+import { parseEmoteLink } from "@/emotes/source/parse-emote-link";
 import type { Emote } from "@/types";
 import isValidURL from "@/utils/is-valid-url";
 import type { FeedbackManager } from "@/utils/managers/feedback-manager";
-
-/** Matches `cdn.7tv.app` for `7tv.app`, but not `my7tvfan.com`. */
-const isDomain = (hostname: string, roots: string[]) =>
-  roots.some((root) => hostname === root || hostname.endsWith(`.${root}`));
 
 export const addEmoteLink = async (
   interaction: ChatInputCommandInteraction,
@@ -28,7 +25,6 @@ export const addEmoteLink = async (
   let emote: Emote | null = null;
 
   const emoteURL = new URL(emoteUrl);
-  const domain = emoteURL.hostname.toLowerCase();
 
   const cantFindReference = new EmbeddedError({
     title: "Cant find reference",
@@ -37,29 +33,19 @@ export const addEmoteLink = async (
   });
 
   try {
-    if (isDomain(domain, ["7tv.app", "7tv.io"])) {
-      const match = emoteUrl.match(/\/([a-zA-Z0-9]{24,30})(?:[^\w]|$)/);
-      const emoteId = match?.[1] ?? null;
+    const link = parseEmoteLink(emoteURL);
 
-      if (!emoteId) throw cantFindReference;
+    // Discord emojis and Twitch emotes are plain image links for the bot
+    if (
+      link?.provider === "7tv" ||
+      link?.provider === "ffz" ||
+      link?.provider === "bttv"
+    ) {
+      if (!link.id) throw cantFindReference;
 
-      emote = await stvGetEmoteById(emoteId);
-    } else if (isDomain(domain, ["frankerfacez.com"])) {
-      const emoteId = emoteUrl
-        .split("/")
-        .map((path) => parseInt(path, 10))
-        .filter((num) => !Number.isNaN(num))
-        .sort((a, b) => b - a)[0];
-
-      if (!emoteId) throw cantFindReference;
-
-      emote = await ffzGetEmoteById(String(emoteId));
-    } else if (isDomain(domain, ["betterttv.com", "betterttv.net"])) {
-      const emoteId = emoteUrl.split("/").find((path) => path.length === 24);
-
-      if (!emoteId) throw cantFindReference;
-
-      emote = await bttvGetEmoteById(emoteId);
+      if (link.provider === "7tv") emote = await stvGetEmoteById(link.id);
+      else if (link.provider === "ffz") emote = await ffzGetEmoteById(link.id);
+      else emote = await bttvGetEmoteById(link.id);
     } else {
       emote = await getEmoteFromUrl(emoteUrl);
     }
