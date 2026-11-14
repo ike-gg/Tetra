@@ -2,13 +2,13 @@
 
 The Discord bot and the REST API for the panel (`apps/core`). Paths in this document are relative to `apps/core`; commands are run from the repo root.
 
-**Stack:** Bun (runtime, `bun run`, `Bun.spawn`), TypeScript (strict), discord.js 14 with sharding, Express 5 (API), Drizzle + PostgreSQL, Redis (ioredis), sharp + gifsicle (images), ffmpeg + Cobalt (`/media`), Zod (validation everywhere).
+**Stack:** Bun (runtime, `bun run`, `Bun.spawn`), TypeScript (strict), discord.js 14 with sharding, Hono (API, served by `Bun.serve`), Drizzle + PostgreSQL, Redis (ioredis), sharp + gifsicle (images), ffmpeg + Cobalt (`/media`), Zod (validation everywhere).
 
 ## Architecture
 
 Two kinds of processes:
 
-- **Manager process** (`src/index.ts`): startup only (temp cleanup in production, continuity cleanup, the **Express API** when `API_ENABLED`, shard spawn and shutdown hooks). It exports nothing. `shardingManager` and `discordOauth` live in `src/lib/sharding-manager` and `src/lib/discord-oauth`; the API imports them from there.
+- **Manager process** (`src/index.ts`): startup only (temp cleanup in production, continuity cleanup, the **Hono API** when `API_ENABLED`, shard spawn and shutdown hooks). It exports nothing. `shardingManager` and `discordOauth` live in `src/lib/sharding-manager` and `src/lib/discord-oauth`; the API imports them from there.
 - **Shard processes** (`src/bot.ts`): discord.js client, events, interactions. Exports `internalClient`. Spawned by `ShardingManager` as child processes (mode `process`, `respawn: true`).
 
 ⚠️ Never import `@/bot` from API code (manager process): importing it creates a client and **logs in with the bot token**. To talk to Discord from the API use `discordRestApi` (`src/lib/discord-rest-api`) or `shardingManager.broadcastEval`. The same applies to tests and tools: loading interaction modules can pull in `@/bot` (some button handlers import it), so stub `@/bot` in such tests.
@@ -34,7 +34,7 @@ Two kinds of processes:
 | `src/lib/discord-oauth`, `src/lib/sharding-manager`, `src/lib/shards` | Manager-side singletons and shard lifecycle helpers. |
 | `src/services/` | `ProcessingEmoteService` (state of the emote being added), `EmoteStorageService` (search results, pagination). |
 | `src/components/` | Functions returning `BaseMessageOptions` (embeds + buttons). |
-| `src/api/` | REST API for the panel: `routes/{auth,me,guilds,tasks}`, `middleware/` (auth, rate limit), session cleanup. |
+| `src/api/` | REST API for the panel, see [API](#api). |
 | `src/db/schemas/` | Drizzle schema (no migrations in the repo, `db:push` is used). |
 | `src/helpers/` | Loggers (`#/loggers`), temp files, interaction loader. |
 | `src/utils/` | Misc helpers; `managers/feedback-manager.ts` = replies to the user. |
@@ -54,11 +54,18 @@ Two kinds of processes:
 
 ## API
 
-- Base path `/api`. Error format everywhere: `{ error: string, reference?: string }` (`reference` = machine code or a hex trace id for 500s). Unexpected errors and body-parser errors go through the same handler (`apiErrorHandler`).
-- **Auth**: Discord OAuth with a random `state` stored in the session cookie. Cookie `tetra-session` (cookie-session): `httpOnly`, `sameSite: lax`, `secure` in production, unsigned on purpose (it only holds a random 256-bit token checked against the DB), optional `COOKIE_DOMAIN`. `sameSite: lax` requires the panel and the API to be on the same site (same registrable domain; any port on localhost).
+Hono on `Bun.serve` (`src/api/index.ts`), the app is built in `src/api/app.ts`. The web app imports its type (`AppType`) for a typed client, see [web.md](web.md#talking-to-the-api).
+
+- Base path `/api`. Error format everywhere: `{ error: string, reference?: string }` (`reference` = machine code or a hex trace id for 500s), type `ApiErrorBody`. Every error goes through `app.onError` (`src/api/error-handler.ts`); unknown routes answer `404 NOT_FOUND` in the same format.
+- **Writing a route**: one file per handler (`<resource>.<action>.ts`) exporting `authFactory.createHandlers(requireAuth, validate(...), handler)` (or `userFactory` + `requireUser`, or `appFactory` for public routes), mounted in the resource router with `.get(path, ...handlers)`. Routers are **chained** (`new Hono().get(...).post(...)`): the chain is what carries the types to the client. Return `c.json(data, status)` with an explicit status. Errors are thrown as `TetraAPIError`, never returned, so they don't appear in the client types.
+- **Middleware per route**, not per router: `requireAuth` (session + decrypted Discord `accessToken`) or `requireUser` (also fetches the Discord profile into `user`, one more Discord request, so only where `user` is needed).
+- **Validation**: `validate(target, zodSchema)` (`src/api/validate.ts`) answers bad input with `400 INVALID_REQUEST_SCHEMA`; read the result with `c.req.valid(target)`.
+- **Guild access**: `getManageableGuild(guildId, accessToken)` (`routes/guilds/guilds.shared.ts`) loads the guild through the bot and checks that the user is in it with `ManageGuildExpressions`; use it in every write endpoint.
+- **Auth**: Discord OAuth with a random `state` stored in the session cookie. Cookie `tetra-session` (`src/api/middleware/session.ts`): `httpOnly`, `sameSite: lax`, `secure` in production, unsigned on purpose (it only holds a random 256-bit token checked against the DB), optional `COOKIE_DOMAIN`. Its value is base64 JSON, the format of the `cookie-session` package the Express API used, so old cookies stay valid. `sameSite: lax` requires the panel and the API to be on the same site (same registrable domain; any port on localhost). A cookie without `session_token` (e.g. only a pending OAuth state) answers `401 NO_SESSION` and is kept.
 - **Sessions**: 30 days sliding. `sessions.last_used_at` is updated at most once per hour per session, which also re-sends the cookie; idle > 30 days → `401 SESSION_EXPIRED`. Expired rows are deleted hourly by the manager.
-- **Rate limiting** (in-memory, per IP): ~120 req/min for `/api`, ~10/min for `/api/auth`; `429 RATE_LIMITED` with `Retry-After`. Relies on `trust proxy = 1` in production (exactly one proxy hop); with more hops all clients share one IP.
+- **Rate limiting** (in-memory, per IP): ~120 req/min for `/api`, ~10/min for `/api/auth`; `429 RATE_LIMITED` with `Retry-After`. In production the client IP is the **last** `X-Forwarded-For` entry (exactly one proxy hop, the one Coolify adds; earlier entries are client-controlled), otherwise the socket address. With more proxy hops all clients would share one IP. Responses carry `RateLimit-Limit/Remaining/Reset`.
 - **CORS**: origins from `CORS_ORIGINS` (comma-separated), default = `FRONTEND_URL` origin.
+- **Bun.serve `idleTimeout`** is 120 s: Bun's default (10 s) closes the connection while an emote is optimized in-process.
 - **JSON body limit**: 2 MB (editor submits emotes as base64 data URLs; other payloads too). Don't lower it.
 - **Discord tokens** (`users.access_token`, `refresh_token`) are encrypted with AES-256-GCM (`v1:<iv>:<tag>:<ciphertext>`) using `TOKEN_ENCRYPTION_KEY`. Values without `v1:` are legacy plaintext and get re-encrypted on the next write. Losing or changing the key logs everyone out.
 - Guild access checks: the user must be in the guild (OAuth guild list) and have `ManageGuildExpressions` for write endpoints.
@@ -121,6 +128,8 @@ Run inside `apps/core`, or from the root with `bun --filter @tetra/core <script>
 - `deploy:dev` – register commands on `DEV_GUILDS`; `deployCommands` – globally
 - `db:push` / `db:studio` – Drizzle (also available from the root)
 - `typecheck` – `tsc --noEmit`
+
+`tsconfig.api-types.json` emits declarations to `dist/types` (gitignored) for the web app's project reference; nothing else uses it.
 
 ## Docker
 

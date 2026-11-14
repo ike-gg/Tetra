@@ -10,5 +10,10 @@
     "paths": {
       "@/*": ["./src/*"]
     }
-  }
+  },
+  "references": [
+    {
+      "path": "../core/tsconfig.api-types.json"
+    }
+  ]
 }

@@ -1,6 +1,5 @@
 import { eq } from "drizzle-orm";
-import type { NextFunction, Request, Response } from "express";
-import { z } from "zod";
+import { createMiddleware } from "hono/factory";
 
 import { isProduction } from "@/env";
 import { decryptToken, encryptToken } from "@/lib/crypto/token-crypto";
@@ -8,6 +7,7 @@ import { discordOauth } from "@/lib/discord-oauth";
 
 import { db } from "../../db";
 import { sessions, users } from "../../db/schema";
+import type { AuthEnv, UserEnv } from "../api-env";
 import {
   API_CONSTANTS,
   SESSION_MAX_IDLE,
@@ -15,137 +15,130 @@ import {
 } from "../constants/api-constants";
 import { sessionSchema } from "../routes/auth/auth-router";
 import { TetraAPIError } from "../tetra-api-error";
+import type { CookieSession } from "./session";
 
 import { ApiConsole } from "#/loggers";
 
-interface CheckAuthOptions {
-  fetchUserData?: boolean;
-}
+const authenticate = async (session: CookieSession) => {
+  // A cookie without a token (none at all, or only a pending OAuth state) is not logged in
+  if (!("session_token" in session.data)) {
+    throw new TetraAPIError(401, "Unauthorized", "NO_SESSION");
+  }
 
-const defaultCheckAuthOptions: Required<CheckAuthOptions> = {
-  fetchUserData: false,
-};
+  const parsed = sessionSchema.safeParse(session.data);
 
-export const checkUserAuth = (options: CheckAuthOptions = {}) => {
-  return async (req: Request, _res: Response, next: NextFunction) => {
-    const { fetchUserData } = { ...defaultCheckAuthOptions, ...options };
+  if (!parsed.success) {
+    ApiConsole.dev.error("Invalid session schema:", parsed.error);
+    if (isProduction) session.clear();
+    throw new TetraAPIError(401, "Unauthorized", "INVALID_SESSION_SCHEMA");
+  }
 
+  const currentSession = await db.query.sessions.findFirst({
+    where: eq(sessions.session_token, parsed.data.session_token),
+  });
+
+  if (!currentSession) {
+    session.clear();
+    throw new TetraAPIError(401, "Unauthorized", "INVALID_SESSION");
+  }
+
+  const idleMs = Date.now() - currentSession.last_used_at.getTime();
+
+  if (idleMs > SESSION_MAX_IDLE) {
+    await db.delete(sessions).where(eq(sessions.id, currentSession.id));
+    session.clear();
+    throw new TetraAPIError(401, "Session expired", "SESSION_EXPIRED");
+  }
+
+  // Sliding expiry: a write at most once per interval instead of one per request
+  if (idleMs > SESSION_TOUCH_INTERVAL) {
+    await db
+      .update(sessions)
+      .set({ last_used_at: new Date() })
+      .where(eq(sessions.id, currentSession.id));
+
+    session.touch();
+  }
+
+  let currentUser = await db.query.users.findFirst({
+    where: eq(users.id, currentSession.user_id),
+  });
+
+  if (!currentUser) {
+    session.clear();
+    await db.delete(sessions).where(eq(sessions.id, currentSession.id));
+    throw new TetraAPIError(401, "Unauthorized", "USER_NOT_FOUND");
+  }
+
+  if (currentUser.token_expires_at < new Date()) {
     try {
-      if (!req.session) {
-        return next(new TetraAPIError(401, "Unauthorized", "NO_SESSION"));
-      }
-
-      const { session_token } = sessionSchema.parse(req.session);
-
-      const currentSession = await db.query.sessions.findFirst({
-        where: eq(sessions.session_token, session_token),
-      });
-
-      if (!currentSession) {
-        req.session = undefined;
-        return next(new TetraAPIError(401, "Unauthorized", "INVALID_SESSION"));
-      }
-
-      const idleMs = Date.now() - currentSession.last_used_at.getTime();
-
-      if (idleMs > SESSION_MAX_IDLE) {
-        await db.delete(sessions).where(eq(sessions.id, currentSession.id));
-        req.session = null;
-        return next(new TetraAPIError(401, "Session expired", "SESSION_EXPIRED"));
-      }
-
-      // Sliding expiry: a write at most once per interval instead of one per request
-      if (idleMs > SESSION_TOUCH_INTERVAL) {
-        await db
-          .update(sessions)
-          .set({ last_used_at: new Date() })
-          .where(eq(sessions.id, currentSession.id));
-
-        // cookie-session only re-sends the cookie (with a new expiry) when its content changes
-        if (req.session) req.session.refreshed_at = Date.now();
-      }
-
-      let currentUser = await db.query.users.findFirst({
-        where: eq(users.id, currentSession.user_id),
-      });
-
-      if (!currentUser) {
-        req.session = undefined;
-        await db.delete(sessions).where(eq(sessions.id, currentSession.id));
-        return next(new TetraAPIError(401, "Unauthorized", "USER_NOT_FOUND"));
-      }
-
-      if (currentUser.token_expires_at < new Date()) {
-        try {
-          ApiConsole.dev.info(
-            "User token expired, refreshing token for:",
-            currentUser.discord_id
-          );
-
-          const token = await discordOauth.tokenRequest({
-            grantType: "refresh_token",
-            scope: API_CONSTANTS.DISCORD_SCOPES,
-            refreshToken: decryptToken(currentUser.refresh_token),
-          });
-
-          const [newUser] = await db
-            .update(users)
-            .set({
-              access_token: encryptToken(token.access_token),
-              refresh_token: encryptToken(token.refresh_token),
-              token_expires_at: new Date(Date.now() + token.expires_in * 1000),
-            })
-            .where(eq(users.id, currentUser.id))
-            .returning();
-
-          currentUser = newUser;
-        } catch (error) {
-          req.session = undefined;
-          ApiConsole.dev.error("Failed to refresh token:", error);
-          return next(new TetraAPIError(401, "Unauthorized", "TOKEN_REFRESH_FAILED"));
-        }
-      }
-
-      let accessToken: string;
-
-      try {
-        accessToken = decryptToken(currentUser.access_token);
-      } catch {
-        // Stored with another key or damaged: the user has to log in again
-        req.session = null;
-        ApiConsole.error("Failed to decrypt the stored access token.");
-        return next(new TetraAPIError(401, "Unauthorized", "INVALID_ACCESS_TOKEN"));
-      }
-
-      req.accessToken = accessToken;
-
-      if (fetchUserData) {
-        try {
-          const userProfile = await discordOauth.getUser(accessToken);
-          req.user = userProfile;
-        } catch (error) {
-          req.session = undefined;
-          ApiConsole.dev.error("Failed to fetch user profile:", error);
-          return next(new TetraAPIError(401, "Unauthorized", "INVALID_ACCESS_TOKEN"));
-        }
-      }
-
-      next();
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        ApiConsole.dev.error("Invalid session schema:", error);
-        if (isProduction) req.session = undefined;
-        return next(new TetraAPIError(401, "Unauthorized", "INVALID_SESSION_SCHEMA"));
-      }
-
-      if (error instanceof TetraAPIError) {
-        return next(error);
-      }
-
-      ApiConsole.error("Unexpected error in auth middleware:", error);
-      return next(
-        new TetraAPIError(500, "Internal Server Error", "AUTH_MIDDLEWARE_ERROR")
+      ApiConsole.dev.info(
+        "User token expired, refreshing token for:",
+        currentUser.discord_id
       );
+
+      const token = await discordOauth.tokenRequest({
+        grantType: "refresh_token",
+        scope: API_CONSTANTS.DISCORD_SCOPES,
+        refreshToken: decryptToken(currentUser.refresh_token),
+      });
+
+      const [newUser] = await db
+        .update(users)
+        .set({
+          access_token: encryptToken(token.access_token),
+          refresh_token: encryptToken(token.refresh_token),
+          token_expires_at: new Date(Date.now() + token.expires_in * 1000),
+        })
+        .where(eq(users.id, currentUser.id))
+        .returning();
+
+      currentUser = newUser;
+    } catch (error) {
+      session.clear();
+      ApiConsole.dev.error("Failed to refresh token:", error);
+      throw new TetraAPIError(401, "Unauthorized", "TOKEN_REFRESH_FAILED");
     }
-  };
+  }
+
+  try {
+    return decryptToken(currentUser.access_token);
+  } catch {
+    // Stored with another key or damaged: the user has to log in again
+    session.clear();
+    ApiConsole.error("Failed to decrypt the stored access token.");
+    throw new TetraAPIError(401, "Unauthorized", "INVALID_ACCESS_TOKEN");
+  }
 };
+
+const withAuthErrors = async <T>(run: () => Promise<T>) => {
+  try {
+    return await run();
+  } catch (error) {
+    if (error instanceof TetraAPIError) throw error;
+    ApiConsole.error("Unexpected error in auth middleware:", error);
+    throw new TetraAPIError(500, "Internal Server Error", "AUTH_MIDDLEWARE_ERROR");
+  }
+};
+
+/** Requires a valid session; sets `accessToken` (decrypted, refreshed when expired). */
+export const requireAuth = createMiddleware<AuthEnv>(async (c, next) => {
+  c.set("accessToken", await withAuthErrors(() => authenticate(c.get("session"))));
+  await next();
+});
+
+/** `requireAuth` plus the user's Discord profile in `user`. */
+export const requireUser = createMiddleware<UserEnv>(async (c, next) => {
+  const accessToken = await withAuthErrors(() => authenticate(c.get("session")));
+  c.set("accessToken", accessToken);
+
+  try {
+    c.set("user", await discordOauth.getUser(accessToken));
+  } catch (error) {
+    c.get("session").clear();
+    ApiConsole.dev.error("Failed to fetch user profile:", error);
+    throw new TetraAPIError(401, "Unauthorized", "INVALID_ACCESS_TOKEN");
+  }
+
+  await next();
+});

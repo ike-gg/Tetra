@@ -1,20 +1,58 @@
-import type { Response } from "express";
-import rateLimit from "express-rate-limit";
+import type { Context } from "hono";
+import { createMiddleware } from "hono/factory";
 
 import { TIME } from "@/constants/time";
+import { isProduction } from "@/env";
 
-const createRateLimiter = (max: number) =>
-  rateLimit({
-    windowMs: TIME.MINUTE,
-    max,
-    // Also sets `Retry-After` when the limit is hit
-    standardHeaders: true,
-    legacyHeaders: false,
-    // Same body as every other API error; goes out after CORS so the browser can read it
-    handler: (_, res: Response) => {
-      res.status(429).json({ error: "Too many requests", reference: "RATE_LIMITED" });
-    },
+import type { AppEnv } from "../api-env";
+import { TetraAPIError } from "../tetra-api-error";
+
+/**
+ * Production runs behind exactly one reverse proxy, which appends the real client
+ * address as the last `X-Forwarded-For` entry; earlier entries are client-controlled.
+ */
+export const getClientIp = (c: Context<AppEnv>) => {
+  if (isProduction) {
+    const forwarded = c.req.header("x-forwarded-for")?.split(",").at(-1)?.trim();
+    if (forwarded) return forwarded;
+  }
+
+  return c.env.server.requestIP(c.req.raw)?.address ?? "unknown";
+};
+
+/** Fixed-window, in-memory limiter keyed by client IP. */
+const createRateLimiter = (max: number, windowMs = TIME.MINUTE) => {
+  const hits = new Map<string, { count: number; resetAt: number }>();
+
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, entry] of hits) if (entry.resetAt <= now) hits.delete(key);
+  }, windowMs).unref();
+
+  return createMiddleware<AppEnv>(async (c, next) => {
+    const now = Date.now();
+    const key = getClientIp(c);
+
+    let entry = hits.get(key);
+    if (!entry || entry.resetAt <= now) {
+      entry = { count: 0, resetAt: now + windowMs };
+      hits.set(key, entry);
+    }
+    entry.count++;
+
+    const resetSeconds = Math.ceil((entry.resetAt - now) / 1000);
+    c.header("RateLimit-Limit", String(max));
+    c.header("RateLimit-Remaining", String(Math.max(max - entry.count, 0)));
+    c.header("RateLimit-Reset", String(resetSeconds));
+
+    if (entry.count > max) {
+      c.header("Retry-After", String(resetSeconds));
+      throw new TetraAPIError(429, "Too many requests", "RATE_LIMITED");
+    }
+
+    await next();
   });
+};
 
 /** About 120 requests/min per IP for the whole API. */
 export const apiRateLimiter = createRateLimiter(120);

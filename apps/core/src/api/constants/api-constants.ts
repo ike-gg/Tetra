@@ -5,6 +5,8 @@ export const API_CONSTANTS = {
   RELATIVE_REDIRECT_URI: "/api/auth/callback",
 };
 
+export const SESSION_COOKIE_NAME = "tetra-session";
+
 export const EMOTE_NAME_REGEX = /^[a-zA-Z0-9_]{2,32}$/;
 
 // A session unused for this long is deleted; every request inside the window extends it.

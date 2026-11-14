@@ -101,7 +101,16 @@ Read only when working on the area.
 
 ## Talking to the API
 
-Not wired yet. The API lives in core (`/api`, see [core.md](core.md#api)) and authenticates with the `tetra-session` cookie (`sameSite: lax`), so web and API must be on the same site; any port on localhost works in development.
+The API lives in core (`/api`, see [core.md](core.md#api)). `src/lib/api.ts` exports a typed Hono RPC client and `unwrap`:
+
+```ts
+const guild = await unwrap(api.guilds[":guildId"].$get({ param: { guildId } }));
+```
+
+- Paths, params, bodies and success responses are typed from core's route code; there are no hand-written API types. Dates arrive as strings (the types follow JSON).
+- `unwrap` returns the body of a 2xx response and throws `ApiError` (`status`, `message`, `reference` = the API's error code) otherwise. Error bodies are not in the client types, branch on `reference`.
+- Base URL: `VITE_API_URL` (default `http://localhost:3002`). Requests send the `tetra-session` cookie (`credentials: "include"`, `sameSite: lax`), so web and API must be on the same site; any port on localhost works in development.
+- **How the type gets here**: `@tetra/core` is a workspace dependency exporting `./api` (`src/api/app.ts`), imported with `import type` only, so nothing from core is bundled. Both apps use the `@/` alias for their own `src`, so the web program can't compile core's sources itself: `tsconfig.json` has a project reference to `../core/tsconfig.api-types.json`. `tsc -b` (the `typecheck` script) builds core's declarations into `apps/core/dist/types` incrementally; editors read core's sources directly, so new routes show up without a build.
 
 ## Scripts
 
@@ -110,6 +119,6 @@ Run inside `apps/web`, or from the root with `bun --filter @tetra/web <script>`.
 - `dev` – `vite dev` on port 3000
 - `build` – static build to `dist/client`
 - `preview` – serve the build
-- `typecheck` – `tsc --noEmit`
+- `typecheck` – `tsc -b` (also builds core's API declarations, see [Talking to the API](#talking-to-the-api))
 - `build:emote-atlas` – regenerate the homepage background atlas (manual, output is committed)
 - `build:logo-reel` – regenerate the logo's emote strip (manual, output is committed; `--names=a,b,c` pins the emotes)

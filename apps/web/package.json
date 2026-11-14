@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b",
     "build:emote-atlas": "bun scripts/build-emote-atlas.ts",
     "build:logo-reel": "bun scripts/build-logo-reel.ts"
   },
@@ -25,7 +25,9 @@
     "gifsicle-wasm-browser": "1.5.16",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "tailwind-merge": "^3.7.0"
+    "tailwind-merge": "^3.7.0",
+    "@tetra/core": "workspace:*",
+    "hono": "^4.13.18"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",

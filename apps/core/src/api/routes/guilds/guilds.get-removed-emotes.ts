@@ -1,83 +1,29 @@
-import { type APIGuild, PermissionsBitField } from "discord.js";
-import type OAuth from "discord-oauth2";
 import { eq } from "drizzle-orm";
-import type { NextFunction, Request, Response } from "express";
-import { z } from "zod";
-
-import { discordOauth } from "@/lib/discord-oauth";
-import { discordRestApi } from "@/lib/discord-rest-api";
 
 import { db } from "../../../db";
 import { removedEmotes } from "../../../db/schema";
-import { TetraAPIError } from "../../tetra-api-error";
+import { authFactory } from "../../api-env";
+import { requireAuth } from "../../middleware/auth";
+import { validate } from "../../validate";
+import { getManageableGuild, guildParamsSchema } from "./guilds.shared";
 
-const getGuildParams = z.object({
-  guildId: z.string(),
-});
-
-export const guildsGetRemovedEmotes = async (
-  req: Request,
-  res: Response,
-  _: NextFunction
-) => {
-  try {
-    const { guildId } = getGuildParams.parse(req.params);
-
-    const promises = [
-      discordRestApi.guilds.get(guildId),
-      discordOauth.getUserGuilds(req.accessToken!),
-    ];
-
-    const [guildPromise, guildsPromise] = await Promise.allSettled(promises);
-
-    if (guildPromise.status === "rejected") {
-      throw new TetraAPIError(
-        404,
-        "Guild not found",
-        "GUILD_NOT_FOUND_UNKNOWN_GUILD_BOT"
-      );
-    }
-
-    if (guildsPromise.status === "rejected") {
-      throw new TetraAPIError(404, "Guild not found", "OAUTH_GET_GUILDS_ERROR");
-    }
-
-    const guildMember = (guildsPromise.value as OAuth.PartialGuild[]).find(
-      (guild) => guild.id === guildId
-    );
-
-    if (!guildMember) {
-      throw new TetraAPIError(404, "Guild not found", "USER_NOT_IN_GUILD");
-    }
-
-    const guild = guildPromise.value as APIGuild;
-
-    const userPermissions = new PermissionsBitField(BigInt(guildMember.permissions!));
-
-    if (!userPermissions.has("ManageGuildExpressions")) {
-      throw new TetraAPIError(403, "Missing permissions", "MISSING_PERMISSIONS");
-    }
+export const guildsGetRemovedEmotes = authFactory.createHandlers(
+  requireAuth,
+  validate("param", guildParamsSchema),
+  async (c) => {
+    const { guildId } = c.req.valid("param");
+    const guild = await getManageableGuild(guildId, c.get("accessToken"));
 
     const removedEmotesInGuild = await db.query.removedEmotes.findMany({
       where: eq(removedEmotes.guildId, guild.id),
-      with: {
-        emote: true,
-      },
+      with: { emote: true },
     });
 
-    const emotesToRestore = removedEmotesInGuild
-      .filter((removedEmote) => removedEmote.emote)
-      .map((removedEmote) => {
-        const { emote, deletedWithPanel, id } = removedEmote;
-        return { emote, deletedWithPanel, id };
-      });
+    const emotesToRestore = removedEmotesInGuild.flatMap(
+      ({ emote, deletedWithPanel, id }) =>
+        emote ? [{ emote, deletedWithPanel, id }] : []
+    );
 
-    res.json(emotesToRestore);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");
-    } else {
-      throw error;
-    }
+    return c.json(emotesToRestore, 200);
   }
-};
+);

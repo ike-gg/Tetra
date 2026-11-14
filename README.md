@@ -28,7 +28,7 @@ Additionally Tetra offers a few other smaller but equally exciting features, suc
 ## Built with
 
 ![discordjs](https://img.shields.io/badge/discord.js-000000?style=for-the-badge&logo=discord&logoColor=FFFFFF)
-![express](https://img.shields.io/badge/express.js-000000?style=for-the-badge&logo=express&logoColor=FFFFFF)
+![hono](https://img.shields.io/badge/hono-000000?style=for-the-badge&logo=hono&logoColor=FFFFFF)
 ![nodejs](https://img.shields.io/badge/nodejs-000000?style=for-the-badge&logo=nodedotjs&logoColor=FFFFFF)
 ![typescript](https://img.shields.io/badge/typescript-000000?style=for-the-badge&logo=typescript&logoColor=FFFFFF)
 ![sharpjs](https://img.shields.io/badge/sharp-000000?style=for-the-badge&logo=sharp&logoColor=FFFFFF)

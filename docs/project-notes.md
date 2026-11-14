@@ -44,7 +44,7 @@ Shared code goes to `packages/*` once there is any (nothing yet). Package names 
 - `bun db:up` / `bun db:down` – compose Postgres + Redis
 - `bun db:push` / `bun db:studio` – Drizzle (core)
 - `bun check` – Biome lint + format + imports (`check:fix` applies fixes), `bun lint`, `bun format`
-- `bun typecheck` – `tsc --noEmit` in every app (Biome doesn't type-check; both must pass)
+- `bun typecheck` – type-checks every app (core: `tsc --noEmit`, web: `tsc -b`, which also checks the API types web uses). Biome doesn't type-check; both must pass.
 - No tests yet.
 
 App-specific scripts: `bun --filter @tetra/<app> <script>`.

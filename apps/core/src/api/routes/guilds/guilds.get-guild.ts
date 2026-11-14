@@ -1,30 +1,25 @@
-import type { APIEmoji, APIGuild } from "discord.js";
-import type { NextFunction, Request, Response } from "express";
-import { z } from "zod";
-
 import { discordRestApi } from "@/lib/discord-rest-api";
 
 import { basicGuildParsePremium } from "../../../utils/discord/guild-parse-premium";
+import { userFactory } from "../../api-env";
+import { requireUser } from "../../middleware/auth";
 import { TetraAPIError } from "../../tetra-api-error";
+import { validate } from "../../validate";
+import { guildParamsSchema } from "./guilds.shared";
 
-const getGuildQuerySchema = z.object({
-  guildId: z.string(),
-});
+export const guildsGetGuild = userFactory.createHandlers(
+  requireUser,
+  validate("param", guildParamsSchema),
+  async (c) => {
+    const { guildId } = c.req.valid("param");
 
-export const guildsGetGuild = async (req: Request, res: Response, _: NextFunction) => {
-  try {
-    const { guildId } = getGuildQuerySchema.parse(req.params);
-
-    const promises = [
+    const [guildResult, memberResult, emotesResult] = await Promise.allSettled([
       discordRestApi.guilds.get(guildId),
-      discordRestApi.guilds.getMember(guildId, req.user!.id),
+      discordRestApi.guilds.getMember(guildId, c.get("user").id),
       discordRestApi.guilds.getEmojis(guildId),
-    ];
+    ]);
 
-    const [guildPromise, memberPromise, emotesPromise] =
-      await Promise.allSettled(promises);
-
-    if (guildPromise.status === "rejected") {
+    if (guildResult.status === "rejected") {
       throw new TetraAPIError(
         404,
         "Guild not found",
@@ -32,7 +27,7 @@ export const guildsGetGuild = async (req: Request, res: Response, _: NextFunctio
       );
     }
 
-    if (memberPromise.status === "rejected") {
+    if (memberResult.status === "rejected") {
       throw new TetraAPIError(
         404,
         "Guild not found",
@@ -40,7 +35,7 @@ export const guildsGetGuild = async (req: Request, res: Response, _: NextFunctio
       );
     }
 
-    if (emotesPromise.status === "rejected") {
+    if (emotesResult.status === "rejected") {
       throw new TetraAPIError(
         404,
         "Guild not found",
@@ -48,8 +43,8 @@ export const guildsGetGuild = async (req: Request, res: Response, _: NextFunctio
       );
     }
 
-    const guild = guildPromise.value as APIGuild;
-    const emotes = emotesPromise.value as APIEmoji[];
+    const guild = guildResult.value;
+    const emotes = emotesResult.value;
 
     const { emoteLimit, level } = basicGuildParsePremium(guild);
 
@@ -71,36 +66,18 @@ export const guildsGetGuild = async (req: Request, res: Response, _: NextFunctio
       },
     };
 
+    const mappedEmotes = emotes.map(({ id, animated, name, managed, available }) => ({
+      id,
+      animated,
+      name,
+      guildId: guild.id,
+      imageURL: `https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "png"}`,
+      managed,
+      available,
+    }));
+
     const { name, banner, icon, id } = guild;
 
-    const mappedEmotes = emotes.map((e) => {
-      const { id, animated, name, managed, available } = e;
-
-      return {
-        id,
-        animated,
-        name,
-        guildId: guild.id,
-        imageURL: `https://cdn.discordapp.com/emojis/${id}.${animated ? "gif" : "png"}`,
-        managed,
-        available,
-      };
-    });
-
-    res.json({
-      name,
-      banner,
-      icon,
-      id,
-      level,
-      emotes: mappedEmotes,
-      stats,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");
-    } else {
-      throw error;
-    }
+    return c.json({ name, banner, icon, id, level, emotes: mappedEmotes, stats }, 200);
   }
-};
+);

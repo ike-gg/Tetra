@@ -1,23 +1,9 @@
-import { type NextFunction, type Request, type Response, Router } from "express";
+import { Hono } from "hono";
 
-import { checkUserAuth } from "../../middleware/auth";
+import type { AppEnv } from "../../api-env";
+import { requireAuth, requireUser } from "../../middleware/auth";
 
-export const meRouter = Router();
-const meStateRouter = Router();
-
-// for meStateRouter we use only basic auth, without fetching user data
-// the reason is we want to make it as fast as possible
-meStateRouter.use(checkUserAuth({ fetchUserData: false }));
-meStateRouter.get("/", async (_: Request, res: Response, __: NextFunction) => {
-  // if we are in this place, it means that user is authenticated, so we can just send 200
-  res.status(200).send();
-});
-
-// appending meStateRouter to meRouter
-meRouter.use("/state", meStateRouter);
-
-// for meRouter we use full auth, with fetching user data
-meRouter.use(checkUserAuth({ fetchUserData: true }));
-meRouter.get("/", async (req: Request, res: Response, _: NextFunction) => {
-  res.json(req.user);
-});
+export const meRouter = new Hono<AppEnv>()
+  // Only checks the session, without the Discord profile request, to stay fast
+  .get("/state", requireAuth, (c) => c.body(null, 200))
+  .get("/", requireUser, (c) => c.json(c.get("user"), 200));

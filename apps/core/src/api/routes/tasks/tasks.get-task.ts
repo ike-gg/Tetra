@@ -1,20 +1,16 @@
-import type { NextFunction, Request, Response } from "express";
-import { z } from "zod";
-
-import { TetraAPIError } from "../../tetra-api-error";
+import { userFactory } from "../../api-env";
+import { requireUser } from "../../middleware/auth";
+import { validate } from "../../validate";
 import { findUserTask, taskParamsSchema, toApiEditorTask } from "./tasks.shared";
 
-export const tasksGetTask = async (req: Request, res: Response, _: NextFunction) => {
-  try {
-    const { taskId } = taskParamsSchema.parse(req.params);
+export const tasksGetTask = userFactory.createHandlers(
+  requireUser,
+  validate("param", taskParamsSchema),
+  async (c) => {
+    const { taskId } = c.req.valid("param");
 
-    const task = await findUserTask(taskId, req.user!.id);
+    const task = await findUserTask(taskId, c.get("user").id);
 
-    res.json(toApiEditorTask(task));
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      throw new TetraAPIError(400, "Bad request", "INVALID_REQUEST_SCHEMA");
-    }
-    throw error;
+    return c.json(toApiEditorTask(task), 200);
   }
-};
+);
