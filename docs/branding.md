@@ -86,6 +86,7 @@ Rendered at `/logo` (`apps/web/src/routes/logo.tsx`), component `Logo` in `apps/
 - The drop starts only after the emote strip is decoded; until then the frame is empty (also in prerendered HTML).
 - **Reduced motion:** no falling, the block fades in (200 ms).
 - `animated={false}` renders the resting mark directly. It's a signature moment, not control feedback: play it once per visit (the navbar plays it once per page load: a refresh replays it, client-side navigation does not), never on hover or on every navigation. Clicking the logo replays it on purpose: a deliberate, rare action.
+- **Static mark proposals** (favicon, app icons, bot avatar, OG images, where the intro can't play): six concepts compared at `/static-logo` (`apps/web/src/routes/static-logo.tsx`, marks in `apps/web/src/components/static-logo-concepts.tsx`, inline SVG on a 16-unit grid). Not adopted yet; the favicon is unchanged.
 - **Emotes:** a hand-picked set, in falling order: OMEGALUL, monkaW, HUH, PauseChamp, MONKA, NOWAY, gaga. First frame of each, cropped to a 1:1 square (MONKA is stretched whole into the square instead). Rebuild with `bun run build:logo-reel --names=OMEGALUL,monkaW,HUH@01FFMS6Q4G0009CAK0J14692AY,PauseChamp@01F6QWHR20000EB9BSAR8G1DKZ,MONKA@01H876RPX8000918ZGPJMBHB7Z:fill,NOWAY,gaga@01H96150H00003CY09NFH3G999` (entries are `name[@id][:fill]`; without `@id` the most popular emote with that exact name). Without `--names` the script picks full-bleed squares from 7TV's all-time top instead.
 
 ## Imagery

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BrandingRouteImport } from './routes/branding'
 import { Route as LogoRouteImport } from './routes/logo'
 import { Route as PanelRouteImport } from './routes/panel'
+import { Route as StaticLogoRouteImport } from './routes/static-logo'
 import { Route as EditorIndexRouteImport } from './routes/editor.index'
 import { Route as EditorKeyRouteImport } from './routes/editor.$key'
 import { Route as PanelIndexRouteImport } from './routes/panel.index'
@@ -40,6 +41,11 @@ const PanelRoute = PanelRouteImport.update({
   path: '/panel',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/panel.lazy').then((d) => d.Route))
+const StaticLogoRoute = StaticLogoRouteImport.update({
+  id: '/static-logo',
+  path: '/static-logo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorIndexRoute = EditorIndexRouteImport.update({
   id: '/editor/',
   path: '/editor/',
@@ -78,6 +84,7 @@ export interface FileRoutesByFullPath {
   '/branding': typeof BrandingRoute
   '/logo': typeof LogoRoute
   '/panel': typeof PanelRouteWithChildren
+  '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/tasks': typeof PanelTasksRoute
   '/editor/': typeof EditorIndexRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
   '/logo': typeof LogoRoute
+  '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/tasks': typeof PanelTasksRoute
   '/editor': typeof EditorIndexRoute
@@ -102,6 +110,7 @@ export interface FileRoutesById {
   '/branding': typeof BrandingRoute
   '/logo': typeof LogoRoute
   '/panel': typeof PanelRouteWithChildren
+  '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/tasks': typeof PanelTasksRoute
   '/editor/': typeof EditorIndexRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
     | '/branding'
     | '/logo'
     | '/panel'
+    | '/static-logo'
     | '/editor/$key'
     | '/panel/tasks'
     | '/editor/'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/'
     | '/branding'
     | '/logo'
+    | '/static-logo'
     | '/editor/$key'
     | '/panel/tasks'
     | '/editor'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/branding'
     | '/logo'
     | '/panel'
+    | '/static-logo'
     | '/editor/$key'
     | '/panel/tasks'
     | '/editor/'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   BrandingRoute: typeof BrandingRoute
   LogoRoute: typeof LogoRoute
   PanelRoute: typeof PanelRouteWithChildren
+  StaticLogoRoute: typeof StaticLogoRoute
   EditorKeyRoute: typeof EditorKeyRoute
   EditorIndexRoute: typeof EditorIndexRoute
 }
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       path: '/panel'
       fullPath: '/panel'
       preLoaderRoute: typeof PanelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/static-logo': {
+      id: '/static-logo'
+      path: '/static-logo'
+      fullPath: '/static-logo'
+      preLoaderRoute: typeof StaticLogoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/editor/': {
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   BrandingRoute: BrandingRoute,
   LogoRoute: LogoRoute,
   PanelRoute: PanelRouteWithChildren,
+  StaticLogoRoute: StaticLogoRoute,
   EditorKeyRoute: EditorKeyRoute,
   EditorIndexRoute: EditorIndexRoute,
 }
