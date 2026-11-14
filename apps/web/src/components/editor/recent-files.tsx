@@ -60,7 +60,8 @@ export function RecentFiles({ host }: { host: EditorHost }) {
             <Link
               to={EDITOR_HOSTS[host].file}
               params={{ key: entry.key }}
-              className="flex min-w-0 flex-1 cursor-default select-none items-center gap-3 p-2 hover:bg-surface active:bg-neutral-800"
+              // web.css underlines every <a>
+              className="flex min-w-0 flex-1 cursor-default select-none items-center gap-3 p-2 text-foreground no-underline hover:bg-surface active:bg-neutral-800"
             >
               <span className="flex size-12 shrink-0 items-center justify-center overflow-hidden bg-checker">
                 {entry.thumbnailUrl && (
