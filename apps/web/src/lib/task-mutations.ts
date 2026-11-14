@@ -4,7 +4,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "@/components/ui/toaster";
 import { ApiError, api, unwrap } from "@/lib/api";
 import { emoteErrorMessage } from "@/lib/emote-mutations";
-import { guildQueryOptions, guildsQueryOptions } from "@/lib/guilds";
+import {
+  holdSlotCounts,
+  refreshSlotCounts,
+  shiftSlotCounts,
+  slotTypeOfPreview,
+} from "@/lib/guild-slots";
 import { type Task, tasksQueryOptions } from "@/lib/tasks";
 
 // Core takes these three only; the editor never renders JPEG for a task
@@ -58,22 +63,16 @@ export function useAddTaskEmote(task: Task, guildName: string) {
           json: { emote: await toDataUrl(blob), name },
         })
       ),
-    onSuccess: async () => {
-      // Leave first: the page observes the task, and it 404s from now on
+    onSuccess: async ({ preview }) => {
+      // Counts before leaving, so the server page opens with them. Leave before the
+      // refetches: the page observes the task, and it 404s from now on
+      await holdSlotCounts(queryClient, task.guildId);
+      shiftSlotCounts(queryClient, task.guildId, slotTypeOfPreview(preview), 1);
       await navigate({
         to: "/panel/servers/$guildId",
         params: { guildId: task.guildId },
       });
-      await Promise.all([
-        forget(),
-        queryClient.invalidateQueries({
-          queryKey: guildsQueryOptions.queryKey,
-          exact: true,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: guildQueryOptions(task.guildId).queryKey,
-        }),
-      ]);
+      await Promise.all([forget(), refreshSlotCounts(queryClient, task.guildId)]);
     },
   });
 

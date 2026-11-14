@@ -4,9 +4,16 @@ import { toast } from "@/components/ui/toaster";
 import { ApiError, api, unwrap } from "@/lib/api";
 import { type Fitting, type PanelEmote, toDiscordEmoteName } from "@/lib/emote";
 import {
+  holdSlotCounts,
+  refreshSlotCounts,
+  restoreSlotCounts,
+  shiftSlotCounts,
+  slotTypeOf,
+  slotTypeOfPreview,
+} from "@/lib/guild-slots";
+import {
   type GuildDetails,
   guildQueryOptions,
-  guildsQueryOptions,
   type ManagedGuild,
   type RemovedEmote,
   removedEmotesQueryOptions,
@@ -66,8 +73,6 @@ export const emoteErrorMessage = (error: unknown) => {
   return error.message;
 };
 
-const slotsKey = (emote: PanelEmote) => (emote.animated ? "animated" : "static");
-
 type AddVariables = { emote: PanelEmote; guild: ManagedGuild; fitting: Fitting };
 
 /** "Add to server": copies an emote to one of the user's servers, with a toast. */
@@ -82,15 +87,12 @@ export function useAddEmote() {
           json: { file: emote.url, name: toDiscordEmoteName(emote.name), fitting },
         })
       ),
-    // Slot meters and the target's emote list both change
-    onSettled: (_data, _error, { guild }) =>
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: guildsQueryOptions.queryKey,
-          exact: true,
-        }),
-        queryClient.invalidateQueries({ queryKey: guildQueryOptions(guild.id).queryKey }),
-      ]),
+    // Counts move at once; Discord may have optimized the file into the other type
+    onSuccess: async ({ preview }, { guild }) => {
+      await holdSlotCounts(queryClient, guild.id);
+      shiftSlotCounts(queryClient, guild.id, slotTypeOfPreview(preview), 1);
+    },
+    onSettled: (_data, _error, { guild }) => refreshSlotCounts(queryClient, guild.id),
   });
 
   // Resolves to whether it worked; the toast already told the user either way
@@ -125,34 +127,22 @@ export function useRemoveEmote(guildId: string) {
         })
       ),
     onMutate: async (emote) => {
-      await queryClient.cancelQueries({ queryKey: guildKey, exact: true });
-      const previous = queryClient.getQueryData<GuildDetails>(guildKey);
-      queryClient.setQueryData<GuildDetails>(guildKey, (guild) => {
-        if (!guild) return guild;
-        const slots = guild.stats[slotsKey(emote)];
-        const used = emote.managed ? slots.used : slots.used - 1;
-        return {
-          ...guild,
-          emotes: guild.emotes.filter(({ id }) => id !== emote.id),
-          stats: {
-            ...guild.stats,
-            [slotsKey(emote)]: { ...slots, used, free: Math.max(slots.limit - used, 0) },
-          },
-        };
-      });
-      return { previous };
+      const snapshot = await holdSlotCounts(queryClient, guildId);
+      queryClient.setQueryData<GuildDetails>(
+        guildKey,
+        (guild) =>
+          guild && { ...guild, emotes: guild.emotes.filter(({ id }) => id !== emote.id) }
+      );
+      // Integration emotes don't take slots
+      if (!emote.managed) {
+        shiftSlotCounts(queryClient, guildId, slotTypeOf(emote.animated), -1);
+      }
+      return snapshot;
     },
-    onError: (_error, _emote, context) => {
-      if (context?.previous) queryClient.setQueryData(guildKey, context.previous);
+    onError: (_error, _emote, snapshot) => {
+      if (snapshot) restoreSlotCounts(queryClient, guildId, snapshot);
     },
-    onSettled: () =>
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: guildsQueryOptions.queryKey,
-          exact: true,
-        }),
-        queryClient.invalidateQueries({ queryKey: guildKey }),
-      ]),
+    onSettled: () => refreshSlotCounts(queryClient, guildId),
   });
 
   return (emote: PanelEmote, guildName: string) => {
@@ -185,19 +175,14 @@ export function useRestoreEmote(guildId: string) {
           param: { guildId, restoreId: String(emote.restoreId) },
         })
       ),
-    onSuccess: (_data, emote) => {
+    onSuccess: async ({ preview }, emote) => {
       queryClient.setQueryData<RemovedEmote[]>(removedKey, (removed) =>
         removed?.filter(({ id }) => id !== emote.restoreId)
       );
+      await holdSlotCounts(queryClient, guildId);
+      shiftSlotCounts(queryClient, guildId, slotTypeOfPreview(preview), 1);
     },
-    onSettled: () =>
-      Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: guildsQueryOptions.queryKey,
-          exact: true,
-        }),
-        queryClient.invalidateQueries({ queryKey: guildQueryOptions(guildId).queryKey }),
-      ]),
+    onSettled: () => refreshSlotCounts(queryClient, guildId),
   });
 
   return (emote: PanelEmote, guildName: string) => {
