@@ -19,7 +19,7 @@ Every emote in the panel (server grid, removed list, task tiles, later browse li
 | `guildId?` | Server it's on, was removed from, or a task belongs to. |
 | `managed?`, `available?` | Discord flags: integration emotes can't be removed; unavailable = over the slot limit after a lost boost. |
 | `restoreId?` | Removed emotes: the id `POST /guilds/:guildId/restore/:restoreId` takes. |
-| `taskId?` | Task emotes: the editor task "Open in editor" opens (`/panel/editor/$taskId`). |
+| `taskId?` | Task emotes: the editor task "Open in editor" opens (`/panel/tasks/$taskId`). |
 | `pageUrl?` | Catalog emotes: the emote's page on 7TV / BTTV / FFZ; "Open original" prefers it over `url`. |
 | `width?`, `height?` | Pixel size when the source states it (catalog emotes). |
 
@@ -39,7 +39,7 @@ Per-emote UI state lives in `EmoteMenu`, keyed by `emote.key`, so it survives ti
 
 | Action | Shown | Bar |
 |---|---|---|
-| Open in editor | `task`: a `Link` to `/panel/editor/$taskId` | primary |
+| Open in editor | `task`: a `Link` to `/panel/tasks/$taskId` | primary |
 | Restore to *server* | `removed`, with `canManage` | primary ("Restore") |
 | Add to *server* | `catalog` with a `guild`: that server (disabled with "static full" / "animated full") | primary |
 | Add to server › / ▾ | not on `task`. The user's manageable servers (sorted by name) with free slots of the emote's type; a full server stays listed but disabled; the emote's own server is marked "here". Sends `{ file: url, name, fitting }` with `useAddEmote`. A submenu in menus, a dropdown in the bar. | primary on `server` and on a `catalog` without a preferred server, else a button |

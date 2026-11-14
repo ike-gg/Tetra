@@ -113,7 +113,7 @@ export function useEmoteActions(
       compactLabel: "Open",
       placement: "primary",
       section: "main",
-      render: <Link to="/panel/editor/$taskId" params={{ taskId: emote.taskId }} />,
+      render: <Link to="/panel/tasks/$taskId" params={{ taskId: emote.taskId }} />,
     });
   }
 

@@ -18,9 +18,9 @@ import { Route as EditorIndexRouteImport } from './routes/editor.index'
 import { Route as EditorKeyRouteImport } from './routes/editor.$key'
 import { Route as PanelIndexRouteImport } from './routes/panel.index'
 import { Route as PanelBrowseRouteImport } from './routes/panel.browse'
-import { Route as PanelTasksRouteImport } from './routes/panel.tasks'
-import { Route as PanelEditorTaskIdRouteImport } from './routes/panel.editor.$taskId'
 import { Route as PanelServersGuildIdRouteImport } from './routes/panel.servers.$guildId'
+import { Route as PanelTasksIndexRouteImport } from './routes/panel.tasks.index'
+import { Route as PanelTasksTaskIdRouteImport } from './routes/panel.tasks.$taskId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,23 +67,23 @@ const PanelBrowseRoute = PanelBrowseRouteImport.update({
   path: '/browse',
   getParentRoute: () => PanelRoute,
 } as any)
-const PanelTasksRoute = PanelTasksRouteImport.update({
-  id: '/tasks',
-  path: '/tasks',
-  getParentRoute: () => PanelRoute,
-} as any)
-const PanelEditorTaskIdRoute = PanelEditorTaskIdRouteImport.update({
-  id: '/editor/$taskId',
-  path: '/editor/$taskId',
-  getParentRoute: () => PanelRoute,
-} as any).lazy(() =>
-  import('./routes/panel.editor.$taskId.lazy').then((d) => d.Route),
-)
 const PanelServersGuildIdRoute = PanelServersGuildIdRouteImport.update({
   id: '/servers/$guildId',
   path: '/servers/$guildId',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelTasksIndexRoute = PanelTasksIndexRouteImport.update({
+  id: '/tasks/',
+  path: '/tasks/',
+  getParentRoute: () => PanelRoute,
+} as any)
+const PanelTasksTaskIdRoute = PanelTasksTaskIdRouteImport.update({
+  id: '/tasks/$taskId',
+  path: '/tasks/$taskId',
+  getParentRoute: () => PanelRoute,
+} as any).lazy(() =>
+  import('./routes/panel.tasks.$taskId.lazy').then((d) => d.Route),
+)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,11 +93,11 @@ export interface FileRoutesByFullPath {
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
-  '/panel/tasks': typeof PanelTasksRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
-  '/panel/editor/$taskId': typeof PanelEditorTaskIdRoute
   '/panel/servers/$guildId': typeof PanelServersGuildIdRoute
+  '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
+  '/panel/tasks/': typeof PanelTasksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -106,11 +106,11 @@ export interface FileRoutesByTo {
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
-  '/panel/tasks': typeof PanelTasksRoute
   '/editor': typeof EditorIndexRoute
   '/panel': typeof PanelIndexRoute
-  '/panel/editor/$taskId': typeof PanelEditorTaskIdRoute
   '/panel/servers/$guildId': typeof PanelServersGuildIdRoute
+  '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
+  '/panel/tasks': typeof PanelTasksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -121,11 +121,11 @@ export interface FileRoutesById {
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
-  '/panel/tasks': typeof PanelTasksRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
-  '/panel/editor/$taskId': typeof PanelEditorTaskIdRoute
   '/panel/servers/$guildId': typeof PanelServersGuildIdRoute
+  '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
+  '/panel/tasks/': typeof PanelTasksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,11 +137,11 @@ export interface FileRouteTypes {
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
-    | '/panel/tasks'
     | '/editor/'
     | '/panel/'
-    | '/panel/editor/$taskId'
     | '/panel/servers/$guildId'
+    | '/panel/tasks/$taskId'
+    | '/panel/tasks/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,11 +150,11 @@ export interface FileRouteTypes {
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
-    | '/panel/tasks'
     | '/editor'
     | '/panel'
-    | '/panel/editor/$taskId'
     | '/panel/servers/$guildId'
+    | '/panel/tasks/$taskId'
+    | '/panel/tasks'
   id:
     | '__root__'
     | '/'
@@ -164,11 +164,11 @@ export interface FileRouteTypes {
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
-    | '/panel/tasks'
     | '/editor/'
     | '/panel/'
-    | '/panel/editor/$taskId'
     | '/panel/servers/$guildId'
+    | '/panel/tasks/$taskId'
+    | '/panel/tasks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -246,20 +246,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelBrowseRouteImport
       parentRoute: typeof PanelRoute
     }
-    '/panel/tasks': {
-      id: '/panel/tasks'
-      path: '/tasks'
-      fullPath: '/panel/tasks'
-      preLoaderRoute: typeof PanelTasksRouteImport
-      parentRoute: typeof PanelRoute
-    }
-    '/panel/editor/$taskId': {
-      id: '/panel/editor/$taskId'
-      path: '/editor/$taskId'
-      fullPath: '/panel/editor/$taskId'
-      preLoaderRoute: typeof PanelEditorTaskIdRouteImport
-      parentRoute: typeof PanelRoute
-    }
     '/panel/servers/$guildId': {
       id: '/panel/servers/$guildId'
       path: '/servers/$guildId'
@@ -267,23 +253,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelServersGuildIdRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/panel/tasks/': {
+      id: '/panel/tasks/'
+      path: '/tasks'
+      fullPath: '/panel/tasks/'
+      preLoaderRoute: typeof PanelTasksIndexRouteImport
+      parentRoute: typeof PanelRoute
+    }
+    '/panel/tasks/$taskId': {
+      id: '/panel/tasks/$taskId'
+      path: '/tasks/$taskId'
+      fullPath: '/panel/tasks/$taskId'
+      preLoaderRoute: typeof PanelTasksTaskIdRouteImport
+      parentRoute: typeof PanelRoute
+    }
   }
 }
 
 interface PanelRouteChildren {
   PanelBrowseRoute: typeof PanelBrowseRoute
-  PanelTasksRoute: typeof PanelTasksRoute
   PanelIndexRoute: typeof PanelIndexRoute
-  PanelEditorTaskIdRoute: typeof PanelEditorTaskIdRoute
   PanelServersGuildIdRoute: typeof PanelServersGuildIdRoute
+  PanelTasksTaskIdRoute: typeof PanelTasksTaskIdRoute
+  PanelTasksIndexRoute: typeof PanelTasksIndexRoute
 }
 
 const PanelRouteChildren: PanelRouteChildren = {
   PanelBrowseRoute: PanelBrowseRoute,
-  PanelTasksRoute: PanelTasksRoute,
   PanelIndexRoute: PanelIndexRoute,
-  PanelEditorTaskIdRoute: PanelEditorTaskIdRoute,
   PanelServersGuildIdRoute: PanelServersGuildIdRoute,
+  PanelTasksTaskIdRoute: PanelTasksTaskIdRoute,
+  PanelTasksIndexRoute: PanelTasksIndexRoute,
 }
 
 const PanelRouteWithChildren = PanelRoute._addFileChildren(PanelRouteChildren)

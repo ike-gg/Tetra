@@ -30,7 +30,7 @@ export type PanelEmote = {
   available?: boolean;
   /** Set on removed emotes: the id `POST /guilds/:guildId/restore/:restoreId` takes. */
   restoreId?: number;
-  /** Set on task emotes: the editor task the panel editor opens (`/panel/editor/$taskId`). */
+  /** Set on task emotes: the editor task the panel editor opens (`/panel/tasks/$taskId`). */
   taskId?: string;
   /** The emote's page at its source (7TV, BTTV, FFZ); "Open original" prefers it. */
   pageUrl?: string;

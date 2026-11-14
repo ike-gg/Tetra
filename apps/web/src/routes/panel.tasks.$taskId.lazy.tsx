@@ -21,7 +21,7 @@ import { loadMediaFile, type MediaFile, releaseMediaFile } from "@/lib/media/med
 import { useAddTaskEmote } from "@/lib/task-mutations";
 import { type Task, taskFileQueryOptions, taskQueryOptions } from "@/lib/tasks";
 
-export const Route = createLazyFileRoute("/panel/editor/$taskId")({
+export const Route = createLazyFileRoute("/panel/tasks/$taskId")({
   component: PanelTaskEditor,
 });
 

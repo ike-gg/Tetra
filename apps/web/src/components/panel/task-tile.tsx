@@ -42,7 +42,7 @@ export function TaskTile({ task, guildName }: TaskTileProps) {
       <Button
         size="sm"
         className="shrink-0"
-        render={<Link to="/panel/editor/$taskId" params={{ taskId: task.id }} />}
+        render={<Link to="/panel/tasks/$taskId" params={{ taskId: task.id }} />}
       >
         Fix in editor<span className="sr-only"> {emote.name}</span>
       </Button>

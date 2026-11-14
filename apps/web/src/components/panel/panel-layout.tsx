@@ -34,12 +34,12 @@ type CurrentView = {
 function useCurrentView(): CurrentView {
   const matchRoute = useMatchRoute();
   const guilds = useQuery(guildsQueryOptions);
-  const editor = matchRoute({ to: "/panel/editor/$taskId" });
-  const taskId = editor ? editor.taskId : "";
+  const taskEditor = matchRoute({ to: "/panel/tasks/$taskId" });
+  const taskId = taskEditor ? taskEditor.taskId : "";
   // Shares the editor page's query, so it costs no extra request
-  const task = useQuery({ ...taskQueryOptions(taskId), enabled: Boolean(editor) });
+  const task = useQuery({ ...taskQueryOptions(taskId), enabled: Boolean(taskEditor) });
 
-  if (editor) {
+  if (taskEditor) {
     return {
       label: task.data ? `:${task.data.emote.name}:` : "Editor",
       parent: "tasks",

@@ -8,7 +8,7 @@ One editor, three entry points:
 
 - **`/editor`** – public, no account, nothing uploaded. Prerendered start screen, content from the top (not centered): intro, drop zone (`MediaDropzone`: drop anywhere on the page, paste, or pick; GIF/PNG/JPEG/WebP, up to 20 MB; `/editor` imports `ui-sdk.css` too and the zone pins width, border style, font size, colors and the trigger margin, because web.css stays global once any editor route loaded it and used to change the zone between visits) and *recently edited* (`RecentFiles`). A chosen file is validated, saved to the local library and opened at `/editor/<key>`, so Back returns to `/editor`. Routes: `editor.index.tsx` (head) + `editor.index.lazy.tsx`.
 - **`/editor/$key`** – client-only. Loads the file and its saved settings from the library and opens the editor; the toolbar has `New file` (back to `/editor`) and `Download` (always enabled once a result exists, file named `<name>.<extension of the result>`; the size note says Discord takes up to 256 KB). An unknown key (other browser, evicted, cleared) shows "This file isn't in this browser" with a way back. Routes: `editor.$key.tsx` + `editor.$key.lazy.tsx`.
-- **`/panel/editor/$taskId`** – a bot task's emote inside the panel layout, with "Add to <server>" instead of Download. See [Panel integration](#panel-integration).
+- **`/panel/tasks/$taskId`** – a bot task's emote inside the panel layout, with "Add to <server>" instead of Download. See [Panel integration](#panel-integration).
 
 ## Files
 
@@ -16,7 +16,7 @@ One editor, three entry points:
 |---|---|
 | `routes/editor.index.tsx`, `editor.index.lazy.tsx` | `/editor` start screen (prerendered): intro, drop zone, recent files. |
 | `routes/editor.$key.tsx`, `editor.$key.lazy.tsx` | `/editor/<key>` (client-only): file from the local library, saves settings, Download. |
-| `routes/panel.editor.$taskId.tsx`, `.lazy.tsx` | `/panel/editor/<taskId>`: task + proxied file, load states, Add to server, Discard. |
+| `routes/panel.tasks.$taskId.tsx`, `.lazy.tsx` | `/panel/tasks/<taskId>`: task + proxied file, load states, Add to server, Discard. |
 | `components/editor/media-editor.tsx` | The editor screen: edit state, sidebar, auto-fit, first-render overlay. Pages pass actions, size note, initial work, `onWorkChange`. |
 | `components/editor/canvas-window.tsx` | Workspace with the movable, resizable, remembered window. |
 | `components/editor/media-preview.tsx` | Original / result panes, Fit / Actual size, crop outline, chat preview. |
@@ -149,7 +149,7 @@ There's no test runner in the repo yet. What was checked, and how to repeat it:
 
 ## Panel integration
 
-`/panel/editor/$taskId` (`routes/panel.editor.$taskId.tsx` + `.lazy.tsx`), reached from "Fix in editor" on a task tile or "Open in editor" in the task emote menu. It renders inside `PanelLayout` in full-bleed mode (see [../web.md](../web.md#panel-layout)); the header shows `Panel / Tasks / :name:`.
+`/panel/tasks/$taskId` (`routes/panel.tasks.$taskId.tsx` + `.lazy.tsx`), reached from "Fix in editor" on a task tile or "Open in editor" in the task emote menu. It renders inside `PanelLayout` in full-bleed mode (see [../web.md](../web.md#panel-layout)); the header shows `Panel / Tasks / :name:`.
 
 - **Loading**: `taskQueryOptions` and `taskFileQueryOptions` start together (the file only needs the id). The file comes through core's proxy `GET /tasks/:taskId/file` (third-party hosts don't send CORS headers; never fetch `emote.url` from the browser), read with `unwrapBlob`, then `loadMediaFile`. A dead upstream can take ~30 s, so the file query doesn't retry on its own.
 - **States** (inline under a header with the emote's preview, name, server and source; never centered): loading the task; downloading the original (Spinner + "a slow host can take up to half a minute"); `TASK_NOT_FOUND` from either request → "This task is gone" + Back to tasks; `DOWNLOAD_DATA_FAILED` → Retry + Discard; `URL_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UNSUPPORTED_FILE_TYPE` and a file that won't decode → Discard only; anything else → Retry.

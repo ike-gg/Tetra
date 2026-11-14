@@ -7,7 +7,7 @@ import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { tasksQueryOptions } from "@/lib/tasks";
 
-export const Route = createFileRoute("/panel/tasks")({
+export const Route = createFileRoute("/panel/tasks/")({
   head: () => ({ meta: [{ title: "Tasks · Panel · Tetra" }] }),
   component: PanelTasks,
 });
