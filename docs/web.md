@@ -49,6 +49,8 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/lib/format-bytes.ts` | `formatBytes()`: KB/MB in binary units, as Discord states its limits. |
 | `src/lib/cn.ts` | `cn()`: `clsx` + `tailwind-merge`, so a passed `className` overrides variant classes. |
 | `src/components/emote-background.tsx` | Homepage background, see [web/background.md](web/background.md). |
+| `src/lib/ascii-gl.ts` | WebGL helpers shared by the ASCII emote fields: atlas loading, glyph texture, shader plumbing, `CHAR_W`/`CHAR_H`. |
+| `src/components/not-found-page.tsx`, `src/components/emote-pile.tsx` | The 404 page, see [Not found](#not-found). |
 | `scripts/build-emote-atlas.ts` | Generates the background's emote atlas into `public/`. |
 | `src/components/emote-drop-text.tsx` | `EmoteDropText`: the logo's emote drop over a word (the homepage accent), see [branding.md](branding.md#motion). |
 | `src/components/navbar.tsx` | Site navbar for public pages (fixed, transparent with a fade behind it; logo intro once per page load, kept in module state so route changes don't replay it; `logoIntro={false}` turns it off, as on the homepage; clicking the logo always replays it, also when the click navigates home from another page). The editor and panel keep their own app headers. |
@@ -205,6 +207,20 @@ One field: search 7TV or paste a link. `QuickAdd` (`components/panel/quick-add.t
 - Titles: "Top on 7TV", "Most used on FFZ" for an empty query, "“q” on 7TV" otherwise. Loading, errors and "end of the list · N emotes" sit inline under the grid, never centered; a failed next page shows its error with Retry under the grid.
 - **Left click selects** and brings up the selection bar (Add to <guild> / Add to server ▾, Download, Edit in editor, More); right-click / long press has the same actions as the catalog menu (see [web/emote.md](web/emote.md#selection)). Opening Quick add with the clicked emote was tried and removed.
 - Verified with 10 pages of 7TV (600 emotes): about 165 tiles and 925 elements in the DOM. With the direct clients, 14 pages (840) loaded by scrolling.
+
+## Not found
+
+`NotFoundPage` is the root route's `notFoundComponent` (unknown client routes, including under `/panel`, render it at the root, without the panel chrome) and the component of `/404`, which exists only to be prerendered to `404.html`; Caddy serves that file with status 404 for unknown public paths. Title `404 · tetra`, `noindex`.
+
+- Navbar, footer and a full-height section with a big `404`, a line of copy and "Back home".
+- Behind it `EmotePile`: about a dozen emotes from the homepage atlas (fewer on small screens: at most `MAX_COVERAGE` of the area) fall in from above with rigid-body physics and can be dragged and thrown. Drawn by one WebGL2 fullscreen pass through the same ASCII filter as the homepage background (shared code in `src/lib/ascii-gl.ts`), but on a flat surface and with no effects: no cursor reveal, trail, dent or intro wave. Each character cell samples the topmost emote with an opaque pixel there; emotes are square bodies, positions and angles go to the shader as a uniform array.
+- Physics: `matter-js`, imported dynamically inside the effect, so it is a separate chunk loaded only on this page. Chosen over a hand-written solver because stacking rotated boxes stably (contacts, friction, sleeping-free settling) is the hard part and matter handles it. Fixed 60 Hz steps; dragging is a soft constraint from the pointer to the grabbed point, so release throws with the pointer's speed.
+- Input: only the canvas and the button take pointer events. A press on an emote prevents text selection and, on touch, page scrolling; a press on empty space scrolls normally.
+- `prefers-reduced-motion`: the pile is simulated up front, so emotes start settled and don't animate; dragging still works.
+
+## Invite
+
+`INVITE_URL` (`src/lib/links.ts`) is `https://tetra.lol/invite`, a 302 from Caddy to `INVITE_LINK` (see project-notes Deployment). It is absolute on purpose: `vite dev` has no Caddy, so links there go through production.
 
 ## SEO
 

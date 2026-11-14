@@ -3,7 +3,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const staticPages = ["/", "/branding", "/editor", "/logo"];
+const staticPages = ["/", "/branding", "/editor", "/logo", "/static-logo"];
 // Server routes (src/routes/robots[.]txt.ts, sitemap[.]xml.ts), prerendered to plain files
 const staticFiles = ["/robots.txt", "/sitemap.xml"];
 
@@ -58,6 +58,8 @@ export default defineConfig({
           path,
           prerender: { enabled: true, outputPath: path },
         })),
+        // Served by Caddy with status 404 for unknown paths
+        { path: "/404", prerender: { enabled: true, outputPath: "/404.html" } },
       ],
     }),
     viteReact(),

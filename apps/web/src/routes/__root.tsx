@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
+import { NotFoundPage } from "@/components/not-found-page";
 import { SEO_PAGES, SITE_NAME } from "@/lib/seo";
 import appCss from "@/styles/app.css?url";
 
@@ -27,6 +28,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
   }),
   component: RootComponent,
+  notFoundComponent: NotFoundPage,
 });
 
 function RootComponent() {

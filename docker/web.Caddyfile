@@ -8,11 +8,29 @@
 	root * /srv
 	encode zstd gzip
 
+	# The bot's Discord invite; INVITE_LINK is the same env var core uses
+	redir /invite {$INVITE_LINK} 302
+	redir /invite/ {$INVITE_LINK} 302
+
 	# Hashed file names, safe to cache forever
 	header /assets/* Cache-Control "public, max-age=31536000, immutable"
 
-	# Prerendered pages live in <path>/index.html; anything else (panel, /editor/$key)
-	# gets the SPA shell, which routes on the client
-	try_files {path} {path}/index.html /_shell.html
-	file_server
+	# Client-only routes (panel, /editor/$key) get the SPA shell, which routes on the client
+	@client path /panel /panel/* /editor/*
+	handle @client {
+		try_files {path} {path}/index.html /_shell.html
+		file_server
+	}
+
+	# Everything else: a file or a prerendered <path>/index.html, otherwise a real 404
+	handle {
+		try_files {path} {path}/index.html
+		file_server
+	}
+
+	# file_server keeps the error's status, so this answers 404 with the prerendered page
+	handle_errors 404 {
+		rewrite * /404.html
+		file_server
+	}
 }

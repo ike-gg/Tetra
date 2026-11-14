@@ -1,25 +1,18 @@
 import { useEffect, useRef } from "react";
 
-const ATLAS_URL = "/emote-atlas.webp";
-const ATLAS_LAYOUT_URL = "/emote-atlas.json";
-const MAX_EMOTES = 64;
-
-type AtlasLayout = {
-  emoteGrid: number;
-  pageGrid: number;
-  frames: number;
-  cell: number;
-  durations: number[];
-};
-
-const GLYPHS = " .:-=+*#%@";
-const GLYPH_TEXTURE_W = 32;
-const GLYPH_TEXTURE_H = 48;
-const GLYPH_FONT = `bold ${GLYPH_TEXTURE_H * 0.8}px "Geist Mono", ui-monospace, Menlo, monospace`;
+import {
+  bindFullscreenTriangle,
+  CHAR_H,
+  CHAR_W,
+  createGlyphCanvas,
+  createProgram,
+  GLYPHS,
+  loadAtlas,
+  MAX_EMOTES,
+  uploadTexture,
+} from "@/lib/ascii-gl";
 
 // All sizes in CSS pixels
-const CHAR_W = 7;
-const CHAR_H = 11;
 const EMOTE_SIZE = 220;
 const REVEAL_RADIUS = 510;
 // Cursor movement leaves a trail where the ASCII filter scrambles and melts into the
@@ -83,13 +76,6 @@ const IDLE_BRIGHTNESS = 0.5;
 // How much of the original color leaks into the idle state (0 = grayscale)
 const IDLE_SATURATION = 0.3;
 const INTRO_DURATION_MS = 2200;
-
-const VERTEX_SHADER = `#version 300 es
-in vec2 aPosition;
-void main() {
-  gl_Position = vec4(aPosition, 0.0, 1.0);
-}
-`;
 
 const FRAGMENT_SHADER = `#version 300 es
 precision highp float;
@@ -241,86 +227,6 @@ void main() {
 }
 `;
 
-const createGlyphCanvas = () => {
-  const canvas = document.createElement("canvas");
-  canvas.width = GLYPH_TEXTURE_W * GLYPHS.length;
-  canvas.height = GLYPH_TEXTURE_H;
-
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("2D canvas is not available");
-
-  context.fillStyle = "#fff";
-  context.font = GLYPH_FONT;
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-
-  [...GLYPHS].forEach((glyph, index) => {
-    context.fillText(glyph, (index + 0.5) * GLYPH_TEXTURE_W, GLYPH_TEXTURE_H / 2);
-  });
-
-  return canvas;
-};
-
-const compileShader = (gl: WebGL2RenderingContext, type: number, source: string) => {
-  const shader = gl.createShader(type);
-  if (!shader) throw new Error("Cannot create shader");
-
-  gl.shaderSource(shader, source);
-  gl.compileShader(shader);
-
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    throw new Error(gl.getShaderInfoLog(shader) ?? "Shader compilation failed");
-  }
-
-  return shader;
-};
-
-const createProgram = (gl: WebGL2RenderingContext) => {
-  const program = gl.createProgram();
-
-  gl.attachShader(program, compileShader(gl, gl.VERTEX_SHADER, VERTEX_SHADER));
-  gl.attachShader(program, compileShader(gl, gl.FRAGMENT_SHADER, FRAGMENT_SHADER));
-  gl.linkProgram(program);
-
-  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-    throw new Error(gl.getProgramInfoLog(program) ?? "Program linking failed");
-  }
-
-  return program;
-};
-
-const uploadTexture = (
-  gl: WebGL2RenderingContext,
-  unit: number,
-  source: TexImageSource,
-  mipmaps: boolean
-) => {
-  const texture = gl.createTexture();
-
-  gl.activeTexture(gl.TEXTURE0 + unit);
-  gl.bindTexture(gl.TEXTURE_2D, texture);
-  gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, source);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-  if (mipmaps) {
-    gl.generateMipmap(gl.TEXTURE_2D);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-  } else {
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-  }
-};
-
-const loadImage = (url: string) =>
-  new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = reject;
-    image.src = url;
-  });
-
 export function EmoteBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -367,30 +273,13 @@ export function EmoteBackground() {
     };
 
     const start = async () => {
-      const [atlas, layout] = await Promise.all([
-        loadImage(ATLAS_URL),
-        fetch(ATLAS_LAYOUT_URL).then(
-          (response) => response.json() as Promise<AtlasLayout>
-        ),
-        // The glyph canvas is drawn once, so the brand font has to be ready before that
-        document.fonts.load(GLYPH_FONT).catch(() => undefined),
-      ]);
+      const { atlas, layout } = await loadAtlas();
       if (disposed) return;
 
-      const program = createProgram(gl);
+      const program = createProgram(gl, FRAGMENT_SHADER);
       // biome-ignore lint/correctness/useHookAtTopLevel: WebGL call, not a React hook
       gl.useProgram(program);
-
-      const buffer = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array([-1, -1, 3, -1, -1, 3]),
-        gl.STATIC_DRAW
-      );
-      const position = gl.getAttribLocation(program, "aPosition");
-      gl.enableVertexAttribArray(position);
-      gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+      bindFullscreenTriangle(gl, program);
 
       uploadTexture(gl, 0, atlas, true);
       uploadTexture(gl, 1, createGlyphCanvas(), true);

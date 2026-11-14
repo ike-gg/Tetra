@@ -2,7 +2,7 @@
 
 Paths in this document are relative to `apps/web`. Overview of the web app: [../web.md](../web.md).
 
-An animated ASCII-art field of 7TV emotes behind the homepage, drawn by a single WebGL2 fragment shader on a fixed `<canvas>` (`EmoteBackground`). There are no DOM nodes per emote, so the cost per frame is one fullscreen pass regardless of how many emotes are visible.
+An animated ASCII-art field of 7TV emotes behind the homepage, drawn by a single WebGL2 fragment shader on a fixed `<canvas>` (`EmoteBackground`; atlas loading, glyph texture and shader plumbing are shared with the 404 page's emote pile in `src/lib/ascii-gl.ts`). There are no DOM nodes per emote, so the cost per frame is one fullscreen pass regardless of how many emotes are visible.
 
 **Emote atlas (build time).** `bun run build:emote-atlas` fetches popular emotes from the 7TV v4 GraphQL API and writes two files that are committed to the repo:
 

@@ -66,6 +66,9 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:?}
         VITE_SITE_URL: ${VITE_SITE_URL:-https://tetra.lol}
+    environment:
+      # Read by Caddy at runtime for the /invite redirect
+      INVITE_LINK: ${INVITE_LINK:?}
     expose:
       - "80"
 
