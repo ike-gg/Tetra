@@ -111,6 +111,7 @@ const guild = await unwrap(api.guilds[":guildId"].$get({ param: { guildId } }));
 - `unwrap` returns the body of a 2xx response and throws `ApiError` (`status`, `message`, `reference` = the API's error code) otherwise. Error bodies are not in the client types, branch on `reference`.
 - Base URL: `VITE_API_URL` (default `http://localhost:3002`). Requests send the `tetra-session` cookie (`credentials: "include"`, `sameSite: lax`), so web and API must be on the same site; any port on localhost works in development.
 - **How the type gets here**: `@tetra/core` is a workspace dependency exporting `./api` (`src/api/app.ts`), imported with `import type` only, so nothing from core is bundled. Both apps use the `@/` alias for their own `src`, so the web program can't compile core's sources itself: `tsconfig.json` has a project reference to `../core/tsconfig.api-types.json`. `tsc -b` (the `typecheck` script) builds core's declarations into `apps/core/dist/types` incrementally; editors read core's sources directly, so new routes show up without a build.
+- **Rejected alternatives** (2026-11): moving core's aliases to package.json `imports` would let web compile core's sources directly, but means rewriting ~320 imports in core and pulling Bun's global types into web. A separate `packages/contract` with hand-written Zod response schemas (keeping Express) was rejected because nothing checks that handlers return what the schemas promise; that drift is what broke the old `tetra-next` panel's hand-written types.
 
 ## Scripts
 
