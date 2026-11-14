@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { createLazyFileRoute, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 
+import { PanelLayout } from "@/components/panel/panel-layout";
 import { PanelLogin } from "@/components/panel/panel-login";
 import { PanelScreen } from "@/components/panel/panel-screen";
 import { Button } from "@/components/ui/button";
@@ -62,5 +63,9 @@ function PanelGate() {
 
   if (!loggedIn) return <PanelLogin error={error} />;
 
-  return <Outlet />;
+  return (
+    <PanelLayout>
+      <Outlet />
+    </PanelLayout>
+  );
 }

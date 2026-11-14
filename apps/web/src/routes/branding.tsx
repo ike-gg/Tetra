@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { SizeMeter } from "@/components/ui/size-meter";
 import { Slider } from "@/components/ui/slider";
+import { SlotMeter } from "@/components/ui/slot-meter";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
@@ -537,6 +538,16 @@ function ControlsSheet() {
         <div className="grid gap-8 sm:grid-cols-2">
           <SizeMeter value={338 * KB} limit={256 * KB} max={338 * KB} />
           <SizeMeter value={212 * KB} limit={256 * KB} max={338 * KB} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-6 bg-background p-6 sm:col-span-2">
+        <p className="font-mono text-muted text-xs">
+          &lt;SlotMeter label used limit&gt; · emoji slots, orange in the last 10%
+        </p>
+        <div className="grid max-w-xl grid-cols-3 gap-6">
+          <SlotMeter label="static" used={31} limit={50} />
+          <SlotMeter label="animated" used={47} limit={50} />
+          <SlotMeter label="animated" used={50} limit={50} />
         </div>
       </div>
       <div className="flex flex-col gap-3 bg-background p-6 sm:col-span-2">

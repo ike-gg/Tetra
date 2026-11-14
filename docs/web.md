@@ -31,8 +31,11 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/lib/use-element-size.ts` | `useElementSize(ref)`: an element's content size via `ResizeObserver` (null until measured). |
 | `src/lib/relative-time.ts` | `relativeTime()`: "5 minutes ago" via `Intl.RelativeTimeFormat`. |
 | `src/lib/latest-task.ts` | `createLatestTask`: runs only the newest request (aborts the one in flight, discards stale results by version). |
-| `src/components/panel/` | Panel UI: `PanelScreen` (app header + one column centered horizontally below a top margin, never centered vertically, for states without navigation), `PanelLogin`, `PanelPlaceholder` (temporary logged-in screen). |
+| `src/components/panel/` | Panel UI: `PanelScreen` (app header + one column centered horizontally below a top margin, never centered vertically, for states without navigation: session check, login), `PanelLogin`, `PanelLayout` (logged-in chrome, see [Panel layout](#panel-layout)), `PanelNav`, `PanelUserMenu`, `GuildIcon` (ui-sdk `Avatar`, server icon or Discord-style initials), `GuildTile`, `TaskTile` + `TaskList`, `PanelLoading` / `PanelError` (Spinner + text, inline error + Retry), `GuildsError`. |
 | `src/lib/session.ts` | Session query options (`sessionQueryOptions`, `meQueryOptions`), `isUnauthorized`, `loginUrl`, `panelReturnPath`, `logout`. |
+| `src/lib/guilds.ts` | `guildsQueryOptions` (`["guilds"]`, `GET /api/guilds`), types derived from it (`GuildLists`, `Guild`, `ManagedGuild`), `guildIconUrl`, `guildInitials`, `findGuild`. |
+| `src/lib/tasks.ts` | `tasksQueryOptions` (`["tasks"]`, `GET /api/tasks`), `Task`. |
+| `src/lib/recent-guilds.ts` | Recently opened servers in `localStorage` (`tetra:panel:recent-guilds`, try/catch, memory fallback): `useRecentGuildIds`, `markGuildOpened`, `sortByRecent` (recent first, then alphabetical). |
 | `src/types/` | Ambient declarations for untyped packages (`gifsicle-wasm-browser`). |
 | `src/lib/format-bytes.ts` | `formatBytes()`: KB/MB in binary units, as Discord states its limits. |
 | `src/lib/cn.ts` | `cn()`: `clsx` + `tailwind-merge`, so a passed `className` overrides variant classes. |
@@ -72,6 +75,7 @@ Our components live in `src/components/ui/`, one file per component, kebab-case.
 - `Switch` – labeled on/off row (ui-sdk `Switch` inside a `<label>`): `label`, `checked`, `onCheckedChange`, optional `description`. For settings that apply immediately.
 - `Notice` – non-blocking heads-up: mono `[!]` in orange, `title`, body, optional `action` on the right. Bordered box by default; as a full-width bar under a toolbar pass `className="border-x-0 border-t-0"`. Errors that stop a task stay inline in `text-danger` instead.
 - `Spinner` – braille dots chasing around one cell (`⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`, 120 ms per frame), in orange, `aria-hidden`. Braille frames all have the same width and weight; an ASCII-ramp version was tried and rejected because the glyphs jumped. Always pair it with text saying what's happening; with reduced motion it stands still.
+- `SlotMeter` – emoji slots of one type (ui-sdk `Meter`): `label`, `used`, `limit`. Mono label and `used/limit`, thin bar; bar and number turn orange in the last 10% of slots (at least 1). Screen readers get "47 of 50, 3 free" / "50 of 50, full".
 - `SizeMeter` – file size against a limit (ui-sdk `Meter`): `value`, `limit` (bytes), optional `max` where the bar ends (pass the original size so the overflow reads as a distance to cover). Shows size / limit in KB/MB, % of the limit, a tick at the limit and the part over it in orange, with "X over · reduce by Y%" or "Fits · X to spare". Screen readers get one sentence via `getValueLabel`.
 
 These components are styled entirely with Tailwind, without relying on ui-sdk's `web.css`, so they look the same on prerendered pages (like `/branding`) that don't load it.
@@ -92,7 +96,8 @@ Components accept `className` for layout (margins, width, animation); don't use 
 - `@layer ui-sdk;` stays at the very top of `app.css`, above `@import "tailwindcss"`: ui-sdk injects some behavior CSS into that layer at runtime.
 - Our own `color-scheme: dark` overrides web.css's light/dark switching.
 - Form parts (slider, switch, input…) render hidden inputs with `position: absolute` (`hiddenInputStyle` in `@ui-sdk/core` `foundation/forms/form.js`). Inside a scroll container, give the container or an ancestor `position: relative`: otherwise they're placed against the page and make it scroll (the editor's sidebar did, even under an `overflow: hidden` root).
-- Route files may use TanStack's dotted names and `$params` (`panel.lazy.tsx`, `editor.$key.lazy.tsx`), an exception to kebab-case.
+- Route files may use TanStack's dotted names and `$params` (`panel.lazy.tsx`, `editor.$key.lazy.tsx`, `panel.servers.$guildId.tsx`), an exception to kebab-case.
+- `web.css` styles `menu-trigger`, `drawer-trigger` and `drawer-close` as bordered buttons and `drawer-content` with padding, a border and a shadow; the panel pins border, background, height, padding and shadow on them with Tailwind.
 
 ## Topic docs
 
@@ -118,13 +123,35 @@ const guild = await unwrap(api.guilds[":guildId"].$get({ param: { guildId } }));
 
 ## Panel auth gate
 
-`/panel` is a layout route: `routes/panel.tsx` (`ssr: false`, `validateSearch` for the optional `error` param, inherited by children) and `routes/panel.lazy.tsx` (the gate). Child routes (`panel.index.tsx`, later `panel.*.tsx`) render through its `<Outlet />` only with a session.
+`/panel` is a layout route: `routes/panel.tsx` (`ssr: false`, `validateSearch` for the optional `error` param, inherited by children) and `routes/panel.lazy.tsx` (the gate). Child routes (`panel.*.tsx`, see [Panel routes](#panel-routes)) render through its `<Outlet />` only with a session.
 
 - **Check**: `sessionQueryOptions` (`["session"]`) calls `GET /api/me/state`: 200 → `true`, 401 → `false`, anything else throws (1 retry). Pending shows `Spinner` + text; an error (API down, 5xx) shows an inline `text-danger` message with Retry, never the login screen.
 - **Logged out**: `PanelLogin` on `PanelScreen` (no public navbar/footer). The button is a plain navigation to `loginUrl(returnPath)` = `${VITE_API_URL}/api/auth?redirect=…` (built with the client's `$url()`, so the base URL lives only in `lib/api.ts`); `returnPath` is the current path + search without `error`. Core accepts only `/panel…` paths and brings the user back there.
 - **Callback errors**: core redirects back with `?error=<CODE>` (`AUTH_CALLBACK_ERRORS` in core's `auth.shared.ts`); `PanelLogin` maps `ACCESS_DENIED`, `INVALID_OAUTH_STATE`, `RATE_LIMITED` to a `Notice`, everything else to a generic "on our side" message. When the session is valid anyway (a failed re-login keeps the old session) the gate strips `error` with a `replace` navigation.
-- **Logged in**: `/panel/` renders `PanelPlaceholder` (temporary: `GET /api/me` name + avatar, Log out). Log out = `POST /api/auth/logout`, then drops `["me"]` and sets the session query to `false`.
+- **Logged in**: the gate renders `PanelLayout` around the `<Outlet />`.
+- **Log out** (user menu): `POST /api/auth/logout`, then sets the session query to `false` and removes every other query, so nothing of the previous user stays cached. The session query itself is kept: the gate observes it, and a removed query would leave the observer on a stale instance.
 - **Expiry**: a 401 anywhere invalidates the session query (see [Talking to the API](#talking-to-the-api)), the recheck returns `false` and the gate shows the login screen.
+
+## Panel layout
+
+`PanelLayout` (`components/panel/panel-layout.tsx`) wraps every logged-in panel route.
+
+- **Header** (sticky, `h-12`): `BrandLink` / Panel (link to `/panel`) / current view (Home, Tasks, or the server's name on a server route, from the guilds cache via `useMatchRoute`). Right: `PanelUserMenu`, a ui-sdk `Menu` with avatar + name (name hidden below `sm`), the user's names as a group label, and "Log out" (`onAction` returns the mutation promise, so the item stays pending).
+- **Sidebar** (`PanelNav`): Home, Tasks (pending count from the tasks query, hidden at 0), Editor (the public `/editor` for now), then "Servers": `guildsWithUserPermissions` in `sortByRecent` order, and "Add server" (`INVITE_URL`, new tab). Active row: `data-status=active` from TanStack's `Link` → surface fill + a 2px orange left edge. From `md` it's a sticky aside (`top-12`, own scroll); the window scrolls the content, so router scroll restoration keeps working.
+- **Narrow screens**: the same `PanelNav` in a left ui-sdk `Drawer` (controlled, opened from the ≡ button in the header, closed by `onNavigate` when a link is followed). The drawer element sits inside the header; don't give the header `backdrop-filter` or a transform, it would become the containing block of the drawer's fixed viewport. `PanelNav` renders twice there (hidden aside + drawer), so it uses `useId` for its heading id.
+- **Content**: `main` with `pt-8`/`sm:pt-12`, max width `5xl`, normal flow. Loading, empty, error and not-found states are inline, never vertically centered.
+
+### Panel routes
+
+| Route | File | Shows |
+|---|---|---|
+| `/panel` | `panel.index.tsx` | Home: greeting; pending tasks (only if any, first 4 + "View all"); "Your servers" grid of `GuildTile` (icon, name, two `SlotMeter`s) + an "Add Tetra to a server" tile with the count of `guildsWithoutBotAvailableToAdd`; a quiet line listing `guildsWithBot` (Tetra there, no Manage Expressions). No manageable servers → explanation + primary invite button. |
+| `/panel/tasks` | `panel.tasks.tsx` | All pending tasks (`TaskList`), or "nothing to fix". |
+| `/panel/servers/$guildId` | `panel.servers.$guildId.tsx` | Placeholder: icon, name, slot meters, "lands here next". Looked up in the guilds cache (no `GET /guilds/:id` yet); an id in `guildsWithBot` gets "you can't manage emotes on X", any other id "Server not found", both inline. Opening a server calls `markGuildOpened`. |
+
+- Tasks: "Fix in editor" is rendered disabled (`focusableWhenDisabled`, described by the "lands soon" note) because `/panel/editor/$taskId` doesn't exist and a typed `Link` can't point at a missing route. Enable it when that route lands. A task's server name comes from `findGuild` over all three guild lists, "unknown server" otherwise.
+- Server grid uses `gap-px p-px` with an `outline` on each tile instead of a `bg-border` container, so a short last row doesn't show filled holes; grid items need `min-w-0` or long names push the tile wider than the screen.
+- `GET /api/guilds` answers 500 while the bot's shards start: `GuildsError` says so and offers Retry.
 
 ## Scripts
 
