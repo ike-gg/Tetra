@@ -17,6 +17,7 @@ import { QuickAddProvider } from "@/components/panel/quick-add-dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/cn";
 import { guildsQueryOptions } from "@/lib/guilds";
+import { libraryFileQueryOptions } from "@/lib/media/library-file";
 import { taskQueryOptions } from "@/lib/tasks";
 
 const ICON_BUTTON =
@@ -25,7 +26,7 @@ const ICON_BUTTON =
 type CurrentView = {
   label: string;
   // A crumb between Panel and the label, for views that live under another one
-  parent?: "tasks";
+  parent?: { label: string; to: "/panel/tasks" | "/panel/editor" };
   // The editor fills the content area edge to edge
   fullBleed?: boolean;
 };
@@ -39,13 +40,29 @@ function useCurrentView(): CurrentView {
   // Shares the editor page's query, so it costs no extra request
   const task = useQuery({ ...taskQueryOptions(taskId), enabled: Boolean(taskEditor) });
 
+  const fileEditor = matchRoute({ to: "/panel/editor/$key" });
+  const fileKey = fileEditor ? fileEditor.key : "";
+  // The editor page's own query: the library is read once
+  const file = useQuery({
+    ...libraryFileQueryOptions(fileKey),
+    enabled: Boolean(fileEditor),
+  });
+
   if (taskEditor) {
     return {
       label: task.data ? `:${task.data.emote.name}:` : "Editor",
-      parent: "tasks",
+      parent: { label: "Tasks", to: "/panel/tasks" },
       fullBleed: true,
     };
   }
+  if (fileEditor) {
+    return {
+      label: file.data?.entry.fileName ?? fileEditor.key,
+      parent: { label: "Editor", to: "/panel/editor" },
+      fullBleed: true,
+    };
+  }
+  if (matchRoute({ to: "/panel/editor" })) return { label: "Editor" };
   const server = matchRoute({ to: "/panel/servers/$guildId" });
   if (server) {
     return {
@@ -107,10 +124,10 @@ export function PanelLayout({ children }: { children: ReactNode }) {
         <span aria-hidden="true" className="text-neutral-600">
           /
         </span>
-        {view.parent === "tasks" && (
+        {view.parent && (
           <>
-            <Link to="/panel/tasks" className={cn(CRUMB_LINK, "max-sm:hidden")}>
-              Tasks
+            <Link to={view.parent.to} className={cn(CRUMB_LINK, "max-sm:hidden")}>
+              {view.parent.label}
             </Link>
             <span aria-hidden="true" className="text-neutral-600 max-sm:hidden">
               /

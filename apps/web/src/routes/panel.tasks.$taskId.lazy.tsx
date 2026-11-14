@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
-import { type ReactNode, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 
 import { MediaEditor } from "@/components/editor/media-editor";
+import { useMediaFile } from "@/components/editor/use-media-file";
 import { Emote } from "@/components/emote/emote";
 import { EmoteMenu } from "@/components/emote/emote-menu";
 import { DiscardTaskDialog } from "@/components/panel/discard-task-dialog";
@@ -17,7 +18,7 @@ import { formatBytes } from "@/lib/format-bytes";
 import { findGuild, type GuildLists, guildsQueryOptions } from "@/lib/guilds";
 import type { StillFormat } from "@/lib/image/render-image";
 import { DISCORD_EMOTE_LIMIT } from "@/lib/media/edit";
-import { loadMediaFile, type MediaFile, releaseMediaFile } from "@/lib/media/media-file";
+import type { MediaFile } from "@/lib/media/media-file";
 import { useAddTaskEmote } from "@/lib/task-mutations";
 import { type Task, taskFileQueryOptions, taskQueryOptions } from "@/lib/tasks";
 
@@ -83,42 +84,6 @@ function PanelTaskEditor() {
   );
 }
 
-type Media =
-  | { status: "loading" }
-  | { status: "ready"; file: MediaFile }
-  | { status: "error" };
-
-// The proxied blob as an editor source; the object URL lives as long as the page
-function useMediaFile(blob: Blob | undefined, name: string): Media {
-  const [media, setMedia] = useState<Media>({ status: "loading" });
-
-  useEffect(() => {
-    if (!blob) return;
-    let cancelled = false;
-    let loaded: MediaFile | null = null;
-    setMedia({ status: "loading" });
-
-    // The type suffix only feeds the file-name cleanup; the bytes decide the format
-    loadMediaFile(blob, `${name}.${blob.type.split("/")[1] ?? "gif"}`).then(
-      (file) => {
-        if (cancelled) return releaseMediaFile(file);
-        loaded = file;
-        setMedia({ status: "ready", file });
-      },
-      () => {
-        if (!cancelled) setMedia({ status: "error" });
-      }
-    );
-
-    return () => {
-      cancelled = true;
-      if (loaded) releaseMediaFile(loaded);
-    };
-  }, [blob, name]);
-
-  return media;
-}
-
 type TaskFileProps = {
   task: Task;
   blob: Blob | undefined;
@@ -128,7 +93,11 @@ type TaskFileProps = {
 };
 
 function TaskFile({ task, blob, fileError, retrying, onRetry }: TaskFileProps) {
-  const media = useMediaFile(blob, task.emote.name);
+  // The type suffix only feeds the file-name cleanup; the bytes decide the format
+  const media = useMediaFile(
+    blob,
+    `${task.emote.name}.${blob?.type.split("/")[1] ?? "gif"}`
+  );
 
   if (fileError) {
     return (

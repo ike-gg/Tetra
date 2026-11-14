@@ -1,0 +1,32 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+import { EditorStart } from "@/components/editor/editor-start";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+import { formatBytes } from "@/lib/format-bytes";
+import { DISCORD_EMOTE_LIMIT } from "@/lib/media/edit";
+
+export const Route = createFileRoute("/panel/editor/")({
+  head: () => ({ meta: [{ title: "Editor · Panel · Tetra" }] }),
+  component: PanelEditorStart,
+});
+
+// The same start screen as /editor; files open in the panel's editor
+function PanelEditorStart() {
+  return (
+    <div className="flex max-w-2xl flex-col gap-8">
+      <div className="flex flex-col gap-2">
+        <Heading level={1} size="lg">
+          Editor
+        </Heading>
+        <Text size="sm" tone="muted">
+          Crop, trim, resize and compress an image or GIF until it fits Discord&apos;s{" "}
+          {formatBytes(DISCORD_EMOTE_LIMIT)}, then add it to one of your servers. It runs
+          in your browser; recent files stay in this browser only.
+        </Text>
+      </div>
+
+      <EditorStart host="panel" />
+    </div>
+  );
+}

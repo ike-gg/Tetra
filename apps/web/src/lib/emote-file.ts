@@ -87,7 +87,7 @@ export const downloadEmote = (emote: PanelEmote) => {
 
 /**
  * Puts the emote's file into the quick editor's local library (this browser's
- * IndexedDB) and opens it at `/editor/$key`.
+ * IndexedDB) and opens it in the panel's editor, `/panel/editor/$key`.
  */
 export function useEditInQuickEditor() {
   const navigate = useNavigate();
@@ -118,7 +118,7 @@ export function useEditInQuickEditor() {
       }),
     });
     request.then(
-      (key) => void navigate({ to: "/editor/$key", params: { key } }),
+      (key) => void navigate({ to: "/panel/editor/$key", params: { key } }),
       // The toast already told the user
       () => undefined
     );

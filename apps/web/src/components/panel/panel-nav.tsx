@@ -69,7 +69,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/editor" onClick={onNavigate}>
+          <NavLink to="/panel/editor" onClick={onNavigate}>
             <Glyph>◱</Glyph>
             Editor
           </NavLink>

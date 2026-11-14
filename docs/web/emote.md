@@ -82,7 +82,7 @@ Rendered by the owning `EmoteMenu` while it has a selection (keyed by the emote,
 
 - **CORS, verified 2026-11** from `http://localhost:*`: `cdn.discordapp.com` (emojis, `*`), `cdn.7tv.app` (`*`), `cdn.frankerfacez.com` (`*`) can be read. `cdn.betterttv.net` sends no `Access-Control-Allow-Origin`, so BTTV files (removed or task emotes from BTTV) can't be read; link sources depend on their host. A CORS failure and a network error look the same to `fetch` (a `TypeError`), so both count as "can't read" (`EmoteFileUnreadableError`).
 - **Download**: `toast.promise` (Downloading… → "Downloaded catJAM.gif"), saved with `downloadBlob`. Unreadable: opens the file in a new tab and says so ("BTTV doesn't let the browser read this file. Save it from there."); if the popup is blocked (the click's activation can expire while fetching), the toast has an Open action instead.
-- **Edit in editor**: fetches the file, loads it with the editor's `loadMediaFile` (validates it) and `saveToLibrary` (both imported lazily, so the panel doesn't ship the editor's model), then navigates to `/editor/$key`. Unreadable sources get an error toast asking to download it and drop it into the editor; there's no proxy for them.
+- **Edit in editor**: fetches the file, loads it with the editor's `loadMediaFile` (validates it) and `saveToLibrary` (both imported lazily, so the panel doesn't ship the editor's model), then navigates to the panel's editor, `/panel/editor/$key` (the user never leaves the panel). Unreadable sources get an error toast asking to download it and drop it into the editor; there's no proxy for them.
 
 ## Mutations and cache (`src/lib/emote-mutations.ts`)
 

@@ -4,10 +4,11 @@ Paths in this document are relative to `apps/web`. Overview of the web app: [../
 
 The Image/GIF quick editor: GIFs and still images (PNG, JPEG, WebP). Named for both on purpose, it's not an emote editor or a GIF tool only. "Image/GIF quick editor" is its full name (page title, eyebrow on `/editor`); everywhere else, breadcrumbs included, it's just "Editor". In code it's the media editor (`components/editor/media-*`). It's built around Discord emotes (the size meter measures against Discord's 256 KB emote limit, the same on every server), but works for any image. Everything runs locally in the browser.
 
-One editor, three entry points:
+One editor, two hosts (the public site and the panel) sharing one local library, and the task editor:
 
-- **`/editor`** – public, no account, nothing uploaded. Prerendered start screen, content from the top (not centered): intro, drop zone (`MediaDropzone`: drop anywhere on the page, paste, or pick; GIF/PNG/JPEG/WebP, up to 20 MB; `/editor` imports `ui-sdk.css` too and the zone pins width, border style, font size, colors and the trigger margin, because web.css stays global once any editor route loaded it and used to change the zone between visits) and *recently edited* (`RecentFiles`). A chosen file is validated, saved to the local library and opened at `/editor/<key>`, so Back returns to `/editor`. Routes: `editor.index.tsx` (head) + `editor.index.lazy.tsx`.
-- **`/editor/$key`** – client-only. Loads the file and its saved settings from the library and opens the editor; the toolbar has `New file` (back to `/editor`) and `Download` (always enabled once a result exists, file named `<name>.<extension of the result>`; the size note says Discord takes up to 256 KB). An unknown key (other browser, evicted, cleared) shows "This file isn't in this browser" with a way back. Routes: `editor.$key.tsx` + `editor.$key.lazy.tsx`.
+- **`/editor`** – public, no account, nothing uploaded. Prerendered start screen, content from the top (not centered): intro, drop zone (`MediaDropzone`: drop anywhere on the page, paste, or pick; GIF/PNG/JPEG/WebP, up to 20 MB; `/editor` imports `ui-sdk.css` too and the zone pins width, border style, font size, colors and the trigger margin, because web.css stays global once any editor route loaded it and used to change the zone between visits) and *recently edited* (`RecentFiles`). A chosen file is validated, saved to the local library and opened at `/editor/<key>`, so Back returns to `/editor`. Routes: `editor.index.tsx` (head) + `editor.index.lazy.tsx`; everything under the intro is `EditorStart host="public"`.
+- **`/editor/$key`** – client-only. Loads the file and its saved settings from the library and opens the editor; the toolbar has `New file` (back to `/editor`) and `Download` (always enabled once a result exists, file named `<name>.<extension of the result>`; the size note says Discord takes up to 256 KB). An unknown key (other browser, evicted, cleared) shows "This file isn't in this browser" with a way back. Routes: `editor.$key.tsx` + `editor.$key.lazy.tsx`, rendering `LibraryEditor host="public"`.
+- **`/panel/editor`**, **`/panel/editor/$key`** – the same two screens inside the panel layout (`host="panel"`), listing and opening the same library files. See [Panel integration](#panel-integration).
 - **`/panel/tasks/$taskId`** – a bot task's emote inside the panel layout, with "Add to <server>" instead of Download. See [Panel integration](#panel-integration).
 
 ## Files
@@ -16,6 +17,12 @@ One editor, three entry points:
 |---|---|
 | `routes/editor.index.tsx`, `editor.index.lazy.tsx` | `/editor` start screen (prerendered): intro, drop zone, recent files. |
 | `routes/editor.$key.tsx`, `editor.$key.lazy.tsx` | `/editor/<key>` (client-only): file from the local library, saves settings, Download. |
+| `routes/panel.editor.index.tsx`, `panel.editor.$key.tsx`, `.lazy.tsx` | `/panel/editor` and `/panel/editor/<key>`: the same start screen and library editor inside the panel. |
+| `components/editor/editor-host.ts` | `EDITOR_HOSTS`: per host (`public`, `panel`) its start route, file route and the Discord emote default. |
+| `components/editor/editor-start.tsx` | `EditorStart`: drop zone, validate + save to the library, open in the host's file route; recent files. |
+| `components/editor/library-editor.tsx` | `LibraryEditor`: a library file in `MediaEditor` for either host: load and missing states, saving settings, New file, Download. |
+| `components/editor/use-media-file.ts` | `useMediaFile(blob, fileName)`: a blob as an editor source (also used by the task editor). |
+| `lib/media/library-file.ts` | `libraryFileQueryOptions(key)`: one library file + saved settings, shared by the editor page and the panel's breadcrumb. |
 | `routes/panel.tasks.$taskId.tsx`, `.lazy.tsx` | `/panel/tasks/<taskId>`: task + proxied file, load states, Add to server, Discard. |
 | `components/editor/media-editor.tsx` | The editor screen: edit state, sidebar, auto-fit, first-render overlay. Pages pass actions, size note, initial work, `onWorkChange`. |
 | `components/editor/canvas-window.tsx` | Workspace with the movable, resizable, remembered window. |
@@ -24,7 +31,7 @@ One editor, three entry points:
 | `components/editor/fitting-picker.tsx` | Contain / Cover / Fill control with icons (Crop toolbar), `FITTING_LABELS`. |
 | `components/editor/trim-timeline.tsx` | Trim slider over the film strip; commits on release. |
 | `components/editor/media-dropzone.tsx` | Drop / paste / pick, accepted types, 20 MB cap. |
-| `components/editor/recent-files.tsx` | "Recently edited" list on `/editor`. |
+| `components/editor/recent-files.tsx` | "Recently edited" list on both start screens; links into the host's editor. |
 | `components/editor/use-media-render.ts`, `use-film-strip.ts` | Rendering the latest edit; GIF film strip. |
 | `lib/media/` | `media-file.ts` (load, sniff, names), `edit.ts` (model, defaults, fitting math, auto-fit ladder), `render.ts` (engine switch), `local-library.ts` (IndexedDB). |
 | `lib/gif/` | `parse-gif.ts`, `gifsicle.ts` (worker runner), `gif-commands.ts`. |
@@ -76,7 +83,9 @@ Optional convenience, all in this browser's IndexedDB (database `tetra-editor`, 
 - **Key**: the file name made URL-safe (`Cat JAM!!.gif` → `cat-jam`), a 6-character random id when nothing is left (`🙂.png`). Another file with a taken name gets `-2`, `-3`. The same file again (SHA-256 of its bytes) reopens its entry and its settings instead of adding a copy.
 - **Stored**: the original file, a 96 px PNG thumbnail (first frame for GIFs, so the list never loads originals) and metadata in `entries`; the editor's settings, name and Discord toggle in `edits`, saved 400 ms after the last change. **Results are never stored**, they're re-rendered from the settings. `restoreEdit` fills in settings added since and keeps the trim inside the file.
 - **Limit**: the 10 most recently opened files; older ones are deleted with everything they stored. `Remove` in the list deletes one.
-- **From the panel**: "Edit in editor" on an emote (menu or selection bar, `useEditInQuickEditor` in `lib/emote-file.ts`) fetches the full-size file, saves it here like a dropped file (`<name>.<ext>`) and opens `/editor/<key>`; Back returns to the panel.
+- **Shared by both hosts**: `/editor` and `/panel/editor` list the same files; a file opened in one shows up in the other's recent list, with its saved settings.
+- **From the panel**: "Edit in editor" on an emote (menu or selection bar, `useEditInQuickEditor` in `lib/emote-file.ts`) fetches the full-size file, saves it here like a dropped file (`<name>.<ext>`) and opens `/panel/editor/<key>`, so the user stays in the panel; Back returns to where they were.
+- **Reading a file**: `libraryFileQueryOptions(key)` (`["library-file", key]`, `staleTime` infinite, `gcTime: 0`): the editor page and the panel's breadcrumb share one read, and leaving the page drops it, so the next visit reads the settings saved meanwhile instead of a cached copy.
 - **Without IndexedDB** (private mode, blocked storage) files live in memory for the visit, so the editor still works, just without history.
 - Safari deletes script-writable storage after 7 days without a visit, so "recent" really means recent there. We don't call `navigator.storage.persist()`: Firefox shows a permission prompt for it.
 - Checked with `bun test` against `fake-indexeddb` (keys, dedupe, suffixes, settings round-trip, the 10-file limit, remove).
@@ -149,7 +158,18 @@ There's no test runner in the repo yet. What was checked, and how to repeat it:
 
 ## Panel integration
 
-`/panel/tasks/$taskId` (`routes/panel.tasks.$taskId.tsx` + `.lazy.tsx`), reached from "Fix in editor" on a task tile or "Open in editor" in the task emote menu. It renders inside `PanelLayout` in full-bleed mode (see [../web.md](../web.md#panel-layout)); the header shows `Panel / Tasks / :name:`.
+Two editors live in the panel, both inside `PanelLayout` in full-bleed mode (see [../web.md](../web.md#panel-layout)).
+
+### Quick editor (`/panel/editor`)
+
+The public editor's screens with the panel around them, from the sidebar's "Editor" or "Edit in editor" on an emote. No duplicated screens: the routes render `EditorStart` and `LibraryEditor` with `host="panel"`.
+
+- **Start** (`/panel/editor`, header `Panel / Editor`): a short intro, then the drop zone and recent files, the same library as `/editor`. A file opens at `/panel/editor/<key>`.
+- **File** (`/panel/editor/<key>`, header `Panel / Editor / <file name>`, the name from the library entry; the key until it's read): `MediaEditor` without `section` (the panel header is the breadcrumb), `New file` on the left of the toolbar, the editor's height is the content area's. A key that isn't in this browser (another browser, evicted, an old `/panel/editor/<taskId>` link) shows the same "This file isn't in this browser" state inline, with "Open a file" back to `/panel/editor`.
+
+### Task editor (`/panel/tasks/$taskId`)
+
+`/panel/tasks/$taskId` (`routes/panel.tasks.$taskId.tsx` + `.lazy.tsx`), reached from "Fix in editor" on a task tile or "Open in editor" in the task emote menu (it lived at `/panel/editor/$taskId` until the quick editor took that path); the header shows `Panel / Tasks / :name:`.
 
 - **Loading**: `taskQueryOptions` and `taskFileQueryOptions` start together (the file only needs the id). The file comes through core's proxy `GET /tasks/:taskId/file` (third-party hosts don't send CORS headers; never fetch `emote.url` from the browser), read with `unwrapBlob`, then `loadMediaFile`. A dead upstream can take ~30 s, so the file query doesn't retry on its own.
 - **States** (inline under a header with the emote's preview, name, server and source; never centered): loading the task; downloading the original (Spinner + "a slow host can take up to half a minute"); `TASK_NOT_FOUND` from either request → "This task is gone" + Back to tasks; `DOWNLOAD_DATA_FAILED` → Retry + Discard; `URL_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UNSUPPORTED_FILE_TYPE` and a file that won't decode → Discard only; anything else → Retry.

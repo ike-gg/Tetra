@@ -18,6 +18,8 @@ import { Route as EditorIndexRouteImport } from './routes/editor.index'
 import { Route as EditorKeyRouteImport } from './routes/editor.$key'
 import { Route as PanelIndexRouteImport } from './routes/panel.index'
 import { Route as PanelBrowseRouteImport } from './routes/panel.browse'
+import { Route as PanelEditorIndexRouteImport } from './routes/panel.editor.index'
+import { Route as PanelEditorKeyRouteImport } from './routes/panel.editor.$key'
 import { Route as PanelServersGuildIdRouteImport } from './routes/panel.servers.$guildId'
 import { Route as PanelTasksIndexRouteImport } from './routes/panel.tasks.index'
 import { Route as PanelTasksTaskIdRouteImport } from './routes/panel.tasks.$taskId'
@@ -67,6 +69,18 @@ const PanelBrowseRoute = PanelBrowseRouteImport.update({
   path: '/browse',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelEditorIndexRoute = PanelEditorIndexRouteImport.update({
+  id: '/editor/',
+  path: '/editor/',
+  getParentRoute: () => PanelRoute,
+} as any)
+const PanelEditorKeyRoute = PanelEditorKeyRouteImport.update({
+  id: '/editor/$key',
+  path: '/editor/$key',
+  getParentRoute: () => PanelRoute,
+} as any).lazy(() =>
+  import('./routes/panel.editor.$key.lazy').then((d) => d.Route),
+)
 const PanelServersGuildIdRoute = PanelServersGuildIdRouteImport.update({
   id: '/servers/$guildId',
   path: '/servers/$guildId',
@@ -95,8 +109,10 @@ export interface FileRoutesByFullPath {
   '/panel/browse': typeof PanelBrowseRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
+  '/panel/editor/$key': typeof PanelEditorKeyRoute
   '/panel/servers/$guildId': typeof PanelServersGuildIdRoute
   '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
+  '/panel/editor/': typeof PanelEditorIndexRoute
   '/panel/tasks/': typeof PanelTasksIndexRoute
 }
 export interface FileRoutesByTo {
@@ -108,8 +124,10 @@ export interface FileRoutesByTo {
   '/panel/browse': typeof PanelBrowseRoute
   '/editor': typeof EditorIndexRoute
   '/panel': typeof PanelIndexRoute
+  '/panel/editor/$key': typeof PanelEditorKeyRoute
   '/panel/servers/$guildId': typeof PanelServersGuildIdRoute
   '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
+  '/panel/editor': typeof PanelEditorIndexRoute
   '/panel/tasks': typeof PanelTasksIndexRoute
 }
 export interface FileRoutesById {
@@ -123,8 +141,10 @@ export interface FileRoutesById {
   '/panel/browse': typeof PanelBrowseRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
+  '/panel/editor/$key': typeof PanelEditorKeyRoute
   '/panel/servers/$guildId': typeof PanelServersGuildIdRoute
   '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
+  '/panel/editor/': typeof PanelEditorIndexRoute
   '/panel/tasks/': typeof PanelTasksIndexRoute
 }
 export interface FileRouteTypes {
@@ -139,8 +159,10 @@ export interface FileRouteTypes {
     | '/panel/browse'
     | '/editor/'
     | '/panel/'
+    | '/panel/editor/$key'
     | '/panel/servers/$guildId'
     | '/panel/tasks/$taskId'
+    | '/panel/editor/'
     | '/panel/tasks/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -152,8 +174,10 @@ export interface FileRouteTypes {
     | '/panel/browse'
     | '/editor'
     | '/panel'
+    | '/panel/editor/$key'
     | '/panel/servers/$guildId'
     | '/panel/tasks/$taskId'
+    | '/panel/editor'
     | '/panel/tasks'
   id:
     | '__root__'
@@ -166,8 +190,10 @@ export interface FileRouteTypes {
     | '/panel/browse'
     | '/editor/'
     | '/panel/'
+    | '/panel/editor/$key'
     | '/panel/servers/$guildId'
     | '/panel/tasks/$taskId'
+    | '/panel/editor/'
     | '/panel/tasks/'
   fileRoutesById: FileRoutesById
 }
@@ -246,6 +272,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelBrowseRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/panel/editor/': {
+      id: '/panel/editor/'
+      path: '/editor'
+      fullPath: '/panel/editor/'
+      preLoaderRoute: typeof PanelEditorIndexRouteImport
+      parentRoute: typeof PanelRoute
+    }
+    '/panel/editor/$key': {
+      id: '/panel/editor/$key'
+      path: '/editor/$key'
+      fullPath: '/panel/editor/$key'
+      preLoaderRoute: typeof PanelEditorKeyRouteImport
+      parentRoute: typeof PanelRoute
+    }
     '/panel/servers/$guildId': {
       id: '/panel/servers/$guildId'
       path: '/servers/$guildId'
@@ -273,16 +313,20 @@ declare module '@tanstack/react-router' {
 interface PanelRouteChildren {
   PanelBrowseRoute: typeof PanelBrowseRoute
   PanelIndexRoute: typeof PanelIndexRoute
+  PanelEditorKeyRoute: typeof PanelEditorKeyRoute
   PanelServersGuildIdRoute: typeof PanelServersGuildIdRoute
   PanelTasksTaskIdRoute: typeof PanelTasksTaskIdRoute
+  PanelEditorIndexRoute: typeof PanelEditorIndexRoute
   PanelTasksIndexRoute: typeof PanelTasksIndexRoute
 }
 
 const PanelRouteChildren: PanelRouteChildren = {
   PanelBrowseRoute: PanelBrowseRoute,
   PanelIndexRoute: PanelIndexRoute,
+  PanelEditorKeyRoute: PanelEditorKeyRoute,
   PanelServersGuildIdRoute: PanelServersGuildIdRoute,
   PanelTasksTaskIdRoute: PanelTasksTaskIdRoute,
+  PanelEditorIndexRoute: PanelEditorIndexRoute,
   PanelTasksIndexRoute: PanelTasksIndexRoute,
 }
 

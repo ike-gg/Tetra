@@ -12,11 +12,14 @@ import {
 } from "@/lib/media/local-library";
 import { relativeTime } from "@/lib/relative-time";
 
+import { EDITOR_HOSTS, type EditorHost } from "./editor-host";
+
 type RecentEntry = LibraryEntry & { thumbnailUrl: string | null };
 
 // Files from earlier visits, read from this browser's storage only. Renders nothing until
-// it has something to show, so the prerendered page doesn't flash an empty list.
-export function RecentFiles() {
+// it has something to show, so the prerendered page doesn't flash an empty list. Both
+// hosts list the same files; each opens them in its own editor.
+export function RecentFiles({ host }: { host: EditorHost }) {
   const [entries, setEntries] = useState<RecentEntry[] | null>(null);
 
   useEffect(() => {
@@ -55,7 +58,7 @@ export function RecentFiles() {
         {entries.map((entry) => (
           <li key={entry.key} className="flex items-center bg-background">
             <Link
-              to="/editor/$key"
+              to={EDITOR_HOSTS[host].file}
               params={{ key: entry.key }}
               className="flex min-w-0 flex-1 cursor-default select-none items-center gap-3 p-2 hover:bg-surface active:bg-neutral-800"
             >
