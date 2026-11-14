@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BrandingRouteImport } from './routes/branding'
-import { Route as EditorRouteImport } from './routes/editor'
+import { Route as LogoRouteImport } from './routes/logo'
 import { Route as PanelRouteImport } from './routes/panel'
+import { Route as EditorIndexRouteImport } from './routes/editor.index'
+import { Route as EditorKeyRouteImport } from './routes/editor.$key'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -24,49 +26,75 @@ const BrandingRoute = BrandingRouteImport.update({
   path: '/branding',
   getParentRoute: () => rootRouteImport,
 } as any)
-const EditorRoute = EditorRouteImport.update({
-  id: '/editor',
-  path: '/editor',
+const LogoRoute = LogoRouteImport.update({
+  id: '/logo',
+  path: '/logo',
   getParentRoute: () => rootRouteImport,
-} as any).lazy(() => import('./routes/editor.lazy').then((d) => d.Route))
+} as any)
 const PanelRoute = PanelRouteImport.update({
   id: '/panel',
   path: '/panel',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/panel.lazy').then((d) => d.Route))
+const EditorIndexRoute = EditorIndexRouteImport.update({
+  id: '/editor/',
+  path: '/editor/',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/editor.index.lazy').then((d) => d.Route))
+const EditorKeyRoute = EditorKeyRouteImport.update({
+  id: '/editor/$key',
+  path: '/editor/$key',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() => import('./routes/editor.$key.lazy').then((d) => d.Route))
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
-  '/editor': typeof EditorRoute
+  '/logo': typeof LogoRoute
   '/panel': typeof PanelRoute
+  '/editor/$key': typeof EditorKeyRoute
+  '/editor/': typeof EditorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
-  '/editor': typeof EditorRoute
+  '/logo': typeof LogoRoute
   '/panel': typeof PanelRoute
+  '/editor/$key': typeof EditorKeyRoute
+  '/editor': typeof EditorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/branding': typeof BrandingRoute
-  '/editor': typeof EditorRoute
+  '/logo': typeof LogoRoute
   '/panel': typeof PanelRoute
+  '/editor/$key': typeof EditorKeyRoute
+  '/editor/': typeof EditorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/branding' | '/editor' | '/panel'
+  fullPaths:
+    '/' | '/branding' | '/logo' | '/panel' | '/editor/$key' | '/editor/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/branding' | '/editor' | '/panel'
-  id: '__root__' | '/' | '/branding' | '/editor' | '/panel'
+  to: '/' | '/branding' | '/logo' | '/panel' | '/editor/$key' | '/editor'
+  id:
+    | '__root__'
+    | '/'
+    | '/branding'
+    | '/logo'
+    | '/panel'
+    | '/editor/$key'
+    | '/editor/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BrandingRoute: typeof BrandingRoute
-  EditorRoute: typeof EditorRoute
+  LogoRoute: typeof LogoRoute
   PanelRoute: typeof PanelRoute
+  EditorKeyRoute: typeof EditorKeyRoute
+  EditorIndexRoute: typeof EditorIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,11 +113,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BrandingRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/editor': {
-      id: '/editor'
-      path: '/editor'
-      fullPath: '/editor'
-      preLoaderRoute: typeof EditorRouteImport
+    '/logo': {
+      id: '/logo'
+      path: '/logo'
+      fullPath: '/logo'
+      preLoaderRoute: typeof LogoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/panel': {
@@ -99,14 +127,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/editor/': {
+      id: '/editor/'
+      path: '/editor'
+      fullPath: '/editor/'
+      preLoaderRoute: typeof EditorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/editor/$key': {
+      id: '/editor/$key'
+      path: '/editor/$key'
+      fullPath: '/editor/$key'
+      preLoaderRoute: typeof EditorKeyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BrandingRoute: BrandingRoute,
-  EditorRoute: EditorRoute,
+  LogoRoute: LogoRoute,
   PanelRoute: PanelRoute,
+  EditorKeyRoute: EditorKeyRoute,
+  EditorIndexRoute: EditorIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

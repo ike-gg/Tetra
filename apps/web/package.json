@@ -7,9 +7,15 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "build:emote-atlas": "bun scripts/build-emote-atlas.ts"
+    "build:emote-atlas": "bun scripts/build-emote-atlas.ts",
+    "build:logo-reel": "bun scripts/build-logo-reel.ts"
   },
   "dependencies": {
+    "@jsquash/jpeg": "1.6.0",
+    "@jsquash/oxipng": "2.3.0",
+    "@jsquash/png": "3.1.1",
+    "@jsquash/resize": "2.1.1",
+    "@jsquash/webp": "1.5.0",
     "@tanstack/react-query": "^5.107.1",
     "@tanstack/react-router": "^1.170.46",
     "@tanstack/react-start": "^1.169.5",

@@ -1,18 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
+import { EmoteDropText } from "@/components/emote-drop-text";
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { INVITE_URL } from "@/lib/links";
 
-const INVITE_URL = "https://tetra.lol/invite";
-
-// Same ramp as the background shader, so the decode effect reads as part of it
-const SCRAMBLE_GLYPHS = ".:-=+*#%@";
-const SCRAMBLE_DELAY_MS = 450;
-const SCRAMBLE_STEP_MS = 45;
-const SCRAMBLE_STEPS_PER_CHAR = 3;
+// Lets the heading's rise get under way before the emotes start falling
+const ACCENT_DROP_DELAY_MS = 500;
 
 const DEMO_EMOTES = ["catJAM", "Sway", "GIGACHAD", "glorp", "NODDERS", "buh", "Aware"];
 const DEMO_TYPE_MS = 70;
@@ -20,45 +17,6 @@ const DEMO_HOLD_MS = 1800;
 
 const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-function useScramble(text: string) {
-  const [output, setOutput] = useState(text);
-
-  useEffect(() => {
-    if (prefersReducedMotion()) return;
-
-    let step = 0;
-    let interval: ReturnType<typeof setInterval> | undefined;
-    const randomGlyph = () =>
-      SCRAMBLE_GLYPHS[Math.floor(Math.random() * SCRAMBLE_GLYPHS.length)];
-
-    setOutput(text.replace(/\S/g, randomGlyph));
-
-    const timeout = setTimeout(() => {
-      interval = setInterval(() => {
-        step++;
-        const resolved = Math.floor(step / SCRAMBLE_STEPS_PER_CHAR);
-
-        setOutput(
-          [...text]
-            .map((char, index) =>
-              index < resolved || char === " " ? char : randomGlyph()
-            )
-            .join("")
-        );
-
-        if (resolved >= text.length) clearInterval(interval);
-      }, SCRAMBLE_STEP_MS);
-    }, SCRAMBLE_DELAY_MS);
-
-    return () => {
-      clearTimeout(timeout);
-      clearInterval(interval);
-    };
-  }, [text]);
-
-  return output;
-}
 
 function useTypedEmote() {
   const [state, setState] = useState({ index: 0, length: DEMO_EMOTES[0].length });
@@ -91,7 +49,6 @@ function useTypedEmote() {
 }
 
 export function Hero() {
-  const accent = useScramble("emotes");
   const { typed, done } = useTypedEmote();
 
   return (
@@ -106,21 +63,10 @@ export function Hero() {
           level={1}
           className="motion-safe:animate-hero-rise [animation-delay:350ms]"
         >
-          Your chat&apos;s{" "}
-          <Accent className="relative inline-block">
-            <span aria-hidden className="invisible">
-              emotes
-            </span>
-            <span aria-hidden className="absolute inset-0 font-mono font-normal">
-              {accent === "emotes" ? null : accent}
-            </span>
-            <span
-              className={`absolute inset-0 ${accent === "emotes" ? "" : "opacity-0"}`}
-            >
-              emotes
-            </span>
+          <span className="block">Add any emote.</span>
+          <Accent>
+            <EmoteDropText text="That's it." delayMs={ACCENT_DROP_DELAY_MS} />
           </Accent>
-          , now on Discord.
         </Heading>
 
         <Text
@@ -128,8 +74,9 @@ export function Hero() {
           tone="muted"
           className="motion-safe:animate-hero-rise mt-6 max-w-xl text-balance [animation-delay:500ms]"
         >
-          Add any emote from 7TV, BTTV, FFZ or a link with one command. Tetra squeezes it
-          under Discord&apos;s 256&nbsp;KB limit, so it just works.
+          Type a name or paste a link from 7TV, BTTV or FFZ. Tetra takes care of sizes and
+          Discord&apos;s limits for you, so there&apos;s nothing to tweak and nothing to
+          worry about.
         </Text>
 
         <div className="motion-safe:animate-hero-rise mt-10 flex flex-col items-center gap-3 sm:flex-row [animation-delay:650ms]">
@@ -151,16 +98,11 @@ export function Hero() {
           >
             <span className="text-brand-500">/</span>
             <span className="text-foreground">addemote</span>{" "}
-            <span className="text-muted">emote:</span>
+            <span className="text-muted">byname:</span>
             <span className="text-foreground">{typed}</span>
             <span
               className={`ml-px inline-block h-4 w-2 translate-y-0.5 bg-brand-500 ${done ? "motion-safe:animate-hero-blink" : ""}`}
             />
-            <span
-              className={`float-right text-muted text-xs leading-5 transition-opacity duration-300 ${done ? "opacity-100" : "opacity-0"}`}
-            >
-              <span className="text-brand-400">✓</span> added
-            </span>
           </div>
           <p className="mt-3 font-mono text-muted/70 text-xs tracking-widest">
             7TV · BTTV · FFZ · LINKS · MESSAGES

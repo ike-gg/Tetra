@@ -1,6 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 
+import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
@@ -12,6 +14,7 @@ import {
 } from "@/components/ui/segmented-control";
 import { SizeMeter } from "@/components/ui/size-meter";
 import { Slider } from "@/components/ui/slider";
+import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
@@ -130,7 +133,8 @@ function Section({
 }) {
   return (
     <section className="grid gap-8 border-border border-t py-16 lg:grid-cols-[16rem_1fr]">
-      <header className="flex flex-col gap-2">
+      {/* Stays in view beside its sheet while the sheet scrolls past, below the navbar */}
+      <header className="flex flex-col gap-2 lg:sticky lg:top-20 lg:self-start">
         <p className="font-mono text-brand-500 text-xs tracking-widest">[{index}]</p>
         <h2 className="font-semibold text-2xl tracking-tight">{title}</h2>
         <p className="font-mono text-muted text-xs leading-relaxed">{note}</p>
@@ -153,13 +157,16 @@ function Spec({ label, children }: { label: string; children: ReactNode }) {
 
 function BrandingPage() {
   return (
-    <div className="min-h-svh bg-background bg-[linear-gradient(var(--color-neutral-900)_1px,transparent_1px),linear-gradient(90deg,var(--color-neutral-900)_1px,transparent_1px)] bg-size-[24px_24px] min-[1152px]:bg-position-[calc(50%-12px)_0]">
+    <div className="relative isolate min-h-svh">
+      {/* Pinned to the viewport: the sheets scroll over a grid that stays put */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 bg-background bg-[linear-gradient(var(--color-neutral-900)_1px,transparent_1px),linear-gradient(90deg,var(--color-neutral-900)_1px,transparent_1px)] bg-size-[24px_24px] min-[1152px]:bg-position-[calc(50%-12px)_0]"
+      />
+      <Navbar />
       <div className="mx-auto max-w-6xl px-6 pb-24">
         <header className="flex flex-col gap-12 py-24">
-          <div className="flex h-6 items-center justify-between font-mono text-muted text-xs">
-            <Link to="/" className="hover:text-foreground">
-              ← <span className="text-brand-500">tetra</span>
-            </Link>
+          <div className="flex h-6 items-center justify-end font-mono text-muted text-xs">
             <span>docs/branding.md · rev. 2026-11</span>
           </div>
           <div className="relative -mr-px border border-border bg-background/80 p-12 md:h-[289px]">
@@ -290,7 +297,7 @@ function BrandingPage() {
               <p className="font-mono text-muted text-xs">
                 font-mono · Geist Mono · 100–900
               </p>
-              <p className="font-mono text-2xl">/addemote emote:catJAM</p>
+              <p className="font-mono text-2xl">/addemote byname:catJAM</p>
               <p className="text-muted">
                 ASCII art, labels, commands, technical captions.
               </p>
@@ -345,7 +352,6 @@ function BrandingPage() {
             <li>+ section labels: [01] / features</li>
             <li>+ terminal command lines</li>
             <li>+ faint texture, brand-500 at ~10%</li>
-            <li>+ decode effect on an accent word</li>
             <li>− meaning that only exists in ASCII</li>
           </ul>
         </Section>
@@ -357,7 +363,7 @@ function BrandingPage() {
         >
           <dl className="grid gap-4 sm:grid-cols-2">
             <Spec label="entrance">Rise and un-blur, 0.9s, staggered ~150 ms</Spec>
-            <Spec label="signature">Orange wave, ASCII decode, block cursor</Spec>
+            <Spec label="signature">Orange wave, emote drop, block cursor</Spec>
             <Spec label="hover">Instant color changes, no transitions, no scaling</Spec>
             <Spec label="reduced motion">
               Content appears instantly, background stops
@@ -462,6 +468,7 @@ function BrandingPage() {
           </div>
         </Section>
       </div>
+      <Footer />
     </div>
   );
 }
@@ -534,7 +541,11 @@ function ControlsSheet() {
       </div>
       <div className="flex flex-col gap-3 bg-background p-6 sm:col-span-2">
         <p className="font-mono text-muted text-xs">
-          &lt;Notice title action&gt; · a heads-up that doesn&apos;t block
+          &lt;Notice title action&gt; · a heads-up that doesn&apos;t block ·
+          &lt;Spinner&gt;
+        </p>
+        <p className="flex items-center gap-2 text-sm">
+          <Spinner /> Processing
         </p>
         <Notice
           title="This GIF is 7.40 MB, our editor is made for smaller ones"

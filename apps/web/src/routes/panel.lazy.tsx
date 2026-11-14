@@ -4,10 +4,10 @@ import "@/styles/ui-sdk.css";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
-import { EmoteEditor } from "@/components/editor/emote-editor";
+import { MediaEditor } from "@/components/editor/media-editor";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { type EmoteFile, loadEmoteFile, releaseEmoteFile } from "@/lib/gif/emote-file";
+import { loadMediaFile, type MediaFile, releaseMediaFile } from "@/lib/media/media-file";
 
 export const Route = createLazyFileRoute("/panel")({
   component: PanelPage,
@@ -17,24 +17,24 @@ const SAMPLE_EMOTE = { url: "/panel/sample-emote.gif", name: "catJAM.gif" };
 
 // Mockup: no auth and no API yet, the editor runs on a bundled sample emote
 function PanelPage() {
-  const [file, setFile] = useState<EmoteFile | null>(null);
+  const [file, setFile] = useState<MediaFile | null>(null);
 
   useEffect(() => {
-    let loaded: EmoteFile | null = null;
+    let loaded: MediaFile | null = null;
     let cancelled = false;
 
     void fetch(SAMPLE_EMOTE.url)
       .then((response) => response.blob())
-      .then((blob) => loadEmoteFile(blob, SAMPLE_EMOTE.name))
+      .then((blob) => loadMediaFile(blob, SAMPLE_EMOTE.name))
       .then((next) => {
-        if (cancelled) return releaseEmoteFile(next);
+        if (cancelled) return releaseMediaFile(next);
         loaded = next;
         setFile(next);
       });
 
     return () => {
       cancelled = true;
-      if (loaded) releaseEmoteFile(loaded);
+      if (loaded) releaseMediaFile(loaded);
     };
   }, []);
 
@@ -49,9 +49,10 @@ function PanelPage() {
   }
 
   return (
-    <EmoteEditor
+    <MediaEditor
       source={file}
-      section="Emotes"
+      section={{ label: "Emotes", to: "/panel" }}
+      initialDiscord
       actions={({ fits, nameValid }) => (
         <Button
           variant="primary"

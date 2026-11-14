@@ -54,7 +54,10 @@ export const runGifsicle = async (
         data: [{ file, name: "input.gif" }],
         command: commands,
         folder: [],
-        isStrict: true,
+        // Strict mode fails the run on any stderr line, including harmless warnings like
+        // "huge GIF, conserving memory" on big files. Real failures write no output file,
+        // which callers already treat as an error.
+        isStrict: false,
       },
       [file]
     );

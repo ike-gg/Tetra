@@ -4,11 +4,11 @@ Project description and lasting knowledge for people and agents working on this 
 
 - [core.md](core.md) – Discord bot + REST API (`apps/core`)
 - [web.md](web.md) – website and panel (`apps/web`)
-- [branding.md](branding.md) – visual and verbal identity (rendered at `/branding`)
+- [branding.md](branding.md) – visual and verbal identity (rendered at `/branding`, logo at `/logo`)
 
 ## What Tetra is
 
-A Discord bot for managing emotes. Main feature: adding an emote from 7TV / BTTV / FFZ / a link / a message with **automatic optimization** to fit Discord's 256 KB emoji limit. The bot also has `/media` (download media from social posts via Cobalt). A web panel extends it: managing server emotes, restoring removed ones, editing emotes in the browser.
+A Discord bot for managing emotes. Main feature: adding an emote from 7TV / BTTV / FFZ / a link / a message with **automatic optimization** to fit Discord's 256 KB emoji limit. The bot also has `/media` (download media from social posts via Cobalt). A web panel extends it: managing server emotes, restoring removed ones, editing emotes in the browser. The website also has a public editor (`/editor`, no account) that crops, trims, resizes and compresses GIFs and images entirely in the browser; the panel will reuse it (see [web/editor.md](web/editor.md)).
 
 ## Monorepo
 

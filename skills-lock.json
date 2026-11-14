@@ -1,6 +1,12 @@
 {
   "version": 2,
   "skills": {
+    "animate": {
+      "source": "emilkowalski/skills",
+      "sourceType": "github",
+      "skillPath": "skills/animate/SKILL.md",
+      "computedHash": "c622e29fa956aea703dc4e2b8726d9a017d438beb284a60bc3fdb2540c602102"
+    },
     "apple-design": {
       "source": "emilkowalski/skills",
       "sourceType": "github",

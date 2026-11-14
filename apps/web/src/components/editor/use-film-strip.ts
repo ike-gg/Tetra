@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 
-import type { EmoteFile } from "@/lib/gif/emote-file";
-import { filmStripCommand } from "@/lib/gif/emote-pipeline";
+import { filmStripCommand } from "@/lib/gif/gif-commands";
 import { runGifsicle } from "@/lib/gif/gifsicle";
+import type { MediaFile } from "@/lib/media/media-file";
 
 export const FILM_STRIP_FRAMES = 16;
 export const FILM_STRIP_TILE = 56;
 
 // Evenly spaced still frames for the trim timeline, extracted once per file
-export function useFilmStrip(source: EmoteFile) {
+export function useFilmStrip(source: MediaFile) {
   const [frames, setFrames] = useState<string[]>([]);
 
   useEffect(() => {
+    if (source.kind !== "gif") return;
     const controller = new AbortController();
     let urls: string[] = [];
 

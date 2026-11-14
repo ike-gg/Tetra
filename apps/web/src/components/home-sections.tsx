@@ -1,12 +1,14 @@
-import { Link } from "@tanstack/react-router";
+import { useRef, useState } from "react";
 
+import { Footer } from "@/components/footer";
+import { Stats } from "@/components/stats";
+import { TetraField } from "@/components/tetra-field";
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-
-const INVITE_URL = "https://tetra.lol/invite";
+import { INVITE_URL } from "@/lib/links";
 
 const FEATURES = [
   {
@@ -53,12 +55,9 @@ export function HomeSections() {
           {FEATURES.map((feature) => (
             <article
               key={feature.title}
-              className="group flex flex-col gap-6 bg-background p-8 hover:bg-surface"
+              className="flex flex-col gap-6 bg-background p-8"
             >
-              <pre
-                aria-hidden
-                className="font-mono text-muted text-sm leading-tight group-hover:text-brand-500"
-              >
+              <pre aria-hidden className="font-mono text-muted text-sm leading-tight">
                 {feature.art.join("\n")}
               </pre>
               <div>
@@ -96,48 +95,46 @@ export function HomeSections() {
         </ol>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-28">
-        <div className="relative overflow-hidden border border-border bg-surface px-8 py-20 text-center">
-          <pre
-            aria-hidden
-            className="pointer-events-none absolute inset-0 select-none overflow-hidden font-mono text-[10px] text-brand-500/10 leading-[11px]"
-          >
-            {Array.from({ length: 40 }, (_, row) =>
-              ".:-=+*#%@".repeat(30).slice(row % 9, (row % 9) + 220)
-            ).join("\n")}
-          </pre>
-          <div className="relative">
-            <Heading level={2} className="mx-auto max-w-xl">
-              Give your server <Accent>better</Accent> emotes.
-            </Heading>
-            <Text tone="muted" className="mx-auto mt-4 max-w-md">
-              Takes a minute to set up.
-            </Text>
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Button variant="primary" size="lg" render={<a href={INVITE_URL} />}>
-                Add to Discord <span aria-hidden>→</span>
-              </Button>
-              <Button size="lg" render={<Link to="/panel" />}>
-                Open panel
-              </Button>
-            </div>
+      <Stats />
+
+      <CallToAction />
+
+      <Footer />
+    </div>
+  );
+}
+
+function CallToAction() {
+  const buttonRef = useRef<HTMLDivElement>(null);
+  // Hover or keyboard focus on the button fills the whole background with "tetra"
+  const [reveal, setReveal] = useState(false);
+
+  return (
+    <section className="mx-auto max-w-6xl px-6 py-28">
+      <div className="relative overflow-hidden border border-border bg-surface px-8 py-20 text-center">
+        <TetraField revealAll={reveal} originRef={buttonRef} />
+        <div className="relative">
+          <Heading level={2} className="mx-auto max-w-xl">
+            Give your server <Accent>better</Accent> emotes.
+          </Heading>
+          <Text tone="muted" className="mx-auto mt-4 max-w-md">
+            Ready the moment it joins your server.
+          </Text>
+          <div ref={buttonRef} className="mt-10 inline-flex">
+            <Button
+              variant="primary"
+              size="lg"
+              render={<a href={INVITE_URL} />}
+              onPointerEnter={() => setReveal(true)}
+              onPointerLeave={() => setReveal(false)}
+              onFocus={() => setReveal(true)}
+              onBlur={() => setReveal(false)}
+            >
+              Add to Discord <span aria-hidden>→</span>
+            </Button>
           </div>
         </div>
-      </section>
-
-      <footer className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 border-border border-t px-6 py-10 font-mono text-muted text-xs sm:flex-row">
-        <span>
-          <span className="text-brand-500">tetra</span> · emote manager for discord
-        </span>
-        <nav className="flex gap-6">
-          <a href={INVITE_URL} className="hover:text-foreground">
-            invite
-          </a>
-          <Link to="/panel" className="hover:text-foreground">
-            panel
-          </Link>
-        </nav>
-      </footer>
-    </div>
+      </div>
+    </section>
   );
 }

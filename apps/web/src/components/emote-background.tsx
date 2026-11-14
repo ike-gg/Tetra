@@ -30,17 +30,44 @@ const TRAIL_SPACING = 14;
 // Cursor speed (px per 60 Hz frame) that disturbs the field fully
 const TRAIL_FULL_SPEED = 24;
 const TRAIL_DECAY = 0.9;
-// Clicking the background drops a pebble: a water ripple runs across the plane, lifting
-// and bending the glyphs, with emote images glinting through on the crests
-const CLICK_WAVES = 4;
-const CLICK_WAVE_SPEED = 520;
-const CLICK_WAVE_LIFE_MS = 1900;
-// Width of the ripple packet and the distance between its rings
-const CLICK_WAVE_WIDTH = 150;
-const CLICK_WAVE_LENGTH = 64;
-// How far the surface bends and lifts at a crest
-const CLICK_WAVE_AMPLITUDE = 8;
-const CLICK_IGNORE = "a, button, input, textarea, select, label, [role], [data-slot]";
+// Holding the mouse button on bare background presses a shallow dent into the plane: a
+// hollow in the surface itself (so it follows the perspective), shown by content shifting
+// a little along the tilt and by its walls catching the light by their slope. It follows
+// the cursor while held and springs back on release.
+const DENT_RADIUS = 150;
+// How far content in the deepest point shifts along the plane
+const DENT_SHIFT = 15;
+// Light on the walls: the far wall faces the light, the near one falls into shade
+const DENT_SLOPE_LIGHT = 0.525;
+// Extra darkening at the bottom of the hollow
+const DENT_SHADE = 0.27;
+// Apple-style springs (damping ratio, response in seconds): the press sinks in without
+// overshoot; the release swings a touch past flat, like elastic would
+const DENT_PRESS_SPRING = { damping: 1, response: 0.45 };
+const DENT_RELEASE_SPRING = { damping: 0.85, response: 0.5 };
+const INTERACTIVE = "a, button, input, textarea, select, label, [role], [data-slot]";
+
+// True when the press lands on bare background: no control, no text and no painted box
+// (fill or border) between the cursor and the canvas. Only then does a press dent the
+// field and keep text from being selected; anywhere else the page behaves normally.
+const isBareBackground = (target: EventTarget | null) => {
+  if (!(target instanceof Element)) return false;
+  if (target === document.documentElement || target === document.body) return true;
+  if (target.closest(INTERACTIVE)) return false;
+  const hasText = [...target.childNodes].some(
+    (node) => node.nodeType === Node.TEXT_NODE && node.textContent?.trim()
+  );
+  if (hasText) return false;
+  const style = getComputedStyle(target);
+  const filled = style.backgroundColor !== "rgba(0, 0, 0, 0)";
+  const bordered = [
+    style.borderTopWidth,
+    style.borderRightWidth,
+    style.borderBottomWidth,
+    style.borderLeftWidth,
+  ].some((width) => Number.parseFloat(width) > 0);
+  return !filled && !bordered;
+};
 const SCROLL_SPEED = 45;
 // Page scroll moves the background this much slower, so it feels very far away
 const PAGE_PARALLAX = 0.12;
@@ -86,13 +113,10 @@ uniform vec3 uTrail[${TRAIL_POINTS}];
 uniform int uTrailCount;
 uniform float uTrailRadius;
 uniform float uAtlasCell;
-uniform vec4 uClickWaves[${CLICK_WAVES}];
-uniform int uClickWaveCount;
-uniform float uClickWaveSpeed;
-uniform float uClickWaveWidth;
-uniform float uClickWaveLife;
-uniform float uClickWaveLength;
-uniform float uClickWaveAmplitude;
+uniform vec2 uDentCenter;
+uniform float uDent;
+uniform float uDentRadius;
+uniform float uDentShift;
 uniform float uReveal;
 uniform float uRevealRadius;
 
@@ -148,30 +172,14 @@ void main() {
     disturb = max(disturb, point.z * exp(-d * d));
   }
 
-  // Water ripples: a packet of rings around each expanding front. The surface height
-  // lifts the content and its slope bends it outwards, like refraction through water.
-  float waterHeight = 0.0;
-  vec2 waterOffset = vec2(0.0);
-  for (int i = 0; i < ${CLICK_WAVES}; i++) {
-    if (i >= uClickWaveCount) break;
-    vec4 wave = uClickWaves[i];
-    vec2 fromCenter = plane - wave.xy;
-    float d = length(fromCenter);
-    float x = d - wave.z * uClickWaveSpeed;
-    // Short lead in front of the ring, a longer tail of smaller rings behind it
-    float spread = uClickWaveWidth * (x < 0.0 ? 0.9 : 0.35);
-    float life = 1.0 - wave.z / uClickWaveLife;
-    float envelope = exp(-(x * x) / (spread * spread)) * life * life;
-    float phase = x / uClickWaveLength * 6.2832;
-
-    waterHeight += sin(phase) * envelope;
-    waterOffset += (d > 0.0 ? fromCenter / d : vec2(0.0)) * cos(phase) * envelope;
-  }
-  world -= waterOffset * uClickWaveAmplitude + vec2(0.0, waterHeight * uClickWaveAmplitude);
-  float crest = clamp(waterHeight, 0.0, 1.0);
-  disturb = max(disturb, crest * crest * 0.5);
-  float waveEdge = crest * crest * 0.25;
-  float waterLight = 1.0 + waterHeight * 0.25;
+  // Press dent: a Gaussian hollow in the plane. Its depth shifts content along the tilt,
+  // its slope (the gradient, in units of the radius) lights the walls.
+  vec2 fromDent = plane - uDentCenter;
+  float dentFalloff = exp(-dot(fromDent, fromDent) / (uDentRadius * uDentRadius));
+  float dent = uDent * dentFalloff;
+  vec2 dentSlope = dent * 2.0 * fromDent / uDentRadius;
+  world.y += dent * uDentShift;
+  float dentLight = 1.0 + dentSlope.y * ${DENT_SLOPE_LIGHT} - dent * ${DENT_SHADE};
 
   vec2 charCoord = world / uCharSize;
   vec2 cell = floor(charCoord);
@@ -204,7 +212,6 @@ void main() {
   vec3 gray = mix(vec3(0.35), vec3(1.0), tone) * uIdleBrightness;
   vec3 colored = rgb * 1.15;
   vec3 color = mix(gray, colored, reveal);
-  color = mix(color, WAVE_COLOR * mix(0.9, 1.5, luma), waveEdge);
 
   float fade = 1.0 - smoothstep(0.35, 1.0, screen.y / uResolution.y) * 0.9;
 
@@ -227,7 +234,7 @@ void main() {
   float melt = smoothstep(0.2, 0.95, disturb) * 0.85;
 
   vec3 layer = mix(ascii, melted, melt);
-  outColor = vec4(background + layer * waterLight * fade * shown * uDim, 1.0);
+  outColor = vec4(background + layer * dentLight * fade * shown * uDim, 1.0);
 }
 `;
 
@@ -334,24 +341,25 @@ export function EmoteBackground() {
       mouse.y = event.clientY;
       revealTarget = 1;
     };
-    const clickWaves: { x: number; y: number; start: number }[] = [];
+    const press: { x: number; y: number; held: boolean } = { x: 0, y: 0, held: false };
 
     const onPointerDown = (event: PointerEvent) => {
-      if (reducedMotion || event.button !== 0) return;
-      if (event.target instanceof Element && event.target.closest(CLICK_IGNORE)) return;
-
-      clickWaves.push({ x: event.clientX, y: event.clientY, start: performance.now() });
-      if (clickWaves.length > CLICK_WAVES) clickWaves.shift();
+      if (reducedMotion || event.button !== 0 || !isBareBackground(event.target)) return;
+      press.x = event.clientX;
+      press.y = event.clientY;
+      press.held = true;
     };
-    // Rapid clicks fire waves; without this, double and triple clicks select page text.
-    // Dragging to select still works, since that starts with a single click.
+    const onPointerUp = () => {
+      press.held = false;
+    };
+    // Holding the button on bare background presses the dent; without this, the press
+    // (and any drag from it) would start selecting the page text around it
     const onMouseDown = (event: MouseEvent) => {
-      if (event.detail < 2) return;
-      if (event.target instanceof Element && event.target.closest(CLICK_IGNORE)) return;
-      event.preventDefault();
+      if (event.button === 0 && isBareBackground(event.target)) event.preventDefault();
     };
     const onPointerLeave = () => {
       revealTarget = 0;
+      press.held = false;
       lastPointer.tracking = false;
     };
 
@@ -465,40 +473,52 @@ export function EmoteBackground() {
         gl.uniform1f(uTrailRadius, TRAIL_RADIUS * dpr);
       };
 
-      const uClickWaves = uniform("uClickWaves");
-      const uClickWaveCount = uniform("uClickWaveCount");
-      gl.uniform1f(uniform("uClickWaveLife"), CLICK_WAVE_LIFE_MS / 1000);
-      const uClickWaveSpeed = uniform("uClickWaveSpeed");
-      const uClickWaveWidth = uniform("uClickWaveWidth");
-      const uClickWaveLength = uniform("uClickWaveLength");
-      const uClickWaveAmplitude = uniform("uClickWaveAmplitude");
-      const clickWaveData = new Float32Array(CLICK_WAVES * 4);
+      const uDentCenter = uniform("uDentCenter");
+      const uDent = uniform("uDent");
+      const uDentRadius = uniform("uDentRadius");
+      const uDentShift = uniform("uDentShift");
+      const dent = { depth: 0, velocity: 0, time: null as number | null };
 
-      const uploadClickWaves = (
-        time: number,
-        width: number,
-        height: number,
-        dpr: number
-      ) => {
-        while (clickWaves.length > 0 && time - clickWaves[0].start > CLICK_WAVE_LIFE_MS) {
-          clickWaves.shift();
+      // Spring integrated per frame, so the release can swing past flat and settle
+      const updateDent = (time: number) => {
+        const dt = Math.min((time - (dent.time ?? time)) / 1000, 1 / 30);
+        dent.time = time;
+        const target = press.held ? 1 : 0;
+        const { damping, response } = press.held
+          ? DENT_PRESS_SPRING
+          : DENT_RELEASE_SPRING;
+        const omega = (2 * Math.PI) / response;
+        const acceleration =
+          omega * omega * (target - dent.depth) - 2 * damping * omega * dent.velocity;
+        dent.velocity += acceleration * dt;
+        dent.depth += dent.velocity * dt;
+        if (
+          !press.held &&
+          Math.abs(dent.depth) < 1e-3 &&
+          Math.abs(dent.velocity) < 1e-2
+        ) {
+          dent.depth = 0;
+          dent.velocity = 0;
         }
+      };
 
+      const uploadDent = (width: number, height: number, dpr: number) => {
+        // While held the dent follows the cursor; after release it stays where it was let go
+        if (press.held && mouse.x > -1e3) {
+          press.x = mouse.x;
+          press.y = mouse.y;
+        }
         const horizon = height * HORIZON;
-        clickWaves.forEach((wave, i) => {
-          const y = Math.min(height - wave.y * dpr, height);
-          const depth = horizon / (horizon - y);
-          clickWaveData[i * 4] = (wave.x * dpr - width / 2) * depth;
-          clickWaveData[i * 4 + 1] = horizon * (depth - 1);
-          clickWaveData[i * 4 + 2] = Math.max(time - wave.start, 0) / 1000;
-        });
-
-        gl.uniform4fv(uClickWaves, clickWaveData);
-        gl.uniform1i(uClickWaveCount, clickWaves.length);
-        gl.uniform1f(uClickWaveSpeed, CLICK_WAVE_SPEED * dpr);
-        gl.uniform1f(uClickWaveWidth, CLICK_WAVE_WIDTH * dpr);
-        gl.uniform1f(uClickWaveLength, CLICK_WAVE_LENGTH * dpr);
-        gl.uniform1f(uClickWaveAmplitude, CLICK_WAVE_AMPLITUDE * dpr);
+        const y = Math.min(height - press.y * dpr, height);
+        const depth = horizon / (horizon - y);
+        gl.uniform2f(
+          uDentCenter,
+          (press.x * dpr - width / 2) * depth,
+          horizon * (depth - 1)
+        );
+        gl.uniform1f(uDent, dent.depth);
+        gl.uniform1f(uDentRadius, DENT_RADIUS * dpr);
+        gl.uniform1f(uDentShift, DENT_SHIFT * dpr);
       };
 
       const render = (time: number) => {
@@ -514,6 +534,7 @@ export function EmoteBackground() {
 
         reveal += (revealTarget - reveal) * 0.08;
         updateTrail(time);
+        updateDent(time);
 
         const pageScroll = window.scrollY;
         const autoScroll = reducedMotion ? 0 : (time / 1000) * SCROLL_SPEED;
@@ -531,7 +552,7 @@ export function EmoteBackground() {
         gl.uniform1f(uDim, 1 - (1 - SCROLLED_DIM) * scrolled);
         gl.uniform2f(uMouse, mouse.x * dpr, height - mouse.y * dpr);
         uploadTrail(width, height, dpr);
-        uploadClickWaves(time, width, height, dpr);
+        uploadDent(width, height, dpr);
         gl.uniform1f(uReveal, reveal);
         gl.uniform1f(uIntro, 1 - (1 - intro) ** 3);
         gl.uniform1f(uTime, reducedMotion ? 0 : time / 1000);
@@ -546,6 +567,9 @@ export function EmoteBackground() {
 
     window.addEventListener("pointermove", onPointerMove);
     window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+    window.addEventListener("blur", onPointerUp);
     window.addEventListener("mousedown", onMouseDown);
     document.documentElement.addEventListener("pointerleave", onPointerLeave);
     start().catch((error) => console.error("Emote background failed", error));
@@ -555,6 +579,9 @@ export function EmoteBackground() {
       cancelAnimationFrame(frame);
       window.removeEventListener("pointermove", onPointerMove);
       window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+      window.removeEventListener("blur", onPointerUp);
       window.removeEventListener("mousedown", onMouseDown);
       document.documentElement.removeEventListener("pointerleave", onPointerLeave);
     };

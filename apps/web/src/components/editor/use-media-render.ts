@@ -1,49 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { EmoteFile } from "@/lib/gif/emote-file";
-import { buildCommands, type EmoteEdit } from "@/lib/gif/emote-pipeline";
-import { runGifsicle } from "@/lib/gif/gifsicle";
-import { type GifInfo, parseGif } from "@/lib/gif/parse-gif";
 import { createLatestTask } from "@/lib/latest-task";
-
-export type EmoteRender = { url: string; blob: Blob; bytes: number; info: GifInfo };
+import type { Edit } from "@/lib/media/edit";
+import type { MediaFile } from "@/lib/media/media-file";
+import { type MediaRender, renderMedia } from "@/lib/media/render";
 
 type RenderState = {
-  result: EmoteRender | null;
+  result: MediaRender | null;
   pending: boolean;
   error: string | null;
 };
 
-const renderEmote = async (
-  source: EmoteFile,
-  edit: EmoteEdit,
-  signal: AbortSignal
-): Promise<EmoteRender> => {
-  const [output] = await runGifsicle(
-    source.buffer,
-    buildCommands(source.info, edit),
-    signal
-  );
-  if (!output) throw new Error("Processing produced no file.");
-
-  const blob = new Blob([output.file], { type: "image/gif" });
-  return {
-    url: URL.createObjectURL(blob),
-    blob,
-    bytes: blob.size,
-    info: parseGif(await blob.arrayBuffer()),
-  };
-};
-
 // Every edit aborts the render in flight (terminating its worker) and starts over, so the
 // result on screen always belongs to the latest settings
-export function useEmoteRender(source: EmoteFile, edit: EmoteEdit) {
+export function useMediaRender(source: MediaFile, edit: Edit) {
   const [state, setState] = useState<RenderState>({
     result: null,
     pending: true,
     error: null,
   });
-  const task = useRef<{ request: (edit: EmoteEdit) => void } | null>(null);
+  const task = useRef<{ request: (edit: Edit) => void } | null>(null);
   const latest = useRef(edit);
   latest.current = edit;
   const editKey = JSON.stringify(edit);
@@ -54,7 +30,7 @@ export function useEmoteRender(source: EmoteFile, edit: EmoteEdit) {
     setState({ result: null, pending: true, error: null });
 
     const current = createLatestTask(
-      (next: EmoteEdit, signal) => renderEmote(source, next, signal),
+      (next: Edit, signal) => renderMedia(source, next, signal),
       {
         onStart: () => setState((previous) => ({ ...previous, pending: true })),
         onResult: (result) => {

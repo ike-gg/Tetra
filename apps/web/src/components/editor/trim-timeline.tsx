@@ -5,26 +5,35 @@ import {
   SliderThumb,
   SliderTrack,
 } from "@ui-sdk/react/slider";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/cn";
-import type { Trim } from "@/lib/gif/emote-pipeline";
-import type { GifInfo } from "@/lib/gif/parse-gif";
+import type { Trim } from "@/lib/media/edit";
+import type { MediaInfo } from "@/lib/media/media-file";
 
 import { FILM_STRIP_TILE } from "./use-film-strip";
 
 const seconds = (value: number) => `${value.toFixed(2)}s`;
 
 type TrimTimelineProps = {
-  info: GifInfo;
+  info: MediaInfo;
   frames: string[];
   value: Trim;
-  onValueChange: (value: Trim) => void;
+  // Called once per interaction (pointer up, key press), not on every step of a drag
+  onValueCommit: (value: Trim) => void;
 };
 
 // Works in frame indices, not seconds: GIF frames can have different delays, so only
-// indices map exactly onto what gifsicle keeps
-export function TrimTimeline({ info, frames, value, onValueChange }: TrimTimelineProps) {
-  const [start, end] = value;
+// indices map exactly onto what gifsicle keeps.
+// The handles, the dimming and the times follow the drag live from a local draft; the GIF
+// is only re-rendered on release, since every render of a long GIF is a full gifsicle run.
+export function TrimTimeline({ info, frames, value, onValueCommit }: TrimTimelineProps) {
+  const [draft, setDraft] = useState<Trim>(value);
+  const [start, end] = draft;
+
+  // Reset, a restored edit or another file replace the trim from outside
+  useEffect(() => setDraft(value), [value]);
+
   const last = info.frames - 1;
   const startTime =
     info.delays.slice(0, start).reduce((sum, delay) => sum + delay, 0) / 100;
@@ -36,8 +45,9 @@ export function TrimTimeline({ info, frames, value, onValueChange }: TrimTimelin
   return (
     <Slider
       aria-label="Trim"
-      value={value}
-      onValueChange={(next) => onValueChange([next[0], next[1]])}
+      value={draft}
+      onValueChange={(next) => setDraft([next[0], next[1]])}
+      onValueCommit={(next) => onValueCommit([next[0], next[1]])}
       min={0}
       max={last}
       step={1}
