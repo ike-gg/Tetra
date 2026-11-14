@@ -18,12 +18,10 @@ import {
 import { QuickAdd } from "@/components/panel/quick-add";
 import { buttonClassName } from "@/components/ui/button";
 import { looksLikeEmoteLink } from "@/lib/catalog";
-import type { PanelEmote } from "@/lib/emote";
 
 export type QuickAddRequest = {
   text?: string;
-  emote?: PanelEmote;
-  /** Preselects this server instead of the last used ones. */
+  /** Preselects this server instead of the last used one. */
   guildId?: string;
 };
 
@@ -31,7 +29,7 @@ const QuickAddContext = createContext<(request: QuickAddRequest) => void>(
   () => undefined
 );
 
-/** Opens the Quick add dialog, prefilled with a link or an emote. */
+/** Opens the Quick add dialog, prefilled with a link. */
 export const useQuickAdd = () => useContext(QuickAddContext);
 
 const isEditable = (target: EventTarget | null) =>
@@ -40,7 +38,7 @@ const isEditable = (target: EventTarget | null) =>
 
 /**
  * The Quick add dialog for the whole panel. A link pasted while no field has focus opens
- * it prefilled; Browse opens it with the emote that was clicked.
+ * it prefilled; plain text never does.
  */
 export function QuickAddProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
@@ -74,9 +72,7 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
         <DialogBackdrop className="bg-black/60" />
         {/* Top of the screen instead of centered, like a sheet (no vertically centered screens) */}
         <DialogContent
-          initialFocus={
-            request.emote ? 'input[name="emote-name"]' : 'input[name="emote-link"]'
-          }
+          initialFocus='input[name="emote-query"]'
           className="relative mt-[8vh] mb-auto flex max-h-[84dvh] w-[min(34rem,calc(100%-2rem))] flex-col gap-4 overflow-y-auto overscroll-contain border-border bg-background p-5 shadow-none sm:p-6"
         >
           <div className="flex items-center justify-between gap-4">
@@ -90,10 +86,10 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
           <QuickAdd
             key={request.id}
             compact
-            initialText={request.text ?? request.emote?.pageUrl ?? request.emote?.url}
-            initialEmote={request.emote}
+            initialText={request.text}
             defaultGuildId={request.guildId}
             onAdded={() => setOpen(false)}
+            onSearch={() => setOpen(false)}
           />
         </DialogContent>
       </Dialog>

@@ -5,7 +5,6 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { EmoteGrid } from "@/components/emote/emote-grid";
 import { EmoteMenu } from "@/components/emote/emote-menu";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
-import { useQuickAdd } from "@/components/panel/quick-add-dialog";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Notice } from "@/components/ui/notice";
@@ -99,14 +98,16 @@ function PanelBrowse() {
           Browse emotes
         </Heading>
         <Text size="sm" tone="muted">
-          Click an emote to name it and add it
+          Right-click or long-press an emote to add it
           {guild ? (
             <>
               {" "}
               to <span className="text-foreground">{guild.name}</span>
             </>
-          ) : null}
-          . Right-click or long-press for more.
+          ) : (
+            " to a server"
+          )}
+          .
         </Text>
       </div>
 
@@ -173,7 +174,6 @@ type ResultsProps = {
 
 function Results({ provider, query, guild }: ResultsProps) {
   const results = useInfiniteQuery(searchEmotesQueryOptions(provider, query));
-  const quickAdd = useQuickAdd();
   const { hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage } =
     results;
 
@@ -198,11 +198,6 @@ function Results({ provider, query, guild }: ResultsProps) {
       void fetchNextPage();
     }
   }, [hasNextPage, isFetchingNextPage, isFetchNextPageError, fetchNextPage]);
-
-  const onOpen = useCallback(
-    (emote: PanelEmote) => quickAdd({ emote, guildId: guild?.id }),
-    [quickAdd, guild?.id]
-  );
 
   const headingId = useId();
   const name = PROVIDER_NAMES[provider];
@@ -235,7 +230,7 @@ function Results({ provider, query, guild }: ResultsProps) {
       )}
 
       {emotes.length > 0 && (
-        <EmoteMenu kind="catalog" guild={guild} onOpen={onOpen}>
+        <EmoteMenu kind="catalog" guild={guild} selectable={false}>
           <EmoteGrid emotes={emotes} label={title} onEndReached={loadMore} />
         </EmoteMenu>
       )}

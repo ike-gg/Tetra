@@ -7,10 +7,10 @@ import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
-import { Checkbox, CheckboxGroup } from "@/components/ui/checkbox";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 import { Notice } from "@/components/ui/notice";
+import { Radio, RadioGroup } from "@/components/ui/radio";
 import {
   SegmentedControl,
   SegmentedControlItem,
@@ -562,7 +562,7 @@ function ControlsSheet() {
   const [size, setSize] = useState(96);
   const [name, setName] = useState("catJAM");
   const [trimEdges, setTrimEdges] = useState(true);
-  const [servers, setServers] = useState(["Chat Cafe"]);
+  const [server, setServer] = useState<string | null>("Chat Cafe");
   const nameError = /^[A-Za-z0-9_]{2,32}$/.test(name)
     ? undefined
     : "2–32 letters, numbers or _.";
@@ -571,7 +571,7 @@ function ControlsSheet() {
     <div className="grid gap-px bg-border sm:grid-cols-2">
       <div className="flex flex-col gap-3 bg-background p-6">
         <p className="font-mono text-muted text-xs">
-          &lt;SegmentedControl&gt; · &lt;Slider&gt; · &lt;Switch&gt; · &lt;Checkbox&gt;
+          &lt;SegmentedControl&gt; · &lt;Slider&gt; · &lt;Switch&gt; · &lt;Radio&gt;
         </p>
         <SegmentedControl
           aria-label="View"
@@ -598,26 +598,26 @@ function ControlsSheet() {
           onCheckedChange={setTrimEdges}
           className="mt-3"
         />
-        <CheckboxGroup
-          aria-label="Servers"
-          value={servers}
-          onValueChange={setServers}
+        <RadioGroup
+          aria-label="Server"
+          value={server}
+          onValueChange={setServer}
           className="mt-3 flex flex-col gap-2"
         >
-          {["Chat Cafe", "Full House"].map((server, index) => (
-            // biome-ignore lint/a11y/noLabelWithoutControl: Checkbox renders the control inside the label, as ui-sdk documents
+          {["Chat Cafe", "Emote Lab", "Full House"].map((option, index) => (
+            // biome-ignore lint/a11y/noLabelWithoutControl: Radio renders the control inside the label, as ui-sdk documents
             <label
-              key={server}
+              key={option}
               className="flex cursor-default select-none items-center gap-2.5 text-sm"
             >
-              <Checkbox value={server} disabled={index === 1} />
-              {server}
-              {index === 1 && (
+              <Radio value={option} disabled={index === 2} />
+              {option}
+              {index === 2 && (
                 <span className="font-mono text-muted text-xs">animated full</span>
               )}
             </label>
           ))}
-        </CheckboxGroup>
+        </RadioGroup>
       </div>
       <div className="flex flex-col gap-3 bg-background p-6">
         <p className="font-mono text-muted text-xs">

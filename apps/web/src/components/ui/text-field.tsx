@@ -24,6 +24,8 @@ type TextFieldProps = {
   name?: string;
   /** `url` brings the right on-screen keyboard; it doesn't validate (no form submit). */
   type?: "text" | "url" | "search";
+  /** A control right of the input (a Search button); stretched to the input's height. */
+  action?: ReactNode;
 };
 
 export function TextField({
@@ -42,6 +44,7 @@ export function TextField({
   onKeyDown,
   name,
   type = "text",
+  action,
 }: TextFieldProps) {
   const affix = "shrink-0 select-none font-mono text-muted text-sm";
 
@@ -52,29 +55,32 @@ export function TextField({
       >
         {label}
       </FieldLabel>
-      <InputGroup
-        className={cn(
-          "flex h-9 items-center gap-1 border border-neutral-700 bg-neutral-900 px-2.5",
-          "hover:border-neutral-600 has-focus-visible:border-primary",
-          "has-data-invalid:border-danger"
-        )}
-      >
-        {prefix && <span className={affix}>{prefix}</span>}
-        <Input
-          ref={inputRef}
-          type={type}
-          onPaste={onPaste}
-          onKeyDown={onKeyDown}
-          name={name}
-          value={value}
-          onValueChange={(next) => onValueChange(next)}
-          placeholder={placeholder}
-          spellCheck={false}
-          autoComplete="off"
-          className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-foreground text-sm outline-none placeholder:text-neutral-500"
-        />
-        {suffix && <span className={affix}>{suffix}</span>}
-      </InputGroup>
+      <div className="flex gap-2">
+        <InputGroup
+          className={cn(
+            "flex h-9 min-w-0 flex-1 items-center gap-1 border border-neutral-700 bg-neutral-900 px-2.5",
+            "hover:border-neutral-600 has-focus-visible:border-primary",
+            "has-data-invalid:border-danger"
+          )}
+        >
+          {prefix && <span className={affix}>{prefix}</span>}
+          <Input
+            ref={inputRef}
+            type={type}
+            onPaste={onPaste}
+            onKeyDown={onKeyDown}
+            name={name}
+            value={value}
+            onValueChange={(next) => onValueChange(next)}
+            placeholder={placeholder}
+            spellCheck={false}
+            autoComplete="off"
+            className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-foreground text-sm outline-none placeholder:text-neutral-500"
+          />
+          {suffix && <span className={affix}>{suffix}</span>}
+        </InputGroup>
+        {action && <div className="flex h-9 shrink-0 *:h-full">{action}</div>}
+      </div>
       {error ? (
         <FieldError match className="text-danger text-xs">
           {error}

@@ -23,13 +23,13 @@ Every emote in the panel (server grid, removed list, task tiles, later browse li
 | `pageUrl?` | Catalog emotes: the emote's page on 7TV / BTTV / FFZ; "Open original" prefers it over `url`. |
 | `width?`, `height?` | Pixel size when the source states it (catalog emotes). |
 
-Adapters build it from API shapes: `fromGuildEmote` (`GET /guilds/:guildId`), `fromRemovedEmote` (`GET /guilds/:guildId/removed`), `fromTask` (`GET /tasks`), `fromCatalogEmote` (`GET /emotes/resolve`, `GET /emotes/search`; key `<source>:<id>`). A new source gets its own adapter there; nothing else changes.
+Adapters build it from API shapes: `fromGuildEmote` (`GET /guilds/:guildId`), `fromRemovedEmote` (`GET /guilds/:guildId/removed`), `fromTask` (`GET /tasks`), `fromCatalogEmote` (`GET /emotes/resolve`, Browse's searches from `lib/providers/` and `GET /emotes/search` for BTTV; key `<source>:<id>`). A new source gets its own adapter there; nothing else changes.
 
 ## The menu belongs to the list
 
 `EmoteMenu` (`src/components/emote/emote-menu.tsx`) wraps a list of emotes. It owns **one** ui-sdk `Menu` with a `createMenuController<PanelEmote>()`; each `Emote` is a `MenuContextTrigger` connected to that controller with its emote as the `payload`. So 500 tiles cost 500 small triggers and one menu, and a virtualized tile that unmounts doesn't take the menu with it.
 
-Props (`EmoteListContext`): `kind` (`server` | `removed` | `task` | `catalog`), `guild` (`{ id, name }` the list belongs to; for `catalog`, the server to offer first), `canManage`, and `onOpen(emote)` for left click.
+Props (`EmoteListContext`): `kind` (`server` | `removed` | `task` | `catalog`), `guild` (`{ id, name }` the list belongs to; for `catalog`, the server to offer first), `canManage`, `onOpen(emote)` for left click, and `selectable` (default true; `false` makes left click do nothing and drops `aria-pressed`, used by Browse).
 
 Per-emote UI state lives in `EmoteMenu`, keyed by `emote.key`, so it survives tiles scrolling out: the temporary fitting and the selection. `useEmoteMenu()` exposes `fittingOf` / `setFitting`, so a control outside the menu (Quick add's fitting) shares the same state.
 
@@ -56,11 +56,11 @@ Actions by kind (`EmoteMenuItems`):
 
 ## Left click
 
-Selects the emote (orange 2px inset outline, `aria-pressed`) and calls `onOpen`. Browse passes it to open Quick add with the emote; the server lists don't use it yet (the hook for an emote detail dialog).
+Selects the emote (orange 2px inset outline, `aria-pressed`) and calls `onOpen`. The server lists don't use `onOpen` yet (the hook for an emote detail dialog). Browse turns it off (`selectable={false}`): a click there does nothing until the owner's plan for it lands; opening Quick add with the clicked emote was tried and removed.
 
 ## Mutations and cache (`src/lib/emote-mutations.ts`)
 
-- `useAddEmote()` → `POST /guilds/:id/emote`, then invalidates `["guilds"]` (slot meters) and `["guilds", targetId]`. The returned function resolves to whether it worked (never rejects; the toast already reported it), so Quick add clears its field only after every server took the emote.
+- `useAddEmote()` → `POST /guilds/:id/emote`, then invalidates `["guilds"]` (slot meters) and `["guilds", targetId]`. The returned function resolves to whether it worked (never rejects; the toast already reported it), so Quick add clears its field only after the server took the emote.
 - `useRemoveEmote(guildId)` → optimistic: the emote leaves `["guilds", guildId]` and its slot count drops at once; an error restores the snapshot. Settled: invalidates the list and `["guilds", guildId, …]` (also refetches Removed).
 - `useRestoreEmote(guildId)` → not optimistic (a restore re-uploads and can fail on size): the tile shows `pending` (dimmed + Spinner, `aria-busy`, no menu) until it settles, read with `useRestoringKeys` from the mutation cache so it survives remounts. Success drops it from the removed list and invalidates the server.
 - `emoteErrorMessage(error)` maps `ApiError.reference` to a toast sentence (URL_NOT_ALLOWED, DOWNLOAD_DATA_FAILED, MISSING_PERMISSIONS, USER_NOT_IN_GUILD, OAUTH_GET_GUILDS_ERROR, INVALID_REQUEST_SCHEMA, GUILD_EMOTE_NOT_FOUND/EMOTE_NOT_FOUND, GUILD_EMOTE_DELETE_FAILED, RATE_LIMITED, and core's mapped Discord/size codes EMOTE_TOO_LARGE, GUILD_EMOJI_LIMIT_REACHED, BOT_MISSING_PERMISSIONS, INVALID_EMOTE_NAME, INVALID_EMOTE_FILE; the task codes PAYLOAD_TOO_LARGE, TASK_NOT_FOUND, FILE_TOO_LARGE, UNSUPPORTED_FILE_TYPE; unmapped DISCORD_API_ERROR shows Discord's message). See the error table in [core.md](../core.md).

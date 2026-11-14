@@ -51,6 +51,8 @@ type EmoteMenuState = {
   controller: ReturnType<typeof createMenuController<PanelEmote>>;
   fittingOf: (emote: PanelEmote) => Fitting;
   setFitting: (emote: PanelEmote, fitting: Fitting) => void;
+  /** False when a left click does nothing (Browse, for now). */
+  selectable: boolean;
   selectedKey: string | null;
   select: (emote: PanelEmote | null) => void;
   /** Left click / Enter on an emote. */
@@ -80,6 +82,8 @@ type EmoteMenuProps = EmoteListContext & {
    * hooks in here; until then a click only selects.
    */
   onOpen?: (emote: PanelEmote) => void;
+  /** Off for lists where a left click does nothing yet: no selection, no `aria-pressed`. */
+  selectable?: boolean;
 };
 
 /**
@@ -88,7 +92,14 @@ type EmoteMenuProps = EmoteListContext & {
  * temporary fitting, the selection) lives here, so it survives virtualized tiles
  * unmounting while they're scrolled away.
  */
-export function EmoteMenu({ children, onOpen, kind, guild, canManage }: EmoteMenuProps) {
+export function EmoteMenu({
+  children,
+  onOpen,
+  selectable = true,
+  kind,
+  guild,
+  canManage,
+}: EmoteMenuProps) {
   const [controller] = useState(() => createMenuController<PanelEmote>());
   const [fittings, setFittings] = useState<Record<string, Fitting>>({});
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
@@ -109,10 +120,11 @@ export function EmoteMenu({ children, onOpen, kind, guild, canManage }: EmoteMen
   );
   const activate = useCallback(
     (emote: PanelEmote) => {
+      if (!selectable) return;
       setSelectedKey(emote.key);
       onOpen?.(emote);
     },
-    [onOpen]
+    [onOpen, selectable]
   );
 
   const context = useMemo(() => ({ kind, guild, canManage }), [kind, guild, canManage]);
@@ -122,12 +134,22 @@ export function EmoteMenu({ children, onOpen, kind, guild, canManage }: EmoteMen
       controller,
       fittingOf,
       setFitting,
+      selectable,
       selectedKey,
       select,
       activate,
       triggerRef,
     }),
-    [context, controller, fittingOf, setFitting, selectedKey, select, activate]
+    [
+      context,
+      controller,
+      fittingOf,
+      setFitting,
+      selectable,
+      selectedKey,
+      select,
+      activate,
+    ]
   );
 
   return (

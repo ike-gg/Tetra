@@ -27,9 +27,10 @@ type EmoteProps = {
 };
 
 /**
- * The one way to show an emote in the panel: a square preview that selects on click and
- * opens the list's emote menu on right click, long press, Shift+F10 or the context menu
- * key. Must sit inside `<EmoteMenu>`, which decides the actions.
+ * The one way to show an emote in the panel: a square preview that selects on click
+ * (unless the list isn't `selectable`) and opens the list's emote menu on right click,
+ * long press, Shift+F10 or the context menu key. Must sit inside `<EmoteMenu>`, which
+ * decides the actions.
  */
 export const Emote = memo(function Emote({
   emote,
@@ -40,7 +41,8 @@ export const Emote = memo(function Emote({
   onFocus,
   ...props
 }: EmoteProps) {
-  const { controller, fittingOf, selectedKey, activate, triggerRef } = useEmoteMenu();
+  const { controller, fittingOf, selectable, selectedKey, activate, triggerRef } =
+    useEmoteMenu();
   const fitting = fittingOf(emote);
   const selected = selectedKey === emote.key;
   const unavailable = emote.available === false;
@@ -52,7 +54,7 @@ export const Emote = memo(function Emote({
       disabled={pending}
       render={<button type="button" />}
       aria-label={showName ? undefined : emote.name}
-      aria-pressed={selected}
+      aria-pressed={selectable ? selected : undefined}
       aria-busy={pending || undefined}
       data-selected={selected || undefined}
       onClick={() => {

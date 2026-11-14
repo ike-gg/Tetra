@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 
 import { Emote } from "@/components/emote/emote";
@@ -6,13 +7,17 @@ import { EmoteMenu, FITTINGS, useEmoteMenu } from "@/components/emote/emote-menu
 import { GuildIcon } from "@/components/panel/guild-icon";
 import { PanelLoading } from "@/components/panel/query-state";
 import { Button } from "@/components/ui/button";
-import { Checkbox, CheckboxGroup } from "@/components/ui/checkbox";
+import { Radio, RadioGroup } from "@/components/ui/radio";
 import {
   SegmentedControl,
   SegmentedControlItem,
 } from "@/components/ui/segmented-control";
 import { TextField } from "@/components/ui/text-field";
-import { lookupErrorMessage, resolveEmoteQueryOptions } from "@/lib/catalog";
+import {
+  looksLikeEmoteLink,
+  lookupErrorMessage,
+  resolveEmoteQueryOptions,
+} from "@/lib/catalog";
 import { cn } from "@/lib/cn";
 import {
   type Fitting,
@@ -31,109 +36,117 @@ import {
 } from "@/lib/guilds";
 
 const TYPING_DELAY = 500;
-const TARGETS_KEY = "tetra:quick-add-targets";
+const MIN_SEARCH_LENGTH = 3;
+const TARGET_KEY = "tetra:quick-add-target";
 
-// The servers picked last time, so adding a run of emotes to one server takes no clicks
-const readLastTargets = (): string[] => {
+// The server picked last time, so adding a run of emotes to one server takes no clicks
+const readLastTarget = (): string | null => {
   try {
-    const stored = JSON.parse(localStorage.getItem(TARGETS_KEY) ?? "[]");
-    return Array.isArray(stored) ? stored.filter((id) => typeof id === "string") : [];
+    return localStorage.getItem(TARGET_KEY);
   } catch {
-    return [];
+    return null;
   }
 };
 
-const saveLastTargets = (ids: string[]) => {
+const saveLastTarget = (id: string) => {
   try {
-    localStorage.setItem(TARGETS_KEY, JSON.stringify(ids));
+    localStorage.setItem(TARGET_KEY, id);
   } catch {
     // Storage blocked: the picker just starts empty next time
   }
 };
 
-const defaultTargets = (lists: GuildLists | undefined) => {
+const defaultTarget = (lists: GuildLists | undefined) => {
   const manageable = lists?.guildsWithUserPermissions ?? [];
-  const last = readLastTargets().filter((id) =>
-    manageable.some((guild) => guild.id === id)
-  );
-  if (last.length > 0) return last;
-  return manageable.length === 1 && manageable[0] ? [manageable[0].id] : [];
+  const last = readLastTarget();
+  if (last && manageable.some((guild) => guild.id === last)) return last;
+  return manageable.length === 1 ? (manageable[0]?.id ?? null) : null;
 };
 
 const freeSlots = (guild: ManagedGuild, emote: PanelEmote) =>
   guild.emojis.limit - guild.emojis[emote.animated ? "animated" : "static"];
 
 type QuickAddProps = {
-  /** Text to resolve right away (a link pasted somewhere in the panel). */
+  /** A link to resolve right away (pasted somewhere in the panel). */
   initialText?: string;
-  /** An emote that's already known (picked in Browse): no lookup, straight to the form. */
-  initialEmote?: PanelEmote;
-  /** Server to add to instead of the last used ones. */
+  /** Server to add to instead of the last used one; Search keeps it for Browse. */
   defaultGuildId?: string;
   /** Hides the label and help line, for a toolbar where the placeholder says enough. */
   compact?: boolean;
   placeholder?: string;
-  /** Runs after the emote was added everywhere it was sent; the field is cleared first. */
+  /** Runs after the emote was added; the field is cleared first. */
   onAdded?: () => void;
+  /** Runs when plain text was sent to Browse as a search. */
+  onSearch?: () => void;
   className?: string;
 };
 
 /**
- * Paste a link, check the emote, add it: resolves the link (debounced while typing, at
- * once on paste or Enter), then shows a preview with an editable name, the servers to add
- * it to and the fitting.
+ * One field for both: a link (or a Discord emoji mention) resolves inline (debounced
+ * while typing, at once on paste or Enter) into a preview with an editable name, the
+ * server and the fitting; plain text of 3+ characters searches 7TV in Browse on Enter or
+ * the Search button.
  */
 export function QuickAdd({
   initialText = "",
-  initialEmote,
   defaultGuildId,
   compact = false,
-  placeholder = "Paste a 7TV, BTTV, FFZ, Discord, Twitch or image link",
+  placeholder = "Search 7TV or paste a link",
   onAdded,
+  onSearch,
   className,
 }: QuickAddProps) {
   const [text, setText] = useState(initialText);
-  const [submitted, setSubmitted] = useState(initialText.trim());
-  const [known, setKnown] = useState(initialEmote ?? null);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const guilds = useQuery(guildsQueryOptions);
-  const [chosen, setChosen] = useState<string[] | null>(
-    defaultGuildId ? [defaultGuildId] : null
+  const [submitted, setSubmitted] = useState(() =>
+    looksLikeEmoteLink(initialText.trim()) ? initialText.trim() : ""
   );
-  const targets = chosen ?? defaultTargets(guilds.data);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+  const guilds = useQuery(guildsQueryOptions);
+  const [chosen, setChosen] = useState<string | null>(defaultGuildId ?? null);
+  const target = chosen ?? defaultTarget(guilds.data);
+
+  const trimmed = text.trim();
+  const isLink = looksLikeEmoteLink(trimmed);
+  const canSearch = !isLink && trimmed.length >= MIN_SEARCH_LENGTH;
 
   const resolve = useQuery({
     ...resolveEmoteQueryOptions(submitted),
-    enabled: !known && submitted.length > 0,
+    enabled: submitted.length > 0,
   });
 
+  // Only links resolve; plain text waits for Enter or Search
   useEffect(() => {
-    const next = text.trim();
-    if (next === submitted) return;
-    const timer = setTimeout(() => setSubmitted(next), TYPING_DELAY);
+    if (!isLink || trimmed === submitted) return;
+    const timer = setTimeout(() => setSubmitted(trimmed), TYPING_DELAY);
     return () => clearTimeout(timer);
-  }, [text, submitted]);
+  }, [isLink, trimmed, submitted]);
 
   const emote = useMemo(
-    () => known ?? (resolve.data ? fromCatalogEmote(resolve.data) : undefined),
-    [known, resolve.data]
+    () => (resolve.data ? fromCatalogEmote(resolve.data) : undefined),
+    [resolve.data]
   );
-  const current = text.trim() === submitted;
+  const current = isLink && trimmed === submitted;
   const error =
     current && resolve.isError ? lookupErrorMessage(resolve.error) : undefined;
   const defaultGuild = guilds.data?.guildsWithUserPermissions.find(
     ({ id }) => id === defaultGuildId
   );
 
-  const changeTargets = (ids: string[]) => {
-    setChosen(ids);
-    saveLastTargets(ids);
+  const search = () => {
+    if (!canSearch) return;
+    void navigate({ to: "/panel/browse", search: { q: trimmed, guild: defaultGuildId } });
+    onSearch?.();
+  };
+
+  const changeTarget = (id: string) => {
+    setChosen(id);
+    saveLastTarget(id);
   };
 
   const done = () => {
     setText("");
     setSubmitted("");
-    setKnown(null);
     inputRef.current?.focus();
     onAdded?.();
   };
@@ -143,35 +156,46 @@ export function QuickAdd({
       <TextField
         label="Quick add"
         hideLabel={compact}
-        name="emote-link"
-        type="url"
+        name="emote-query"
+        type="search"
         inputRef={inputRef}
         value={text}
-        onValueChange={(next) => {
-          setText(next);
-          setKnown(null);
-        }}
-        // A paste is a finished link: resolve it once the input holds it, no typing delay
+        onValueChange={setText}
+        // A pasted link is finished: resolve it once the input holds it, no typing delay
         onPaste={(event) => {
           const input = event.currentTarget;
-          setTimeout(() => setSubmitted(input.value.trim()));
+          setTimeout(() => {
+            const pasted = input.value.trim();
+            if (looksLikeEmoteLink(pasted)) setSubmitted(pasted);
+          });
         }}
         onKeyDown={(event) => {
           if (event.key !== "Enter") return;
           event.preventDefault();
-          if (current && resolve.isError) void resolve.refetch();
-          else setSubmitted(text.trim());
+          if (!isLink) search();
+          else if (current && resolve.isError) void resolve.refetch();
+          else setSubmitted(trimmed);
         }}
         placeholder={placeholder}
-        description={compact ? undefined : "Or just paste a link anywhere in the panel."}
+        description={
+          compact
+            ? undefined
+            : "Links from 7TV, BTTV, FFZ, Discord, Twitch or any image. Paste one anywhere in the panel."
+        }
         error={error}
+        action={
+          // Disabled for a link too: links resolve on their own
+          <Button size="sm" disabled={!canSearch} onClick={search}>
+            Search
+          </Button>
+        }
       />
 
-      {!known && submitted && resolve.isFetching && !resolve.data && (
+      {submitted && resolve.isFetching && !resolve.data && (
         <PanelLoading>reading the link…</PanelLoading>
       )}
 
-      {emote && (known || current) && (
+      {emote && current && (
         <EmoteMenu
           kind="catalog"
           guild={defaultGuild && { id: defaultGuild.id, name: defaultGuild.name }}
@@ -179,8 +203,8 @@ export function QuickAdd({
           <QuickAddDetails
             key={emote.key}
             emote={emote}
-            targets={targets}
-            onTargetsChange={changeTargets}
+            target={target}
+            onTargetChange={changeTarget}
             onAdded={done}
           />
         </EmoteMenu>
@@ -191,12 +215,12 @@ export function QuickAdd({
 
 type DetailsProps = {
   emote: PanelEmote;
-  targets: string[];
-  onTargetsChange: (ids: string[]) => void;
+  target: string | null;
+  onTargetChange: (id: string) => void;
   onAdded: () => void;
 };
 
-function QuickAddDetails({ emote, targets, onTargetsChange, onAdded }: DetailsProps) {
+function QuickAddDetails({ emote, target, onTargetChange, onAdded }: DetailsProps) {
   const guilds = useQuery(guildsQueryOptions);
   const add = useAddEmote();
   const { fittingOf, setFitting } = useEmoteMenu();
@@ -213,20 +237,18 @@ function QuickAddDetails({ emote, targets, onTargetsChange, onAdded }: DetailsPr
   );
 
   const servers = sortByName(guilds.data?.guildsWithUserPermissions ?? []);
-  // A picked server that has no room for this type is skipped, not silently kept
-  const picked = servers.filter(
-    (guild) => targets.includes(guild.id) && freeSlots(guild, emote) > 0
+  // The remembered server may have no room for this type: then nothing is picked
+  const picked = servers.find(
+    (guild) => guild.id === target && freeSlots(guild, emote) > 0
   );
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!valid || picked.length === 0 || adding) return;
+    if (!valid || !picked || adding) return;
     setAdding(true);
-    const results = await Promise.all(
-      picked.map((guild) => add({ emote: preview, guild, fitting }))
-    );
+    const added = await add({ emote: preview, guild: picked, fitting });
     setAdding(false);
-    if (results.every(Boolean)) onAdded();
+    if (added) onAdded();
   };
 
   const renamed = toDiscordEmoteName(emote.name) !== emote.name;
@@ -268,8 +290,8 @@ function QuickAddDetails({ emote, targets, onTargetsChange, onAdded }: DetailsPr
         emote={emote}
         servers={servers}
         loading={guilds.status === "pending"}
-        targets={targets}
-        onTargetsChange={onTargetsChange}
+        value={picked?.id ?? null}
+        onValueChange={onTargetChange}
       />
 
       <div className="flex flex-col gap-1.5">
@@ -298,17 +320,11 @@ function QuickAddDetails({ emote, targets, onTargetsChange, onAdded }: DetailsPr
         <Button
           type="submit"
           variant="primary"
-          disabled={!valid || picked.length === 0}
+          disabled={!valid || !picked}
           data-pending={adding || undefined}
           aria-busy={adding || undefined}
         >
-          {adding
-            ? "Adding…"
-            : picked.length === 0
-              ? "Pick a server"
-              : picked.length === 1
-                ? `Add to ${picked[0]?.name}`
-                : `Add to ${picked.length} servers`}
+          {adding ? "Adding…" : picked ? `Add to ${picked.name}` : "Pick a server"}
         </Button>
       </div>
     </form>
@@ -319,16 +335,16 @@ type ServerPickerProps = {
   emote: PanelEmote;
   servers: ManagedGuild[];
   loading: boolean;
-  targets: string[];
-  onTargetsChange: (ids: string[]) => void;
+  value: string | null;
+  onValueChange: (id: string) => void;
 };
 
 function ServerPicker({
   emote,
   servers,
   loading,
-  targets,
-  onTargetsChange,
+  value,
+  onValueChange,
 }: ServerPickerProps) {
   const labelId = useId();
   const slots = emote.animated ? "animated" : "static";
@@ -343,18 +359,18 @@ function ServerPicker({
         <p className="text-muted text-sm">No servers you can manage yet.</p>
       )}
       {servers.length > 0 && (
-        <CheckboxGroup
+        <RadioGroup
           aria-labelledby={labelId}
-          value={targets}
-          onValueChange={(ids) => onTargetsChange(ids)}
-          // relative: the checkboxes' hidden inputs are placed against it, not the page
+          value={value}
+          onValueChange={(next) => next && onValueChange(next)}
+          // relative: the radios' hidden inputs are placed against it, not the page
           className="relative flex max-h-52 flex-col gap-px overflow-y-auto overscroll-contain border border-border"
         >
           {servers.map((guild) => {
             const free = freeSlots(guild, emote);
             const full = free <= 0;
             return (
-              // biome-ignore lint/a11y/noLabelWithoutControl: Checkbox renders the control inside the label, as ui-sdk documents
+              // biome-ignore lint/a11y/noLabelWithoutControl: Radio renders the control inside the label, as ui-sdk documents
               <label
                 key={guild.id}
                 className={cn(
@@ -362,7 +378,7 @@ function ServerPicker({
                   full ? "cursor-not-allowed text-muted" : "hover:bg-surface"
                 )}
               >
-                <Checkbox value={guild.id} disabled={full} />
+                <Radio value={guild.id} disabled={full} />
                 <GuildIcon guild={guild} size="sm" />
                 <span className="min-w-0 truncate">{guild.name}</span>
                 <span className="ml-auto shrink-0 pl-4 font-mono text-muted text-xs tabular-nums">
@@ -371,7 +387,7 @@ function ServerPicker({
               </label>
             );
           })}
-        </CheckboxGroup>
+        </RadioGroup>
       )}
     </div>
   );

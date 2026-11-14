@@ -137,7 +137,7 @@ function Server({ guild }: { guild: ManagedGuild }) {
         <QuickAdd
           compact
           defaultGuildId={guild.id}
-          placeholder={`Paste an emote link to add it to ${guild.name}`}
+          placeholder={`Search 7TV or paste a link to add to ${guild.name}`}
           className="max-w-xl"
         />
         <div className="flex flex-wrap items-center gap-3">
