@@ -8,6 +8,9 @@ const VARIANTS = {
     "border-primary bg-primary text-primary-foreground not-data-disabled:hover:border-primary-hover not-data-disabled:hover:bg-primary-hover not-data-disabled:active:border-brand-600 not-data-disabled:active:bg-brand-600",
   secondary:
     "border-border bg-background/60 text-foreground backdrop-blur-sm not-data-disabled:hover:border-neutral-600 not-data-disabled:hover:bg-surface not-data-disabled:active:bg-neutral-800",
+  // Removing something: orange text, the one loud color (danger is for errors only)
+  destructive:
+    "border-border bg-background/60 text-primary backdrop-blur-sm not-data-disabled:hover:border-neutral-600 not-data-disabled:hover:bg-surface not-data-disabled:active:bg-neutral-800",
   ghost:
     "border-transparent bg-transparent text-muted not-data-disabled:hover:bg-surface not-data-disabled:hover:text-foreground not-data-disabled:active:bg-neutral-800",
 };

@@ -115,7 +115,7 @@ const PRINCIPLES = [
   ],
 ];
 
-const BUTTON_VARIANTS = ["primary", "secondary", "ghost"] as const;
+const BUTTON_VARIANTS = ["primary", "secondary", "destructive", "ghost"] as const;
 const BUTTON_SIZES = ["sm", "md", "lg"] as const;
 const HEADING_SIZES = ["display", "xl", "lg", "md", "sm"] as const;
 
