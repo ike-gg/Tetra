@@ -8,8 +8,9 @@ import { useElementSize } from "@/lib/use-element-size";
 // Phones get smaller tiles so four fit in a row
 const minTile = (width: number) => (width < 480 ? 72 : 88);
 const GAP = 4;
-// Name line under the preview: text-xs line + gap + padding of the tile
-const NAME_HEIGHT = 16 + 4 + 8;
+// The tile is its padding (4px each side) around a square preview, the 4px gap and the
+// text-xs name line, so the space under the name equals the space around the tile
+const NAME_HEIGHT = 16 + 4;
 
 type EmoteGridProps = {
   emotes: PanelEmote[];

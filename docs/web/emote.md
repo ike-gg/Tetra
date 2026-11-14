@@ -71,4 +71,4 @@ Selects the emote (orange 2px inset outline, `aria-pressed`) and calls `onOpen`.
 
 ## Fitting preview
 
-`contain` shows the emote with 12% padding; `cover`/`fill` fill the square edge to edge so the crop or stretch is visible, with an orange mono badge. Badges for `managed` / `unavailable` sit bottom left in muted mono.
+`contain` fits the emote into the square edge to edge, without padding (an inset preview was tried and rejected: uneven and wasteful); `cover`/`fill` fill the square edge to edge so the crop or stretch is visible, with an orange mono badge. Badges for `managed` / `unavailable` sit bottom left in muted mono.

@@ -26,10 +26,10 @@ export function Toaster({ toaster }: { toaster?: ToasterQueue }) {
       className="fixed [--toast-gap:8px] right-4 bottom-4 z-50 m-0 h-[calc(var(--toast-stack-height)+(var(--toast-count)-1)*var(--toast-gap))] w-[min(24rem,calc(100vw-2rem))] list-none p-0"
     >
       {() => (
-        <Toast className="group/toast absolute inset-x-0 bottom-0 flex h-(--toast-height) translate-x-(--toast-swipe-x,0px) translate-y-[calc(-1*(var(--toast-offset)+var(--toast-index)*var(--toast-gap))+var(--toast-swipe-y,0px))] select-none items-start gap-2.5 border border-border bg-surface py-2.5 pr-1.5 pl-3 text-sm opacity-100 transition-[translate,opacity] duration-200 ease-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:transition-none motion-reduce:transition-opacity">
+        <Toast className="group/toast absolute inset-x-0 bottom-0 flex h-(--toast-height) translate-x-(--toast-swipe-x,0px) translate-y-[calc(-1*(var(--toast-offset)+var(--toast-index)*var(--toast-gap))+var(--toast-swipe-y,0px))] select-none items-center gap-2.5 border border-border bg-surface py-2.5 pr-1.5 pl-3 text-sm opacity-100 transition-[translate,opacity] duration-200 ease-out data-ending-style:opacity-0 data-starting-style:opacity-0 data-swiping:transition-none motion-reduce:transition-opacity">
           <span
             aria-hidden="true"
-            className="mt-px w-[1em] shrink-0 text-center font-mono text-muted group-data-[type=error]/toast:text-danger group-data-[type=success]/toast:text-primary"
+            className="w-[1em] shrink-0 text-center font-mono text-muted group-data-[type=error]/toast:text-danger group-data-[type=success]/toast:text-primary"
           >
             <span className="hidden group-data-[type=loading]/toast:inline">
               <Spinner />

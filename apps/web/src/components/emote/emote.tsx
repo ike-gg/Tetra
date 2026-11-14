@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 import type { Fitting, PanelEmote } from "@/lib/emote";
 
 const FIT: Record<Fitting, string> = {
-  contain: "object-contain p-[12%]",
+  contain: "object-contain",
   cover: "object-cover",
   fill: "object-fill",
 };
