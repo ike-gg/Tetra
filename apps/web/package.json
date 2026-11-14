@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build",
+    "build": "vite build && bun run build:seo",
+    "build:seo": "bun scripts/build-seo.tsx",
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "build:emote-atlas": "bun scripts/build-emote-atlas.ts",
@@ -32,14 +33,18 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.3.5",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@types/sharp": "^0.31.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "geist": "^1.9.2",
+    "satori": "^0.63.2",
     "sharp": "^0.31.1",
     "tailwindcss": "^4.3.5",
     "typescript": "^5.9.3",
-    "vite": "^8.3.8"
+    "vite": "^8.3.8",
+    "wawoff2": "^2.0.1"
   }
 }

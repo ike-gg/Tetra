@@ -17,10 +17,11 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/cn";
+import { NOINDEX_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/static-logo")({
   head: () => ({
-    meta: [{ title: "Static logo · Tetra" }],
+    meta: [{ title: "Static logo · Tetra" }, NOINDEX_META],
   }),
   component: StaticLogoPage,
 });

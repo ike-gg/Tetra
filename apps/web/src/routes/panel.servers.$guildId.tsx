@@ -31,10 +31,12 @@ import {
   type ManagedGuild,
   removedEmotesQueryOptions,
 } from "@/lib/guilds";
+import { NOINDEX_META } from "@/lib/seo";
 
 type ServerSearch = { view?: "removed" };
 
 export const Route = createFileRoute("/panel/servers/$guildId")({
+  head: () => ({ meta: [NOINDEX_META] }),
   validateSearch: (search: Record<string, unknown>): ServerSearch =>
     search.view === "removed" ? { view: "removed" } : {},
   component: PanelServer,

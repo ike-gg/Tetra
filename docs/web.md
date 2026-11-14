@@ -7,7 +7,7 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 ## Rendering
 
 - **SPA mode** with selected pages prerendered. There is no server at runtime: the build output is static files.
-- **Homepage** (`/`) and other public pages: prerendered to HTML at build time. Add their paths to `staticPages` in `vite.config.ts`, and link them from the footer (`PAGES` in `src/components/footer.tsx`). Public pages use the shared `Navbar` and `Footer`.
+- **Homepage** (`/`) and other public pages: prerendered to HTML at build time. Add their paths to `staticPages` in `vite.config.ts`, and link them from the footer (`PAGES` in `src/components/footer.tsx`). Public pages use the shared `Navbar` and `Footer`. A new page also needs its SEO entry, see [SEO](#seo).
 - **Editor** (full name "Image/GIF quick editor"): public, no account, for GIFs and still images (not only emotes). `/editor` (start screen with upload and recent files) is prerendered; `/editor/$key` (a file stored in this browser) is client-only (`ssr: false`), served by the SPA shell like the panel. See [web/editor.md](web/editor.md).
 - **Panel** (`/panel/*`): client-only (`ssr: false` on the route). Served by the SPA shell `_shell.html`; the host must rewrite unknown paths to it. Every panel route sits behind the session gate, see [Panel auth gate](#panel-auth-gate).
 - The shell is rendered with `spa.maskPath: "/panel"` so it doesn't collide with the prerendered `/`.
@@ -57,6 +57,9 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/components/brand-link.tsx` | `BrandLink`: static logo + `tetra` wordmark linking home, the first crumb of app headers (editor, panel). |
 | `src/components/footer.tsx` | Site footer with links to every page (`PAGES`; add new public pages there) and the invite link. Used on `/`, `/branding` and `/logo`. |
 | `src/lib/links.ts` | Shared external URLs (`INVITE_URL`). |
+| `src/lib/seo.ts` | `SITE_URL`, `SEO_PAGES` (every indexable page: path, title, description, OG image text), `seoHead(key)`, `NOINDEX_META`. See [SEO](#seo). |
+| `scripts/build-seo.tsx` | Runs after `vite build`: `robots.txt`, `sitemap.xml` and the OG images into `dist/client`. |
+| `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png` | The favicon: a plain white square, full bleed (svg, 32px ico with a PNG inside, 180px PNG). Linked from `__root.tsx`. |
 | `src/components/logo.tsx` | The logo mark and its falling-emotes intro, see [branding.md](branding.md#logo). |
 | `scripts/build-logo-reel.ts` | Picks full-bleed 7TV emotes into `src/assets/logo/emote-reel.webp` + `.json` (imported through Vite, so the strip gets a hashed name and caches forever). |
 
@@ -203,12 +206,27 @@ One field: search 7TV or paste a link. `QuickAdd` (`components/panel/quick-add.t
 - **Left click selects** and brings up the selection bar (Add to <guild> / Add to server ▾, Download, Edit in editor, More); right-click / long press has the same actions as the catalog menu (see [web/emote.md](web/emote.md#selection)). Opening Quick add with the clicked emote was tried and removed.
 - Verified with 10 pages of 7TV (600 emotes): about 165 tiles and 925 elements in the DOM. With the direct clients, 14 pages (840) loaded by scrolling.
 
+## SEO
+
+- **Site URL**: `VITE_SITE_URL` at build time (default `https://tetra.lol`, trailing slash stripped), read as `SITE_URL` in `src/lib/seo.ts`. Used for canonicals, `og:url`, `og:image` (absolute), the sitemap and robots.txt's `Sitemap` line. Vite inlines it into the pages; the build script reads the same module under Bun (`import.meta.env` is `process.env` there).
+- **Indexable**: `/`, `/editor`, `/branding`, `/logo`, `/panel` = the keys of `SEO_PAGES`. Each route's `head: () => seoHead("<key>")` gives title, description, canonical, Open Graph (`og:type` website, site name, url, title, description, 1200×630 image + alt) and a `summary_large_image` Twitter card. Root `__root.tsx` has the site-wide fallbacks: title `Tetra`, the home description, `theme-color` (`#0b0a09` = `background`), the favicons.
+- **Head merging** (TanStack Router): `meta` merges by `name`/`property` (and `title`) with the deepest route winning; `links` are concatenated from every match, never deduplicated. So a canonical on a layout shows up on all its children, and a `noindex` on a layout can't be undone by a child. `panel.tsx` therefore returns `seoHead("panel")` only when the deepest match is `/panel` or `/panel/` (head runs again on every navigation), and `noindex` sits on leaf routes only.
+- **The shell**: `_shell.html` is rendered with `maskPath: "/panel"` and `ssr: false` stops below `/panel`, so it gets root + `panel.tsx`'s head: the /panel title, description, OG and canonical, no `noindex`. A `head` on `panel.index.tsx` never reaches it. Every other path the shell serves (`/panel/*`, `/editor/$key`, `/static-logo`) swaps in its own head on the client.
+- **Not indexed**: `/panel/*` children, `/editor/$key`, `/static-logo` put `NOINDEX_META` in their own `head` (Google renders JS). A new panel route needs it too.
+- **robots.txt** (generated): `Allow: /`, `Allow: /panel/$`, `Allow: /editor/$`, `Disallow: /panel/`, `Disallow: /editor/`. Google applies the longest matching rule (`$` anchors the end), so `/panel` and `/editor` match no Disallow, and `/panel/` / `/editor/` stay allowed in case the host redirects a directory to its trailing-slash form; everything below them is blocked. `/static-logo` is left crawlable on purpose: a disallowed URL can't show Google its `noindex`.
+- **sitemap.xml** (generated): the `SEO_PAGES` paths, absolute.
+- **OG images**: `scripts/build-seo.tsx` draws one 1200×630 PNG per `SEO_PAGES` key to `dist/client/og/<key>.png` with satori (JSX → SVG) + `@resvg/resvg-js`, about 1 s for all. Fonts: static TTFs from the `geist` package (satori reads ttf/otf/woff, not woff2); Geist Serif ships only as woff2 and is decompressed with `wawoff2`. resvg doesn't read `oklch()`, so the script converts the brand tokens. Layout: `background`, an ASCII texture of the ramp on a 11px Geist Mono grid (seeded value noise, `muted` at 16%, quieter behind the text), the word `tetra` top right as dense ramp glyphs in orange (Geist Black rasterized once and sampled per cell, as in `TetraField`), the white logo square top left, and bottom left `[NN] / eyebrow`, the heading with its serif accent, and the description in `muted`. Seeded per page, so builds are byte-identical. Keep heading + accent on one line (about 20 characters + one accent word); a wrapped accent starts its own line.
+- **Adding an indexable page**: an entry in `SEO_PAGES` (path, title, description, `og` eyebrow/heading/accent), `head: () => seoHead("<key>")` on the route, plus `staticPages` and the footer as above. Run `bun run build:seo` after a build (or the whole `build`) and look at the PNG.
+- Rejected: generating in a Vite plugin (`import.meta.env` isn't set while the config loads, and the PNGs aren't needed in dev).
+- resvg's `RenderedImage.pixels` is a getter that copies the whole buffer on every read; reading it per pixel crashed Bun. Read it once.
+
 ## Scripts
 
 Run inside `apps/web`, or from the root with `bun --filter @tetra/web <script>`.
 
 - `dev` – `vite dev` on port 3000
-- `build` – static build to `dist/client`
+- `build` – static build to `dist/client`, then `build:seo`
+- `build:seo` – robots.txt, sitemap.xml and OG images into `dist/client` (needs a build first), see [SEO](#seo)
 - `preview` – serve the build
 - `typecheck` – `tsc -b` (also builds core's API declarations, see [Talking to the API](#talking-to-the-api))
 - `build:emote-atlas` – regenerate the homepage background atlas (manual, output is committed)

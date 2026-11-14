@@ -5,10 +5,11 @@ import { PanelError, PanelLoading } from "@/components/panel/query-state";
 import { TaskList } from "@/components/panel/task-list";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { NOINDEX_META } from "@/lib/seo";
 import { tasksQueryOptions } from "@/lib/tasks";
 
 export const Route = createFileRoute("/panel/tasks/")({
-  head: () => ({ meta: [{ title: "Tasks · Panel · Tetra" }] }),
+  head: () => ({ meta: [{ title: "Tasks · Panel · Tetra" }, NOINDEX_META] }),
   component: PanelTasks,
 });
 

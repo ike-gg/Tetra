@@ -5,9 +5,10 @@ import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { formatBytes } from "@/lib/format-bytes";
 import { DISCORD_EMOTE_LIMIT } from "@/lib/media/edit";
+import { NOINDEX_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/panel/editor/")({
-  head: () => ({ meta: [{ title: "Editor · Panel · Tetra" }] }),
+  head: () => ({ meta: [{ title: "Editor · Panel · Tetra" }, NOINDEX_META] }),
   component: PanelEditorStart,
 });
 

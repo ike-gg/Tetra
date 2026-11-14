@@ -12,11 +12,10 @@ import {
   SegmentedControlItem,
 } from "@/components/ui/segmented-control";
 import { Text } from "@/components/ui/text";
+import { seoHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/logo")({
-  head: () => ({
-    meta: [{ title: "Logo · Tetra" }],
-  }),
+  head: () => seoHead("logo"),
   component: LogoPage,
 });
 

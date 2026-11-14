@@ -24,11 +24,10 @@ import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { Toaster, toast } from "@/components/ui/toaster";
 import type { PanelEmote } from "@/lib/emote";
+import { seoHead } from "@/lib/seo";
 
 export const Route = createFileRoute("/branding")({
-  head: () => ({
-    meta: [{ title: "Branding · Tetra" }],
-  }),
+  head: () => seoHead("branding"),
   component: BrandingPage,
 });
 

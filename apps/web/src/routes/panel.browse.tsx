@@ -25,6 +25,7 @@ import {
 } from "@/lib/catalog";
 import { fromCatalogEmote, type PanelEmote } from "@/lib/emote";
 import { guildsQueryOptions } from "@/lib/guilds";
+import { NOINDEX_META } from "@/lib/seo";
 
 type BrowseSearch = {
   provider?: Exclude<BrowseProvider, "7tv">;
@@ -47,7 +48,7 @@ const POPULAR_TITLES: Record<SearchProvider, string> = {
 };
 
 export const Route = createFileRoute("/panel/browse")({
-  head: () => ({ meta: [{ title: "Browse · Panel · Tetra" }] }),
+  head: () => ({ meta: [{ title: "Browse · Panel · Tetra" }, NOINDEX_META] }),
   // 7TV is the default, so it stays out of the URL
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
     provider:

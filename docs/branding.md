@@ -86,7 +86,8 @@ Rendered at `/logo` (`apps/web/src/routes/logo.tsx`), component `Logo` in `apps/
 - The drop starts only after the emote strip is decoded; until then the frame is empty (also in prerendered HTML).
 - **Reduced motion:** no falling, the block fades in (200 ms).
 - `animated={false}` renders the resting mark directly. It's a signature moment, not control feedback: play it once per visit (the navbar plays it once per page load: a refresh replays it, client-side navigation does not), never on hover or on every navigation. Clicking the logo replays it on purpose: a deliberate, rare action.
-- **Static mark proposals** (favicon, app icons, bot avatar, OG images, where the intro can't play): six concepts compared at `/static-logo` (`apps/web/src/routes/static-logo.tsx`, marks in `apps/web/src/components/static-logo-concepts.tsx`, inline SVG on a 16-unit grid). Not adopted yet; the favicon is unchanged.
+- **Static mark proposals** (favicon, app icons, bot avatar, OG images, where the intro can't play): six concepts compared at `/static-logo` (`apps/web/src/routes/static-logo.tsx`, marks in `apps/web/src/components/static-logo-concepts.tsx`, inline SVG on a 16-unit grid). Not adopted yet.
+- **Favicon** (for now): the plain mark, a white square filling the whole icon (`favicon.svg`, `favicon.ico` 32px, `apple-touch-icon.png` 180px in `apps/web/public/`). No orange, no radius.
 - **Emotes:** a hand-picked set, in falling order: OMEGALUL, monkaW, HUH, PauseChamp, MONKA, NOWAY, gaga. First frame of each, cropped to a 1:1 square (MONKA is stretched whole into the square instead). Rebuild with `bun run build:logo-reel --names=OMEGALUL,monkaW,HUH@01FFMS6Q4G0009CAK0J14692AY,PauseChamp@01F6QWHR20000EB9BSAR8G1DKZ,MONKA@01H876RPX8000918ZGPJMBHB7Z:fill,NOWAY,gaga@01H96150H00003CY09NFH3G999` (entries are `name[@id][:fill]`; without `@id` the most popular emote with that exact name). Without `--names` the script picks full-bleed squares from 7TV's all-time top instead.
 
 ## Imagery
@@ -94,6 +95,7 @@ Rendered at `/logo` (`apps/web/src/routes/logo.tsx`), component `Logo` in `apps/
 - Emote previews sit on `bg-checker`, a low-contrast neutral checkerboard, so transparency is visible without competing with the emote.
 
 - The animated ASCII emote field is the brand's backdrop (see [web/background.md](web/background.md)). It stays far behind the content: dimmed, slowly drifting, colored only near the cursor.
+- **Open Graph images** (1200×630, generated at build, see [web.md](web.md#seo)): dark `background`, a faint ASCII texture of the ramp, `tetra` in dense orange ramp glyphs top right, the white mark top left, and bottom left a mono eyebrow `[NN] / page`, a Geist semibold heading with one serif accent in orange, the description in `muted`. No radius, no shadows, no emotes.
 - Real emotes appear in color only as product content (previews, the panel), not as decoration in the UI chrome.
 
 ## Voice
