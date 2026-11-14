@@ -21,12 +21,22 @@ const KEEP_VISIBLE = 64;
 const clampNumber = (value: number, min: number, max: number) =>
   Math.min(Math.max(value, min), Math.max(min, max));
 
-const fitted = (area: ElementSize): Rect => ({
-  x: INSET,
-  y: INSET,
-  width: Math.max(Math.min(MIN_WIDTH, area.width), area.width - INSET * 2),
-  height: Math.max(Math.min(MIN_HEIGHT, area.height), area.height - INSET * 2),
-});
+// On roomy workspaces the default window leaves a wide band of dots around it, so it reads
+// as a window that can be moved and resized rather than a fixed panel
+const ROOMY_WIDTH = 768;
+const ROOMY_HEIGHT = 560;
+const ROOMY_INSET = 56;
+
+const fitted = (area: ElementSize): Rect => {
+  const insetX = area.width >= ROOMY_WIDTH ? ROOMY_INSET : INSET;
+  const insetY = area.height >= ROOMY_HEIGHT ? ROOMY_INSET : INSET;
+  return {
+    x: insetX,
+    y: insetY,
+    width: Math.max(Math.min(MIN_WIDTH, area.width), area.width - insetX * 2),
+    height: Math.max(Math.min(MIN_HEIGHT, area.height), area.height - insetY * 2),
+  };
+};
 
 const clampRect = (rect: Rect, area: ElementSize): Rect => {
   const width = clampNumber(rect.width, Math.min(MIN_WIDTH, area.width), area.width);
