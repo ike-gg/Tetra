@@ -91,8 +91,6 @@ export const lookupErrorMessage = (error: unknown) => {
       return "That file is over 10 MB, too big for Tetra to fetch.";
     case "UPSTREAM_ERROR":
       return "The emote site didn't answer. Press Enter to try again.";
-    case "PROVIDER_UNAVAILABLE":
-      return "That emote site isn't available through Tetra right now.";
     case "INVALID_REQUEST_SCHEMA":
       return "That doesn't look like a link.";
   }
