@@ -11,6 +11,11 @@ export default defineConfig({
   server: {
     port: 3000,
   },
+  // The prerender step fetches from this server on 127.0.0.1; in Docker `localhost`
+  // resolved to ::1 and every request was refused
+  preview: {
+    host: "127.0.0.1",
+  },
   resolve: {
     tsconfigPaths: true,
   },

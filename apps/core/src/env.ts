@@ -168,7 +168,12 @@ const envSchema = z.object({
   IMGUR_CLIENT_ID: z.string().describe("Imgur Client ID"),
 });
 
-const { data, error } = envSchema.safeParse(process.env);
+// Compose passes unset optional vars as empty strings (`${VAR:-}`); treat them as unset
+const definedEnv = Object.fromEntries(
+  Object.entries(process.env).filter(([, value]) => value !== "")
+);
+
+const { data, error } = envSchema.safeParse(definedEnv);
 
 if (error) {
   const table = new Table({

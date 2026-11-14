@@ -53,8 +53,14 @@ App-specific scripts: `bun --filter @tetra/<app> <script>`.
 
 Coolify.
 
-- **core**: Dockerfile build pack, base directory = repo root, Dockerfile `docker/core.Dockerfile`, port 3002. Postgres and Redis are separate Coolify resources; env vars set in Coolify.
-- **web**: not deployed from this repo yet. `vite build` outputs static files to `apps/web/dist/client` (prerendered `index.html` + `_shell.html` for client routes).
+One Coolify resource, Docker Compose build pack: `docker-compose.prod.yml` at the repo root (local dev keeps using `docker-compose.yml`). Services:
+
+- **postgres**, **redis**: no published ports, data in named volumes. The Postgres password is Coolify's generated `SERVICE_PASSWORD_POSTGRES`; core's `POSTGRES_URL` / `REDIS_URL` are built in the compose file from the service names.
+- **core**: `docker/core.Dockerfile`, port 3002 (domain e.g. `api.tetra.lol`). `ENV=production` is set in the compose file; every other var comes from Coolify's env list (the compose file names them, `${VAR:?}` = required). Unset optional vars arrive as empty strings, which `env.ts` treats as unset.
+- **web**: `docker/web.Dockerfile` builds the site (Node runs Vite, Bun installs and runs `build:seo`) and serves `dist/client` with Caddy on port 80 (`docker/web.Caddyfile`): a file, else `<path>/index.html`, else `_shell.html` (the panel and `/editor/$key` route on the client), `/assets/*` cached as immutable. `VITE_API_URL` (required) and `VITE_SITE_URL` are **build** args: mark them as build variables in Coolify.
+- **Schema**: no migrations and `drizzle-kit` isn't in the core image, so run `bun run db:push` from a machine with `POSTGRES_URL` pointed at production (SSH tunnel) after a schema change.
+- Discord OAuth redirect: `<BACKEND_URL>/api/auth/callback` must be listed in the Developer Portal.
+- Only one bot instance may run per token: stop any old deployment before the first start.
 
 ## Conventions
 

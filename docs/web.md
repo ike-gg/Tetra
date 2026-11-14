@@ -226,7 +226,7 @@ One field: search 7TV or paste a link. `QuickAdd` (`components/panel/quick-add.t
 Run inside `apps/web`, or from the root with `bun --filter @tetra/web <script>`.
 
 - `dev` – `vite dev` on port 3000
-- `build` – static build to `dist/client`, then `build:seo`
+- `build` – static build to `dist/client`, then `build:seo`. The prerender step fetches pages from a Vite preview server, pinned to `127.0.0.1` in `vite.config.ts`: in Docker `localhost` resolved to `::1` and every request was refused. Production image: `docker/web.Dockerfile`, see project-notes Deployment
 - `build:seo` – OG images into `dist/client/og` (needs a build first), see [SEO](#seo)
 - `preview` – serve the build
 - `typecheck` – `tsc -b` (also builds core's API declarations, see [Talking to the API](#talking-to-the-api))

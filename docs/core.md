@@ -133,7 +133,7 @@ Hono on `Bun.serve` (`src/api/index.ts`), the app is built in `src/api/app.ts`. 
 
 ## Environment variables
 
-Validated in `src/env.ts` (Zod + a readable error table); the app doesn't start if a required one is missing.
+Validated in `src/env.ts` (Zod + a readable error table); the app doesn't start if a required one is missing. Empty strings count as unset (compose passes unset optional vars as `""`).
 
 - **Required**: `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_OAUTH_CLIENT_ID`, `DISCORD_OAUTH_CLIENT_SECRET`, `POSTGRES_URL`, `REDIS_URL`, `BACKEND_URL`, `FRONTEND_URL`, `SESSION_KEYS`, `TOKEN_ENCRYPTION_KEY` (32 bytes base64/hex, e.g. `openssl rand -base64 32`), `INVITE_LINK`, `TWITCH_CLIENT_ID`, `TWITCH_SECRET_KEY`, `TENOR_API_KEY`, `IMGUR_CLIENT_ID` (also when the API is disabled).
 - **Optional**: `ENV` (`production` enables trust proxy, secure cookies, temp cleanup at start and disables the dev shard watchdog; default development), `PORT` (3002), `API_ENABLED`, `CORS_ORIGINS`, `COOKIE_DOMAIN`, `TEMP_DIR_PATH` (default system tmp), `DEV_GUILDS`, `ERROR_LOG_CHANNEL_ID`, `COBALT_URL`, `COBALT_API_KEY`.
