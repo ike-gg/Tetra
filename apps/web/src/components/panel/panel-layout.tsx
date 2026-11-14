@@ -13,6 +13,7 @@ import { type ReactNode, useState } from "react";
 import { BrandLink } from "@/components/brand-link";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { PanelUserMenu } from "@/components/panel/panel-user-menu";
+import { QuickAddProvider } from "@/components/panel/quick-add-dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/cn";
 import { guildsQueryOptions } from "@/lib/guilds";
@@ -55,6 +56,7 @@ function useCurrentView(): CurrentView {
     };
   }
   if (matchRoute({ to: "/panel/tasks" })) return { label: "Tasks" };
+  if (matchRoute({ to: "/panel/browse" })) return { label: "Browse" };
   return { label: "Home" };
 }
 
@@ -127,14 +129,16 @@ export function PanelLayout({ children }: { children: ReactNode }) {
         >
           <PanelNav />
         </aside>
-        {view.fullBleed ? (
-          // The page brings its own <main> (the editor has one around its workspace)
-          <div className="min-w-0 flex-1">{children}</div>
-        ) : (
-          <main className="min-w-0 flex-1 px-4 pt-8 pb-16 sm:px-8 sm:pt-12">
-            <div className="mx-auto w-full max-w-5xl">{children}</div>
-          </main>
-        )}
+        <QuickAddProvider>
+          {view.fullBleed ? (
+            // The page brings its own <main> (the editor has one around its workspace)
+            <div className="min-w-0 flex-1">{children}</div>
+          ) : (
+            <main className="min-w-0 flex-1 px-4 pt-8 pb-16 sm:px-8 sm:pt-12">
+              <div className="mx-auto w-full max-w-5xl">{children}</div>
+            </main>
+          )}
+        </QuickAddProvider>
       </div>
       <Toaster />
     </div>

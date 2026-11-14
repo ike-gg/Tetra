@@ -4,6 +4,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { GuildTile, TILE } from "@/components/panel/guild-tile";
 import { GuildsError } from "@/components/panel/guilds-error";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
+import { QuickAdd } from "@/components/panel/quick-add";
 import { TaskList } from "@/components/panel/task-list";
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ function PanelHome() {
           </>
         )}
       </Heading>
+      <QuickAdd className="max-w-xl" />
       <PendingTasks />
       <Servers />
     </div>

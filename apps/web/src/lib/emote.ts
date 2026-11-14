@@ -1,3 +1,4 @@
+import type { CatalogEmote } from "@/lib/catalog";
 import type { GuildEmote, RemovedEmote } from "@/lib/guilds";
 import type { Task } from "@/lib/tasks";
 
@@ -31,6 +32,11 @@ export type PanelEmote = {
   restoreId?: number;
   /** Set on task emotes: the editor task the panel editor opens (`/panel/editor/$taskId`). */
   taskId?: string;
+  /** The emote's page at its source (7TV, BTTV, FFZ); "Open original" prefers it. */
+  pageUrl?: string;
+  /** Pixel size when the source states it. */
+  width?: number;
+  height?: number;
 };
 
 type StoredEmote = Task["emote"];
@@ -91,12 +97,43 @@ export const fromTask = (task: Task): PanelEmote => ({
   taskId: task.id,
 });
 
+const PAGE_URLS: Partial<Record<EmoteSource, (id: string) => string>> = {
+  "7tv": (id) => `https://7tv.app/emotes/${id}`,
+  bttv: (id) => `https://betterttv.com/emotes/${id}`,
+  ffz: (id) => `https://www.frankerfacez.com/emoticon/${id}`,
+};
+
+/** Found by link or search (`GET /emotes/resolve`, `GET /emotes/search`). */
+export const fromCatalogEmote = (emote: CatalogEmote): PanelEmote => ({
+  key: `${emote.source}:${emote.id}`,
+  id: emote.id,
+  name: emote.name,
+  previewUrl: emote.previewUrl,
+  url: emote.url,
+  animated: emote.animated,
+  source: emote.source,
+  pageUrl: PAGE_URLS[emote.source]?.(emote.id),
+  width: emote.width,
+  height: emote.height,
+});
+
 /** Discord ids are snowflakes: a longer id is newer, equal lengths compare as text. */
 export const compareSnowflakes = (a: string, b: string) =>
   a.length - b.length || (a < b ? -1 : a > b ? 1 : 0);
 
-/** Discord accepts 2–32 letters, digits and underscores; 7TV and BTTV names may not fit. */
+// Same rule as core's EMOTE_NAME_REGEX
+const DISCORD_EMOTE_NAME = /^[a-zA-Z0-9_]{2,32}$/;
+
+export const isDiscordEmoteName = (name: string) => DISCORD_EMOTE_NAME.test(name);
+
+/**
+ * Discord accepts 2–32 letters, digits and underscores; 7TV and BTTV names may not fit.
+ * Runs of other characters become one `_`, and edge underscores they leave are dropped.
+ */
 export const toDiscordEmoteName = (name: string) => {
-  const cleaned = name.replace(/[^a-zA-Z0-9_]/g, "_").slice(0, 32);
+  if (isDiscordEmoteName(name)) return name;
+  const replaced = name.replace(/[^a-zA-Z0-9_]+/g, "_");
+  const trimmed = replaced.replace(/^_+|_+$/g, "");
+  const cleaned = (trimmed.length >= 2 ? trimmed : replaced).slice(0, 32);
   return cleaned.length >= 2 ? cleaned : cleaned.padEnd(2, "_");
 };

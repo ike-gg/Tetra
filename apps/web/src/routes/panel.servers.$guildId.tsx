@@ -7,6 +7,7 @@ import { EmoteMenu } from "@/components/emote/emote-menu";
 import { GuildIcon } from "@/components/panel/guild-icon";
 import { GuildsError } from "@/components/panel/guilds-error";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
+import { QuickAdd } from "@/components/panel/quick-add";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import {
@@ -118,6 +119,13 @@ function Server({ guild }: { guild: ManagedGuild }) {
               {managed > 0 && ` · ${managed} managed`}
             </p>
           </div>
+          <Button
+            size="sm"
+            className="ml-auto shrink-0"
+            render={<Link to="/panel/browse" search={{ guild: guild.id }} />}
+          >
+            Browse emotes
+          </Button>
         </div>
         <div className="grid max-w-md grid-cols-2 gap-6 border border-border p-4">
           <SlotMeter label="static" used={staticUsed} limit={limit} />
@@ -126,6 +134,12 @@ function Server({ guild }: { guild: ManagedGuild }) {
       </header>
 
       <div className="flex flex-col gap-4">
+        <QuickAdd
+          compact
+          defaultGuildId={guild.id}
+          placeholder={`Paste an emote link to add it to ${guild.name}`}
+          className="max-w-xl"
+        />
         <div className="flex flex-wrap items-center gap-3">
           <SegmentedControl
             aria-label="Show"

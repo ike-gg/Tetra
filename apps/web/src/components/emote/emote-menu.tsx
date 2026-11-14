@@ -34,13 +34,13 @@ import { guildsQueryOptions, type ManagedGuild, sortByName } from "@/lib/guilds"
 /**
  * Where a list of emotes is shown. It decides which actions the menu offers:
  * `server` = a server's live emotes, `removed` = removed ones that can come back,
- * `task` = an editor task's source file. Browse lists (7TV, BTTV) get their own kind.
+ * `task` = an editor task's source file, `catalog` = found on 7TV, BTTV, FFZ or by link.
  */
-export type EmoteListKind = "server" | "removed" | "task";
+export type EmoteListKind = "server" | "removed" | "task" | "catalog";
 
 export type EmoteListContext = {
   kind: EmoteListKind;
-  /** The server the list belongs to, for remove and restore. */
+  /** The server the list belongs to (remove, restore), or a catalog's preferred target. */
   guild?: Pick<ManagedGuild, "id" | "name">;
   /** Whether the user can change that server's emotes. */
   canManage?: boolean;
@@ -50,6 +50,7 @@ type EmoteMenuState = {
   context: EmoteListContext;
   controller: ReturnType<typeof createMenuController<PanelEmote>>;
   fittingOf: (emote: PanelEmote) => Fitting;
+  setFitting: (emote: PanelEmote, fitting: Fitting) => void;
   selectedKey: string | null;
   select: (emote: PanelEmote | null) => void;
   /** Left click / Enter on an emote. */
@@ -66,7 +67,7 @@ export function useEmoteMenu() {
   return state;
 }
 
-const FITTINGS: { value: Fitting; label: string; hint: string }[] = [
+export const FITTINGS: { value: Fitting; label: string; hint: string }[] = [
   { value: "contain", label: "Contain", hint: "whole emote, padded" },
   { value: "cover", label: "Cover", hint: "fills the square, crops" },
   { value: "fill", label: "Fill", hint: "stretches to a square" },
@@ -97,6 +98,11 @@ export function EmoteMenu({ children, onOpen, kind, guild, canManage }: EmoteMen
     (emote: PanelEmote) => fittings[emote.key] ?? "contain",
     [fittings]
   );
+  const setFitting = useCallback(
+    (emote: PanelEmote, fitting: Fitting) =>
+      setFittings((current) => ({ ...current, [emote.key]: fitting })),
+    []
+  );
   const select = useCallback(
     (emote: PanelEmote | null) => setSelectedKey(emote?.key ?? null),
     []
@@ -111,8 +117,17 @@ export function EmoteMenu({ children, onOpen, kind, guild, canManage }: EmoteMen
 
   const context = useMemo(() => ({ kind, guild, canManage }), [kind, guild, canManage]);
   const state = useMemo(
-    () => ({ context, controller, fittingOf, selectedKey, select, activate, triggerRef }),
-    [context, controller, fittingOf, selectedKey, select, activate]
+    () => ({
+      context,
+      controller,
+      fittingOf,
+      setFitting,
+      selectedKey,
+      select,
+      activate,
+      triggerRef,
+    }),
+    [context, controller, fittingOf, setFitting, selectedKey, select, activate]
   );
 
   return (
@@ -129,9 +144,7 @@ export function EmoteMenu({ children, onOpen, kind, guild, canManage }: EmoteMen
                 emote={payload}
                 context={context}
                 fitting={fittingOf(payload)}
-                onFittingChange={(fitting) =>
-                  setFittings((current) => ({ ...current, [payload.key]: fitting }))
-                }
+                onFittingChange={(fitting) => setFitting(payload, fitting)}
               />
             )
           }
@@ -183,6 +196,10 @@ function EmoteMenuItems({
         </MenuItem>
       )}
 
+      {kind === "catalog" && guild && (
+        <AddToGuild emote={emote} guild={guild} fitting={fitting} />
+      )}
+
       {kind !== "task" && <AddToServer emote={emote} fitting={fitting} />}
 
       {kind === "server" &&
@@ -223,7 +240,9 @@ function EmoteMenuItems({
 
       <MenuItem onSelect={() => copy(emote.name, "name")}>Copy name</MenuItem>
       <MenuItem onSelect={() => copy(emote.url, "image link")}>Copy image link</MenuItem>
-      <MenuItem render={<a href={emote.url} target="_blank" rel="noreferrer" />}>
+      <MenuItem
+        render={<a href={emote.pageUrl ?? emote.url} target="_blank" rel="noreferrer" />}
+      >
         Open original
         <span aria-hidden="true" className="-ml-1 font-mono text-muted text-xs">
           {"\u2197\uFE0E"}
@@ -250,6 +269,38 @@ const copy = async (text: string, what: string) => {
     });
   }
 };
+
+// A catalog opened for one server (Browse from a server view) offers it right away
+function AddToGuild({
+  emote,
+  guild,
+  fitting,
+}: {
+  emote: PanelEmote;
+  guild: Pick<ManagedGuild, "id" | "name">;
+  fitting: Fitting;
+}) {
+  const guilds = useQuery(guildsQueryOptions);
+  const add = useAddEmote();
+  const target = guilds.data?.guildsWithUserPermissions.find(({ id }) => id === guild.id);
+  if (!target) return null;
+  const slots = emote.animated ? "animated" : "static";
+  const full = target.emojis.limit - target.emojis[slots] <= 0;
+
+  return (
+    <MenuItem
+      disabled={full}
+      onSelect={() => void add({ emote, guild: target, fitting })}
+    >
+      <span className="min-w-0 truncate">Add to {target.name}</span>
+      {full && (
+        <span className="ml-auto shrink-0 pl-4 font-mono text-muted text-xs">
+          {slots} full
+        </span>
+      )}
+    </MenuItem>
+  );
+}
 
 function AddToServer({ emote, fitting }: { emote: PanelEmote; fitting: Fitting }) {
   const guilds = useQuery(guildsQueryOptions);
@@ -279,7 +330,7 @@ function AddToServer({ emote, fitting }: { emote: PanelEmote; fitting: Fitting }
               label={target.name}
               // Full servers stay listed (and focusable) so it's clear why they can't take it
               disabled={free <= 0}
-              onSelect={() => add({ emote, guild: target, fitting })}
+              onSelect={() => void add({ emote, guild: target, fitting })}
             >
               <GuildIcon guild={target} size="sm" />
               <span className="min-w-0 truncate">{target.name}</span>

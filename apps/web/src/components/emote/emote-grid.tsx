@@ -1,5 +1,5 @@
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { Emote } from "@/components/emote/emote";
 import type { PanelEmote } from "@/lib/emote";
@@ -18,6 +18,8 @@ type EmoteGridProps = {
   label: string;
   /** Keys of emotes with something running on them (restoring). */
   pendingKeys?: ReadonlySet<string>;
+  /** Called while the rendered rows reach the last few, to load the next page. */
+  onEndReached?: () => void;
 };
 
 /**
@@ -26,7 +28,7 @@ type EmoteGridProps = {
  * this uses the window virtualizer with the grid's offset as the scroll margin. One tab
  * stop: arrow keys, Home/End (row) and Ctrl/Cmd+Home/End (list) move between emotes.
  */
-export function EmoteGrid({ emotes, label, pendingKeys }: EmoteGridProps) {
+export function EmoteGrid({ emotes, label, pendingKeys, onEndReached }: EmoteGridProps) {
   const listRef = useRef<HTMLUListElement>(null);
   const width = useElementSize(listRef)?.width ?? 0;
   const [scrollMargin, setScrollMargin] = useState(0);
@@ -88,6 +90,14 @@ export function EmoteGrid({ emotes, label, pendingKeys }: EmoteGridProps) {
   });
 
   const virtualRows = virtualizer.getVirtualItems();
+  const lastRow = virtualRows.at(-1)?.index ?? -1;
+
+  // The rendered rows run 3 past the viewport (overscan), so this fires about 6 rows
+  // before the end; it fires again after a page lands if the end is still that close
+  useEffect(() => {
+    if (onEndReached && rows > 0 && lastRow >= rows - 4) onEndReached();
+  }, [onEndReached, lastRow, rows]);
+
   const firstRendered = (virtualRows[0]?.index ?? 0) * columns;
   const lastRendered = ((virtualRows.at(-1)?.index ?? 0) + 1) * columns - 1;
   // The active emote may be scrolled out and unmounted; the list keeps a tab stop anyway

@@ -1,6 +1,6 @@
 import { Field, FieldDescription, FieldError, FieldLabel } from "@ui-sdk/react/field";
 import { Input, InputGroup } from "@ui-sdk/react/input";
-import type { ReactNode } from "react";
+import type { ClipboardEventHandler, KeyboardEventHandler, ReactNode, Ref } from "react";
 
 import { cn } from "@/lib/cn";
 
@@ -18,6 +18,12 @@ type TextFieldProps = {
   // screen readers
   hideLabel?: boolean;
   className?: string;
+  inputRef?: Ref<HTMLInputElement>;
+  onPaste?: ClipboardEventHandler<HTMLInputElement>;
+  onKeyDown?: KeyboardEventHandler<HTMLInputElement>;
+  name?: string;
+  /** `url` brings the right on-screen keyboard; it doesn't validate (no form submit). */
+  type?: "text" | "url" | "search";
 };
 
 export function TextField({
@@ -31,6 +37,11 @@ export function TextField({
   placeholder,
   hideLabel = false,
   className,
+  inputRef,
+  onPaste,
+  onKeyDown,
+  name,
+  type = "text",
 }: TextFieldProps) {
   const affix = "shrink-0 select-none font-mono text-muted text-sm";
 
@@ -50,6 +61,11 @@ export function TextField({
       >
         {prefix && <span className={affix}>{prefix}</span>}
         <Input
+          ref={inputRef}
+          type={type}
+          onPaste={onPaste}
+          onKeyDown={onKeyDown}
+          name={name}
           value={value}
           onValueChange={(next) => onValueChange(next)}
           placeholder={placeholder}

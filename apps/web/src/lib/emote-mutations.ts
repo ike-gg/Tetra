@@ -93,9 +93,11 @@ export function useAddEmote() {
       ]),
   });
 
-  return (variables: AddVariables) => {
+  // Resolves to whether it worked; the toast already told the user either way
+  return (variables: AddVariables): Promise<boolean> => {
     const name = toDiscordEmoteName(variables.emote.name);
-    toast.promise(mutation.mutateAsync(variables), {
+    const request = mutation.mutateAsync(variables);
+    toast.promise(request, {
       loading: `Adding ${name} to ${variables.guild.name}…`,
       success: { title: `Added ${name} to ${variables.guild.name}` },
       error: (error) => ({
@@ -103,6 +105,10 @@ export function useAddEmote() {
         description: emoteErrorMessage(error),
       }),
     });
+    return request.then(
+      () => true,
+      () => false
+    );
   };
 }
 

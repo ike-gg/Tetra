@@ -17,6 +17,7 @@ import { Route as StaticLogoRouteImport } from './routes/static-logo'
 import { Route as EditorIndexRouteImport } from './routes/editor.index'
 import { Route as EditorKeyRouteImport } from './routes/editor.$key'
 import { Route as PanelIndexRouteImport } from './routes/panel.index'
+import { Route as PanelBrowseRouteImport } from './routes/panel.browse'
 import { Route as PanelTasksRouteImport } from './routes/panel.tasks'
 import { Route as PanelEditorTaskIdRouteImport } from './routes/panel.editor.$taskId'
 import { Route as PanelServersGuildIdRouteImport } from './routes/panel.servers.$guildId'
@@ -61,6 +62,11 @@ const PanelIndexRoute = PanelIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelBrowseRoute = PanelBrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
+  getParentRoute: () => PanelRoute,
+} as any)
 const PanelTasksRoute = PanelTasksRouteImport.update({
   id: '/tasks',
   path: '/tasks',
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/panel': typeof PanelRouteWithChildren
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
+  '/panel/browse': typeof PanelBrowseRoute
   '/panel/tasks': typeof PanelTasksRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/logo': typeof LogoRoute
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
+  '/panel/browse': typeof PanelBrowseRoute
   '/panel/tasks': typeof PanelTasksRoute
   '/editor': typeof EditorIndexRoute
   '/panel': typeof PanelIndexRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/panel': typeof PanelRouteWithChildren
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
+  '/panel/browse': typeof PanelBrowseRoute
   '/panel/tasks': typeof PanelTasksRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/panel'
     | '/static-logo'
     | '/editor/$key'
+    | '/panel/browse'
     | '/panel/tasks'
     | '/editor/'
     | '/panel/'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/logo'
     | '/static-logo'
     | '/editor/$key'
+    | '/panel/browse'
     | '/panel/tasks'
     | '/editor'
     | '/panel'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/panel'
     | '/static-logo'
     | '/editor/$key'
+    | '/panel/browse'
     | '/panel/tasks'
     | '/editor/'
     | '/panel/'
@@ -227,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelIndexRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/panel/browse': {
+      id: '/panel/browse'
+      path: '/browse'
+      fullPath: '/panel/browse'
+      preLoaderRoute: typeof PanelBrowseRouteImport
+      parentRoute: typeof PanelRoute
+    }
     '/panel/tasks': {
       id: '/panel/tasks'
       path: '/tasks'
@@ -252,6 +271,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface PanelRouteChildren {
+  PanelBrowseRoute: typeof PanelBrowseRoute
   PanelTasksRoute: typeof PanelTasksRoute
   PanelIndexRoute: typeof PanelIndexRoute
   PanelEditorTaskIdRoute: typeof PanelEditorTaskIdRoute
@@ -259,6 +279,7 @@ interface PanelRouteChildren {
 }
 
 const PanelRouteChildren: PanelRouteChildren = {
+  PanelBrowseRoute: PanelBrowseRoute,
   PanelTasksRoute: PanelTasksRoute,
   PanelIndexRoute: PanelIndexRoute,
   PanelEditorTaskIdRoute: PanelEditorTaskIdRoute,
