@@ -34,8 +34,8 @@ export function Toaster({ toaster }: { toaster?: ToasterQueue }) {
             <span className="hidden group-data-[type=loading]/toast:inline">
               <Spinner />
             </span>
-            <span className="hidden group-data-[type=success]/toast:inline">✓</span>
-            <span className="hidden group-data-[type=error]/toast:inline">!</span>
+            <span className="hidden group-data-[type=success]/toast:inline">+</span>
+            <span className="hidden group-data-[type=error]/toast:inline">-</span>
             <span className="hidden group-data-[type=default]/toast:inline group-data-[type=info]/toast:inline group-data-[type=warning]/toast:inline">
               ·
             </span>
