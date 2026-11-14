@@ -9,6 +9,7 @@ import { apiErrorHandler, apiNotFound } from "./error-handler";
 import { apiRateLimiter, authRateLimiter } from "./middleware/rate-limit";
 import { session } from "./middleware/session";
 import { authRouter } from "./routes/auth/auth-router";
+import { emotesRouter } from "./routes/emotes/emotes-router";
 import { guildsRouter } from "./routes/guilds/guilds-router";
 import { meRouter } from "./routes/me/me-router";
 import { tasksRouter } from "./routes/tasks/tasks-router";
@@ -20,7 +21,8 @@ export const routes = new Hono<AppEnv>()
   .route("/auth", authRouter)
   .route("/me", meRouter)
   .route("/guilds", guildsRouter)
-  .route("/tasks", tasksRouter);
+  .route("/tasks", tasksRouter)
+  .route("/emotes", emotesRouter);
 
 export const app = new Hono<AppEnv>()
   .use(async (c, next) => {
