@@ -26,6 +26,8 @@ type TextFieldProps = {
   type?: "text" | "url" | "search";
   /** A control right of the input (a Search button); stretched to the input's height. */
   action?: ReactNode;
+  /** Not editable and out of the tab order; the value stays visible. */
+  disabled?: boolean;
 };
 
 export function TextField({
@@ -45,11 +47,16 @@ export function TextField({
   name,
   type = "text",
   action,
+  disabled = false,
 }: TextFieldProps) {
   const affix = "shrink-0 select-none font-mono text-muted text-sm";
 
   return (
-    <Field invalid={Boolean(error)} className={cn("flex flex-col gap-1.5", className)}>
+    <Field
+      invalid={Boolean(error)}
+      disabled={disabled}
+      className={cn("flex flex-col gap-1.5", className)}
+    >
       <FieldLabel
         className={cn("font-medium text-foreground text-sm", hideLabel && "sr-only")}
       >
@@ -60,7 +67,8 @@ export function TextField({
           className={cn(
             "flex h-9 min-w-0 flex-1 items-center gap-1 border border-neutral-700 bg-neutral-900 px-2.5",
             "hover:border-neutral-600 has-focus-visible:border-primary",
-            "has-data-invalid:border-danger"
+            "has-data-invalid:border-danger",
+            "data-disabled:cursor-not-allowed data-disabled:border-border data-disabled:bg-transparent data-disabled:hover:border-border"
           )}
         >
           {prefix && <span className={affix}>{prefix}</span>}
@@ -75,7 +83,7 @@ export function TextField({
             placeholder={placeholder}
             spellCheck={false}
             autoComplete="off"
-            className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-foreground text-sm outline-none placeholder:text-neutral-500"
+            className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-foreground text-sm outline-none placeholder:text-neutral-500 disabled:cursor-not-allowed disabled:text-muted"
           />
           {suffix && <span className={affix}>{suffix}</span>}
         </InputGroup>

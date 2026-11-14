@@ -23,7 +23,7 @@ Every emote in the panel (server grid, removed list, task tiles, later browse li
 | `pageUrl?` | Catalog emotes: the emote's page on 7TV / BTTV / FFZ; "Open original" prefers it over `url`. |
 | `width?`, `height?` | Pixel size when the source states it (catalog emotes). |
 
-Adapters build it from API shapes: `fromGuildEmote` (`GET /guilds/:guildId`), `fromRemovedEmote` (`GET /guilds/:guildId/removed`), `fromTask` (`GET /tasks`), `fromCatalogEmote` (`GET /emotes/resolve`, Browse's searches from `lib/providers/` and `GET /emotes/search` for BTTV; key `<source>:<id>`). A new source gets its own adapter there; nothing else changes.
+Adapters build it from API shapes: `fromGuildEmote` (`GET /guilds/:guildId`), `fromRemovedEmote` (`GET /guilds/:guildId/removed`), `fromTask` (`GET /tasks`), `fromCatalogEmote` (`GET /emotes/resolve` and Browse's searches from `lib/providers/`; key `<source>:<id>`). A new source gets its own adapter there; nothing else changes.
 
 ## The menu belongs to the list
 

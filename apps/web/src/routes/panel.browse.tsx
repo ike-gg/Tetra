@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import { EmoteGrid } from "@/components/emote/emote-grid";
 import { EmoteMenu } from "@/components/emote/emote-menu";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
+import { useQuickAdd } from "@/components/panel/quick-add-dialog";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Notice } from "@/components/ui/notice";
@@ -15,8 +16,10 @@ import {
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import {
+  BROWSE_PROVIDERS,
+  type BrowseProvider,
+  isSearchProvider,
   lookupErrorMessage,
-  SEARCH_PROVIDERS,
   type SearchProvider,
   searchEmotesQueryOptions,
 } from "@/lib/catalog";
@@ -24,7 +27,7 @@ import { fromCatalogEmote, type PanelEmote } from "@/lib/emote";
 import { guildsQueryOptions } from "@/lib/guilds";
 
 type BrowseSearch = {
-  provider?: Exclude<SearchProvider, "7tv">;
+  provider?: Exclude<BrowseProvider, "7tv">;
   q?: string;
   /** Server the emotes are meant for: preselected when adding. */
   guild?: string;
@@ -32,7 +35,7 @@ type BrowseSearch = {
 
 const TYPING_DELAY = 300;
 
-const PROVIDER_NAMES: Record<SearchProvider, string> = {
+const PROVIDER_NAMES: Record<BrowseProvider, string> = {
   "7tv": "7TV",
   ffz: "FFZ",
   bttv: "BTTV",
@@ -41,7 +44,6 @@ const PROVIDER_NAMES: Record<SearchProvider, string> = {
 const POPULAR_TITLES: Record<SearchProvider, string> = {
   "7tv": "Top on 7TV",
   ffz: "Most used on FFZ",
-  bttv: "BTTV globals",
 };
 
 export const Route = createFileRoute("/panel/browse")({
@@ -61,7 +63,8 @@ export const Route = createFileRoute("/panel/browse")({
 function PanelBrowse() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const provider: SearchProvider = search.provider ?? "7tv";
+  const provider: BrowseProvider = search.provider ?? "7tv";
+  const quickAdd = useQuickAdd();
   const query = search.q ?? "";
   const guilds = useQuery(guildsQueryOptions);
   const guild = guilds.data?.guildsWithUserPermissions.find(
@@ -126,7 +129,7 @@ function PanelBrowse() {
             })
           }
         >
-          {SEARCH_PROVIDERS.map((value) => (
+          {BROWSE_PROVIDERS.map((value) => (
             <SegmentedControlItem key={value} value={value}>
               {PROVIDER_NAMES[value]}
             </SegmentedControlItem>
@@ -139,28 +142,30 @@ function PanelBrowse() {
           value={draft}
           onValueChange={setDraft}
           placeholder={`Search ${PROVIDER_NAMES[provider]}`}
+          disabled={!isSearchProvider(provider)}
           className="min-w-40 flex-1 sm:max-w-72"
         />
       </div>
 
-      {provider === "bttv" && query ? (
-        <Notice
-          title="BTTV search needs an account"
-          action={
-            <Button size="sm" onClick={() => setDraft("")}>
-              Show globals
-            </Button>
-          }
-        >
-          Paste a BTTV link into Quick add instead.
-        </Notice>
-      ) : (
+      {isSearchProvider(provider) ? (
         <Results
           key={`${provider}:${query}`}
           provider={provider}
           query={query}
           guild={guild && { id: guild.id, name: guild.name }}
         />
+      ) : (
+        <Notice
+          title="BTTV is temporarily disabled"
+          action={
+            <Button size="sm" onClick={() => quickAdd({ guildId: guild?.id })}>
+              Quick add
+            </Button>
+          }
+        >
+          Something's off on their side; we're on it. Paste a BTTV link into Quick add
+          instead.
+        </Notice>
       )}
     </div>
   );

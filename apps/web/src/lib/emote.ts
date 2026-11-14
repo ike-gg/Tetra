@@ -103,7 +103,7 @@ const PAGE_URLS: Partial<Record<EmoteSource, (id: string) => string>> = {
   ffz: (id) => `https://www.frankerfacez.com/emoticon/${id}`,
 };
 
-/** Found by link or search (`GET /emotes/resolve`, `GET /emotes/search`). */
+/** Found by link (`GET /emotes/resolve`) or by Browse's searches (`lib/providers/`). */
 export const fromCatalogEmote = (emote: CatalogEmote): PanelEmote => ({
   key: `${emote.source}:${emote.id}`,
   id: emote.id,

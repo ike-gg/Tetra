@@ -22,23 +22,26 @@ export const resolveEmoteQueryOptions = (text: string) =>
     retry: false,
   });
 
-export type SearchProvider = "7tv" | "ffz" | "bttv";
+/** Providers Browse can search; all of them answer the browser directly. */
+export type SearchProvider = "7tv" | "ffz";
 
-export const SEARCH_PROVIDERS: SearchProvider[] = ["7tv", "ffz", "bttv"];
+/** Providers Browse lists. BTTV stays visible while its search is disabled. */
+export type BrowseProvider = SearchProvider | "bttv";
 
-// 7TV and FFZ allow CORS, so the browser asks them directly; BTTV still goes through core
+export const BROWSE_PROVIDERS: BrowseProvider[] = ["7tv", "ffz", "bttv"];
+
+export const isSearchProvider = (provider: BrowseProvider): provider is SearchProvider =>
+  provider !== "bttv";
+
 const fetchSearchPage = (
   provider: SearchProvider,
   query: string,
   page: number,
   signal: AbortSignal
-): Promise<SearchPage> => {
-  if (provider === "7tv") return searchSevenTv(query, page, signal);
-  if (provider === "ffz") return searchFfz(query, page, signal);
-  return unwrap(
-    api.emotes.search.$get({ query: { provider, query, page } }, { init: { signal } })
-  );
-};
+): Promise<SearchPage> =>
+  provider === "7tv"
+    ? searchSevenTv(query, page, signal)
+    : searchFfz(query, page, signal);
 
 /** Pages of a provider's search; an empty query lists popular emotes. */
 export const searchEmotesQueryOptions = (provider: SearchProvider, query: string) =>
