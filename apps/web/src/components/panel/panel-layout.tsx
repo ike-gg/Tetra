@@ -14,26 +14,51 @@ import { BrandLink } from "@/components/brand-link";
 import { PanelNav } from "@/components/panel/panel-nav";
 import { PanelUserMenu } from "@/components/panel/panel-user-menu";
 import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/cn";
 import { guildsQueryOptions } from "@/lib/guilds";
+import { taskQueryOptions } from "@/lib/tasks";
 
 const ICON_BUTTON =
   "flex size-8 shrink-0 cursor-default select-none items-center justify-center border-0 bg-transparent p-0 font-mono text-base hover:bg-surface active:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:-outline-offset-2";
 
+type CurrentView = {
+  label: string;
+  // A crumb between Panel and the label, for views that live under another one
+  parent?: "tasks";
+  // The editor fills the content area edge to edge
+  fullBleed?: boolean;
+};
+
 // The last crumb: what the content area shows right now
-function useCurrentView() {
+function useCurrentView(): CurrentView {
   const matchRoute = useMatchRoute();
   const guilds = useQuery(guildsQueryOptions);
+  const editor = matchRoute({ to: "/panel/editor/$taskId" });
+  const taskId = editor ? editor.taskId : "";
+  // Shares the editor page's query, so it costs no extra request
+  const task = useQuery({ ...taskQueryOptions(taskId), enabled: Boolean(editor) });
 
+  if (editor) {
+    return {
+      label: task.data ? `:${task.data.emote.name}:` : "Editor",
+      parent: "tasks",
+      fullBleed: true,
+    };
+  }
   const server = matchRoute({ to: "/panel/servers/$guildId" });
   if (server) {
-    return (
-      guilds.data?.guildsWithUserPermissions.find((guild) => guild.id === server.guildId)
-        ?.name ?? "Server"
-    );
+    return {
+      label:
+        guilds.data?.guildsWithUserPermissions.find(
+          (guild) => guild.id === server.guildId
+        )?.name ?? "Server",
+    };
   }
-  if (matchRoute({ to: "/panel/tasks" })) return "Tasks";
-  return "Home";
+  if (matchRoute({ to: "/panel/tasks" })) return { label: "Tasks" };
+  return { label: "Home" };
 }
+
+const CRUMB_LINK = "cursor-default text-muted no-underline hover:text-foreground";
 
 // App chrome of the logged-in panel: header with breadcrumb and account, a fixed sidebar on
 // wide screens and the same navigation in a drawer on narrow ones
@@ -47,7 +72,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
         <Drawer side="left" open={navOpen} onOpenChange={setNavOpen}>
           <DrawerTrigger
             aria-label="Open navigation"
-            className={`${ICON_BUTTON} md:hidden`}
+            className={cn(ICON_BUTTON, view.fullBleed ? "xl:hidden" : "md:hidden")}
           >
             <span aria-hidden="true">≡</span>
           </DrawerTrigger>
@@ -67,17 +92,24 @@ export function PanelLayout({ children }: { children: ReactNode }) {
         <span aria-hidden="true" className="text-neutral-600">
           /
         </span>
-        <Link
-          to="/panel"
-          className="cursor-default text-muted no-underline hover:text-foreground"
-        >
+        <Link to="/panel" className={CRUMB_LINK}>
           Panel
         </Link>
         <span aria-hidden="true" className="text-neutral-600">
           /
         </span>
+        {view.parent === "tasks" && (
+          <>
+            <Link to="/panel/tasks" className={cn(CRUMB_LINK, "max-sm:hidden")}>
+              Tasks
+            </Link>
+            <span aria-hidden="true" className="text-neutral-600 max-sm:hidden">
+              /
+            </span>
+          </>
+        )}
         <span aria-current="page" className="min-w-0 truncate font-medium">
-          {view}
+          {view.label}
         </span>
 
         <div className="ml-auto shrink-0">
@@ -86,12 +118,23 @@ export function PanelLayout({ children }: { children: ReactNode }) {
       </header>
 
       <div className="flex">
-        <aside className="sticky top-12 hidden h-[calc(100dvh-3rem)] w-60 shrink-0 overflow-y-auto overscroll-none border-border border-r md:block">
+        {/* The editor needs the width more than the sidebar below xl; the drawer stays */}
+        <aside
+          className={cn(
+            "sticky top-12 hidden h-[calc(100dvh-3rem)] w-60 shrink-0 overflow-y-auto overscroll-none border-border border-r",
+            view.fullBleed ? "xl:block" : "md:block"
+          )}
+        >
           <PanelNav />
         </aside>
-        <main className="min-w-0 flex-1 px-4 pt-8 pb-16 sm:px-8 sm:pt-12">
-          <div className="mx-auto w-full max-w-5xl">{children}</div>
-        </main>
+        {view.fullBleed ? (
+          // The page brings its own <main> (the editor has one around its workspace)
+          <div className="min-w-0 flex-1">{children}</div>
+        ) : (
+          <main className="min-w-0 flex-1 px-4 pt-8 pb-16 sm:px-8 sm:pt-12">
+            <div className="mx-auto w-full max-w-5xl">{children}</div>
+          </main>
+        )}
       </div>
       <Toaster />
     </div>

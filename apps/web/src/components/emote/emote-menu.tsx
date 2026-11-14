@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
   createContext,
   type ReactNode,
@@ -171,6 +172,14 @@ function EmoteMenuItems({
       {kind === "removed" && guild && managesHere && (
         <MenuItem onSelect={() => restore(emote, guild.name)}>
           Restore to {guild.name}
+        </MenuItem>
+      )}
+
+      {kind === "task" && emote.taskId && (
+        <MenuItem
+          render={<Link to="/panel/editor/$taskId" params={{ taskId: emote.taskId }} />}
+        >
+          Open in editor
         </MenuItem>
       )}
 

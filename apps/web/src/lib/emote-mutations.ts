@@ -46,6 +46,14 @@ export const emoteErrorMessage = (error: unknown) => {
       return "Discord won't take that name: 2–32 letters, numbers or _.";
     case "INVALID_EMOTE_FILE":
       return "Discord rejected the image file.";
+    case "PAYLOAD_TOO_LARGE":
+      return "The file is too big to send. Get it under 256 KB first.";
+    case "TASK_NOT_FOUND":
+      return "This task is gone: it was already fixed or discarded.";
+    case "FILE_TOO_LARGE":
+      return "The original file is over 10 MB, too big for Tetra to fetch.";
+    case "UNSUPPORTED_FILE_TYPE":
+      return "The original isn't a GIF, PNG, WebP or JPEG image.";
     case "RATE_LIMITED":
       return "That's a lot at once. Wait a moment and try again.";
     // Any Discord error core doesn't map to its own code

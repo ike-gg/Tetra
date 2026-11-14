@@ -13,7 +13,9 @@ import { Slider } from "@/components/ui/slider";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { TextField } from "@/components/ui/text-field";
+import { cn } from "@/lib/cn";
 import { formatBytes } from "@/lib/format-bytes";
+import type { StillFormat } from "@/lib/image/render-image";
 import {
   type Crop,
   DISCORD_EMOTE_LIMIT,
@@ -38,7 +40,7 @@ import {
   LARGE_FILE_BYTES,
   type MediaFile,
 } from "@/lib/media/media-file";
-import { type MediaRender, renderMedia } from "@/lib/media/render";
+import { type MediaRender, renderMedia, STILL_FORMATS } from "@/lib/media/render";
 
 import { CanvasWindow } from "./canvas-window";
 import { FITTING_LABELS, FittingPicker } from "./fitting-picker";
@@ -60,15 +62,26 @@ export type MediaEditorState = {
 
 type MediaEditorProps = {
   source: MediaFile;
-  // Breadcrumb segment between the wordmark and the file name
-  section: { label: string; to: "/editor" | "/panel" };
+  // Breadcrumb segment between the wordmark and the file name. Left out when the host
+  // has its own header (the panel): the editor then fills the host's content area, and
+  // `toolbarStart` takes the breadcrumb's place.
+  section?: { label: string; to: "/editor" | "/panel" };
+  toolbarStart?: ReactNode;
   actions: (state: MediaEditorState) => ReactNode;
+  // Bars under the toolbar, like a warning about the destination
+  notice?: ReactNode;
   sizeNote?: (state: MediaEditorState) => ReactNode;
   // Restores earlier work; the editor starts from these instead of the defaults
   initialEdit?: Edit | null;
   initialName?: string;
   // Whether the Discord emote checks are on at first (name rules, 256 KB limit, auto-fit)
   initialDiscord?: boolean;
+  // Always an emote: the checks are on and the switch is hidden
+  discordOnly?: boolean;
+  // What a still image may become; the panel's task endpoint rejects JPEG
+  outputFormats?: readonly StillFormat[];
+  // Height and layout; the editor takes the full viewport by default
+  className?: string;
   // Called after every change of the settings, name or Discord toggle, for saving them
   onWorkChange?: (work: EditorWork) => void;
 };
@@ -78,11 +91,16 @@ export type EditorWork = { edit: Edit; name: string; discord: boolean };
 export function MediaEditor({
   source,
   section,
+  toolbarStart,
   actions,
+  notice,
   sizeNote,
   initialEdit,
   initialName,
   initialDiscord = false,
+  discordOnly = false,
+  outputFormats = STILL_FORMATS,
+  className,
   onWorkChange,
 }: MediaEditorProps) {
   const { info } = source;
@@ -90,7 +108,7 @@ export function MediaEditor({
   const still = source.kind === "image";
 
   const [name, setName] = useState(initialName ?? source.name);
-  const [discord, setDiscord] = useState(initialDiscord);
+  const [discord, setDiscord] = useState(discordOnly || initialDiscord);
   const [view, setView] = useState<View>("preview");
   const [previewScale, setPreviewScale] = useState<PreviewScale>("fit");
   const [edit, setEdit] = useState<Edit>(() => restoreEdit(info, initialEdit));
@@ -100,7 +118,7 @@ export function MediaEditor({
   const [autoFitting, setAutoFitting] = useState(false);
   const fitController = useRef<AbortController | null>(null);
 
-  const { result, pending, error } = useMediaRender(source, edit);
+  const { result, pending, error } = useMediaRender(source, edit, outputFormats);
   const frames = useFilmStrip(source);
 
   const nameError = discord ? emoteNameError(name) : fileNameError(name);
@@ -174,7 +192,8 @@ export function MediaEditor({
         const render = await renderMedia(
           source,
           { ...edit, settings },
-          controller.signal
+          controller.signal,
+          outputFormats
         );
         URL.revokeObjectURL(render.url);
         if (render.bytes <= DISCORD_EMOTE_LIMIT) break;
@@ -211,26 +230,43 @@ export function MediaEditor({
   return (
     // relative: ui-sdk hides its form inputs with position: absolute; without a positioned
     // ancestor they're placed against the page and stretch it below a scrolled sidebar
-    <div className="relative flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden">
-      {firstRender && <ProcessingOverlay fileName={source.name} bytes={source.bytes} />}
+    <div
+      className={cn(
+        "relative flex min-h-dvh flex-col lg:h-dvh lg:overflow-hidden",
+        className
+      )}
+    >
+      {firstRender && (
+        <ProcessingOverlay
+          fileName={source.name}
+          bytes={source.bytes}
+          contained={!section}
+        />
+      )}
       <div inert={firstRender} className="flex min-h-0 flex-1 flex-col">
         <header className="flex h-12 shrink-0 select-none items-center gap-3 border-border border-b px-4">
-          <nav
-            aria-label="Breadcrumb"
-            className="flex min-w-0 items-center gap-2 text-sm"
-          >
-            <BrandLink />
-            <span className="text-neutral-600">/</span>
-            <Link
-              to={section.to}
-              className="cursor-default text-muted hover:text-foreground active:text-neutral-300"
+          {section ? (
+            <nav
+              aria-label="Breadcrumb"
+              className="flex min-w-0 items-center gap-2 text-sm"
             >
-              {section.label}
-            </Link>
-            <span className="text-neutral-600">/</span>
-            <span className="truncate font-medium">{nameError ? source.name : name}</span>
-          </nav>
-          <div className="ml-auto flex items-center gap-2">
+              <BrandLink />
+              <span className="text-neutral-600">/</span>
+              <Link
+                to={section.to}
+                className="cursor-default text-muted no-underline hover:text-foreground active:text-neutral-300"
+              >
+                {section.label}
+              </Link>
+              <span className="text-neutral-600">/</span>
+              <span className="truncate font-medium">
+                {nameError ? source.name : name}
+              </span>
+            </nav>
+          ) : (
+            toolbarStart
+          )}
+          <div className="ml-auto flex min-w-0 items-center gap-2">
             <Button variant="ghost" size="sm" onClick={reset}>
               Reset
             </Button>
@@ -254,6 +290,7 @@ export function MediaEditor({
             smaller, bring it back here.
           </Notice>
         )}
+        {notice}
 
         <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <main className="flex min-h-0 min-w-0 flex-col">
@@ -356,12 +393,14 @@ export function MediaEditor({
             <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain">
               <InspectorSection title="output">
                 <div className="flex flex-col gap-4">
-                  <Switch
-                    label="Discord emote"
-                    description={`Checks the name and the ${formatBytes(DISCORD_EMOTE_LIMIT)} limit.`}
-                    checked={discord}
-                    onCheckedChange={setDiscord}
-                  />
+                  {!discordOnly && (
+                    <Switch
+                      label="Discord emote"
+                      description={`Checks the name and the ${formatBytes(DISCORD_EMOTE_LIMIT)} limit.`}
+                      checked={discord}
+                      onCheckedChange={setDiscord}
+                    />
+                  )}
                   {discord ? (
                     <TextField
                       key="emote-name"
@@ -371,7 +410,11 @@ export function MediaEditor({
                       prefix=":"
                       suffix=":"
                       error={nameError}
-                      description="How people type it in chat, and the file name."
+                      description={
+                        discordOnly
+                          ? "How people type it in chat."
+                          : "How people type it in chat, and the file name."
+                      }
                     />
                   ) : (
                     <TextField
@@ -458,6 +501,7 @@ export function MediaEditor({
                 <div className="flex flex-col gap-5">
                   {still && (
                     <FormatPicker
+                      formats={outputFormats}
                       value={settings.format}
                       onValueChange={setSetting("format")}
                       result={result}
@@ -538,10 +582,12 @@ const FORMATS: { value: OutputFormat; label: string }[] = [
 ];
 
 function FormatPicker({
+  formats,
   value,
   onValueChange,
   result,
 }: {
+  formats: readonly StillFormat[];
   value: OutputFormat;
   onValueChange: (value: OutputFormat) => void;
   result: MediaRender | null;
@@ -564,7 +610,9 @@ function FormatPicker({
         onValueChange={(next) => next && onValueChange(next as OutputFormat)}
         className="flex w-full"
       >
-        {FORMATS.map((format) => (
+        {FORMATS.filter(
+          (format) => format.value === "auto" || formats.includes(format.value)
+        ).map((format) => (
           <SegmentedControlItem key={format.value} value={format.value} className="px-0">
             {format.label}
           </SegmentedControlItem>
@@ -606,11 +654,23 @@ function SizeSummary({
   );
 }
 
-function ProcessingOverlay({ fileName, bytes }: { fileName: string; bytes: number }) {
+function ProcessingOverlay({
+  fileName,
+  bytes,
+  contained,
+}: {
+  fileName: string;
+  bytes: number;
+  // Inside a host layout: covers only the editor, card at the top instead of centered
+  contained: boolean;
+}) {
   return (
     <div
       role="status"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      className={cn(
+        "inset-0 z-50 flex justify-center bg-background/80 backdrop-blur-sm",
+        contained ? "absolute z-10 items-start pt-24" : "fixed items-center"
+      )}
     >
       <div className="flex flex-col items-center gap-3 border border-border bg-background px-8 py-6">
         <Spinner className="text-2xl" />

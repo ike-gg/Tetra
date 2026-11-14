@@ -29,6 +29,8 @@ export type PanelEmote = {
   available?: boolean;
   /** Set on removed emotes: the id `POST /guilds/:guildId/restore/:restoreId` takes. */
   restoreId?: number;
+  /** Set on task emotes: the editor task the panel editor opens (`/panel/editor/$taskId`). */
+  taskId?: string;
 };
 
 type StoredEmote = Task["emote"];
@@ -86,6 +88,7 @@ export const fromTask = (task: Task): PanelEmote => ({
   ...fromStoredEmote(task.emote),
   key: `task:${task.id}`,
   guildId: task.guildId,
+  taskId: task.id,
 });
 
 /** Discord ids are snowflakes: a longer id is newer, equal lengths compare as text. */

@@ -13,6 +13,8 @@ export type ImageJob = {
   compression: number;
   trimEdges: boolean;
   format: OutputFormat;
+  // What the output may be; "auto" picks among these (the panel leaves out JPEG)
+  formats: readonly StillFormat[];
 };
 
 export type ImageJobResult = {
@@ -28,7 +30,12 @@ type WorkerReply = { ok: true; result: ImageJobResult } | { ok: false; error: st
 // Decoding, resizing and the wasm encoders (jSquash) run in a worker, one per run like the
 // GIF path: an aborted run terminates its worker, so even a slow encode of a large photo
 // never holds up the newer edit.
-export const renderImage = (source: MediaFile, edit: Edit, signal: AbortSignal) =>
+export const renderImage = (
+  source: MediaFile,
+  edit: Edit,
+  formats: readonly StillFormat[],
+  signal: AbortSignal
+) =>
   new Promise<ImageJobResult>((resolve, reject) => {
     signal.throwIfAborted();
     const worker = new Worker(new URL("./image-worker.ts", import.meta.url), {
@@ -64,6 +71,7 @@ export const renderImage = (source: MediaFile, edit: Edit, signal: AbortSignal) 
       compression: edit.settings.compression,
       trimEdges: edit.settings.trimEdges,
       format: edit.settings.format,
+      formats,
     };
     worker.postMessage(job, [job.buffer]);
   });

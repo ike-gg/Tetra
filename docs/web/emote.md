@@ -19,6 +19,7 @@ Every emote in the panel (server grid, removed list, task tiles, later browse li
 | `guildId?` | Server it's on, was removed from, or a task belongs to. |
 | `managed?`, `available?` | Discord flags: integration emotes can't be removed; unavailable = over the slot limit after a lost boost. |
 | `restoreId?` | Removed emotes: the id `POST /guilds/:guildId/restore/:restoreId` takes. |
+| `taskId?` | Task emotes: the editor task "Open in editor" opens (`/panel/editor/$taskId`). |
 
 Adapters build it from API shapes: `fromGuildEmote` (`GET /guilds/:guildId`), `fromRemovedEmote` (`GET /guilds/:guildId/removed`), `fromTask` (`GET /tasks`). A new source (7TV browse) gets its own adapter there; nothing else changes.
 
@@ -34,6 +35,7 @@ Actions by kind (`EmoteMenuItems`):
 
 | Action | Shown |
 |---|---|
+| Open in editor | `task`: a `Link` to `/panel/editor/$taskId` |
 | Restore to *server* | `removed`, with `canManage` |
 | Add to server › | not on `task`. The user's manageable servers (sorted by name) with free slots of the emote's type; a full server stays listed but disabled; the emote's own server is marked "here". Sends `{ file: url, name, fitting }`. |
 | Remove from *server* | `server`, with `canManage`; managed emotes show "Managed by an integration" instead |
@@ -58,7 +60,7 @@ Selects the emote (orange 2px inset outline, `aria-pressed`) and calls `onOpen`.
 - `useAddEmote()` → `POST /guilds/:id/emote`, then invalidates `["guilds"]` (slot meters) and `["guilds", targetId]`.
 - `useRemoveEmote(guildId)` → optimistic: the emote leaves `["guilds", guildId]` and its slot count drops at once; an error restores the snapshot. Settled: invalidates the list and `["guilds", guildId, …]` (also refetches Removed).
 - `useRestoreEmote(guildId)` → not optimistic (a restore re-uploads and can fail on size): the tile shows `pending` (dimmed + Spinner, `aria-busy`, no menu) until it settles, read with `useRestoringKeys` from the mutation cache so it survives remounts. Success drops it from the removed list and invalidates the server.
-- `emoteErrorMessage(error)` maps `ApiError.reference` to a toast sentence (URL_NOT_ALLOWED, DOWNLOAD_DATA_FAILED, MISSING_PERMISSIONS, USER_NOT_IN_GUILD, OAUTH_GET_GUILDS_ERROR, INVALID_REQUEST_SCHEMA, GUILD_EMOTE_NOT_FOUND/EMOTE_NOT_FOUND, GUILD_EMOTE_DELETE_FAILED, RATE_LIMITED, and core's mapped Discord/size codes EMOTE_TOO_LARGE, GUILD_EMOJI_LIMIT_REACHED, BOT_MISSING_PERMISSIONS, INVALID_EMOTE_NAME, INVALID_EMOTE_FILE; unmapped DISCORD_API_ERROR shows Discord's message). See the error table in [core.md](../core.md).
+- `emoteErrorMessage(error)` maps `ApiError.reference` to a toast sentence (URL_NOT_ALLOWED, DOWNLOAD_DATA_FAILED, MISSING_PERMISSIONS, USER_NOT_IN_GUILD, OAUTH_GET_GUILDS_ERROR, INVALID_REQUEST_SCHEMA, GUILD_EMOTE_NOT_FOUND/EMOTE_NOT_FOUND, GUILD_EMOTE_DELETE_FAILED, RATE_LIMITED, and core's mapped Discord/size codes EMOTE_TOO_LARGE, GUILD_EMOJI_LIMIT_REACHED, BOT_MISSING_PERMISSIONS, INVALID_EMOTE_NAME, INVALID_EMOTE_FILE; the task codes PAYLOAD_TOO_LARGE, TASK_NOT_FOUND, FILE_TOO_LARGE, UNSUPPORTED_FILE_TYPE; unmapped DISCORD_API_ERROR shows Discord's message). See the error table in [core.md](../core.md).
 - Names are cleaned for Discord with `toDiscordEmoteName` (2–32 of `[a-zA-Z0-9_]`).
 
 ## Virtualized grid

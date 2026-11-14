@@ -19,20 +19,30 @@ export class ApiError extends Error {
   }
 }
 
+const toApiError = async (response: Pick<Response, "status" | "statusText" | "json">) => {
+  const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
+  return new ApiError(
+    response.status,
+    body?.error ?? response.statusText,
+    body?.reference
+  );
+};
+
 /** Returns the parsed body of a successful response, throws `ApiError` otherwise. */
 export const unwrap = async <T>(request: Promise<ClientResponse<T>>): Promise<T> => {
   const response = await request;
-
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as ApiErrorBody | null;
-    throw new ApiError(
-      response.status,
-      body?.error ?? response.statusText,
-      body?.reference
-    );
-  }
+  if (!response.ok) throw await toApiError(response);
 
   // 204, and 200 with an empty body (`/me/state`), have nothing to parse
   const text = await response.text();
   return (text ? JSON.parse(text) : undefined) as T;
+};
+
+/** For endpoints that answer with a file: the body as a `Blob`, `ApiError` otherwise. */
+export const unwrapBlob = async (
+  request: Promise<ClientResponse<unknown>>
+): Promise<Blob> => {
+  const response = await request;
+  if (!response.ok) throw await toApiError(response);
+  return response.blob();
 };

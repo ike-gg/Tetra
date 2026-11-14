@@ -143,8 +143,11 @@ const run = async (job: ImageJob): Promise<ImageJobResult> => {
     });
   }
 
+  const allowed = (format: StillFormat) => job.formats.includes(format);
   const formats =
-    job.format === "auto" ? candidates(image, job.compression) : [job.format];
+    job.format !== "auto" && allowed(job.format)
+      ? [job.format]
+      : candidates(image, job.compression).filter(allowed);
   let best: { file: ArrayBuffer; format: StillFormat } | null = null;
   for (const format of formats) {
     const file = await encode(image, format, job.compression);

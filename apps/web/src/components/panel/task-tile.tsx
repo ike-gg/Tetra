@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 import { Emote } from "@/components/emote/emote";
 import { Button } from "@/components/ui/button";
 import { fromTask } from "@/lib/emote";
@@ -17,11 +19,9 @@ type TaskTileProps = {
   task: Task;
   // Undefined while the servers load or when the server isn't in the user's lists anymore
   guildName: string | undefined;
-  // Id of the text that says why "Fix in editor" is disabled
-  actionHintId: string;
 };
 
-export function TaskTile({ task, guildName, actionHintId }: TaskTileProps) {
+export function TaskTile({ task, guildName }: TaskTileProps) {
   const { emote } = task;
 
   return (
@@ -39,13 +39,10 @@ export function TaskTile({ task, guildName, actionHintId }: TaskTileProps) {
           </time>
         </p>
       </div>
-      {/* The panel editor (/panel/editor/$taskId) doesn't exist yet */}
       <Button
         size="sm"
-        disabled
-        focusableWhenDisabled
-        aria-describedby={actionHintId}
         className="shrink-0"
+        render={<Link to="/panel/editor/$taskId" params={{ taskId: task.id }} />}
       >
         Fix in editor<span className="sr-only"> {emote.name}</span>
       </Button>

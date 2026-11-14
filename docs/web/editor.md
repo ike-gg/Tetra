@@ -4,10 +4,11 @@ Paths in this document are relative to `apps/web`. Overview of the web app: [../
 
 The Image/GIF quick editor: GIFs and still images (PNG, JPEG, WebP). Named for both on purpose, it's not an emote editor or a GIF tool only. "Image/GIF quick editor" is its full name (page title, eyebrow on `/editor`); everywhere else, breadcrumbs included, it's just "Editor". In code it's the media editor (`components/editor/media-*`). It's built around Discord emotes (the size meter measures against Discord's 256 KB emote limit, the same on every server), but works for any image. Everything runs locally in the browser.
 
-One editor, two entry points:
+One editor, three entry points:
 
 - **`/editor`** – public, no account, nothing uploaded. Prerendered start screen, content from the top (not centered): intro, drop zone (`MediaDropzone`: drop anywhere on the page, paste, or pick; GIF/PNG/JPEG/WebP, up to 20 MB; `/editor` imports `ui-sdk.css` too and the zone pins width, border style, font size, colors and the trigger margin, because web.css stays global once any editor route loaded it and used to change the zone between visits) and *recently edited* (`RecentFiles`). A chosen file is validated, saved to the local library and opened at `/editor/<key>`, so Back returns to `/editor`. Routes: `editor.index.tsx` (head) + `editor.index.lazy.tsx`.
 - **`/editor/$key`** – client-only. Loads the file and its saved settings from the library and opens the editor; the toolbar has `New file` (back to `/editor`) and `Download` (always enabled once a result exists, file named `<name>.<extension of the result>`; the size note says Discord takes up to 256 KB). An unknown key (other browser, evicted, cleared) shows "This file isn't in this browser" with a way back. Routes: `editor.$key.tsx` + `editor.$key.lazy.tsx`.
+- **`/panel/editor/$taskId`** – a bot task's emote inside the panel layout, with "Add to <server>" instead of Download. See [Panel integration](#panel-integration).
 
 ## Files
 
@@ -15,6 +16,7 @@ One editor, two entry points:
 |---|---|
 | `routes/editor.index.tsx`, `editor.index.lazy.tsx` | `/editor` start screen (prerendered): intro, drop zone, recent files. |
 | `routes/editor.$key.tsx`, `editor.$key.lazy.tsx` | `/editor/<key>` (client-only): file from the local library, saves settings, Download. |
+| `routes/panel.editor.$taskId.tsx`, `.lazy.tsx` | `/panel/editor/<taskId>`: task + proxied file, load states, Add to server, Discard. |
 | `components/editor/media-editor.tsx` | The editor screen: edit state, sidebar, auto-fit, first-render overlay. Pages pass actions, size note, initial work, `onWorkChange`. |
 | `components/editor/canvas-window.tsx` | Workspace with the movable, resizable, remembered window. |
 | `components/editor/media-preview.tsx` | Original / result panes, Fit / Actual size, crop outline, chat preview. |
@@ -32,7 +34,7 @@ One editor, two entry points:
 
 ## Screen
 
-`src/components/editor/media-editor.tsx` holds the edit state; pages pass the toolbar actions and an optional size note as render props.
+`src/components/editor/media-editor.tsx` holds the edit state; pages pass the toolbar actions and an optional size note as render props. Host options: `section` (the breadcrumb; leave it out when the host has its own header, then `toolbarStart` fills that spot and the first-render overlay covers only the editor, card at the top), `notice` (bars under the toolbar), `discordOnly` (checks on, switch hidden), `outputFormats` (what a still image may become), `className` (height; full viewport by default).
 
 - **Large file notice**: files over 5 MB (`LARGE_FILE_BYTES` in `lib/media/media-file.ts`) open normally, with a `Notice` bar under the toolbar saying the editor is made for smaller files, processing may be slow or fail, and a dedicated tool will do better. `Continue anyway` hides it. The hard upload limit is 20 MB (`MAX_FILE_BYTES` in `media-dropzone.tsx`).
 - **First render blocks the editor**: until the first result exists, a `ProcessingOverlay` (`Spinner` + "Processing" + file name, plus "<size> is a big file, this can take a while." over 5 MB) covers the screen and the editor is `inert`. Later renders don't block (see below).
@@ -44,7 +46,7 @@ One editor, two entry points:
   - *Crop*: ui-sdk `ImageCropper` fitted into the window, image scaled with `image-rendering: pixelated`. The viewport has padding and the selection `z-10`: with `overflow: hidden` and no padding, a selection covering the whole image lost its outline and handles at the edges. The preview's crop outline is drawn inside its box (`-outline-offset-1`) for the same reason. The toolbar shows the Fitting control (compact) and `Remove crop`; the window title explains what the selection means for the current fitting. A crop covering the whole image is stored as `null`.
   - *Trim* (animated GIFs only): two-thumb slider over a film strip of 16 frames, in **frame indices** (frames can have different delays), labels in seconds. Handles, dimming and times follow a drag live from a local draft; the edit (and so the render) changes only on release (`onValueCommit`, also once per key press), because every render of a long GIF is a full gifsicle run.
 - **Inspector**:
-  - *output*: a **Discord emote** switch (off by default on `/editor`, on in `/panel`, saved with the file's settings). On: `Emote name` with `:name:` and Discord's rules (2–32 letters/numbers/`_`), the `SizeMeter` against 256 KB with `Fit automatically`, the size note and the chat preview. Off: `File name` with the result's extension as suffix (only characters file systems reject are refused) and a plain size summary (`original → result · −64%`). The name is the download's file name either way.
+  - *output*: a **Discord emote** switch (off by default on `/editor`, saved with the file's settings; always on and hidden in `/panel`). On: `Emote name` with `:name:` and Discord's rules (2–32 letters/numbers/`_`), the `SizeMeter` against 256 KB with `Fit automatically`, the size note and the chat preview. Off: `File name` with the result's extension as suffix (only characters file systems reject are refused) and a plain size summary (`original → result · −64%`). The name is the download's file name either way.
   - *adjust*, the options:
 
 | Option | GIF | Still image |
@@ -101,7 +103,7 @@ Optional convenience, all in this browser's IndexedDB (database `tetra-editor`, 
 [jSquash](https://github.com/jamsinclair/jSquash) (Squoosh's codecs as WASM; `@jsquash/resize`, `png`, `oxipng`, `webp`, `jpeg`, all pinned). The canvas can't do this alone: Safari's `toBlob` silently returns PNG for WebP, and there's no PNG optimisation.
 
 - `render-image.ts` – starts `image-worker.ts` as a module worker, one per run (aborting terminates it, same as gifsicle).
-- `image-worker.ts` – decodes with `createImageBitmap`, crops on an `OffscreenCanvas`, trims transparent edges, resizes with lanczos3 (premultiplied, linear RGB, only when shrinking), then encodes: PNG → oxipng level 2; WebP lossless at compression 0, else quality `100 − 0.9 × compression`; JPEG quality 95 at 0, else the same formula, flattened onto white. *Auto* compares only formats that keep what the slider promises: PNG and lossless WebP at 0; above that lossy WebP, plus JPEG when nothing is transparent. Smallest wins.
+- `image-worker.ts` – takes the allowed formats with each job (`formats`; all three by default, PNG and WebP in the panel); *Auto* and an explicit format outside them fall back to the allowed candidates. Decodes with `createImageBitmap`, crops on an `OffscreenCanvas`, trims transparent edges, resizes with lanczos3 (premultiplied, linear RGB, only when shrinking), then encodes: PNG → oxipng level 2; WebP lossless at compression 0, else quality `100 − 0.9 × compression`; JPEG quality 95 at 0, else the same formula, flattened onto white. *Auto* compares only formats that keep what the slider promises: PNG and lossless WebP at 0; above that lossy WebP, plus JPEG when nothing is transparent. Smallest wins.
 - Vite: `worker.format: "es"` (the worker loads codecs lazily) and `optimizeDeps.exclude` for `@jsquash/*` (pre-bundling breaks their `new URL(…wasm, import.meta.url)` lookups in dev). The `.wasm` files are emitted as assets and only fetched when an image is processed.
 - Checked in Bun with the same options as the worker (64 px frame): PNG+oxipng 6.1 KB, WebP lossless 4.1 KB, WebP q55 0.8 KB, JPEG q55 0.9 KB. The full worker (OffscreenCanvas) needs a browser.
 - Not supported yet: animated WebP/APNG (only the first frame is read), AVIF output (Discord support unconfirmed), PNG color reduction.
@@ -118,7 +120,7 @@ Checked against the native binary (1.93) and the WASM build (its worker script e
 
 ## Decisions and rejected approaches
 
-- **Everything local.** No upload anywhere on `/editor`; WASM engines in workers. The panel will only send the finished result (see below).
+- **Everything local.** No upload anywhere on `/editor`; WASM engines in workers. The panel sends only the finished result (see [Panel integration](#panel-integration)).
 - **Renders: abort, don't lock.** Every change aborts the run in flight and versions results (`createLatestTask`). Coalescing (finish the running render, then run the newest) was tried first and replaced; locking the UI during processing was rejected. Only the very first render blocks the screen.
 - **Trim commits on release**, sliders don't (yet): a trim drag on a long GIF would otherwise start a full gifsicle run per frame step. If sliders feel heavy, the same draft + `onValueCommit` pattern applies to them.
 - **One worker per run** (gifsicle and images): simplest way to cancel. Worker start + wasm compile costs tens of ms per run, fine at these sizes.
@@ -144,14 +146,14 @@ There's no test runner in the repo yet. What was checked, and how to repeat it:
 - Not supported: animated WebP/APNG input (first frame only), AVIF output, PNG color reduction, GIF output for still images.
 - Very large GIFs (10 MB+) take seconds per render; the 20 MB upload cap is a guess at what browsers handle, not measured.
 
-## Panel integration (later)
+## Panel integration
 
-The editor is one feature of the panel, not the panel. It's built to be reused there:
+`/panel/editor/$taskId` (`routes/panel.editor.$taskId.tsx` + `.lazy.tsx`), reached from "Fix in editor" on a task tile or "Open in editor" in the task emote menu. It renders inside `PanelLayout` in full-bleed mode (see [../web.md](../web.md#panel-layout)); the header shows `Panel / Tasks / :name:`.
 
-- **Input**: any `Blob` → `loadMediaFile(blob, fileName)` → `<MediaEditor source=…>`.
-- **Output**: pages render the toolbar actions from the editor state (`result.blob`, `bytes`, `extension`, `fits`, `name`, `nameValid`). The panel's action uploads `result.blob` instead of downloading it; `initialDiscord` is on so the name rules and the 256 KB check apply.
-- **The API exists already for the bot's editor tasks** (see [../core.md](../core.md#mechanisms-worth-knowing)): "Open in editor" in the bot creates an `editor_tasks` row; `GET /api/tasks/:taskId` returns it with the source emote, and `POST /api/tasks/:taskId` with `{ emote: <base64 data URL>, name }` creates the emoji in the task's guild (same guild + `ManageGuildExpressions` checks) and deletes the task. The JSON body limit is 2 MB for these data URLs.
-- **Mind the formats**: that endpoint accepts `data:image/gif|png|webp` only, not JPEG; restrict the format picker in the panel (or extend the schema). Discord rejects files over 256 KB itself (error 50138, mapped by the endpoint).
-- **Source download**: the task's source file is a remote URL; fetching it from the browser can hit CORS. If it does, serve the original through core (`url-guard`'s `safeFetch` already covers safe downloads).
-- **Embedding**: the editor currently draws its own header (breadcrumb, Reset, actions) and takes the full viewport. Inside a panel layout with its own navigation, make the header optional (or let the panel render it) and let the editor fill the panel's content area.
-- **Local library**: not needed in the panel (originals live on the server); at most for drafts of settings.
+- **Loading**: `taskQueryOptions` and `taskFileQueryOptions` start together (the file only needs the id). The file comes through core's proxy `GET /tasks/:taskId/file` (third-party hosts don't send CORS headers; never fetch `emote.url` from the browser), read with `unwrapBlob`, then `loadMediaFile`. A dead upstream can take ~30 s, so the file query doesn't retry on its own.
+- **States** (inline under a header with the emote's preview, name, server and source; never centered): loading the task; downloading the original (Spinner + "a slow host can take up to half a minute"); `TASK_NOT_FOUND` from either request → "This task is gone" + Back to tasks; `DOWNLOAD_DATA_FAILED` → Retry + Discard; `URL_NOT_ALLOWED`, `FILE_TOO_LARGE`, `UNSUPPORTED_FILE_TYPE` and a file that won't decode → Discard only; anything else → Retry.
+- **Editor**: `MediaEditor` without `section`, `discordOnly`, `outputFormats` PNG + WebP (`POST /tasks/:id` takes `data:image/gif|png|webp` only, GIFs stay GIFs), name prefilled with the emote's name and checked as typed (`emoteNameError` = core's `EMOTE_NAME_REGEX`). No local library: nothing is saved between visits.
+- **Toolbar**: "Discard task" on the left (`DiscardTaskDialog`: ui-sdk alert dialog placed at the top third, the confirm runs the `DELETE` as its `action` so it stays open with "Discarding…" and shows an error inline; 404 counts as done; then toast and `/panel/tasks`). Right: Reset and "Add to <server>", enabled only with a finished, current result (not while a newer render runs) that fits 256 KB and a valid name.
+- **Add**: the result blob → data URL → `POST /tasks/:taskId` `{ emote, name }` in `toast.promise`. Success: navigate to `/panel/servers/$guildId` first (the page observes the task, which 404s from then on), then drop the task from the caches and invalidate `["guilds"]` and that server. Errors toast through `emoteErrorMessage`; the editor keeps its state.
+- **Destination notices** from the guilds cache: the server has no free slots of the emote's type (Add stays enabled, the cache may be stale), or the user can't manage it anymore (Add disabled).
+- Verified against a mock API with a 1 MB 7TV GIF: auto-fit to 182 KB, POST sends `data:image/gif;base64,…`, error toasts keep the editor, success lands on the server view; the window doesn't scroll at 1440×900 and 1024×768, no horizontal scroll at 390 px.

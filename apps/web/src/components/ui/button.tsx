@@ -26,26 +26,36 @@ type ButtonProps = Omit<ComponentProps<typeof ButtonPrimitive>, "className"> & {
   glow?: boolean;
 };
 
-export function Button({
+type ButtonStyle = {
+  variant?: keyof typeof VARIANTS;
+  size?: keyof typeof SIZES;
+  glow?: boolean;
+  className?: string;
+};
+
+// For ui-sdk parts that are buttons themselves (a dialog's Close), so they look like ours
+export const buttonClassName = ({
   variant = "secondary",
   size = "md",
   glow = false,
   className,
-  ...props
-}: ButtonProps) {
+}: ButtonStyle = {}) =>
+  cn(
+    // Native feel: no transitions, default cursor (also on links), instant press state.
+    // no-underline: ui-sdk's web.css underlines every <a>, also a button rendered as one
+    "group/button inline-flex cursor-default select-none items-center justify-center whitespace-nowrap border font-medium no-underline",
+    "focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:outline-offset-2",
+    "data-disabled:cursor-not-allowed data-disabled:opacity-50 data-pending:cursor-wait",
+    VARIANTS[variant],
+    SIZES[size],
+    glow && "shadow-[0_0_18px_-4px_var(--color-brand-500)]",
+    className
+  );
+
+export function Button({ variant, size, glow, className, ...props }: ButtonProps) {
   return (
     <ButtonPrimitive
-      className={cn(
-        // Native feel: no transitions, default cursor (also on links), instant press state.
-        // no-underline: ui-sdk's web.css underlines every <a>, also a button rendered as one
-        "group/button inline-flex cursor-default select-none items-center justify-center whitespace-nowrap border font-medium no-underline",
-        "focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:outline-offset-2",
-        "data-disabled:cursor-not-allowed data-disabled:opacity-50 data-pending:cursor-wait",
-        VARIANTS[variant],
-        SIZES[size],
-        glow && "shadow-[0_0_18px_-4px_var(--color-brand-500)]",
-        className
-      )}
+      className={buttonClassName({ variant, size, glow, className })}
       {...props}
     />
   );

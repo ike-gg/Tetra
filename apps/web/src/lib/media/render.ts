@@ -1,7 +1,7 @@
 import { buildCommands } from "@/lib/gif/gif-commands";
 import { runGifsicle } from "@/lib/gif/gifsicle";
 import { parseGif } from "@/lib/gif/parse-gif";
-import { renderImage } from "@/lib/image/render-image";
+import { renderImage, type StillFormat } from "@/lib/image/render-image";
 
 import type { Edit } from "./edit";
 import type { MediaFile, MediaInfo } from "./media-file";
@@ -16,6 +16,8 @@ export type MediaRender = {
   // Shown next to the size, like "GIF" or "WebP"
   formatLabel: string;
 };
+
+export const STILL_FORMATS: readonly StillFormat[] = ["png", "webp", "jpeg"];
 
 const LABELS: Record<string, string> = { png: "PNG", webp: "WebP", jpeg: "JPEG" };
 const EXTENSIONS: Record<string, string> = { png: "png", webp: "webp", jpeg: "jpg" };
@@ -32,7 +34,9 @@ const finish = (blob: Blob, info: MediaInfo, extension: string, formatLabel: str
 export const renderMedia = async (
   source: MediaFile,
   edit: Edit,
-  signal: AbortSignal
+  signal: AbortSignal,
+  // Formats a still image may be encoded to; GIFs always stay GIFs
+  formats: readonly StillFormat[] = STILL_FORMATS
 ): Promise<MediaRender> => {
   if (source.kind === "gif") {
     const [output] = await runGifsicle(
@@ -45,7 +49,7 @@ export const renderMedia = async (
     return finish(blob, parseGif(await blob.arrayBuffer()), "gif", "GIF");
   }
 
-  const result = await renderImage(source, edit, signal);
+  const result = await renderImage(source, edit, formats, signal);
   const blob = new Blob([result.file], { type: result.mime });
   return finish(
     blob,
