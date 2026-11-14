@@ -4,6 +4,8 @@ import type { Context } from "hono";
 import { HTTPException } from "hono/http-exception";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
+import { API_CONSTANTS } from "./constants/api-constants";
+import { DEFAULT_RETURN_PATH, frontendUrl } from "./routes/auth/auth.shared";
 import { TetraAPIError } from "./tetra-api-error";
 
 import { ApiConsole } from "#/loggers";
@@ -18,6 +20,19 @@ const sendApiError = (c: Context, error: TetraAPIError) =>
   );
 
 export const apiErrorHandler = (error: Error, c: Context) => {
+  // The callback is a browser navigation: errors from middleware before it (the rate
+  // limiter) go back to the panel like the callback's own errors
+  if (c.req.path === API_CONSTANTS.RELATIVE_REDIRECT_URI) {
+    const rateLimited = error instanceof TetraAPIError && error.code === 429;
+    if (!rateLimited) ApiConsole.error("OAuth callback failed:", error.name);
+    return c.redirect(
+      frontendUrl(
+        DEFAULT_RETURN_PATH,
+        rateLimited ? "RATE_LIMITED" : "AUTH_CALLBACK_ERROR"
+      )
+    );
+  }
+
   if (error instanceof TetraAPIError) return sendApiError(c, error);
 
   if (error instanceof DiscordAPIError) {
