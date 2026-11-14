@@ -14,12 +14,12 @@ export const Route = createFileRoute("/panel/editor/")({
 // The same start screen as /editor; files open in the panel's editor
 function PanelEditorStart() {
   return (
-    <div className="flex max-w-2xl flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <Heading level={1} size="lg">
           Editor
         </Heading>
-        <Text size="sm" tone="muted">
+        <Text size="sm" tone="muted" className="max-w-2xl">
           Crop, trim, resize and compress an image or GIF until it fits Discord&apos;s{" "}
           {formatBytes(DISCORD_EMOTE_LIMIT)}, then add it to one of your servers. It runs
           in your browser; recent files stay in this browser only.
