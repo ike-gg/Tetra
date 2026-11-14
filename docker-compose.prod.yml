@@ -29,6 +29,8 @@ services:
     build:
       context: .
       dockerfile: docker/core.Dockerfile
+    expose:
+      - "3002"
     environment:
       ENV: production
       PORT: 3002
@@ -63,6 +65,8 @@ services:
       args:
         VITE_API_URL: ${VITE_API_URL:?}
         VITE_SITE_URL: ${VITE_SITE_URL:-https://tetra.lol}
+    expose:
+      - "80"
 
 volumes:
   postgres-data:
