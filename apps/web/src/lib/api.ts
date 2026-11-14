@@ -32,6 +32,7 @@ export const unwrap = async <T>(request: Promise<ClientResponse<T>>): Promise<T>
     );
   }
 
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
+  // 204, and 200 with an empty body (`/me/state`), have nothing to parse
+  const text = await response.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 };

@@ -36,8 +36,9 @@ export function Button({
   return (
     <ButtonPrimitive
       className={cn(
-        // Native feel: no transitions, default cursor (also on links), instant press state
-        "group/button inline-flex cursor-default select-none items-center justify-center whitespace-nowrap border font-medium",
+        // Native feel: no transitions, default cursor (also on links), instant press state.
+        // no-underline: ui-sdk's web.css underlines every <a>, also a button rendered as one
+        "group/button inline-flex cursor-default select-none items-center justify-center whitespace-nowrap border font-medium no-underline",
         "focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:outline-offset-2",
         "data-disabled:cursor-not-allowed data-disabled:opacity-50 data-pending:cursor-wait",
         VARIANTS[variant],

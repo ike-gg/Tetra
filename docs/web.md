@@ -9,7 +9,7 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 - **SPA mode** with selected pages prerendered. There is no server at runtime: the build output is static files.
 - **Homepage** (`/`) and other public pages: prerendered to HTML at build time. Add their paths to `staticPages` in `vite.config.ts`, and link them from the footer (`PAGES` in `src/components/footer.tsx`). Public pages use the shared `Navbar` and `Footer`.
 - **Editor** (full name "Image/GIF quick editor"): public, no account, for GIFs and still images (not only emotes). `/editor` (start screen with upload and recent files) is prerendered; `/editor/$key` (a file stored in this browser) is client-only (`ssr: false`), served by the SPA shell like the panel. See [web/editor.md](web/editor.md).
-- **Panel** (`/panel/*`): client-only (`ssr: false` on the route). Served by the SPA shell `_shell.html`; the host must rewrite unknown paths to it.
+- **Panel** (`/panel/*`): client-only (`ssr: false` on the route). Served by the SPA shell `_shell.html`; the host must rewrite unknown paths to it. Every panel route sits behind the session gate, see [Panel auth gate](#panel-auth-gate).
 - The shell is rendered with `spa.maskPath: "/panel"` so it doesn't collide with the prerendered `/`.
 - In `vite dev` every route renders on the client, including `/`.
 
@@ -31,8 +31,9 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/lib/use-element-size.ts` | `useElementSize(ref)`: an element's content size via `ResizeObserver` (null until measured). |
 | `src/lib/relative-time.ts` | `relativeTime()`: "5 minutes ago" via `Intl.RelativeTimeFormat`. |
 | `src/lib/latest-task.ts` | `createLatestTask`: runs only the newest request (aborts the one in flight, discards stale results by version). |
+| `src/components/panel/` | Panel UI: `PanelScreen` (app header + one centered column, for states without navigation), `PanelLogin`, `PanelPlaceholder` (temporary logged-in screen). |
+| `src/lib/session.ts` | Session query options (`sessionQueryOptions`, `meQueryOptions`), `isUnauthorized`, `loginUrl`, `panelReturnPath`, `logout`. |
 | `src/types/` | Ambient declarations for untyped packages (`gifsicle-wasm-browser`). |
-| `public/panel/` | The panel mockup's sample GIF. |
 | `src/lib/format-bytes.ts` | `formatBytes()`: KB/MB in binary units, as Discord states its limits. |
 | `src/lib/cn.ts` | `cn()`: `clsx` + `tailwind-merge`, so a passed `className` overrides variant classes. |
 | `src/components/emote-background.tsx` | Homepage background, see [web/background.md](web/background.md). |
@@ -41,7 +42,7 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/components/navbar.tsx` | Site navbar for public pages (fixed, transparent with a fade behind it; logo intro once per page load, kept in module state so route changes don't replay it; `logoIntro={false}` turns it off, as on the homepage; clicking the logo always replays it, also when the click navigates home from another page). The editor and panel keep their own app headers. |
 | `src/components/stats.tsx` | Homepage section [03] with the usage numbers (`STATS`, given by the owner: 3,500+ servers, 1.5M+ people on them, 150K+ emotes added). Each digit rolls in as a falling reel once the section is half in view; prerendered HTML and reduced motion show the plain numbers. |
 | `src/components/tetra-field.tsx` | Canvas ASCII field behind the homepage's closing call to action, which has no box of its own (no border, no fill): a radial `mask-image` fades the glyphs out towards every edge into the page. Light ramp glyphs (14px Geist Mono, 12% orange) keep shimmering (6% of cells change every 90 ms). The word "tetra" is never typed out: it is rasterized from heavy Geist Sans at one sample per cell, and cells inside the letters switch to dense, brighter glyphs (60%). One big word (10 rows) follows the cursor; hovering or focusing "Add to Discord" grows a brick grid of smaller words (7 rows) from the button over the whole block. Mono letters were too coarse at this resolution, and 5-row words didn't read. Radii chase their targets exponentially (interruptible), reveal edges flicker; the loop runs only while the block is on screen. |
-| `src/components/brand-link.tsx` | `BrandLink`: static logo + `tetra` wordmark linking home, the first crumb of app headers (editor; the panel once it has one). |
+| `src/components/brand-link.tsx` | `BrandLink`: static logo + `tetra` wordmark linking home, the first crumb of app headers (editor, panel). |
 | `src/components/footer.tsx` | Site footer with links to every page (`PAGES`; add new public pages there) and the invite link. Used on `/`, `/branding` and `/logo`. |
 | `src/lib/links.ts` | Shared external URLs (`INVITE_URL`). |
 | `src/components/logo.tsx` | The logo mark and its falling-emotes intro, see [branding.md](branding.md#logo). |
@@ -86,6 +87,7 @@ Components accept `className` for layout (margins, width, animation); don't use 
 - **Before using it**, follow the ui-sdk skill (`.claude/skills/ui-sdk`, loaded automatically by Claude Code). Then read `node_modules/@ui-sdk/react/docs/llms.txt` and only the pages the task needs (e.g. `docs/components/select.md`). To build a new component, also search `node_modules/@ui-sdk/react/docs/core.md` by heading (it's huge, don't read it whole) and read `rendering.md` next to it.
 - Import each component from its own entry (`@ui-sdk/react/dialog`); there is no root import.
 - **Default look:** `@ui-sdk/core/web.css`, imported by `src/styles/ui-sdk.css` as `@import "@ui-sdk/core/web.css" layer(components);`. Inside the components layer it sits above Tailwind's preflight (which would reset it otherwise) and below utilities, so Tailwind classes win. `ui-sdk.css` is imported only in lazy route files (`panel.lazy.tsx`, `editor.index.lazy.tsx`, `editor.$key.lazy.tsx`), so other pages don't download it: a side-effect import in a non-lazy route file ends up in every page's HTML. Some parts rely on it for layout (image cropper handles), the components in `components/ui/` don't. Once loaded it's global for the rest of the visit, so a page that shows a ui-sdk part both before and after another route loaded it must import it too, or pin every property web.css sets (the quick editor's drop zone changed font size otherwise).
+- web.css underlines every `<a>` (and sets its color), so `Button` carries `no-underline` for `render={<a … />}`; pin the same on any other link-based part used on a page that loads it.
 - Its `--ui-*` tokens are mapped to our theme in `src/styles/app.css`; restyle parts with Tailwind on top (`data-slot` and state attributes like `data-open:`), never `!important`.
 - `@layer ui-sdk;` stays at the very top of `app.css`, above `@import "tailwindcss"`: ui-sdk injects some behavior CSS into that layer at runtime.
 - Our own `color-scheme: dark` overrides web.css's light/dark switching.
@@ -108,10 +110,21 @@ const guild = await unwrap(api.guilds[":guildId"].$get({ param: { guildId } }));
 ```
 
 - Paths, params, bodies and success responses are typed from core's route code; there are no hand-written API types. Dates arrive as strings (the types follow JSON).
-- `unwrap` returns the body of a 2xx response and throws `ApiError` (`status`, `message`, `reference` = the API's error code) otherwise. Error bodies are not in the client types, branch on `reference`.
+- `unwrap` returns the body of a 2xx response (`undefined` for an empty one: 204, and `/me/state`'s empty 200) and throws `ApiError` (`status`, `message`, `reference` = the API's error code) otherwise. Error bodies are not in the client types, branch on `status` / `reference`.
+- The `QueryClient` (`src/router.tsx`) doesn't retry a 4xx `ApiError` (network errors and 5xx get the default 3 tries), and any query or mutation failing with 401 invalidates the session query, so the panel falls back to the login screen when a session ends mid-use. Panel code doesn't handle 401 itself.
 - Base URL: `VITE_API_URL` (default `http://localhost:3002`). Requests send the `tetra-session` cookie (`credentials: "include"`, `sameSite: lax`), so web and API must be on the same site; any port on localhost works in development.
 - **How the type gets here**: `@tetra/core` is a workspace dependency exporting `./api` (`src/api/app.ts`), imported with `import type` only, so nothing from core is bundled. Both apps use the `@/` alias for their own `src`, so the web program can't compile core's sources itself: `tsconfig.json` has a project reference to `../core/tsconfig.api-types.json`. `tsc -b` (the `typecheck` script) builds core's declarations into `apps/core/dist/types` incrementally; editors read core's sources directly, so new routes show up without a build.
 - **Rejected alternatives** (2026-11): moving core's aliases to package.json `imports` would let web compile core's sources directly, but means rewriting ~320 imports in core and pulling Bun's global types into web. A separate `packages/contract` with hand-written Zod response schemas (keeping Express) was rejected because nothing checks that handlers return what the schemas promise; that drift is what broke the old `tetra-next` panel's hand-written types.
+
+## Panel auth gate
+
+`/panel` is a layout route: `routes/panel.tsx` (`ssr: false`, `validateSearch` for the optional `error` param, inherited by children) and `routes/panel.lazy.tsx` (the gate). Child routes (`panel.index.tsx`, later `panel.*.tsx`) render through its `<Outlet />` only with a session.
+
+- **Check**: `sessionQueryOptions` (`["session"]`) calls `GET /api/me/state`: 200 → `true`, 401 → `false`, anything else throws (1 retry). Pending shows `Spinner` + text; an error (API down, 5xx) shows an inline `text-danger` message with Retry, never the login screen.
+- **Logged out**: `PanelLogin` on `PanelScreen` (no public navbar/footer). The button is a plain navigation to `loginUrl(returnPath)` = `${VITE_API_URL}/api/auth?redirect=…` (built with the client's `$url()`, so the base URL lives only in `lib/api.ts`); `returnPath` is the current path + search without `error`. Core accepts only `/panel…` paths and brings the user back there.
+- **Callback errors**: core redirects back with `?error=<CODE>` (`AUTH_CALLBACK_ERRORS` in core's `auth.shared.ts`); `PanelLogin` maps `ACCESS_DENIED`, `INVALID_OAUTH_STATE`, `RATE_LIMITED` to a `Notice`, everything else to a generic "on our side" message. When the session is valid anyway (a failed re-login keeps the old session) the gate strips `error` with a `replace` navigation.
+- **Logged in**: `/panel/` renders `PanelPlaceholder` (temporary: `GET /api/me` name + avatar, Log out). Log out = `POST /api/auth/logout`, then drops `["me"]` and sets the session query to `false`.
+- **Expiry**: a 401 anywhere invalidates the session query (see [Talking to the API](#talking-to-the-api)), the recheck returns `false` and the gate shows the login screen.
 
 ## Scripts
 

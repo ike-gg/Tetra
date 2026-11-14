@@ -1,68 +1,66 @@
 // Lives in the lazy route file so ui-sdk's stylesheet only loads with the panel
 import "@/styles/ui-sdk.css";
 
-import { createLazyFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { createLazyFileRoute, Outlet } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-import { MediaEditor } from "@/components/editor/media-editor";
+import { PanelLogin } from "@/components/panel/panel-login";
+import { PanelScreen } from "@/components/panel/panel-screen";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Text } from "@/components/ui/text";
-import { loadMediaFile, type MediaFile, releaseMediaFile } from "@/lib/media/media-file";
+import { sessionQueryOptions } from "@/lib/session";
 
 export const Route = createLazyFileRoute("/panel")({
-  component: PanelPage,
+  component: PanelGate,
 });
 
-const SAMPLE_EMOTE = { url: "/panel/sample-emote.gif", name: "catJAM.gif" };
+// Every /panel/* route renders inside this gate, so children can assume a session
+function PanelGate() {
+  const session = useQuery(sessionQueryOptions);
+  const { error } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const loggedIn = session.data === true;
 
-// Mockup: no auth and no API yet, the editor runs on a bundled sample emote
-function PanelPage() {
-  const [file, setFile] = useState<MediaFile | null>(null);
-
+  // A failed re-login keeps the existing session: nothing to report then
   useEffect(() => {
-    let loaded: MediaFile | null = null;
-    let cancelled = false;
+    if (loggedIn && error !== undefined) {
+      void navigate({ search: (prev) => ({ ...prev, error: undefined }), replace: true });
+    }
+  }, [loggedIn, error, navigate]);
 
-    void fetch(SAMPLE_EMOTE.url)
-      .then((response) => response.blob())
-      .then((blob) => loadMediaFile(blob, SAMPLE_EMOTE.name))
-      .then((next) => {
-        if (cancelled) return releaseMediaFile(next);
-        loaded = next;
-        setFile(next);
-      });
-
-    return () => {
-      cancelled = true;
-      if (loaded) releaseMediaFile(loaded);
-    };
-  }, []);
-
-  if (!file) {
+  if (session.status === "pending") {
     return (
-      <div className="flex min-h-dvh items-center justify-center">
-        <Text size="sm" tone="muted" className="font-mono">
-          loading…
+      <PanelScreen>
+        <Text size="sm" tone="muted" className="flex items-center gap-2 font-mono">
+          <Spinner />
+          checking your session…
         </Text>
-      </div>
+      </PanelScreen>
     );
   }
 
-  return (
-    <MediaEditor
-      source={file}
-      section={{ label: "Emotes", to: "/panel" }}
-      initialDiscord
-      actions={({ fits, nameValid }) => (
-        <Button
-          variant="primary"
-          size="sm"
-          glow={fits && nameValid}
-          disabled={!fits || !nameValid}
-        >
-          Add to Discord
-        </Button>
-      )}
-    />
-  );
+  if (session.status === "error") {
+    return (
+      <PanelScreen>
+        <div className="flex flex-col items-start gap-4">
+          <p role="alert" className="text-danger text-sm">
+            Couldn&apos;t reach Tetra to check your session. It may be down for a moment.
+          </p>
+          <Button
+            size="sm"
+            disabled={session.isFetching}
+            onClick={() => void session.refetch()}
+          >
+            {session.isFetching ? "Retrying…" : "Retry"}
+          </Button>
+        </div>
+      </PanelScreen>
+    );
+  }
+
+  if (!loggedIn) return <PanelLogin error={error} />;
+
+  return <Outlet />;
 }

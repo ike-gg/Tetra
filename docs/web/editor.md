@@ -8,7 +8,6 @@ One editor, two entry points:
 
 - **`/editor`** – public, no account, nothing uploaded. Prerendered start screen, content from the top (not centered): intro, drop zone (`MediaDropzone`: drop anywhere on the page, paste, or pick; GIF/PNG/JPEG/WebP, up to 20 MB; `/editor` imports `ui-sdk.css` too and the zone pins width, border style, font size, colors and the trigger margin, because web.css stays global once any editor route loaded it and used to change the zone between visits) and *recently edited* (`RecentFiles`). A chosen file is validated, saved to the local library and opened at `/editor/<key>`, so Back returns to `/editor`. Routes: `editor.index.tsx` (head) + `editor.index.lazy.tsx`.
 - **`/editor/$key`** – client-only. Loads the file and its saved settings from the library and opens the editor; the toolbar has `New file` (back to `/editor`) and `Download` (always enabled once a result exists, file named `<name>.<extension of the result>`; the size note says Discord takes up to 256 KB). An unknown key (other browser, evicted, cleared) shows "This file isn't in this browser" with a way back. Routes: `editor.$key.tsx` + `editor.$key.lazy.tsx`.
-- **`/panel`** – mockup of the logged-in panel (no auth, no API yet). Loads the bundled `public/panel/sample-emote.gif` (catJAM from 7TV, 128×128, 158 frames, ~1 MB) into the same editor; `Add to Discord` is a placeholder, disabled until the emote fits.
 
 ## Files
 
@@ -16,7 +15,6 @@ One editor, two entry points:
 |---|---|
 | `routes/editor.index.tsx`, `editor.index.lazy.tsx` | `/editor` start screen (prerendered): intro, drop zone, recent files. |
 | `routes/editor.$key.tsx`, `editor.$key.lazy.tsx` | `/editor/<key>` (client-only): file from the local library, saves settings, Download. |
-| `routes/panel.lazy.tsx` | `/panel` mockup: the editor on the bundled sample, `Add to Discord` placeholder. |
 | `components/editor/media-editor.tsx` | The editor screen: edit state, sidebar, auto-fit, first-render overlay. Pages pass actions, size note, initial work, `onWorkChange`. |
 | `components/editor/canvas-window.tsx` | Workspace with the movable, resizable, remembered window. |
 | `components/editor/media-preview.tsx` | Original / result panes, Fit / Actual size, crop outline, chat preview. |
@@ -31,7 +29,6 @@ One editor, two entry points:
 | `lib/image/` | `render-image.ts` (worker runner), `image-worker.ts` (jSquash pipeline). |
 | `lib/latest-task.ts`, `lib/use-element-size.ts`, `lib/download-blob.ts`, `lib/relative-time.ts`, `lib/format-bytes.ts` | Small shared helpers. |
 | `types/gifsicle-wasm-browser.d.ts` | Types for the untyped gifsicle package (only `tool.worker()`). |
-| `public/panel/sample-emote.gif` | Panel sample: catJAM, the 7TV `4x.gif` (id `01F6MQ33FG000FFJ97ZB8MWV52`), ~1 MB, so it starts over the limit. |
 
 ## Screen
 
@@ -151,7 +148,7 @@ There's no test runner in the repo yet. What was checked, and how to repeat it:
 
 The editor is one feature of the panel, not the panel. It's built to be reused there:
 
-- **Input**: any `Blob` → `loadMediaFile(blob, fileName)` → `<MediaEditor source=…>`. `/panel` already does this with a `fetch`ed sample.
+- **Input**: any `Blob` → `loadMediaFile(blob, fileName)` → `<MediaEditor source=…>`.
 - **Output**: pages render the toolbar actions from the editor state (`result.blob`, `bytes`, `extension`, `fits`, `name`, `nameValid`). The panel's action uploads `result.blob` instead of downloading it; `initialDiscord` is on so the name rules and the 256 KB check apply.
 - **The API exists already for the bot's editor tasks** (see [../core.md](../core.md#mechanisms-worth-knowing)): "Open in editor" in the bot creates an `editor_tasks` row; `GET /api/tasks/:taskId` returns it with the source emote, and `POST /api/tasks/:taskId` with `{ emote: <base64 data URL>, name }` creates the emoji in the task's guild (same guild + `ManageGuildExpressions` checks) and deletes the task. The JSON body limit is 2 MB for these data URLs.
 - **Mind the formats**: that endpoint accepts `data:image/gif|png|webp` only, not JPEG; restrict the format picker in the panel (or extend the schema). Discord rejects files over 256 KB itself (error 50138, mapped by the endpoint).
