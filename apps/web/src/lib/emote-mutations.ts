@@ -36,14 +36,24 @@ export const emoteErrorMessage = (error: unknown) => {
       return "It's already gone.";
     case "GUILD_EMOTE_DELETE_FAILED":
       return "Discord didn't let Tetra remove it.";
+    case "EMOTE_TOO_LARGE":
+      return "Too big for Discord's 256 KB limit, even after optimizing.";
+    case "GUILD_EMOJI_LIMIT_REACHED":
+      return "No free emote slots of that type on the server.";
+    case "BOT_MISSING_PERMISSIONS":
+      return "Tetra lost the Manage Expressions permission on that server.";
+    case "INVALID_EMOTE_NAME":
+      return "Discord won't take that name: 2–32 letters, numbers or _.";
+    case "INVALID_EMOTE_FILE":
+      return "Discord rejected the image file.";
     case "RATE_LIMITED":
       return "That's a lot at once. Wait a moment and try again.";
-    // Discord's own message, e.g. "Maximum number of emojis reached (50)"
+    // Any Discord error core doesn't map to its own code
     case "DISCORD_API_ERROR":
       return `Discord said: ${error.message}`;
   }
   if (error.status >= 500) {
-    return "Something broke on our side. If the file is big, it may not fit Discord's 256 KB limit.";
+    return "Something broke on our side. Try again.";
   }
   return error.message;
 };
