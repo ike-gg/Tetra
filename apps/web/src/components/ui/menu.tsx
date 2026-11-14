@@ -96,7 +96,7 @@ export function MenuSubTrigger({
     >
       {children}
       <span aria-hidden="true" className="ml-auto pl-4 font-mono text-muted text-xs">
-        →
+        ›
       </span>
     </MenuSubTriggerPrimitive>
   );

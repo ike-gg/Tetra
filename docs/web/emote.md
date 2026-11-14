@@ -35,11 +35,11 @@ Actions by kind (`EmoteMenuItems`):
 | Action | Shown |
 |---|---|
 | Restore to *server* | `removed`, with `canManage` |
-| Add to server → | not on `task`. The user's manageable servers (sorted by name) with free slots of the emote's type; a full server stays listed but disabled; the emote's own server is marked "here". Sends `{ file: url, name, fitting }`. |
+| Add to server › | not on `task`. The user's manageable servers (sorted by name) with free slots of the emote's type; a full server stays listed but disabled; the emote's own server is marked "here". Sends `{ file: url, name, fitting }`. |
 | Remove from *server* | `server`, with `canManage`; managed emotes show "Managed by an integration" instead |
-| Temporary fitting → | not on `task`. contain / cover / fill: changes the tile preview and the `fitting` sent by Add to server |
+| Temporary fitting › | not on `task`. contain / cover / fill: changes the tile preview and the `fitting` sent by Add to server |
 | Copy name, Copy image link, Open original | always |
-| Info → | always: name, type, source, file size (HEAD `Content-Length`, falls back to downloading; "unknown" without CORS), pixel size, id. Fetched only when the submenu opens (`["emote-file", url]`, cached forever). |
+| Info › | always: name, type, source, file size (HEAD `Content-Length`, falls back to downloading; "unknown" without CORS), pixel size, id. Fetched only when the submenu opens (`["emote-file", url]`, cached forever). |
 
 **Adding an action:** add a `MenuItem` (or `MenuSub`) in `EmoteMenuItems`, guarded by `kind`, `canManage` and the emote's fields, with an `onSelect` handler. Mutations go in `src/lib/emote-mutations.ts` as a hook returning a function that runs the request inside `toast.promise`. If a list needs a new combination of actions, add a `kind` rather than flags.
 
