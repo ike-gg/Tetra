@@ -1,15 +1,45 @@
 import { type Client, type GuildPremiumTier, PermissionsBitField } from "discord.js";
 import { z } from "zod";
 
+import { MAX_EMOTE_SIZE } from "@/constants";
+import { EmoteTooLargeError } from "@/constants/errors";
 import { getUserGuilds } from "@/lib/discord-oauth/user-guilds-cache";
 import { discordRestApi } from "@/lib/discord-rest-api";
 
 import type { AuthEnv } from "../../api-env";
+import { EMOTE_NAME_REGEX } from "../../constants/api-constants";
 import { TetraAPIError } from "../../tetra-api-error";
 
 export const guildParamsSchema = z.object({
   guildId: z.string(),
 });
+
+/** A finished emote file from the browser editor, uploaded to Discord as-is. */
+export const readyEmoteBodySchema = z.object({
+  emote: z
+    .string()
+    .regex(
+      /^data:image\/(gif|png|webp);base64,[A-Za-z0-9+/]+={0,2}$/,
+      "Expected a base64 gif/png/webp data URL"
+    ),
+  name: z.string().regex(EMOTE_NAME_REGEX),
+});
+
+const decodedBase64Size = (dataUrl: string) => {
+  const base64 = dataUrl.slice(dataUrl.indexOf(",") + 1);
+  const padding = base64.endsWith("==") ? 2 : base64.endsWith("=") ? 1 : 0;
+  return Math.floor((base64.length * 3) / 4) - padding;
+};
+
+/**
+ * Fails early with the same code as Discord's own size errors (`EmoteTooLargeError` is
+ * mapped by type), without spending a Discord request.
+ */
+export const assertReadyEmoteFits = (dataUrl: string) => {
+  if (decodedBase64Size(dataUrl) > MAX_EMOTE_SIZE) {
+    throw new EmoteTooLargeError("The emote must be 256 KB or smaller.");
+  }
+};
 
 /**
  * Loads the guild through the bot and checks that the user is in it with

@@ -7,11 +7,13 @@ import { guildsGetRemovedEmotes } from "./guilds.get-removed-emotes";
 import { guildsPostEmote } from "./guilds.post-emote";
 import { guildsRemoveEmote } from "./guilds.remove-emote";
 import { guildsRestoreEmote } from "./guilds.restore-emote";
+import { guildsUploadEmote } from "./guilds.upload-emote";
 
 export const guildsRouter = new Hono<AppEnv>()
   .get("/", ...guildsGetGuilds)
   .get("/:guildId", ...guildsGetGuild)
   .post("/:guildId/emote", ...guildsPostEmote)
+  .post("/:guildId/emote/upload", ...guildsUploadEmote)
   .get("/:guildId/removed", ...guildsGetRemovedEmotes)
   .post("/:guildId/restore/:restoreId", ...guildsRestoreEmote)
   .delete("/:guildId/emote/:emoteId", ...guildsRemoveEmote);
