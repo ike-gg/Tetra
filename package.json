@@ -6,7 +6,7 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "bun --filter '@tetra/*' dev",
+    "dev": "concurrently -k -n core,web -c blue,yellow \"bun dev:core\" \"bun dev:web\"",
     "dev:core": "bun --filter @tetra/core dev",
     "dev:web": "bun --filter @tetra/web dev",
     "build:web": "bun --filter @tetra/web build",
@@ -21,6 +21,7 @@
     "typecheck": "bun --filter '@tetra/*' typecheck"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.4"
+    "@biomejs/biome": "2.6.4",
+    "concurrently": "10.0.7"
   }
 }
