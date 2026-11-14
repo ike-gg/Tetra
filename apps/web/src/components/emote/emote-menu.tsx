@@ -217,7 +217,7 @@ function EmoteMenuItems({
       <MenuItem render={<a href={emote.url} target="_blank" rel="noreferrer" />}>
         Open original
         <span aria-hidden="true" className="ml-auto font-mono text-muted text-xs">
-          ^
+          {"\u2197\uFE0E"}
         </span>
       </MenuItem>
 
