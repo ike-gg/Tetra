@@ -6,9 +6,8 @@ import { GuildIcon } from "@/components/panel/guild-icon";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/cn";
-import { guildsQueryOptions } from "@/lib/guilds";
+import { guildsQueryOptions, sortByName } from "@/lib/guilds";
 import { INVITE_URL } from "@/lib/links";
-import { sortByRecent, useRecentGuildIds } from "@/lib/recent-guilds";
 import { tasksQueryOptions } from "@/lib/tasks";
 
 // Native list rows: instant hover/press, an orange edge on the current page
@@ -38,7 +37,6 @@ type PanelNavProps = {
 export function PanelNav({ onNavigate }: PanelNavProps) {
   const tasks = useQuery(tasksQueryOptions);
   const guilds = useQuery(guildsQueryOptions);
-  const recentIds = useRecentGuildIds();
   const pendingTasks = tasks.data?.length ?? 0;
   // The nav renders twice on narrow screens (hidden sidebar + drawer)
   const serversHeadingId = useId();
@@ -105,20 +103,18 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
 
         <ul className="flex flex-col gap-px">
           {guilds.data &&
-            sortByRecent(guilds.data.guildsWithUserPermissions, recentIds).map(
-              (guild) => (
-                <li key={guild.id}>
-                  <NavLink
-                    to="/panel/servers/$guildId"
-                    params={{ guildId: guild.id }}
-                    onClick={onNavigate}
-                  >
-                    <GuildIcon guild={guild} size="sm" />
-                    <span className="truncate">{guild.name}</span>
-                  </NavLink>
-                </li>
-              )
-            )}
+            sortByName(guilds.data.guildsWithUserPermissions).map((guild) => (
+              <li key={guild.id}>
+                <NavLink
+                  to="/panel/servers/$guildId"
+                  params={{ guildId: guild.id }}
+                  onClick={onNavigate}
+                >
+                  <GuildIcon guild={guild} size="sm" />
+                  <span className="truncate">{guild.name}</span>
+                </NavLink>
+              </li>
+            ))}
           <li>
             <a href={INVITE_URL} target="_blank" rel="noreferrer" className={ITEM}>
               <Glyph>+</Glyph>

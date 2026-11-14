@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect } from "react";
 
 import { GuildIcon } from "@/components/panel/guild-icon";
 import { GuildsError } from "@/components/panel/guilds-error";
@@ -10,7 +9,6 @@ import { Heading } from "@/components/ui/heading";
 import { SlotMeter } from "@/components/ui/slot-meter";
 import { Text } from "@/components/ui/text";
 import { guildsQueryOptions, type ManagedGuild } from "@/lib/guilds";
-import { markGuildOpened } from "@/lib/recent-guilds";
 
 export const Route = createFileRoute("/panel/servers/$guildId")({
   component: PanelServer,
@@ -56,10 +54,6 @@ function PanelServer() {
 
 function ServerOverview({ guild }: { guild: ManagedGuild }) {
   const { static: staticSlots, animated, limit } = guild.emojis;
-
-  useEffect(() => {
-    markGuildOpened(guild.id);
-  }, [guild.id]);
 
   return (
     <div className="flex flex-col gap-8">

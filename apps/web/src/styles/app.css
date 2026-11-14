@@ -160,6 +160,11 @@
     @apply bg-background font-sans text-foreground antialiased;
   }
 
+  /* The panel is an app, not a page: no rubber band past either end of the window */
+  html:has([data-panel-root]) {
+    overscroll-behavior: none;
+  }
+
   /* Headings get the brand voice but no size: size comes from <Heading> or a class */
   :where(h1, h2, h3, h4, h5, h6) {
     @apply font-semibold tracking-tight text-balance;

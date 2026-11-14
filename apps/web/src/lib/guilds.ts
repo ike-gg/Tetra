@@ -36,3 +36,7 @@ export const findGuild = (lists: GuildLists | undefined, guildId: string) =>
     ...lists.guildsWithBot,
     ...lists.guildsWithoutBotAvailableToAdd,
   ].find((guild) => guild.id === guildId);
+
+/** Fixed alphabetical order, so the sidebar and Home never reshuffle. */
+export const sortByName = <T extends { name: string }>(guilds: T[]) =>
+  [...guilds].sort((a, b) => a.name.localeCompare(b.name));

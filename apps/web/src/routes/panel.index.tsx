@@ -9,9 +9,8 @@ import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-import { type GuildLists, guildsQueryOptions } from "@/lib/guilds";
+import { type GuildLists, guildsQueryOptions, sortByName } from "@/lib/guilds";
 import { INVITE_URL } from "@/lib/links";
-import { sortByRecent, useRecentGuildIds } from "@/lib/recent-guilds";
 import { meQueryOptions } from "@/lib/session";
 import { tasksQueryOptions } from "@/lib/tasks";
 
@@ -84,7 +83,6 @@ function PendingTasks() {
 
 function Servers() {
   const guilds = useQuery(guildsQueryOptions);
-  const recentIds = useRecentGuildIds();
 
   return (
     <section aria-labelledby="home-servers" className="flex flex-col gap-4">
@@ -109,13 +107,11 @@ function Servers() {
           <>
             {/* Outlines instead of a gap-px background: no filled holes in a short last row */}
             <ul className="grid grid-cols-1 gap-px p-px sm:grid-cols-2 xl:grid-cols-3">
-              {sortByRecent(guilds.data.guildsWithUserPermissions, recentIds).map(
-                (guild) => (
-                  <li key={guild.id} className="min-w-0 outline outline-border">
-                    <GuildTile guild={guild} />
-                  </li>
-                )
-              )}
+              {sortByName(guilds.data.guildsWithUserPermissions).map((guild) => (
+                <li key={guild.id} className="min-w-0 outline outline-border">
+                  <GuildTile guild={guild} />
+                </li>
+              ))}
               <li className="min-w-0 outline outline-border">
                 <a href={INVITE_URL} target="_blank" rel="noreferrer" className={TILE}>
                   <span className="flex items-center gap-3">

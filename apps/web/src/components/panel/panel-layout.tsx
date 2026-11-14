@@ -41,7 +41,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
   const view = useCurrentView();
 
   return (
-    <div className="min-h-dvh">
+    <div data-panel-root className="min-h-dvh">
       <header className="sticky top-0 z-20 flex h-12 select-none items-center gap-2 border-border border-b bg-background px-2 text-sm sm:px-4">
         <Drawer side="left" open={navOpen} onOpenChange={setNavOpen}>
           <DrawerTrigger
@@ -51,7 +51,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
             <span aria-hidden="true">≡</span>
           </DrawerTrigger>
           <DrawerBackdrop className="bg-black/60" />
-          <DrawerContent className="flex h-full w-72 max-w-[85vw] flex-col gap-0 overflow-y-auto border-0 border-border border-r bg-background p-0 shadow-none">
+          <DrawerContent className="flex h-full w-72 max-w-[85vw] flex-col gap-0 overflow-y-auto overscroll-none border-0 border-border border-r bg-background p-0 shadow-none">
             <div className="flex h-12 shrink-0 items-center justify-between border-border border-b pr-2 pl-5">
               <DrawerTitle className="font-medium text-sm">Panel</DrawerTitle>
               <DrawerClose className="h-8 cursor-default select-none border-0 bg-transparent px-3 font-medium text-muted text-sm hover:bg-surface hover:text-foreground focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:-outline-offset-2 active:bg-neutral-800">
@@ -85,7 +85,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
       </header>
 
       <div className="flex">
-        <aside className="sticky top-12 hidden h-[calc(100dvh-3rem)] w-60 shrink-0 overflow-y-auto border-border border-r md:block">
+        <aside className="sticky top-12 hidden h-[calc(100dvh-3rem)] w-60 shrink-0 overflow-y-auto overscroll-none border-border border-r md:block">
           <PanelNav />
         </aside>
         <main className="min-w-0 flex-1 px-4 pt-8 pb-16 sm:px-8 sm:pt-12">

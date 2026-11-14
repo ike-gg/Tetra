@@ -13,7 +13,7 @@ type PanelScreenProps = {
 // Not the public site's navbar and footer.
 export function PanelScreen({ children, actions }: PanelScreenProps) {
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div data-panel-root className="flex min-h-dvh flex-col">
       <header className="flex h-12 shrink-0 select-none items-center gap-2 border-border border-b px-4 text-sm">
         <BrandLink />
         <span className="text-neutral-600">/</span>
