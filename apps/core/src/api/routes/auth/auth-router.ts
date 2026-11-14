@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { encryptToken } from "@/lib/crypto/token-crypto";
 import { discordOauth } from "@/lib/discord-oauth";
+import { invalidateUserGuilds } from "@/lib/discord-oauth/user-guilds-cache";
 
 import { db } from "../../../db";
 import { sessions, users } from "../../../db/schema";
@@ -69,9 +70,19 @@ export const authRouter = new Hono<AppEnv>()
     const parsed = sessionSchema.safeParse(session.data);
 
     if (parsed.success) {
-      await db
+      const [deleted] = await db
         .delete(sessions)
-        .where(eq(sessions.session_token, parsed.data.session_token));
+        .where(eq(sessions.session_token, parsed.data.session_token))
+        .returning({ userId: sessions.user_id });
+
+      // Looked up from the session row: the cookie's user id is unsigned
+      const user =
+        deleted &&
+        (await db.query.users.findFirst({
+          where: eq(users.id, deleted.userId),
+          columns: { discord_id: true },
+        }));
+      if (user) await invalidateUserGuilds(user.discord_id);
     }
 
     session.clear();
@@ -116,6 +127,8 @@ export const authRouter = new Hono<AppEnv>()
       });
 
       const userData = await discordOauth.getUser(token.access_token);
+      // A new login (maybe after permission changes) starts with a fresh guild list
+      await invalidateUserGuilds(userData.id);
 
       const tokenColumns = {
         access_token: encryptToken(token.access_token),

@@ -1,7 +1,6 @@
 import { PermissionsBitField } from "discord.js";
-import type OAuth from "discord-oauth2";
 
-import { discordOauth } from "@/lib/discord-oauth";
+import { getUserGuilds, type UserGuild } from "@/lib/discord-oauth/user-guilds-cache";
 import { shardingManager } from "@/lib/sharding-manager";
 import { getEmojiSlotLimit } from "@/utils/discord/guild-parse-premium";
 
@@ -10,12 +9,9 @@ import { requireAuth } from "../../middleware/auth";
 import { TetraAPIError } from "../../tetra-api-error";
 import { collectGuildEmojiSlots, type ShardGuildEmojiSlots } from "./guilds.shared";
 
-const toApiGuild = ({ features: _, ...guild }: OAuth.PartialGuild) => guild;
+const toApiGuild = (guild: UserGuild) => guild;
 
-const toApiGuildWithEmojis = (
-  guild: OAuth.PartialGuild,
-  slots: ShardGuildEmojiSlots
-) => ({
+const toApiGuildWithEmojis = (guild: UserGuild, slots: ShardGuildEmojiSlots) => ({
   ...toApiGuild(guild),
   emojis: {
     static: slots.static,
@@ -25,14 +21,14 @@ const toApiGuildWithEmojis = (
 });
 
 const hasPermission = (
-  guild: OAuth.PartialGuild,
+  guild: UserGuild,
   permission: "ManageGuildExpressions" | "ManageGuild"
 ) => new PermissionsBitField(BigInt(guild.permissions ?? 0)).has(permission);
 
 export const guildsGetGuilds = authFactory.createHandlers(requireAuth, async (c) => {
-  let userGuilds: OAuth.PartialGuild[];
+  let userGuilds: UserGuild[];
   try {
-    userGuilds = await discordOauth.getUserGuilds(c.get("accessToken"));
+    userGuilds = await getUserGuilds(c.get("discordUserId"), c.get("accessToken"));
   } catch {
     throw new TetraAPIError(401, "Unauthorized", "OAUTH_FAILED_GET_USER_GUILDS");
   }

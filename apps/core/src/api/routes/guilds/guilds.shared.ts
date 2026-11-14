@@ -1,9 +1,10 @@
 import { type Client, type GuildPremiumTier, PermissionsBitField } from "discord.js";
 import { z } from "zod";
 
-import { discordOauth } from "@/lib/discord-oauth";
+import { getUserGuilds } from "@/lib/discord-oauth/user-guilds-cache";
 import { discordRestApi } from "@/lib/discord-rest-api";
 
+import type { AuthEnv } from "../../api-env";
 import { TetraAPIError } from "../../tetra-api-error";
 
 export const guildParamsSchema = z.object({
@@ -14,10 +15,16 @@ export const guildParamsSchema = z.object({
  * Loads the guild through the bot and checks that the user is in it with
  * `ManageGuildExpressions`. Throws the matching API error otherwise.
  */
-export const getManageableGuild = async (guildId: string, accessToken: string) => {
+export const getManageableGuild = async (
+  guildId: string,
+  {
+    accessToken,
+    discordUserId,
+  }: Pick<AuthEnv["Variables"], "accessToken" | "discordUserId">
+) => {
   const [guildResult, userGuildsResult] = await Promise.allSettled([
     discordRestApi.guilds.get(guildId),
-    discordOauth.getUserGuilds(accessToken),
+    getUserGuilds(discordUserId, accessToken),
   ]);
 
   if (guildResult.status === "rejected") {

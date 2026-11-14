@@ -2,7 +2,7 @@ import prettyBytes from "pretty-bytes";
 import sharp from "sharp";
 
 import { MAX_EMOTE_SIZE } from "@/constants";
-import { EmbeddedError } from "@/constants/errors";
+import { EmoteTooLargeError } from "@/constants/errors";
 import { AutoXGifsicle, EMOTE_MAX_SIDE } from "@/lib/buffer/auto-x-gifsicle";
 import { normalizeEmoteBuffer } from "@/lib/buffer/normalize-emote-buffer";
 import type { FittingOption } from "@/types";
@@ -69,10 +69,9 @@ const optimizeStatic = async (
     .toBuffer();
   if (paletted.byteLength <= targetSize) return paletted;
 
-  throw new EmbeddedError({
-    title: "Emote is too large",
-    description: "Tetra couldn't compress this image under Discord's 256 KB limit.",
-  });
+  throw new EmoteTooLargeError(
+    "Tetra couldn't compress this image under Discord's 256 KB limit."
+  );
 };
 
 export const optimizeBuffer = async (

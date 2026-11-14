@@ -102,7 +102,10 @@ const authenticate = async (session: CookieSession) => {
   }
 
   try {
-    return decryptToken(currentUser.access_token);
+    return {
+      accessToken: decryptToken(currentUser.access_token),
+      discordUserId: currentUser.discord_id,
+    };
   } catch {
     // Stored with another key or damaged: the user has to log in again
     session.clear();
@@ -121,16 +124,24 @@ const withAuthErrors = async <T>(run: () => Promise<T>) => {
   }
 };
 
-/** Requires a valid session; sets `accessToken` (decrypted, refreshed when expired). */
+/**
+ * Requires a valid session; sets `accessToken` (decrypted, refreshed when expired) and
+ * `discordUserId`.
+ */
 export const requireAuth = createMiddleware<AuthEnv>(async (c, next) => {
-  c.set("accessToken", await withAuthErrors(() => authenticate(c.get("session"))));
+  const auth = await withAuthErrors(() => authenticate(c.get("session")));
+  c.set("accessToken", auth.accessToken);
+  c.set("discordUserId", auth.discordUserId);
   await next();
 });
 
 /** `requireAuth` plus the user's Discord profile in `user`. */
 export const requireUser = createMiddleware<UserEnv>(async (c, next) => {
-  const accessToken = await withAuthErrors(() => authenticate(c.get("session")));
+  const { accessToken, discordUserId } = await withAuthErrors(() =>
+    authenticate(c.get("session"))
+  );
   c.set("accessToken", accessToken);
+  c.set("discordUserId", discordUserId);
 
   try {
     c.set("user", await discordOauth.getUser(accessToken));

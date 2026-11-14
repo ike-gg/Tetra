@@ -1,3 +1,4 @@
+import { DiscordAPIError } from "discord.js";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -7,6 +8,7 @@ import { getEmoteUrl } from "@/utils/discord";
 import { db } from "../../../db";
 import { EmoteOrigin, emotes, removedEmotes } from "../../../db/schema";
 import { authFactory } from "../../api-env";
+import { mapDiscordApiError } from "../../error-handler";
 import { requireAuth } from "../../middleware/auth";
 import { TetraAPIError } from "../../tetra-api-error";
 import { validate } from "../../validate";
@@ -25,7 +27,7 @@ export const guildsRemoveEmote = authFactory.createHandlers(
     const { guildId, emoteId } = c.req.valid("param");
 
     const [guild, emoteResult] = await Promise.all([
-      getManageableGuild(guildId, c.get("accessToken")),
+      getManageableGuild(guildId, c.var),
       discordRestApi.guilds.getEmoji(guildId, emoteId).then(
         (emote) => ({ ok: true as const, emote }),
         () => ({ ok: false as const })
@@ -73,7 +75,7 @@ export const guildsRemoveEmote = authFactory.createHandlers(
 
     try {
       await discordRestApi.guilds.deleteEmoji(guildId, discordEmoteId);
-    } catch {
+    } catch (deleteError) {
       // The emote still exists on Discord, so it must not be offered for restore.
       try {
         await db.transaction(async (tx) => {
@@ -89,7 +91,10 @@ export const guildsRemoveEmote = authFactory.createHandlers(
         );
       }
 
-      throw new TetraAPIError(400, "Failed to delete emote", "GUILD_EMOTE_DELETE_FAILED");
+      throw (
+        (deleteError instanceof DiscordAPIError && mapDiscordApiError(deleteError)) ||
+        new TetraAPIError(400, "Failed to delete emote", "GUILD_EMOTE_DELETE_FAILED")
+      );
     }
 
     return c.json(

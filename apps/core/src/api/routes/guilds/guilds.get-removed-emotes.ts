@@ -12,7 +12,7 @@ export const guildsGetRemovedEmotes = authFactory.createHandlers(
   validate("param", guildParamsSchema),
   async (c) => {
     const { guildId } = c.req.valid("param");
-    const guild = await getManageableGuild(guildId, c.get("accessToken"));
+    const guild = await getManageableGuild(guildId, c.var);
 
     const removedEmotesInGuild = await db.query.removedEmotes.findMany({
       where: eq(removedEmotes.guildId, guild.id),

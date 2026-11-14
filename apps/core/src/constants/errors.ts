@@ -60,3 +60,13 @@ ${errorStaticMessages.unsupportedFeature}`;
     this.options = _options;
   }
 }
+
+/**
+ * The optimizer couldn't get an emote under Discord's size limit. A subclass, so the bot
+ * still handles it as an `EmbeddedError` and the API can map it by type, not by text.
+ */
+export class EmoteTooLargeError extends EmbeddedError {
+  constructor(description: string) {
+    super({ title: "Emote is too large", description });
+  }
+}

@@ -1,4 +1,3 @@
-import { DiscordAPIError } from "discord.js";
 import { z } from "zod";
 
 import { discordRestApi } from "@/lib/discord-rest-api";
@@ -7,12 +6,9 @@ import { getEmoteUrl } from "@/utils/discord/get-emote-url";
 import { userFactory } from "../../api-env";
 import { EMOTE_NAME_REGEX } from "../../constants/api-constants";
 import { requireUser } from "../../middleware/auth";
-import { TetraAPIError } from "../../tetra-api-error";
 import { validate } from "../../validate";
 import { getManageableGuild } from "../guilds/guilds.shared";
 import { deleteUserTask, findUserTask, taskParamsSchema } from "./tasks.shared";
-
-const DISCORD_ERROR_FILE_TOO_LARGE = 50138;
 
 const bodyPostTask = z.object({
   emote: z
@@ -33,28 +29,13 @@ export const tasksPostTask = userFactory.createHandlers(
     const { emote, name } = c.req.valid("json");
 
     const task = await findUserTask(taskId, c.get("user").id);
-    const guild = await getManageableGuild(task.guildId, c.get("accessToken"));
+    const guild = await getManageableGuild(task.guildId, c.var);
 
-    let createdEmote: Awaited<ReturnType<typeof discordRestApi.guilds.createEmoji>>;
-
-    try {
-      createdEmote = await discordRestApi.guilds.createEmoji(task.guildId, {
-        image: emote,
-        name,
-      });
-    } catch (error) {
-      if (
-        error instanceof DiscordAPIError &&
-        error.code === DISCORD_ERROR_FILE_TOO_LARGE
-      ) {
-        throw new TetraAPIError(
-          413,
-          "Emote too large, reduce its size below 256 KB",
-          "EMOTE_TOO_LARGE"
-        );
-      }
-      throw error;
-    }
+    // Discord's errors (size, slots, permissions) are mapped in the error handler
+    const createdEmote = await discordRestApi.guilds.createEmoji(task.guildId, {
+      image: emote,
+      name,
+    });
 
     await deleteUserTask(task.id, task.userId);
 

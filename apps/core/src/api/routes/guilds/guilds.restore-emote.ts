@@ -24,7 +24,7 @@ export const guildsRestoreEmote = authFactory.createHandlers(
   async (c) => {
     const { guildId, restoreId } = c.req.valid("param");
 
-    const guild = await getManageableGuild(guildId, c.get("accessToken"));
+    const guild = await getManageableGuild(guildId, c.var);
 
     const removedEmote = await db.query.removedEmotes.findFirst({
       where: and(eq(removedEmotes.id, restoreId), eq(removedEmotes.guildId, guildId)),
@@ -37,7 +37,17 @@ export const guildsRestoreEmote = authFactory.createHandlers(
 
     const { emote } = removedEmote;
 
-    const emoteBuffer = await getBufferFromUrl(emote.url);
+    let emoteBuffer: Buffer;
+    try {
+      emoteBuffer = await getBufferFromUrl(emote.url);
+    } catch {
+      // Deleted emote images stay on the Discord CDN only for a while
+      throw new TetraAPIError(
+        400,
+        "Failed to download data of the removed emote",
+        "DOWNLOAD_DATA_FAILED"
+      );
+    }
     const { buffer: optimizedBuffer, metadata } = await optimizeBuffer(emoteBuffer);
 
     const createdEmote = await discordRestApi.guilds.createEmoji(guildId, {

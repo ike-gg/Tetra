@@ -9,9 +9,12 @@ export type AppEnv = {
   Variables: { session: CookieSession };
 };
 
-/** After `requireAuth()`: the user's decrypted Discord access token. */
+/**
+ * After `requireAuth()`: the user's decrypted Discord access token and Discord id (from
+ * the database, not from the cookie, which is unsigned).
+ */
 export type AuthEnv = AppEnv & {
-  Variables: AppEnv["Variables"] & { accessToken: string };
+  Variables: AppEnv["Variables"] & { accessToken: string; discordUserId: string };
 };
 
 /** After `requireAuth({ fetchUserData: true })`: also the user's Discord profile. */

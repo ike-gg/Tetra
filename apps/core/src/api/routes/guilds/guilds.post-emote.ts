@@ -27,7 +27,7 @@ export const guildsPostEmote = authFactory.createHandlers(
     const { guildId } = c.req.valid("param");
     const { file, name, fitting } = c.req.valid("json");
 
-    const guild = await getManageableGuild(guildId, c.get("accessToken"));
+    const guild = await getManageableGuild(guildId, c.var);
 
     let emoteBuffer: Buffer;
 

@@ -1,5 +1,5 @@
 import { MAX_EMOTE_SIZE } from "@/constants";
-import { EmbeddedError } from "@/constants/errors";
+import { EmoteTooLargeError } from "@/constants/errors";
 
 import { type Arguments, buildFrameDropArgs, xGifsicle } from "./x-gifsicle";
 
@@ -117,11 +117,9 @@ export class AutoXGifsicle extends xGifsicle {
     }
 
     if (best === -1) {
-      throw new EmbeddedError({
-        title: "Emote is too large",
-        description:
-          "Tetra couldn't compress this animation under Discord's 256 KB limit without destroying it. Try a shorter clip or fewer frames.",
-      });
+      throw new EmoteTooLargeError(
+        "Tetra couldn't compress this animation under Discord's 256 KB limit without destroying it. Try a shorter clip or fewer frames."
+      );
     }
 
     this.fileBuffer = rendered.get(best)!;
