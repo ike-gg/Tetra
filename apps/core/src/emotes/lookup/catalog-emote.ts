@@ -12,7 +12,7 @@ export const catalogEmoteSourceSchema = z.enum([
 export type CatalogEmoteSource = z.infer<typeof catalogEmoteSourceSchema>;
 
 /**
- * An emote found by link or search, in the panel's shape. `url` is the file to add
+ * An emote found by link, in the panel's shape. `url` is the file to add
  * (accepted by `assertAllowedEmoteSourceUrl`), `previewUrl` a smaller file for display.
  * `name` is the source's own name (not necessarily a valid Discord emoji name), or a
  * guess from the link when the source has none. `animated` comes from the source and is a
@@ -37,8 +37,7 @@ export type EmoteLookupErrorCode =
   | "URL_NOT_ALLOWED"
   | "UNSUPPORTED_FILE_TYPE"
   | "FILE_TOO_LARGE"
-  | "UPSTREAM_ERROR"
-  | "PROVIDER_UNAVAILABLE";
+  | "UPSTREAM_ERROR";
 
 export class EmoteLookupError extends Error {
   constructor(

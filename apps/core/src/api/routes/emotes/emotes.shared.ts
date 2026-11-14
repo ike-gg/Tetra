@@ -14,7 +14,6 @@ const STATUS: Record<EmoteLookupErrorCode, ContentfulStatusCode> = {
   UNSUPPORTED_FILE_TYPE: 415,
   FILE_TOO_LARGE: 413,
   UPSTREAM_ERROR: 502,
-  PROVIDER_UNAVAILABLE: 503,
 };
 
 /** Runs a lookup and turns its errors into API errors with the same `reference` code. */

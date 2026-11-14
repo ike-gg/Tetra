@@ -1,14 +1,6 @@
-import { z } from "zod";
-
 import { bttvCdn } from "../source/bttv/helpers/constants";
-import { type CatalogEmote, EmoteLookupError } from "./catalog-emote";
-import {
-  emoteNotFound,
-  fetchUpstream,
-  headUpstream,
-  readUpstreamJson,
-  upstreamError,
-} from "./upstream";
+import type { CatalogEmote } from "./catalog-emote";
+import { emoteNotFound, headUpstream, upstreamError } from "./upstream";
 
 const PROVIDER = "BTTV";
 
@@ -43,38 +35,4 @@ export const bttvResolveEmote = async (
     animated,
     source: "bttv",
   };
-};
-
-const globalEmotesSchema = z.array(
-  z.object({ id: z.string(), code: z.string(), animated: z.boolean() })
-);
-
-/** Only BTTV's global emotes are public: an empty query lists them, a search can't run. */
-export const bttvSearchEmotes = async (query: string, page: number) => {
-  if (query) {
-    throw new EmoteLookupError(
-      "PROVIDER_UNAVAILABLE",
-      "BTTV search requires an account; paste a BTTV link instead"
-    );
-  }
-  if (page > 1) return { items: [], nextPage: null };
-
-  const response = await fetchUpstream(
-    PROVIDER,
-    "https://api.betterttv.net/3/cached/emotes/global"
-  );
-  if (!response.ok) throw upstreamError(PROVIDER);
-
-  const emotes = await readUpstreamJson(PROVIDER, response, globalEmotesSchema);
-
-  const items: CatalogEmote[] = emotes.map(({ id, code, animated }) => ({
-    id,
-    name: code,
-    previewUrl: `${bttvCdn}/${id}/2x.webp`,
-    url: `${bttvCdn}/${id}/3x.${animated ? "gif" : "png"}`,
-    animated,
-    source: "bttv",
-  }));
-
-  return { items, nextPage: null };
 };

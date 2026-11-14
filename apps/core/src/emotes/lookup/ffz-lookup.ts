@@ -11,9 +11,6 @@ import {
 
 const PROVIDER = "FFZ";
 
-export const FFZ_PAGE_SIZE = 60;
-const FFZ_MAX_PAGE = 100;
-
 const sizesSchema = z.object({
   "1": z.string().optional(),
   "2": z.string().optional(),
@@ -78,34 +75,4 @@ export const ffzResolveEmote = async (id: string) => {
   const result = toCatalogEmote(emote);
   if (!result) throw emoteNotFound();
   return result;
-};
-
-const searchResponseSchema = z.object({
-  _pages: z.number(),
-  emoticons: z.array(ffzEmoteSchema),
-});
-
-/** Sorted by usage (`count-desc`), so an empty query lists the most used emotes. */
-export const ffzSearchEmotes = async (query: string, page: number) => {
-  const params = new URLSearchParams({
-    per_page: String(FFZ_PAGE_SIZE),
-    page: String(page),
-    sort: "count-desc",
-  });
-  if (query) params.set("q", query);
-
-  const response = await fetchUpstream(
-    PROVIDER,
-    `https://api.frankerfacez.com/v1/emotes?${params}`
-  );
-  if (!response.ok) throw upstreamError(PROVIDER);
-
-  const body = await readUpstreamJson(PROVIDER, response, searchResponseSchema);
-
-  const items = body.emoticons
-    .map(toCatalogEmote)
-    .filter((emote): emote is CatalogEmote => emote !== null);
-  const hasMore = page < FFZ_MAX_PAGE && page < body._pages;
-
-  return { items, nextPage: hasMore ? page + 1 : null };
 };

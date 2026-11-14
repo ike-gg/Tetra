@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { stvGetGraphqlUrl, stvGetUrlById } from "../source/7tv/helpers/constants";
+import { stvGetUrlById } from "../source/7tv/helpers/constants";
 import type { CatalogEmote } from "./catalog-emote";
 import {
   emoteNotFound,
@@ -10,10 +10,6 @@ import {
 } from "./upstream";
 
 const PROVIDER = "7TV";
-
-// v3 caps `limit` at 100 and `page` at 100
-export const STV_PAGE_SIZE = 60;
-const STV_MAX_PAGE = 100;
 
 const stvEmoteSchema = z.object({
   id: z.string(),
@@ -54,7 +50,7 @@ const pickFile = (emote: StvEmote) => {
   };
 };
 
-export const toCatalogEmote = (emote: StvEmote): CatalogEmote => {
+const toCatalogEmote = (emote: StvEmote): CatalogEmote => {
   const base = `https:${emote.host.url.replace(/^https?:/, "")}`;
   const file = pickFile(emote);
 
@@ -81,68 +77,4 @@ export const stvResolveEmote = async (id: string) => {
   if (/^0+$/.test(emote.id)) throw emoteNotFound();
 
   return toCatalogEmote(emote);
-};
-
-// The search text goes in as a variable, never into the document
-const SEARCH_QUERY = `
-  query ($query: String!, $page: Int, $limit: Int, $filter: EmoteSearchFilter) {
-    emotes(query: $query, page: $page, limit: $limit, filter: $filter) {
-      count
-      items {
-        id
-        name
-        animated
-        host {
-          url
-          files {
-            name
-            width
-            height
-          }
-        }
-      }
-    }
-  }
-`;
-
-const searchResponseSchema = z.object({
-  data: z
-    .object({
-      emotes: z.object({ count: z.number(), items: z.array(stvEmoteSchema) }),
-    })
-    .nullable()
-    .optional(),
-  errors: z.array(z.object({ message: z.string() })).optional(),
-});
-
-/** Empty query: the `TOP` category (all-time most used). */
-export const stvSearchEmotes = async (query: string, page: number) => {
-  const response = await fetchUpstream(PROVIDER, stvGetGraphqlUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: SEARCH_QUERY,
-      variables: {
-        query,
-        page,
-        limit: STV_PAGE_SIZE,
-        filter: query ? undefined : { category: "TOP" },
-      },
-    }),
-  });
-
-  if (!response.ok) throw upstreamError(PROVIDER);
-
-  const body = await readUpstreamJson(PROVIDER, response, searchResponseSchema);
-
-  // 70429 = "no emotes found" in older v3 versions; today an empty list comes back
-  if (body.errors?.some((error) => error.message.includes("70429"))) {
-    return { items: [], nextPage: null };
-  }
-  if (body.errors?.length || !body.data) throw upstreamError(PROVIDER);
-
-  const { count, items } = body.data.emotes;
-  const hasMore = page < STV_MAX_PAGE && page * STV_PAGE_SIZE < count;
-
-  return { items: items.map(toCatalogEmote), nextPage: hasMore ? page + 1 : null };
 };
