@@ -3,41 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { MenuItem } from "@/components/ui/menu";
 import { Spinner } from "@/components/ui/spinner";
 import { type PanelEmote, SOURCE_LABELS } from "@/lib/emote";
+import { emoteFileQueryOptions } from "@/lib/emote-file";
 import { formatBytes } from "@/lib/format-bytes";
 
 const DISCORD_LIMIT = 256 * 1024;
-
-const loadDimensions = (url: string) =>
-  new Promise<{ width: number; height: number } | null>((resolve) => {
-    const image = new Image();
-    image.onload = () =>
-      resolve({ width: image.naturalWidth, height: image.naturalHeight });
-    image.onerror = () => resolve(null);
-    image.src = url;
-  });
-
-// HEAD first; a CDN without CORS or Content-Length leaves the size unknown
-const loadSize = async (url: string) => {
-  try {
-    const head = await fetch(url, { method: "HEAD" });
-    const length = Number(head.headers.get("content-length"));
-    if (head.ok && length > 0) return length;
-    const response = await fetch(url);
-    return response.ok ? (await response.blob()).size : null;
-  } catch {
-    return null;
-  }
-};
-
-const emoteFileQueryOptions = (url: string) => ({
-  queryKey: ["emote-file", url],
-  queryFn: async () => {
-    const [dimensions, size] = await Promise.all([loadDimensions(url), loadSize(url)]);
-    return { dimensions, size };
-  },
-  staleTime: Number.POSITIVE_INFINITY,
-  retry: false,
-});
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (

@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 
-import { EmoteMenu } from "@/components/emote/emote-menu";
+import { EmoteMenu, useEmoteMenu } from "@/components/emote/emote-menu";
 import { TaskTile } from "@/components/panel/task-tile";
+import { fromTask } from "@/lib/emote";
 import { findGuild, guildsQueryOptions } from "@/lib/guilds";
 import type { Task } from "@/lib/tasks";
 
@@ -11,6 +13,7 @@ export function TaskList({ tasks }: { tasks: Task[] }) {
 
   return (
     <EmoteMenu kind="task">
+      <SyncSelection tasks={tasks} />
       <ul className="flex flex-col gap-px border border-border bg-border">
         {tasks.map((task) => (
           <TaskTile
@@ -22,4 +25,12 @@ export function TaskList({ tasks }: { tasks: Task[] }) {
       </ul>
     </EmoteMenu>
   );
+}
+
+// A fixed or discarded task leaves the selection with its tile
+function SyncSelection({ tasks }: { tasks: Task[] }) {
+  const { syncSelection } = useEmoteMenu();
+  const emotes = useMemo(() => tasks.map(fromTask), [tasks]);
+  useEffect(() => syncSelection(emotes), [syncSelection, emotes]);
+  return null;
 }

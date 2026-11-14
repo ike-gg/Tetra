@@ -2,6 +2,8 @@ import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { Emote } from "@/components/emote/emote";
+import { useEmoteMenu } from "@/components/emote/emote-menu";
+import { SELECTION_BAR_HEIGHT } from "@/components/emote/emote-selection-bar";
 import type { PanelEmote } from "@/lib/emote";
 import { useElementSize } from "@/lib/use-element-size";
 
@@ -34,6 +36,9 @@ export function EmoteGrid({ emotes, label, pendingKeys, onEndReached }: EmoteGri
   const [scrollMargin, setScrollMargin] = useState(0);
   const [active, setActive] = useState(0);
   const focusAfterRender = useRef<number | null>(null);
+  const { selectedKeys, syncSelection } = useEmoteMenu();
+
+  useEffect(() => syncSelection(emotes), [syncSelection, emotes]);
 
   const columns = Math.max(1, Math.floor((width + GAP) / (minTile(width) + GAP)));
   const tile = width > 0 ? (width - GAP * (columns - 1)) / columns : minTile(width);
@@ -58,6 +63,8 @@ export function EmoteGrid({ emotes, label, pendingKeys, onEndReached }: EmoteGri
     estimateSize: () => rowHeight + GAP,
     overscan: 3,
     scrollMargin,
+    // Keyboard moves keep the row above the selection bar
+    scrollPaddingEnd: selectedKeys.size > 0 ? SELECTION_BAR_HEIGHT : 0,
   });
 
   // Every row has the same height, recomputed from the width; the virtualizer caches

@@ -69,7 +69,14 @@ export function PanelLayout({ children }: { children: ReactNode }) {
   const view = useCurrentView();
 
   return (
-    <div data-panel-root className="min-h-dvh">
+    // --panel-inset: where the content area starts, for chrome fixed to it (selection bar)
+    <div
+      data-panel-root
+      className={cn(
+        "min-h-dvh",
+        view.fullBleed ? "xl:[--panel-inset:15rem]" : "md:[--panel-inset:15rem]"
+      )}
+    >
       <header className="sticky top-0 z-20 flex h-12 select-none items-center gap-2 border-border border-b bg-background px-2 text-sm sm:px-4">
         <Drawer side="left" open={navOpen} onOpenChange={setNavOpen}>
           <DrawerTrigger

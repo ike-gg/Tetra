@@ -323,7 +323,8 @@ function TaskHeader({ task }: { task: Task }) {
   const emote = fromTask(task);
 
   return (
-    <EmoteMenu kind="task">
+    // The editor is open already; a selection bar would only cover it
+    <EmoteMenu kind="task" selectable={false}>
       <div className="flex items-center gap-4">
         <Emote emote={emote} showName={false} className="w-16 shrink-0 p-0" />
         <div className="flex min-w-0 flex-col gap-1">

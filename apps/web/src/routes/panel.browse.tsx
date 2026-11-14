@@ -101,7 +101,7 @@ function PanelBrowse() {
           Browse emotes
         </Heading>
         <Text size="sm" tone="muted">
-          Right-click or long-press an emote to add it
+          Select an emote, or right-click it, to add it
           {guild ? (
             <>
               {" "}
@@ -235,7 +235,7 @@ function Results({ provider, query, guild }: ResultsProps) {
       )}
 
       {emotes.length > 0 && (
-        <EmoteMenu kind="catalog" guild={guild} selectable={false}>
+        <EmoteMenu kind="catalog" guild={guild}>
           <EmoteGrid emotes={emotes} label={title} onEndReached={loadMore} />
         </EmoteMenu>
       )}

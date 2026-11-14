@@ -256,7 +256,7 @@ function ServerEmotes({
     return (
       <EmptyState title="No emotes yet">
         Add one with <span className="font-mono text-foreground">/addemote</span> in
-        Discord, or right-click an emote anywhere in the panel and pick Add to server.
+        Discord, or select an emote anywhere in the panel and pick Add to server.
       </EmptyState>
     );
   }
@@ -297,7 +297,7 @@ function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: str
   return (
     <div className="flex flex-col gap-3">
       <Text size="sm" tone="muted">
-        Right-click an emote, or press Shift+F10, to restore it.
+        Select an emote to restore it, or right-click it (Shift+F10).
       </Text>
       <EmoteGrid emotes={visible} label="Removed emotes" pendingKeys={pendingKeys} />
     </div>

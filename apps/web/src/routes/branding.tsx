@@ -517,8 +517,8 @@ function EmotesSheet() {
           </ul>
         </EmoteMenu>
         <Text size="sm" tone="muted">
-          One component for every emote in the panel. The list&apos;s menu decides the
-          actions; a click selects.
+          One component for every emote in the panel. The list&apos;s actions decide the
+          menu; a click selects and brings up the selection bar with the same actions.
         </Text>
       </div>
       <div className="flex flex-col items-start gap-3 bg-background p-6">

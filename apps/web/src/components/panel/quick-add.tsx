@@ -199,6 +199,8 @@ export function QuickAdd({
         <EmoteMenu
           kind="catalog"
           guild={defaultGuild && { id: defaultGuild.id, name: defaultGuild.name }}
+          // The form around it already is what the selection bar would offer
+          selectable={false}
         >
           <QuickAddDetails
             key={emote.key}

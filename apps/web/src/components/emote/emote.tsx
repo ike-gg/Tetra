@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-import { useEmoteMenu } from "@/components/emote/emote-menu";
+import { rememberTileList, useEmoteMenu } from "@/components/emote/emote-menu";
 import { MenuContextTrigger } from "@/components/ui/menu";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/cn";
@@ -28,7 +28,7 @@ type EmoteProps = {
 
 /**
  * The one way to show an emote in the panel: a square preview that selects on click
- * (unless the list isn't `selectable`) and opens the list's emote menu on right click,
+ * (again or Esc deselects; unless the list isn't `selectable`) and opens the list's emote menu on right click,
  * long press, Shift+F10 or the context menu key. Must sit inside `<EmoteMenu>`, which
  * decides the actions.
  */
@@ -41,10 +41,21 @@ export const Emote = memo(function Emote({
   onFocus,
   ...props
 }: EmoteProps) {
-  const { controller, fittingOf, selectable, selectedKey, activate, triggerRef } =
-    useEmoteMenu();
+  const {
+    controller,
+    fittingOf,
+    selectable,
+    selectedKeys,
+    activate,
+    clearSelection,
+    triggerRef,
+  } = useEmoteMenu();
   const fitting = fittingOf(emote);
-  const selected = selectedKey === emote.key;
+  const selected = selectedKeys.has(emote.key);
+  const track = (tile: HTMLElement) => {
+    triggerRef.current = tile;
+    rememberTileList(tile);
+  };
   const unavailable = emote.available === false;
 
   return (
@@ -56,24 +67,32 @@ export const Emote = memo(function Emote({
       aria-label={showName ? undefined : emote.name}
       aria-pressed={selectable ? selected : undefined}
       aria-busy={pending || undefined}
+      data-emote=""
       data-selected={selected || undefined}
-      onClick={() => {
+      onClick={(event) => {
+        // Safari doesn't focus a clicked button; the bar returns focus here
+        track(event.currentTarget);
         onClick?.();
         if (!pending) activate(emote);
       }}
       onFocus={(event) => {
-        triggerRef.current = event.currentTarget;
+        track(event.currentTarget);
         onFocus?.();
       }}
       onContextMenu={(event) => {
-        triggerRef.current = event.currentTarget;
+        track(event.currentTarget);
       }}
       // Browsers turn Shift+F10 into a contextmenu event only on some platforms (not
       // macOS), so open it here everywhere; preventing the key stops a second open
       onKeyDown={(event) => {
+        if (event.key === "Escape" && selectedKeys.size > 0) {
+          event.preventDefault();
+          clearSelection();
+          return;
+        }
         if (event.key !== "F10" || !event.shiftKey || pending) return;
         event.preventDefault();
-        triggerRef.current = event.currentTarget;
+        track(event.currentTarget);
         void controller.open({
           payload: emote,
           anchor: event.currentTarget,
@@ -83,8 +102,7 @@ export const Emote = memo(function Emote({
       className={cn(
         "group/emote relative flex min-w-0 cursor-default select-none flex-col items-stretch gap-1 border-0 bg-transparent p-1 text-left [-webkit-touch-callout:none]",
         "hover:bg-surface active:bg-neutral-800 data-selected:bg-surface",
-        "focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:-outline-offset-2",
-        "data-selected:outline-2 data-selected:outline-primary data-selected:-outline-offset-2",
+        "focus-visible:outline-none",
         pending && "cursor-wait",
         className
       )}
@@ -120,6 +138,12 @@ export const Emote = memo(function Emote({
           <Spinner />
         </span>
       )}
+      {/* Over the preview: an outline on the button itself hides under it on tiles
+          without padding (task tiles) */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 hidden border-2 border-primary group-focus-visible/emote:block group-focus-visible/emote:border-brand-300 group-data-selected/emote:block"
+      />
       {showName && (
         <span className="block truncate px-0.5 text-muted text-xs group-hover/emote:text-foreground group-data-selected/emote:text-foreground">
           {emote.name}
