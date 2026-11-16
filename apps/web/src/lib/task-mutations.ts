@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
 import { toast } from "@/components/ui/toaster";
+import { track } from "@/lib/analytics";
 import { ApiError, api, unwrap } from "@/lib/api";
 import { toEmoteDataUrl } from "@/lib/emote-data-url";
 import { emoteErrorMessage } from "@/lib/emote-mutations";
@@ -50,6 +51,7 @@ export function useAddTaskEmote(task: Task, guildName: string) {
         })
       ),
     onSuccess: async ({ preview }) => {
+      track("emote_add", { source: "task" });
       // Counts before leaving, so the server page opens with them. Leave before the
       // refetches: the page observes the task, and it 404s from now on
       await holdSlotCounts(queryClient, task.guildId);

@@ -1,6 +1,7 @@
 import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "@/components/ui/toaster";
+import { track } from "@/lib/analytics";
 import { ApiError, api, unwrap } from "@/lib/api";
 import { type Fitting, type PanelEmote, toDiscordEmoteName } from "@/lib/emote";
 import { toEmoteDataUrl } from "@/lib/emote-data-url";
@@ -92,7 +93,8 @@ export function useAddEmote() {
         })
       ),
     // Counts move at once; Discord may have optimized the file into the other type
-    onSuccess: async ({ preview }, { guild }) => {
+    onSuccess: async ({ preview }, { emote, guild }) => {
+      track("emote_add", { source: emote.source });
       await holdSlotCounts(queryClient, guild.id);
       shiftSlotCounts(queryClient, guild.id, slotTypeOfPreview(preview), 1);
     },
@@ -136,6 +138,7 @@ export function useUploadEmote() {
         })
       ),
     onSuccess: async ({ preview }, { guild }) => {
+      track("emote_add", { source: "file" });
       await holdSlotCounts(queryClient, guild.id);
       shiftSlotCounts(queryClient, guild.id, slotTypeOfPreview(preview), 1);
     },

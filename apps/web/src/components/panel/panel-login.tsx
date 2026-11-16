@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Notice } from "@/components/ui/notice";
 import { Text } from "@/components/ui/text";
+import { track } from "@/lib/analytics";
 import { loginUrl, panelReturnPath } from "@/lib/session";
 
 // Codes from the API's OAuth callback (`AUTH_CALLBACK_ERRORS` in core)
@@ -49,7 +50,7 @@ export function PanelLogin({ error }: { error?: string }) {
           size="lg"
           glow
           className="w-full"
-          render={<a href={loginUrl(returnPath)} />}
+          render={<a href={loginUrl(returnPath)} onClick={() => track("panel_login")} />}
         >
           Log in with Discord
         </Button>

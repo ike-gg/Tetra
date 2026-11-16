@@ -5,9 +5,10 @@ import {
   Outlet,
   Scripts,
 } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect } from "react";
 
 import { NotFoundPage } from "@/components/not-found-page";
+import { analyticsScripts, listenForInviteClicks } from "@/lib/analytics";
 import { SEO_PAGES, SITE_NAME } from "@/lib/seo";
 import appCss from "@/styles/app.css?url";
 
@@ -26,6 +27,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
+    scripts: analyticsScripts,
   }),
   component: RootComponent,
   notFoundComponent: NotFoundPage,
@@ -33,6 +35,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(listenForInviteClicks, []);
 
   return (
     <RootDocument>

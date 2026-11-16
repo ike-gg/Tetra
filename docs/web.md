@@ -64,6 +64,7 @@ Website and panel (`apps/web`). Paths in this document are relative to `apps/web
 | `src/components/footer.tsx` | Site footer with links to every page (`PAGES`; add new public pages there) and the invite link. Used on `/`, the brand book (`/branding/*`) and `/editor`. Links `branding` (the book) and `logo` (`/branding/logo`); the other chapters are reached from the book. Its links pin `text-muted` and `no-underline`, because `/editor` loads ui-sdk's web.css, which colors and underlines every `<a>`. |
 | `src/components/home-sections.tsx` | Homepage sections [01]–[02], stats, closing call to action, footer. Features are a 2-column grid of cards; a card with `wide` spans both columns and gets a link button (the editor card: `resize a GIF for discord` → `/editor`, the homepage's internal link into the editor). Keep the grid even: four small cards + one wide. |
 | `src/lib/links.ts` | Shared external URLs (`INVITE_URL`). |
+| `src/lib/analytics.ts` | Google Analytics: the gtag.js head scripts, `track`, the invite click listener. See [Analytics](#analytics). |
 | `src/lib/seo.ts` | `SITE_URL`, `SEO_PAGES` (every indexable page: path, title, description, OG image text), `seoHead(key)`, `NOINDEX_META`. See [SEO](#seo). |
 | `scripts/build-seo.tsx` | Runs after `vite build`: the OG images into `dist/client/og`. |
 | `public/favicon.svg`, `favicon.ico`, `apple-touch-icon.png` | The favicon: a plain white square, full bleed (svg, 32px ico with a PNG inside, 180px PNG). Linked from `__root.tsx`. |
@@ -259,6 +260,18 @@ One field: search 7TV or paste a link. `QuickAdd` (`components/panel/quick-add.t
 - **Adding an indexable page**: an entry in `SEO_PAGES` (path, title, description, `og` eyebrow/heading/accent), `head: () => seoHead("<key>")` on the route, plus `staticPages` and the footer as above. Run `bun run build:seo` after a build (or the whole `build`) and look at the PNG.
 - Rejected: generating in a Vite plugin (`import.meta.env` isn't set while the config loads, and the PNGs aren't needed in dev).
 - resvg's `RenderedImage.pixels` is a getter that copies the whole buffer on every read; reading it per pixel crashed Bun. Read it once.
+
+## Analytics
+
+Google Analytics 4 (gtag.js), on the site, the editor and the panel. No consent banner: the owner chose to load it for every visitor and accepted the GDPR risk, so don't add consent UI unless asked.
+
+- **Measurement ID**: `VITE_GA_MEASUREMENT_ID` at build time (`G-XXXXXXXXXX`, typed in `src/vite-env.d.ts`). Unset or empty: no script, no listener, `track` does nothing, so `vite dev` and builds without it send no data.
+- **Loading**: `analyticsScripts` (`src/lib/analytics.ts`) goes into the root route's `head().scripts`: gtag.js `async` plus the inline `dataLayer` / `gtag("js")` / `gtag("config", id)` init. Being on the root, it lands in every prerendered page and in `_shell.html` (checked in the build output: `index.html`, `editor/index.html`, `404.html`, `_shell.html`; none of them has it when the variable is empty).
+- **Page views**: GA4's enhanced measurement counts history (`pushState`) changes as page views, which covers client-side navigation. Never send `page_view` on route changes: every view would count twice. Keep "page changes based on browser history events" on in the GA data stream settings.
+- **Events**: `track(event, params)`, typed by `AnalyticsEvents`; a no-op when `window.gtag` is missing (no ID, prerender, blocked by an ad blocker).
+  - `invite_click` `{ location }`: one capturing `click` / middle-button `auxclick` listener on the document (`listenForInviteClicks`, started in `RootComponent`) catches every link whose path is `/invite`, so new invite links need nothing. `/invite` is Caddy's 302, GA would never see it otherwise. `location` is the nearest `data-track-location` (`hero`, `home-cta`), else the nearest `footer`, `nav` or `header`, else `page`; GA's page location tells the pages apart.
+  - `emote_add` `{ source }`: on a successful add to a Discord server. `useAddEmote` (Quick add, Browse, Channel emotes, the emote menu and selection bar) sends the emote's `EmoteSource` (`7tv`, `bttv`, `ffz`, `twitch`, `link`, `discord` for a copy from another server); `useUploadEmote` (the editor's Add to server) sends `file`; `useAddTaskEmote` (the task editor) sends `task`.
+  - `panel_login`: the click on "log in with discord" in `PanelLogin`, before the navigation to the API.
 
 ## Scripts
 

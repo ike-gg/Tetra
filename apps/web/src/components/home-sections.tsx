@@ -182,7 +182,7 @@ function CallToAction() {
             <Button
               variant="primary"
               size="lg"
-              render={<a href={INVITE_URL} />}
+              render={<a href={INVITE_URL} data-track-location="home-cta" />}
               onPointerEnter={() => setReveal(true)}
               onPointerLeave={() => setReveal(false)}
               // Keyboard focus only: a clicked link keeps focus, and returning to the tab

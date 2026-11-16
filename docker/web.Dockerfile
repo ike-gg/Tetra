@@ -13,7 +13,9 @@ RUN bun install --frozen-lockfile --filter @tetra/web --ignore-scripts
 # Vite inlines VITE_* at build time, so they are build args, not runtime env
 ARG VITE_API_URL
 ARG VITE_SITE_URL=https://tetra.lol
-ENV VITE_API_URL=$VITE_API_URL VITE_SITE_URL=$VITE_SITE_URL
+# Optional: empty builds a site without Google Analytics
+ARG VITE_GA_MEASUREMENT_ID=
+ENV VITE_API_URL=$VITE_API_URL VITE_SITE_URL=$VITE_SITE_URL VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID
 
 # Core sources only for the type-only `@tetra/core/api` import; nothing from core is bundled
 COPY apps/core apps/core

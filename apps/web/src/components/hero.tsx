@@ -79,7 +79,12 @@ export function Hero() {
         </Text>
 
         <div className="motion-safe:animate-hero-rise mt-10 flex flex-col items-center gap-3 sm:flex-row [animation-delay:650ms]">
-          <Button variant="primary" size="lg" glow render={<a href={INVITE_URL} />}>
+          <Button
+            variant="primary"
+            size="lg"
+            glow
+            render={<a href={INVITE_URL} data-track-location="hero" />}
+          >
             add to discord
             <span aria-hidden className="font-mono group-hover/button:translate-x-0.5">
               →
