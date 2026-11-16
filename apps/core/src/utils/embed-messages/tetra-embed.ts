@@ -1,5 +1,6 @@
 import { EmbedBuilder, type EmbedData } from "discord.js";
 
+import { inlineTitle, tightText } from "@/utils/discord/components-v2";
 import { type FeedbackType, feedbackEmoji } from "@/utils/discord/feedback-emojis";
 
 interface ExtraEmbedData extends EmbedData {
@@ -36,12 +37,13 @@ const DEFAULT_TEXT: Record<FeedbackType, string> = {
 const CUSTOM_EMOJI_SUFFIX = /\s*<a?:\w+:\d+>\s*$/;
 
 /**
- * Compact body: `<emoji> <description>` (the title is dropped), `<emoji> <title>` when
- * there is only a title, fields as `-# name: value` lines. Media and the rest stay.
+ * Compact body, one block of text: `<emoji> <description>` (the title is dropped),
+ * `<emoji> **Title** · first line` with `keepTitle`, `<emoji> <title>` when there is only a
+ * title, fields as `-# name: value` lines, blank lines removed. Media and the rest stay.
  */
 const compactBody = (type: FeedbackType, content: TetraEmbedContent): EmbedData => {
   if (typeof content === "string") {
-    return { description: `${feedbackEmoji(type)} ${content}` };
+    return { description: `${feedbackEmoji(type)} ${tightText(content).trimStart()}` };
   }
 
   const { hideTitle, keepTitle, title, description, fields, ...rest } = content;
@@ -50,11 +52,11 @@ const compactBody = (type: FeedbackType, content: TetraEmbedContent): EmbedData 
 
   let body: string;
   if (hideTitle) {
-    body = description ?? "";
+    body = tightText(description ?? "");
   } else if (description && keepTitle && cleanTitle) {
-    body = `${emoji} **${cleanTitle}**\n${description}`;
+    body = `${emoji} ${inlineTitle(cleanTitle, description)}`;
   } else if (description) {
-    body = `${emoji} ${description}`;
+    body = `${emoji} ${tightText(description).trimStart()}`;
   } else {
     body = `${emoji} ${cleanTitle || DEFAULT_TEXT[type]}`;
   }

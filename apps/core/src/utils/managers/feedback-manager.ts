@@ -24,7 +24,6 @@ import type { TetraClient } from "../../types";
 import {
   bodyToComponents,
   isActionRow,
-  nonEmpty,
   type TopLevelComponent,
   V2_FLAG,
   withoutAttachmentMedia,
@@ -170,11 +169,29 @@ export class FeedbackManager {
     }
 
     const rows = hasRows ? (content.components ?? []).map(toJSONComponent) : current.rows;
-    if (rows.length === 0) body = nonEmpty(body);
+    let files = content.files;
+
+    // Discord rejects a v2 message without components (and empty Text Displays): an edit
+    // that would empty it keeps the previous body, and its attachments with it
+    if (body.length === 0 && rows.length === 0) {
+      const previous = hasBody && hasRows ? await this.currentState() : current;
+      body = previous.body;
+      files = undefined;
+
+      if (body.length === 0) {
+        if (
+          !(this.interaction instanceof CommandInteraction) &&
+          !this.interaction.replied
+        ) {
+          await this.interaction.deferUpdate();
+        }
+        return;
+      }
+    }
 
     await this.deliver({
       components: [...body, ...rows],
-      files: content.files,
+      files,
       flags: V2_FLAG,
       allowedMentions: { parse: [] },
     });

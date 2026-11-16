@@ -24,20 +24,43 @@ const toJSON = <T>(value: T | JSONEncodable<T>): T =>
 
 const text = (content: string) => ({ type: ComponentType.TextDisplay as const, content });
 
-/** One embed → one Container: title, description, fields, thumbnail (Section), image. */
+type ContainerChild = Extract<
+  TopLevelComponent,
+  { type: ComponentType.Container }
+>["components"][number];
+
+/** Drops blank and whitespace-only lines: every one of them is a line of height. */
+export const tightText = (value: string) =>
+  value
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .filter((line) => line.trim() !== "")
+    .join("\n");
+
+/**
+ * A title never gets its own line: `**Title** · first line`, the rest unchanged
+ * (no separator when the line already starts with punctuation, e.g. `**Title**: …`).
+ */
+export const inlineTitle = (title: string, description: string) => {
+  const [first = "", ...rest] = tightText(description).split("\n");
+  const line = first.trimStart();
+  if (!line) return `**${title}**`;
+  const separator = /^[:;,.!?]/.test(line) ? "" : " · ";
+  return [`**${title}**${separator}${line}`, ...rest].join("\n");
+};
+
+/** One embed → one Container: one text (title inline), thumbnail (Section), image. */
 export const embedToContainer = (input: EmbedLike): TopLevelComponent => {
   const embed = toJSON(input);
-  const children: Extract<
-    TopLevelComponent,
-    { type: ComponentType.Container }
-  >["components"] = [];
+  const children: ContainerChild[] = [];
 
+  const title =
+    embed.title && (embed.url ? `[${embed.title}](${embed.url})` : embed.title);
   const lines: string[] = [];
   if (embed.author?.name) lines.push(`-# ${embed.author.name}`);
-  if (embed.title) {
-    lines.push(embed.url ? `**[${embed.title}](${embed.url})**` : `**${embed.title}**`);
-  }
-  if (embed.description) lines.push(embed.description);
+  if (title && embed.description) lines.push(inlineTitle(title, embed.description));
+  else if (title) lines.push(`**${title}**`);
+  else if (embed.description) lines.push(tightText(embed.description));
   for (const field of embed.fields ?? []) {
     if (field.name === "​") {
       lines.push(field.value);
@@ -47,6 +70,15 @@ export const embedToContainer = (input: EmbedLike): TopLevelComponent => {
     const name = field.name.includes("**") ? field.name : `**${field.name}**`;
     lines.push(`${name}\n${field.value}`);
   }
+  const footer = [
+    embed.footer?.text,
+    embed.timestamp
+      ? `<t:${Math.floor(Date.parse(embed.timestamp) / 1000)}:f>`
+      : undefined,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  if (footer) lines.push(`-# ${footer}`);
 
   const body = lines.join("\n");
   const thumbnail = embed.thumbnail?.url;
@@ -68,16 +100,6 @@ export const embedToContainer = (input: EmbedLike): TopLevelComponent => {
     });
   }
 
-  const footer = [
-    embed.footer?.text,
-    embed.timestamp
-      ? `<t:${Math.floor(Date.parse(embed.timestamp) / 1000)}:f>`
-      : undefined,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  if (footer) children.push(text(`-# ${footer}`));
-
   if (children.length === 0) children.push(text("​"));
 
   return {
@@ -86,6 +108,21 @@ export const embedToContainer = (input: EmbedLike): TopLevelComponent => {
     components: children,
   };
 };
+
+/** Neighbouring Text Displays become one: each component adds its own margin. */
+const mergeTexts = (children: ContainerChild[]) =>
+  children.reduce<ContainerChild[]>((merged, child) => {
+    const last = merged.at(-1);
+    if (
+      last?.type === ComponentType.TextDisplay &&
+      child.type === ComponentType.TextDisplay
+    ) {
+      merged[merged.length - 1] = text(`${last.content}\n${child.content}`);
+    } else {
+      merged.push(child);
+    }
+    return merged;
+  }, []);
 
 /**
  * `content` + embeds → the message body (top-level components before the rows).
@@ -115,7 +152,7 @@ export const bodyToComponents = (
     ) {
       body[body.length - 1] = {
         ...last,
-        components: [...last.components, ...container.components],
+        components: mergeTexts([...last.components, ...container.components]),
       };
     } else {
       body.push(container);
@@ -125,10 +162,6 @@ export const bodyToComponents = (
 
   return body;
 };
-
-/** A v2 message needs at least one component; an edit that empties it keeps a blank line. */
-export const nonEmpty = (components: TopLevelComponent[]): TopLevelComponent[] =>
-  components.length > 0 ? components : [text("\u200b")];
 
 export const isActionRow = (component: { type: ComponentType }) =>
   component.type === ComponentType.ActionRow;
@@ -141,22 +174,28 @@ export const withoutAttachmentMedia = (
   body: TopLevelComponent[],
   keep: ReadonlySet<string> = new Set()
 ): TopLevelComponent[] =>
-  body.map((component) =>
-    component.type === ComponentType.Container
-      ? {
-          ...component,
-          components: component.components.filter(
-            (child) =>
-              child.type !== ComponentType.MediaGallery ||
-              !child.items.some(
-                (item) =>
-                  item.media.url.startsWith("attachment://") &&
-                  !keep.has(item.media.url.slice("attachment://".length))
-              )
-          ),
-        }
-      : component
-  );
+  body
+    .map((component) =>
+      component.type === ComponentType.Container
+        ? {
+            ...component,
+            components: component.components.filter(
+              (child) =>
+                child.type !== ComponentType.MediaGallery ||
+                !child.items.some(
+                  (item) =>
+                    item.media.url.startsWith("attachment://") &&
+                    !keep.has(item.media.url.slice("attachment://".length))
+                )
+            ),
+          }
+        : component
+    )
+    // A container left without children is rejected
+    .filter(
+      (component) =>
+        component.type !== ComponentType.Container || component.components.length > 0
+    );
 
 /** All visible text of a v2 message, e.g. to forward an error reply to the error log. */
 export const collectText = (components: readonly { toJSON?: () => unknown }[]) => {
