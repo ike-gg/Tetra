@@ -1,4 +1,4 @@
-import { ButtonBuilder, ButtonStyle } from "discord.js";
+import { ButtonBuilder, ButtonStyle, ComponentType, MessageFlags } from "discord.js";
 
 import { GenericButtonInteractionHandler } from "../..";
 
@@ -14,18 +14,26 @@ const CancelInteractionGenericButton = new GenericButtonInteractionHandler(
         .setStyle(ButtonStyle.Danger),
   },
   async (interaction) => {
+    // v2 messages can't take `content`: the same text goes into a Text Display
+    const isV2 = interaction.message.flags.has(MessageFlags.IsComponentsV2);
+    const textOnly = (content: string) =>
+      isV2
+        ? { components: [{ type: ComponentType.TextDisplay as const, content }] }
+        : { content, components: [] };
+
     await interaction.update({
-      content: "-# Interaction cancelled",
-      components: [],
+      ...textOnly("-# Interaction cancelled"),
       files: [],
-      embeds: [],
+      ...(isV2 ? {} : { embeds: [] }),
     });
     try {
       await interaction.message.delete();
     } catch {
-      await interaction.editReply({
-        content: `-# Interaction cancelled, cannot delete message due to missing permissions. You can remove it manually.`,
-      });
+      await interaction.editReply(
+        textOnly(
+          `-# Interaction cancelled, cannot delete message due to missing permissions. You can remove it manually.`
+        )
+      );
     }
   }
 );

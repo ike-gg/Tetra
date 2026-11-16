@@ -8,7 +8,8 @@ import {
 
 import { Messages } from "@/constants/messages";
 import { env } from "@/env";
-import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
+import { collectText, isActionRow } from "@/utils/discord/components-v2";
+import { feedbackPayload } from "@/utils/discord/feedback-payload";
 
 import { GenericButtonInteractionHandler } from "../..";
 
@@ -34,26 +35,35 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
     if (!errorLogChannelId) {
       CoreConsole.warn("ERROR_LOG_CHANNEL_ID is not set, cannot send the error log.");
 
-      await interaction.reply({
-        embeds: [TetraEmbed.error(Messages.ERROR_LOG_UNAVAILABLE)],
-        flags: MessageFlags.Ephemeral,
-      });
+      await interaction.reply(
+        feedbackPayload("error", Messages.ERROR_LOG_UNAVAILABLE, { ephemeral: true })
+      );
       return;
     }
 
+    const receivedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId(`received`)
+        .setEmoji({
+          name: "📨",
+        })
+        .setLabel(`Log received!`)
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(true)
+    );
+
+    const isV2 = interaction.message.flags.has(MessageFlags.IsComponentsV2);
+
+    // A v2 edit with only a row would drop the error text: keep everything but the rows
     await interaction.update({
-      components: [
-        new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId(`received`)
-            .setEmoji({
-              name: "📨",
-            })
-            .setLabel(`Log received!`)
-            .setStyle(ButtonStyle.Danger)
-            .setDisabled(true)
-        ),
-      ],
+      components: isV2
+        ? [
+            ...interaction.message.components
+              .map((component) => component.toJSON())
+              .filter((component) => !isActionRow(component)),
+            receivedRow.toJSON(),
+          ]
+        : [receivedRow],
     });
 
     try {
@@ -74,7 +84,10 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
         interaction.message?.interaction?.id ?? "undefined initial interaction id";
       const originalInteractionCommandName =
         interaction.message?.interaction?.commandName ?? "undefined initial command name";
-      const errorEmbedMessage = interaction.message?.embeds[0]?.toJSON?.() ?? null;
+      // v2 error replies have no embeds: forward their text as a plain embed instead
+      const errorEmbedMessage = isV2
+        ? { description: collectText(interaction.message.components).slice(0, 4096) }
+        : (interaction.message?.embeds[0]?.toJSON?.() ?? null);
 
       await client.shard?.broadcastEval(
         async (

@@ -1,13 +1,36 @@
 import { EmbedBuilder, type EmbedData } from "discord.js";
 
+import { type FeedbackType, feedbackEmoji } from "@/utils/discord/feedback-emojis";
+
 interface ExtraEmbedData extends EmbedData {
   hideTitle?: boolean;
 }
 
 export type TetraEmbedContent = ExtraEmbedData | string;
 
+/**
+ * Neutral accent (`neutral-50`, the brand's foreground white): colour is carried by the
+ * reply type's emoji, not by the side bar (branding: emotes are the colour).
+ */
+export const TETRA_ACCENT_COLOR = 0xfbfaf9;
+
 const getEmojiTitle = (emoji: string, title: string) => `${emoji}  ${title}`;
 
+const DEFAULT_TITLES: Record<Exclude<FeedbackType, "working">, string> = {
+  success: "Success",
+  error: "Something went wrong",
+  attention: "Attention",
+  panel: "Tetra Panel",
+  warning: "Warning",
+  info: "Information",
+  media: "Media",
+  premium: "Tetra Premium",
+};
+
+/**
+ * Embeds for the generic replies. `FeedbackManager` turns them into Components v2
+ * containers (`src/utils/discord/components-v2.ts`); legacy v1 messages keep them as embeds.
+ */
 export class TetraEmbed {
   static _transform(content: TetraEmbedContent): EmbedData {
     if (typeof content === "string") {
@@ -15,7 +38,8 @@ export class TetraEmbed {
         description: content,
       };
     }
-    return content;
+    const { hideTitle: _, ...data } = content;
+    return data;
   }
 
   private stack: EmbedBuilder[] = [];
@@ -28,96 +52,63 @@ export class TetraEmbed {
     return this.stack;
   }
 
-  static success(content: TetraEmbedContent) {
+  private static build(
+    type: Exclude<FeedbackType, "working">,
+    content: TetraEmbedContent
+  ) {
     const details = this._transform(content);
-    const embedTitle = getEmojiTitle("🟩", details.title || "Success");
-
-    return new EmbedBuilder({
-      color: 0x3acf38,
-      ...details,
-      title: embedTitle,
-    });
-  }
-
-  static error(content: TetraEmbedContent) {
-    const details = this._transform(content);
-    const embedTitle = getEmojiTitle(
-      "<:oh:1209982840922570803>",
-      details.title || "Something went wrong"
+    const hideTitle = typeof content === "object" && content.hideTitle;
+    const title = getEmojiTitle(
+      feedbackEmoji(type),
+      details.title || DEFAULT_TITLES[type]
     );
 
     return new EmbedBuilder({
-      color: 0xeb3434,
+      color: TETRA_ACCENT_COLOR,
       ...details,
-      title: embedTitle,
+      title: hideTitle ? undefined : title,
     });
+  }
+
+  static success(content: TetraEmbedContent) {
+    return this.build("success", content);
+  }
+
+  static error(content: TetraEmbedContent) {
+    return this.build("error", content);
   }
 
   static attention(content: TetraEmbedContent) {
-    const details = this._transform(content);
-    const embedTitle = getEmojiTitle("🟧", details.title || "Attention");
-
-    return new EmbedBuilder({
-      color: 0xff8812,
-      ...details,
-      title: embedTitle,
-    });
+    return this.build("attention", content);
   }
 
   static panel(content: TetraEmbedContent) {
-    const details = this._transform(content);
-    const embedTitle = getEmojiTitle("⬜", details.title || "Tetra Panel");
-
-    return new EmbedBuilder({
-      color: 0xffffff,
-      ...details,
-      title: embedTitle,
-    });
+    return this.build("panel", content);
   }
 
   static warning(content: TetraEmbedContent) {
-    const details = this._transform(content);
-    const embedTitle = getEmojiTitle("🟨", details.title || "Warning");
-
-    return new EmbedBuilder({
-      color: 0xf7e139,
-      ...details,
-      title: embedTitle,
-    });
+    return this.build("warning", content);
   }
 
   static info(content: TetraEmbedContent) {
-    const details = this._transform(content);
-    const embedTitle = getEmojiTitle("🟦", details.title || "Information");
-
-    return new EmbedBuilder({
-      color: 0x0096ff,
-      ...details,
-      title: embedTitle,
-    });
+    return this.build("info", content);
   }
 
   static media(content: TetraEmbedContent) {
-    const details = this._transform(content);
-    const embedTitle = details.title || "Media";
-
-    const hideTitle = typeof content === "object" ? content.hideTitle : false;
-
-    return new EmbedBuilder({
-      color: 0x40c6ff,
-      ...details,
-      title: hideTitle ? undefined : embedTitle,
-    });
+    return this.build("media", content);
   }
 
   static premium(content: TetraEmbedContent) {
-    const details = this._transform(content);
-    const embedTitle = getEmojiTitle("🟪", details.title || "Tetra Premium");
+    return this.build("premium", content);
+  }
 
+  /** `working()`: the animated emoji instead of the info one. */
+  static working(content: TetraEmbedContent) {
+    const details = this._transform(content);
     return new EmbedBuilder({
-      color: 0x9538ff,
+      color: TETRA_ACCENT_COLOR,
       ...details,
-      title: embedTitle,
+      title: getEmojiTitle(feedbackEmoji("working"), details.title || "Working on it..."),
     });
   }
 }

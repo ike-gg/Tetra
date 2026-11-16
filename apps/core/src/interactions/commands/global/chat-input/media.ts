@@ -3,19 +3,14 @@ import {
   ApplicationIntegrationType,
   AttachmentBuilder,
   type ChatInputCommandInteraction,
+  type ContainerBuilder,
   InteractionContextType,
   type InteractionReplyOptions,
   MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 
-import {
-  MEDIA_MESSAGE_FLAGS,
-  mediaErrorMessage,
-  mediaResultMessage,
-  mediaStatusMessage,
-  mediaWarningMessage,
-} from "@/components/media.component";
+import { MEDIA_MESSAGE_FLAGS, mediaResultMessage } from "@/components/media.component";
 import { EmbeddedError } from "@/constants/errors";
 import { Messages } from "@/constants/messages";
 import { ChatInputCommandHandler } from "@/interactions";
@@ -37,7 +32,11 @@ import {
   mediaQueue,
 } from "@/lib/media/queue";
 import type { PlatformHandlerCallback } from "@/lib/media/types";
+import type { TopLevelComponent } from "@/utils/discord/components-v2";
+import { feedbackPayload } from "@/utils/discord/feedback-payload";
+import type { TetraEmbedContent } from "@/utils/embed-messages/tetra-embed";
 import isValidURL from "@/utils/is-valid-url";
+import { FeedbackManager } from "@/utils/managers/feedback-manager";
 import { removeQueryFromUrl } from "@/utils/remove-query-from-url";
 
 import { BotConsole } from "#/loggers";
@@ -145,14 +144,27 @@ const command = new SlashCommandBuilder()
     option.setName("url").setDescription("Link to social media post:").setRequired(true)
   );
 
-type MediaPayload = ReturnType<typeof mediaStatusMessage> &
-  Pick<InteractionReplyOptions, "files">;
+interface MediaPayload extends Pick<InteractionReplyOptions, "files"> {
+  components: (ContainerBuilder | TopLevelComponent)[];
+  allowedMentions: { parse: never[] };
+}
+
+// Progress and errors use the generic reply style; only the result has the platform colour
+const mediaStatus = (title: string, description?: string) =>
+  feedbackPayload("working", description ? { title, description } : { title });
+const mediaError = (content: TetraEmbedContent) =>
+  feedbackPayload("error", content, { rows: FeedbackManager.errorRows() });
+const mediaWarning = (content: TetraEmbedContent) => feedbackPayload("warning", content);
 
 /** Every /media state goes through here, so the message is v2 from its first reply. */
 class MediaReply {
   constructor(private readonly interaction: ChatInputCommandInteraction) {}
 
-  async send(payload: MediaPayload, { ephemeral = false } = {}) {
+  async send(
+    { components, allowedMentions, files }: MediaPayload,
+    { ephemeral = false } = {}
+  ) {
+    const payload = { components, allowedMentions, files };
     if (this.interaction.replied || this.interaction.deferred) {
       await this.interaction.editReply(payload);
       return;
@@ -170,14 +182,14 @@ class MediaReply {
     const mapped = toMediaError(error);
 
     if (mapped instanceof EmbeddedError) {
-      await this.send(mediaErrorMessage(mapped.embed));
+      await this.send(mediaError(mapped.embed));
       return;
     }
 
     const trackingId = randomUUID();
     BotConsole.error(`[ ${trackingId} ]`, mapped);
     await this.send(
-      mediaErrorMessage({
+      mediaError({
         title: "Unhandled error",
         description: `Something broke on our side. Report it with this ID: \`${trackingId}\``,
       })
@@ -201,8 +213,7 @@ const processMedia = async ({
   signal: AbortSignal;
 }) => {
   const { description, media, metadata } = await platform.handler(itemUrl, {
-    progress: (text) =>
-      reply.send(mediaStatusMessage(platform, `Fetching ${platform.name}...`, text)),
+    progress: (text) => reply.send(mediaStatus(`Fetching ${platform.name}...`, text)),
     fileLimit,
     signal,
   });
@@ -245,7 +256,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     const itemUrl = input.split(" ").find((i) => isValidURL(i));
 
     if (!itemUrl) {
-      await reply.send(mediaErrorMessage(Messages.INVALID_REFERENCE));
+      await reply.send(mediaError(Messages.INVALID_REFERENCE));
       return;
     }
 
@@ -257,7 +268,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     );
 
     if (!platform) {
-      await reply.send(mediaErrorMessage(Messages.METDIA_PLATFORM_NOT_SUPPORED));
+      await reply.send(mediaError(Messages.METDIA_PLATFORM_NOT_SUPPORED));
       return;
     }
 
@@ -266,13 +277,13 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     try {
       claimed = await mediaQueue.claimUser(interaction.user.id, interaction.id);
     } catch {
-      await reply.send(mediaWarningMessage(MEDIA_UNAVAILABLE), { ephemeral: true });
+      await reply.send(mediaWarning(MEDIA_UNAVAILABLE), { ephemeral: true });
       return;
     }
 
     if (!claimed) {
       await reply.send(
-        mediaWarningMessage(
+        mediaWarning(
           "You already have a `/media` request in progress. Wait for it to finish, then try again."
         ),
         { ephemeral: true }
@@ -281,7 +292,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     }
 
     try {
-      await reply.send(mediaStatusMessage(platform, `Fetching ${platform.name}...`));
+      await reply.send(mediaStatus(`Fetching ${platform.name}...`));
 
       let shownPosition: number | undefined;
       let lastEdit = 0;
@@ -298,8 +309,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
             shownPosition = position;
             lastEdit = Date.now();
             await reply.send(
-              mediaStatusMessage(
-                platform,
+              mediaStatus(
                 `In queue: #${position}`,
                 "Someone else's download is running. This updates on its own."
               )
@@ -308,9 +318,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
         },
         async (signal) => {
           if (shownPosition !== undefined) {
-            await reply.send(
-              mediaStatusMessage(platform, `Fetching ${platform.name}...`)
-            );
+            await reply.send(mediaStatus(`Fetching ${platform.name}...`));
           }
 
           await processMedia({

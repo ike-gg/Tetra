@@ -1,7 +1,7 @@
-import { type Interaction, MessageFlags } from "discord.js";
+import type { Interaction } from "discord.js";
 
 import { Messages } from "@/constants/messages";
-import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
+import { feedbackPayload } from "@/utils/discord/feedback-payload";
 
 import type { TetraClient } from "../types";
 import { FeedbackManager } from "../utils/managers/feedback-manager";
@@ -121,9 +121,8 @@ export const interactionHandler = async (
       `No handler for component "${interaction.customId}" (user ${interaction.user.id}).`
     );
 
-    await interaction.reply({
-      embeds: [TetraEmbed.error(Messages.INTERACTION_TIMEOUT)],
-      flags: MessageFlags.Ephemeral,
-    });
+    await interaction.reply(
+      feedbackPayload("error", Messages.INTERACTION_TIMEOUT, { ephemeral: true })
+    );
   }
 };
