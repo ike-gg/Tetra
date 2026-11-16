@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { ChapterCrumb } from "@/components/brand-book";
 import {
   FEEDBACK_EMOTES,
   type FeedbackEmote,
@@ -17,12 +18,10 @@ import {
 } from "@/components/ui/segmented-control";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/cn";
-import { NOINDEX_META } from "@/lib/seo";
+import { seoHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/feedback")({
-  head: () => ({
-    meta: [{ title: "Feedback emotes · tetra" }, NOINDEX_META],
-  }),
+export const Route = createFileRoute("/branding/feedback")({
+  head: () => seoHead("feedback"),
   component: FeedbackPage,
 });
 
@@ -86,6 +85,7 @@ function FeedbackPage() {
       <Navbar />
       <div className="mx-auto flex max-w-5xl flex-col gap-20 px-4 pt-28 pb-24 sm:px-6">
         <section className="flex flex-col gap-6">
+          <ChapterCrumb chapter="feedback" />
           <Eyebrow index="01">feedback emotes</Eyebrow>
           <Heading level={1}>One ASCII emote per kind of reply.</Heading>
           <Text tone="muted" className="max-w-xl">

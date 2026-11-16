@@ -1,6 +1,6 @@
 # Static mark
 
-The static Tetra mark: a wall of random ASCII on black, 28 characters per side, with a centered square of dense glyphs, 14 characters (50%) wide. For places where the intro can't play: favicon, app icons, the bot's avatar, the Discord server icon. Seed 38, the same wall `/static-logo` draws first. See `docs/branding.md` (Logo).
+The static Tetra mark: a wall of random ASCII on black, 28 characters per side, with a centered square of dense glyphs, 14 characters (50%) wide. For places where the intro can't play: favicon, app icons, the bot's avatar, the Discord server icon. Seed 38, the same wall `/branding/static-logo` draws first. See `docs/branding.md` (Logo).
 
 | File | Build | Use |
 | --- | --- | --- |

@@ -390,7 +390,6 @@ export function MediaEditor({
                       crop={effectiveCrop(info, edit)}
                       square={settings.fitting === "cover"}
                       onCropChange={setCrop}
-                      body={body}
                     />
                   </div>
                 )

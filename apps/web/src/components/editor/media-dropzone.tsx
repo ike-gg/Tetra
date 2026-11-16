@@ -13,13 +13,13 @@ import { ACCEPTED_TYPES } from "@/lib/media/media-file";
 export const MAX_FILE_BYTES = 20 * 1024 * 1024;
 
 const rejectionMessage = ([rejection]: FileRejection[]) => {
-  if (!rejection) return "That file didn't work.";
+  if (!rejection) return "that file didn't work";
   if (rejection.reasons.includes("file-type"))
-    return "Only GIF, PNG, JPEG and WebP files.";
+    return "only GIF, PNG, JPEG and WebP files";
   if (rejection.reasons.includes("file-too-large")) {
-    return `That file is over ${formatBytes(MAX_FILE_BYTES)}.`;
+    return `that file is over ${formatBytes(MAX_FILE_BYTES)}`;
   }
-  return "That file didn't work.";
+  return "that file didn't work";
 };
 
 type MediaDropzoneProps = {
@@ -51,15 +51,15 @@ export function MediaDropzone({ onFile, onError, busy }: MediaDropzoneProps) {
         className="group/drop flex h-64 select-none flex-col items-center justify-center gap-4 border border-border border-solid bg-surface/40 p-6 text-center text-muted text-sm data-dragging:border-primary data-drag-reject:border-danger data-dragging:bg-primary/5"
       >
         <p className="font-medium text-base text-foreground">
-          <span className="group-data-dragging/drop:hidden">Drop an image here</span>
+          <span className="group-data-dragging/drop:hidden">drop an image here</span>
           <span className="hidden group-data-dragging/drop:inline">
-            Let go to open it
+            let go to open it
           </span>
         </p>
         <FileInputTrigger
           render={<Button variant="primary" size="lg" glow className="mt-0" />}
         >
-          {busy ? "Opening…" : "Choose a file"}
+          {busy ? "opening" : "choose a file"}
         </FileInputTrigger>
         <p className="font-mono text-muted text-xs">
           GIF, PNG, JPEG or WebP · paste works too · up to {formatBytes(MAX_FILE_BYTES)}

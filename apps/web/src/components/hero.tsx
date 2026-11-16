@@ -97,7 +97,7 @@ export function Hero() {
           >
             <span className="text-brand-500">/</span>
             <span className="text-foreground">addemote</span>{" "}
-            <span className="text-muted">byname:</span>
+            <span className="text-signal">byname:</span>
             <span className="text-foreground">{typed}</span>
             <span
               className={`ml-px inline-block h-4 w-2 translate-y-0.5 bg-brand-500 ${done ? "motion-safe:animate-hero-blink" : ""}`}

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { mulberry32, ASCII_RAMP as RAMP } from "@/lib/ascii";
+
 // Status emotes for the bot's embeds (FeedbackManager in apps/core): one ASCII pictogram per
 // message type, on a transparent background with a shadow of the same glyphs. 13 characters
 // per side, not the static mark's 28: these are read at about 22 px in an embed title, where
@@ -108,17 +110,6 @@ function coverage(shape: Shape, col: number, row: number) {
     }
   }
   return inside / (steps * steps);
-}
-
-function mulberry32(seed: number) {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
 }
 
 const pick = (set: string, value: number) => set[Math.floor(value * set.length)];
@@ -239,7 +230,6 @@ const solid =
   (x, y) =>
     d(x - 8, 8 - y) <= 0;
 
-const RAMP = " .:-=+*#%@";
 type Layer = { frame: Frame; values: number[][] };
 
 // The spinner: an arc of the ring, `@` at the head, its tail thinning down the ramp; a

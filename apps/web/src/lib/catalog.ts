@@ -67,6 +67,8 @@ const providerErrorMessage = ({ provider, kind }: ProviderError) => {
       return `Couldn't reach ${provider}. Check your connection and try again.`;
     case "rate-limited":
       return `${provider} got too many searches from you. Wait a minute and try again.`;
+    case "not-found":
+      return `That emote isn't on ${provider} anymore, or the link is wrong.`;
     case "failed":
       return `${provider} didn't answer properly. Try again in a moment.`;
     case "changed":

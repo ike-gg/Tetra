@@ -9,9 +9,6 @@ import {
 
 import type { Crop } from "@/lib/media/edit";
 import type { MediaFile } from "@/lib/media/media-file";
-import type { ElementSize } from "@/lib/use-element-size";
-
-const PADDING = 24;
 
 const HANDLES = ["nw", "n", "ne", "e", "se", "s", "sw", "w"] as const;
 
@@ -21,22 +18,10 @@ type MediaCropperProps = {
   // "cover" fitting: the selection is a square the person moves around
   square: boolean;
   onCropChange: (crop: Crop | null) => void;
-  // Size of the window body; the image is fitted into it
-  body: ElementSize;
 };
 
-export function MediaCropper({
-  source,
-  crop,
-  square,
-  onCropChange,
-  body,
-}: MediaCropperProps) {
+export function MediaCropper({ source, crop, square, onCropChange }: MediaCropperProps) {
   const { width, height } = source.info;
-  const shownWidth = Math.max(
-    64,
-    Math.min(body.width - PADDING * 2, ((body.height - PADDING * 2) * width) / height)
-  );
 
   return (
     <ImageCropper
@@ -55,14 +40,20 @@ export function MediaCropper({
             : { x: next.x, y: next.y, width: next.width, height: next.height }
         )
       }
-      className="m-auto max-w-none shrink-0"
-      style={{ width: shownWidth }}
+      className="size-full max-w-none"
     >
-      {/* Padding leaves room for the handles and the outline when the selection covers the
-          whole image; overflow: hidden would cut them off at the edge */}
-      <ImageCropperViewport className="relative aspect-(--image-cropper-aspect-ratio) w-full overflow-hidden border border-border bg-checker p-3">
-        {/* Emotes are small, so scaled up they stay crisp pixels instead of blurring */}
-        <ImageCropperImage alt={source.name} className="[image-rendering:pixelated]" />
+      {/* The viewport fills the window, so the checker and the dim outside the selection
+          cover all of it, and ui-sdk fits the image inside its padding. The padding leaves
+          room for the handles and the outline when the selection covers the whole image;
+          overflow: hidden would cut them off at the edge. */}
+      <ImageCropperViewport className="relative aspect-auto size-full overflow-hidden bg-checker p-6">
+        {/* Emotes are small, so scaled up they stay crisp pixels instead of blurring. The
+            outline marks the image's real edges against the checker; it sits under the
+            selection (z-10), so a full-size selection draws over it. */}
+        <ImageCropperImage
+          alt={source.name}
+          className="outline outline-neutral-400 [image-rendering:pixelated]"
+        />
         <ImageCropperSelection className="z-10 cursor-move outline outline-primary focus-visible:outline-2 focus-visible:outline-brand-300">
           <ImageCropperGrid />
           {HANDLES.map((position) => (

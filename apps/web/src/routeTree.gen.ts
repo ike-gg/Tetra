@@ -11,13 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as R404RouteImport } from './routes/404'
-import { Route as BrandingRouteImport } from './routes/branding'
-import { Route as FeedbackRouteImport } from './routes/feedback'
-import { Route as LogoRouteImport } from './routes/logo'
+import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as PanelRouteImport } from './routes/panel'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as StaticLogoRouteImport } from './routes/static-logo'
+import { Route as BrandingIndexRouteImport } from './routes/branding.index'
+import { Route as BrandingFeedbackRouteImport } from './routes/branding.feedback'
+import { Route as BrandingGuideRouteImport } from './routes/branding.guide'
+import { Route as BrandingLogoRouteImport } from './routes/branding.logo'
+import { Route as BrandingStaticLogoRouteImport } from './routes/branding.static-logo'
 import { Route as EditorIndexRouteImport } from './routes/editor.index'
 import { Route as EditorKeyRouteImport } from './routes/editor.$key'
 import { Route as PanelIndexRouteImport } from './routes/panel.index'
@@ -39,19 +41,9 @@ const R404Route = R404RouteImport.update({
   path: '/404',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BrandingRoute = BrandingRouteImport.update({
-  id: '/branding',
-  path: '/branding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FeedbackRoute = FeedbackRouteImport.update({
-  id: '/feedback',
-  path: '/feedback',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LogoRoute = LogoRouteImport.update({
-  id: '/logo',
-  path: '/logo',
+const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
+  id: '/llms.txt',
+  path: '/llms.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PanelRoute = PanelRouteImport.update({
@@ -69,9 +61,29 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const StaticLogoRoute = StaticLogoRouteImport.update({
-  id: '/static-logo',
-  path: '/static-logo',
+const BrandingIndexRoute = BrandingIndexRouteImport.update({
+  id: '/branding/',
+  path: '/branding/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandingFeedbackRoute = BrandingFeedbackRouteImport.update({
+  id: '/branding/feedback',
+  path: '/branding/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandingGuideRoute = BrandingGuideRouteImport.update({
+  id: '/branding/guide',
+  path: '/branding/guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandingLogoRoute = BrandingLogoRouteImport.update({
+  id: '/branding/logo',
+  path: '/branding/logo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrandingStaticLogoRoute = BrandingStaticLogoRouteImport.update({
+  id: '/branding/static-logo',
+  path: '/branding/static-logo',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EditorIndexRoute = EditorIndexRouteImport.update({
@@ -132,16 +144,18 @@ const PanelTasksTaskIdRoute = PanelTasksTaskIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/404': typeof R404Route
-  '/branding': typeof BrandingRoute
-  '/feedback': typeof FeedbackRoute
-  '/logo': typeof LogoRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/panel': typeof PanelRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/static-logo': typeof StaticLogoRoute
+  '/branding/feedback': typeof BrandingFeedbackRoute
+  '/branding/guide': typeof BrandingGuideRoute
+  '/branding/logo': typeof BrandingLogoRoute
+  '/branding/static-logo': typeof BrandingStaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
   '/panel/channels': typeof PanelChannelsRoute
+  '/branding/': typeof BrandingIndexRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
   '/panel/editor/$key': typeof PanelEditorKeyRoute
@@ -153,15 +167,17 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/404': typeof R404Route
-  '/branding': typeof BrandingRoute
-  '/feedback': typeof FeedbackRoute
-  '/logo': typeof LogoRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/static-logo': typeof StaticLogoRoute
+  '/branding/feedback': typeof BrandingFeedbackRoute
+  '/branding/guide': typeof BrandingGuideRoute
+  '/branding/logo': typeof BrandingLogoRoute
+  '/branding/static-logo': typeof BrandingStaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
   '/panel/channels': typeof PanelChannelsRoute
+  '/branding': typeof BrandingIndexRoute
   '/editor': typeof EditorIndexRoute
   '/panel': typeof PanelIndexRoute
   '/panel/editor/$key': typeof PanelEditorKeyRoute
@@ -174,16 +190,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/404': typeof R404Route
-  '/branding': typeof BrandingRoute
-  '/feedback': typeof FeedbackRoute
-  '/logo': typeof LogoRoute
+  '/llms.txt': typeof LlmsDottxtRoute
   '/panel': typeof PanelRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/static-logo': typeof StaticLogoRoute
+  '/branding/feedback': typeof BrandingFeedbackRoute
+  '/branding/guide': typeof BrandingGuideRoute
+  '/branding/logo': typeof BrandingLogoRoute
+  '/branding/static-logo': typeof BrandingStaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
   '/panel/channels': typeof PanelChannelsRoute
+  '/branding/': typeof BrandingIndexRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
   '/panel/editor/$key': typeof PanelEditorKeyRoute
@@ -197,16 +215,18 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/404'
-    | '/branding'
-    | '/feedback'
-    | '/logo'
+    | '/llms.txt'
     | '/panel'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/static-logo'
+    | '/branding/feedback'
+    | '/branding/guide'
+    | '/branding/logo'
+    | '/branding/static-logo'
     | '/editor/$key'
     | '/panel/browse'
     | '/panel/channels'
+    | '/branding/'
     | '/editor/'
     | '/panel/'
     | '/panel/editor/$key'
@@ -218,15 +238,17 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/404'
-    | '/branding'
-    | '/feedback'
-    | '/logo'
+    | '/llms.txt'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/static-logo'
+    | '/branding/feedback'
+    | '/branding/guide'
+    | '/branding/logo'
+    | '/branding/static-logo'
     | '/editor/$key'
     | '/panel/browse'
     | '/panel/channels'
+    | '/branding'
     | '/editor'
     | '/panel'
     | '/panel/editor/$key'
@@ -238,16 +260,18 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/404'
-    | '/branding'
-    | '/feedback'
-    | '/logo'
+    | '/llms.txt'
     | '/panel'
     | '/robots.txt'
     | '/sitemap.xml'
-    | '/static-logo'
+    | '/branding/feedback'
+    | '/branding/guide'
+    | '/branding/logo'
+    | '/branding/static-logo'
     | '/editor/$key'
     | '/panel/browse'
     | '/panel/channels'
+    | '/branding/'
     | '/editor/'
     | '/panel/'
     | '/panel/editor/$key'
@@ -260,14 +284,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R404Route: typeof R404Route
-  BrandingRoute: typeof BrandingRoute
-  FeedbackRoute: typeof FeedbackRoute
-  LogoRoute: typeof LogoRoute
+  LlmsDottxtRoute: typeof LlmsDottxtRoute
   PanelRoute: typeof PanelRouteWithChildren
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
-  StaticLogoRoute: typeof StaticLogoRoute
+  BrandingFeedbackRoute: typeof BrandingFeedbackRoute
+  BrandingGuideRoute: typeof BrandingGuideRoute
+  BrandingLogoRoute: typeof BrandingLogoRoute
+  BrandingStaticLogoRoute: typeof BrandingStaticLogoRoute
   EditorKeyRoute: typeof EditorKeyRoute
+  BrandingIndexRoute: typeof BrandingIndexRoute
   EditorIndexRoute: typeof EditorIndexRoute
 }
 
@@ -287,25 +313,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof R404RouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/branding': {
-      id: '/branding'
-      path: '/branding'
-      fullPath: '/branding'
-      preLoaderRoute: typeof BrandingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/feedback': {
-      id: '/feedback'
-      path: '/feedback'
-      fullPath: '/feedback'
-      preLoaderRoute: typeof FeedbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/logo': {
-      id: '/logo'
-      path: '/logo'
-      fullPath: '/logo'
-      preLoaderRoute: typeof LogoRouteImport
+    '/llms.txt': {
+      id: '/llms.txt'
+      path: '/llms.txt'
+      fullPath: '/llms.txt'
+      preLoaderRoute: typeof LlmsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/panel': {
@@ -329,11 +341,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/static-logo': {
-      id: '/static-logo'
-      path: '/static-logo'
-      fullPath: '/static-logo'
-      preLoaderRoute: typeof StaticLogoRouteImport
+    '/branding/': {
+      id: '/branding/'
+      path: '/branding'
+      fullPath: '/branding/'
+      preLoaderRoute: typeof BrandingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/branding/feedback': {
+      id: '/branding/feedback'
+      path: '/branding/feedback'
+      fullPath: '/branding/feedback'
+      preLoaderRoute: typeof BrandingFeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/branding/guide': {
+      id: '/branding/guide'
+      path: '/branding/guide'
+      fullPath: '/branding/guide'
+      preLoaderRoute: typeof BrandingGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/branding/logo': {
+      id: '/branding/logo'
+      path: '/branding/logo'
+      fullPath: '/branding/logo'
+      preLoaderRoute: typeof BrandingLogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/branding/static-logo': {
+      id: '/branding/static-logo'
+      path: '/branding/static-logo'
+      fullPath: '/branding/static-logo'
+      preLoaderRoute: typeof BrandingStaticLogoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/editor/': {
@@ -436,14 +476,16 @@ const PanelRouteWithChildren = PanelRoute._addFileChildren(PanelRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R404Route: R404Route,
-  BrandingRoute: BrandingRoute,
-  FeedbackRoute: FeedbackRoute,
-  LogoRoute: LogoRoute,
+  LlmsDottxtRoute: LlmsDottxtRoute,
   PanelRoute: PanelRouteWithChildren,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-  StaticLogoRoute: StaticLogoRoute,
+  BrandingFeedbackRoute: BrandingFeedbackRoute,
+  BrandingGuideRoute: BrandingGuideRoute,
+  BrandingLogoRoute: BrandingLogoRoute,
+  BrandingStaticLogoRoute: BrandingStaticLogoRoute,
   EditorKeyRoute: EditorKeyRoute,
+  BrandingIndexRoute: BrandingIndexRoute,
   EditorIndexRoute: EditorIndexRoute,
 }
 export const routeTree = rootRouteImport

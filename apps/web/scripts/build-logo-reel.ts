@@ -14,7 +14,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 
 const EMOTE_COUNT = 7;
-// 2x of the largest size the reel is shown at outside the /logo showcase
+// 2x of the largest size the reel is shown at outside the /branding/logo showcase
 const CELL = 128;
 const FETCH_PAGE_SIZE = 100;
 const MAX_FETCH_PAGES = 10;

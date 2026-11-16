@@ -3,9 +3,17 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-const staticPages = ["/", "/branding", "/editor", "/logo", "/static-logo", "/feedback"];
-// Server routes (src/routes/robots[.]txt.ts, sitemap[.]xml.ts), prerendered to plain files
-const staticFiles = ["/robots.txt", "/sitemap.xml"];
+const staticPages = [
+  "/",
+  "/editor",
+  "/branding",
+  "/branding/guide",
+  "/branding/logo",
+  "/branding/static-logo",
+  "/branding/feedback",
+];
+// Server routes (src/routes/robots[.]txt.ts, sitemap[.]xml.ts, llms[.]txt.ts), prerendered to plain files
+const staticFiles = ["/robots.txt", "/sitemap.xml", "/llms.txt"];
 
 export default defineConfig({
   server: {

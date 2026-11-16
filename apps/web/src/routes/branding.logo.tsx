@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 
+import { ChapterCrumb } from "@/components/brand-book";
 import { Footer } from "@/components/footer";
 import { LOGO_EMOTES, LOGO_REEL_URL, Logo } from "@/components/logo";
 import { Navbar } from "@/components/navbar";
@@ -14,7 +15,7 @@ import {
 import { Text } from "@/components/ui/text";
 import { seoHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/logo")({
+export const Route = createFileRoute("/branding/logo")({
   head: () => seoHead("logo"),
   component: LogoPage,
 });
@@ -45,6 +46,7 @@ function LogoPage() {
       <Navbar />
       <div className="mx-auto flex max-w-5xl flex-col gap-16 px-4 pt-28 pb-24 sm:px-6">
         <section className="flex flex-col gap-6">
+          <ChapterCrumb chapter="logo" />
           <Eyebrow index="01">mark</Eyebrow>
           <Heading level={1}>A square. Emotes fall in, the block lands last.</Heading>
           <Text tone="muted" className="max-w-xl">

@@ -55,92 +55,101 @@ export function MediaPreview({
     : "";
 
   return (
-    <div
-      className={cn(
-        "grid size-full gap-px bg-border",
-        body.width >= SIDE_BY_SIDE_MIN_WIDTH ? "grid-cols-2" : "grid-rows-2"
-      )}
-    >
-      <PreviewPane
-        title="Original"
-        meta={`${info.width}×${info.height}${cropMeta} · ${formatBytes(source.bytes)}`}
+    <div className="flex size-full flex-col">
+      <div
+        className={cn(
+          "grid min-h-0 flex-1 gap-px bg-border",
+          body.width >= SIDE_BY_SIDE_MIN_WIDTH ? "grid-cols-2" : "grid-rows-2"
+        )}
       >
-        {(box) => {
-          const factor = scaleFor(info.width, info.height, scale, box);
-          return (
-            <div
-              className="relative m-auto shrink-0 overflow-hidden"
-              style={{ width: info.width * factor, height: info.height * factor }}
-            >
-              <img
-                src={source.url}
-                alt={`${name}, original`}
-                draggable={false}
-                className={cn(
-                  "size-full max-w-none",
-                  factor > 1 && "[image-rendering:pixelated]"
-                )}
-              />
-              {crop && (
-                <div
-                  aria-hidden="true"
-                  // The wide spread dims everything outside the crop; the parent clips it, so the
-                  // outline sits inside the edge to stay visible for a full-size crop
-                  className="absolute z-10 outline outline-primary -outline-offset-1 shadow-[0_0_0_100vmax_color-mix(in_oklch,var(--color-background)_70%,transparent)]"
-                  style={{
-                    left: crop.x * factor,
-                    top: crop.y * factor,
-                    width: crop.width * factor,
-                    height: crop.height * factor,
-                  }}
-                />
-              )}
-            </div>
-          );
-        }}
-      </PreviewPane>
-      <PreviewPane
-        title={pending ? "Result · updating" : "Result"}
-        meta={
-          result
-            ? [
-                `${result.info.width}×${result.info.height}`,
-                result.info.frames > 1 ? `${result.info.frames} fr` : result.formatLabel,
-                formatBytes(result.bytes),
-              ].join(" · ")
-            : "…"
-        }
-        footer={discord && result && <ChatPreview url={result.url} name={name} />}
-      >
-        {(box) => {
-          if (error) {
+        <PreviewPane
+          title="Original"
+          meta={`${info.width}×${info.height}${cropMeta} · ${formatBytes(source.bytes)}`}
+        >
+          {(box) => {
+            const factor = scaleFor(info.width, info.height, scale, box);
             return (
-              <p className="m-auto max-w-56 text-center text-danger text-sm">{error}</p>
+              <div
+                className="relative m-auto shrink-0 overflow-hidden"
+                style={{ width: info.width * factor, height: info.height * factor }}
+              >
+                <img
+                  src={source.url}
+                  alt={`${name}, original`}
+                  draggable={false}
+                  className={cn(
+                    "size-full max-w-none",
+                    factor > 1 && "[image-rendering:pixelated]"
+                  )}
+                />
+                {crop && (
+                  <div
+                    aria-hidden="true"
+                    // The wide spread dims everything outside the crop; the parent clips it, so the
+                    // outline sits inside the edge to stay visible for a full-size crop
+                    className="absolute z-10 outline outline-primary -outline-offset-1 shadow-[0_0_0_100vmax_color-mix(in_oklch,var(--color-background)_70%,transparent)]"
+                    style={{
+                      left: crop.x * factor,
+                      top: crop.y * factor,
+                      width: crop.width * factor,
+                      height: crop.height * factor,
+                    }}
+                  />
+                )}
+              </div>
             );
+          }}
+        </PreviewPane>
+        <PreviewPane
+          title={pending ? "Result · updating" : "Result"}
+          meta={
+            result
+              ? [
+                  `${result.info.width}×${result.info.height}`,
+                  result.info.frames > 1
+                    ? `${result.info.frames} fr`
+                    : result.formatLabel,
+                  formatBytes(result.bytes),
+                ].join(" · ")
+              : "…"
           }
-          if (!result) return null;
-          const factor = scaleFor(result.info.width, result.info.height, scale, box);
-          return (
-            <img
-              src={result.url}
-              alt={`${name}, result`}
-              draggable={false}
-              // Dimmed, not hidden, while a newer version renders: nothing jumps, and the
-              // old result stays a reference. max-w-none: preflight's max-width: 100%
-              // would squash it.
-              className={cn(
-                "m-auto max-w-none shrink-0",
-                factor > 1 && "[image-rendering:pixelated]",
-                pending && "opacity-60"
-              )}
-              style={{
-                width: result.info.width * factor,
-                height: result.info.height * factor,
-              }}
-            />
-          );
-        }}
-      </PreviewPane>
+        >
+          {(box) => {
+            if (error) {
+              return (
+                <p className="m-auto max-w-56 text-center text-danger text-sm">{error}</p>
+              );
+            }
+            if (!result) return null;
+            const factor = scaleFor(result.info.width, result.info.height, scale, box);
+            return (
+              <img
+                src={result.url}
+                alt={`${name}, result`}
+                draggable={false}
+                // Dimmed, not hidden, while a newer version renders: nothing jumps, and the
+                // old result stays a reference. max-w-none: preflight's max-width: 100%
+                // would squash it.
+                className={cn(
+                  "m-auto max-w-none shrink-0",
+                  factor > 1 && "[image-rendering:pixelated]",
+                  pending && "opacity-60"
+                )}
+                style={{
+                  width: result.info.width * factor,
+                  height: result.info.height * factor,
+                }}
+              />
+            );
+          }}
+        </PreviewPane>
+      </div>
+      {/* Spans the whole window, so the two panes above stay the same size */}
+      {discord && result && (
+        <div className="flex min-h-11 shrink-0 items-center border-border border-t bg-background px-3">
+          <ChatPreview url={result.url} name={name} />
+        </div>
+      )}
     </div>
   );
 }
@@ -148,12 +157,10 @@ export function MediaPreview({
 function PreviewPane({
   title,
   meta,
-  footer,
   children,
 }: {
   title: string;
   meta: string;
-  footer?: ReactNode;
   children: (box: ElementSize) => ReactNode;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -169,11 +176,6 @@ function PreviewPane({
       <div ref={boxRef} className="flex min-h-0 flex-1 overflow-auto bg-checker">
         {box && children(box)}
       </div>
-      {footer && (
-        <div className="flex min-h-11 shrink-0 items-center border-border border-t px-3">
-          {footer}
-        </div>
-      )}
     </figure>
   );
 }

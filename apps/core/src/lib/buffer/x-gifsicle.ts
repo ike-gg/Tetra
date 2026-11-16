@@ -3,6 +3,7 @@ import isGif from "is-gif";
 import prettyBytes from "pretty-bytes";
 import sharp from "sharp";
 
+import { hasLocalPalettePatches } from "./gif-local-palettes";
 import { execBunBuffer, execBunBufferSymbol } from "./x-gifsicle-support";
 
 export type Arguments = (string | number | symbol)[];
@@ -18,7 +19,10 @@ export type CroppingPoints = {
 };
 
 interface ProcessOptions {
+  /** default true */
   saveToBuffer?: boolean;
+  /** `-U` on an input gifsicle can actually unoptimize, see `unoptimizableInput` */
+  unoptimize?: boolean;
 }
 
 /** Browsers and Discord play frames with delay < 20ms at 100ms. */
@@ -27,7 +31,7 @@ export const normalizeFrameDelay = (delayMs: number) => (delayMs < 20 ? 100 : de
 /**
  * Keeps every `dropFactor`-th frame. Each kept frame gets the SUM of the delays
  * it replaces, so total duration and uneven timing are preserved.
- * Requires `-U` before the input.
+ * Requires an unoptimized input (`unoptimize: true` in `process`).
  */
 export const buildFrameDropArgs = (delaysMs: number[], dropFactor: number): Arguments => {
   const frames = delaysMs.length;
@@ -49,6 +53,7 @@ export const buildFrameDropArgs = (delaysMs: number[], dropFactor: number): Argu
 
 export class xGifsicle {
   public fileBuffer: Buffer;
+  private remapped?: { source: Buffer; buffer: Buffer };
 
   get size() {
     return this.fileBuffer.byteLength;
@@ -160,7 +165,7 @@ export class xGifsicle {
 
     const args: Arguments = ["--delete", cutString, "--done"];
 
-    await this.process(args, ["-U"]);
+    await this.process(args, [], { unoptimize: true });
     return this;
   }
 
@@ -168,7 +173,7 @@ export class xGifsicle {
     if (dropFactor <= 1) return this;
 
     const { delays } = await this.metadata();
-    await this.process(buildFrameDropArgs(delays, dropFactor), ["-U"]);
+    await this.process(buildFrameDropArgs(delays, dropFactor), [], { unoptimize: true });
     return this;
   }
 
@@ -200,16 +205,47 @@ export class xGifsicle {
     };
   }
 
+  /**
+   * gifsicle can't unoptimize frames that each carry their own palette plus
+   * transparency, and dropping or trimming frames of such a GIF leaves ghost pixels
+   * from earlier frames. Remapping to one shared palette first makes `-U` work. Only
+   * done for those files, since it costs some color accuracy. Cached per buffer.
+   */
+  protected async unoptimizableInput(): Promise<Buffer> {
+    const source = this.fileBuffer;
+    if (this.remapped?.source === source) return this.remapped.buffer;
+    if (!hasLocalPalettePatches(source)) return source;
+
+    const buffer = await execBunBuffer({
+      input: source,
+      bin: gifsiclebin,
+      args: [
+        "--no-warnings",
+        execBunBufferSymbol.input,
+        "--colors",
+        256,
+        "--color-method",
+        "blend-diversity",
+        "-o",
+        execBunBufferSymbol.output,
+      ],
+    });
+
+    this.remapped = { source, buffer };
+    return buffer;
+  }
+
   protected async process(
     _args: Arguments,
     _argsBeforeInput: Arguments = [],
-    options: ProcessOptions = {
-      saveToBuffer: true,
-    }
+    options: ProcessOptions = {}
   ): Promise<Buffer> {
+    const { saveToBuffer = true, unoptimize = false } = options;
+
     const args: Arguments = [
       "--no-warnings",
       ..._argsBeforeInput,
+      ...(unoptimize ? ["-U"] : []),
       execBunBufferSymbol.input,
       ..._args,
       "-O3",
@@ -218,12 +254,12 @@ export class xGifsicle {
     ];
 
     const newBuffer = await execBunBuffer({
-      input: this.fileBuffer,
+      input: unoptimize ? await this.unoptimizableInput() : this.fileBuffer,
       bin: gifsiclebin,
       args,
     });
 
-    if (options.saveToBuffer) {
+    if (saveToBuffer) {
       this.fileBuffer = newBuffer;
     }
 

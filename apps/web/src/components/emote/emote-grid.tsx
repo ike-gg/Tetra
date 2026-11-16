@@ -1,5 +1,9 @@
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import {
+  defaultRangeExtractor,
+  type Range,
+  useWindowVirtualizer,
+} from "@tanstack/react-virtual";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { Emote } from "@/components/emote/emote";
 import { useEmoteMenu } from "@/components/emote/emote-menu";
@@ -45,6 +49,22 @@ export function EmoteGrid({ emotes, label, pendingKeys, onEndReached }: EmoteGri
   const rowHeight = tile + NAME_HEIGHT;
   const rows = Math.ceil(emotes.length / columns);
   const activeIndex = Math.min(active, Math.max(emotes.length - 1, 0));
+  const activeRow = Math.floor(activeIndex / columns);
+  // Last row of the regular range (viewport + overscan), without the pinned active row
+  const rangeEnd = useRef(-1);
+
+  // The active row always stays rendered. Otherwise a clicked (focused) tile unmounts when
+  // scrolled out, its focus falls back to the first rendered tile, and focusing that one
+  // scrolls the page back up: scrolling down looped.
+  const rangeExtractor = useCallback(
+    (range: Range) => {
+      const indexes = defaultRangeExtractor(range);
+      rangeEnd.current = indexes.at(-1) ?? -1;
+      if (activeRow >= range.count || indexes.includes(activeRow)) return indexes;
+      return [...indexes, activeRow].sort((a, b) => a - b);
+    },
+    [activeRow]
+  );
 
   useLayoutEffect(() => {
     const list = listRef.current;
@@ -63,6 +83,7 @@ export function EmoteGrid({ emotes, label, pendingKeys, onEndReached }: EmoteGri
     estimateSize: () => rowHeight + GAP,
     overscan: 3,
     scrollMargin,
+    rangeExtractor,
     // Keyboard moves keep the row above the selection bar
     scrollPaddingEnd: selectedKeys.size > 0 ? SELECTION_BAR_HEIGHT : 0,
   });
@@ -97,7 +118,7 @@ export function EmoteGrid({ emotes, label, pendingKeys, onEndReached }: EmoteGri
   });
 
   const virtualRows = virtualizer.getVirtualItems();
-  const lastRow = virtualRows.at(-1)?.index ?? -1;
+  const lastRow = rangeEnd.current;
 
   // The rendered rows run 3 past the viewport (overscan), so this fires about 6 rows
   // before the end; it fires again after a page lands if the end is still that close
@@ -105,13 +126,8 @@ export function EmoteGrid({ emotes, label, pendingKeys, onEndReached }: EmoteGri
     if (onEndReached && rows > 0 && lastRow >= rows - 4) onEndReached();
   }, [onEndReached, lastRow, rows]);
 
-  const firstRendered = (virtualRows[0]?.index ?? 0) * columns;
-  const lastRendered = ((virtualRows.at(-1)?.index ?? 0) + 1) * columns - 1;
-  // The active emote may be scrolled out and unmounted; the list keeps a tab stop anyway
-  const tabStop =
-    activeIndex >= firstRendered && activeIndex <= lastRendered
-      ? activeIndex
-      : firstRendered;
+  // The active row is always rendered, so it always holds the tab stop
+  const tabStop = activeIndex;
 
   const moveTo = (index: number) => {
     const next = Math.max(0, Math.min(emotes.length - 1, index));

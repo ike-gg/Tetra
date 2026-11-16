@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/cn";
 import { guildsQueryOptions, sortByName } from "@/lib/guilds";
-import { INVITE_URL } from "@/lib/links";
+import { INVITE_URL, inviteUrlFor } from "@/lib/links";
 import { tasksQueryOptions } from "@/lib/tasks";
+
+// Servers without tetra shown in the sidebar; the rest stay behind "Add server"
+const ADDABLE_LIMIT = 5;
 
 // Native list rows: instant hover/press, an orange edge on the current page
 const ITEM =
@@ -40,6 +43,10 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
   const pendingTasks = tasks.data?.length ?? 0;
   // The nav renders twice on narrow screens (hidden sidebar + drawer)
   const serversHeadingId = useId();
+  const addableHeadingId = useId();
+  const addable = guilds.data
+    ? sortByName(guilds.data.guildsWithoutBotAvailableToAdd)
+    : [];
 
   return (
     <nav aria-label="Panel" className="flex flex-col gap-6 p-3">
@@ -127,14 +134,65 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
                 </NavLink>
               </li>
             ))}
-          <li>
-            <a href={INVITE_URL} target="_blank" rel="noreferrer" className={ITEM}>
-              <Glyph>+</Glyph>
-              Add server
-            </a>
-          </li>
+          {addable.length === 0 && (
+            <li>
+              <a href={INVITE_URL} target="_blank" rel="noreferrer" className={ITEM}>
+                <Glyph>+</Glyph>
+                Add server
+              </a>
+            </li>
+          )}
         </ul>
       </section>
+
+      {/* Servers the user can add tetra to, each opening Discord's invite with that server
+          picked. Refetching the servers on window focus moves one up once it's added. */}
+      {addable.length > 0 && (
+        <section aria-labelledby={addableHeadingId} className="flex flex-col gap-2">
+          <h2
+            id={addableHeadingId}
+            className="select-none px-2 font-mono font-normal text-muted text-xs uppercase tracking-widest"
+          >
+            Add tetra
+          </h2>
+          <ul className="flex flex-col gap-px">
+            {addable.slice(0, ADDABLE_LIMIT).map((guild) => (
+              <li key={guild.id}>
+                <a
+                  href={inviteUrlFor(guild.id)}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={cn(ITEM, "group/add")}
+                >
+                  <GuildIcon
+                    guild={guild}
+                    size="sm"
+                    className="opacity-50 grayscale group-hover/add:opacity-100 group-hover/add:grayscale-0"
+                  />
+                  <span className="truncate">
+                    <span className="sr-only">add tetra to </span>
+                    {guild.name}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="ml-auto font-mono text-muted group-hover/add:text-primary"
+                  >
+                    +
+                  </span>
+                </a>
+              </li>
+            ))}
+            <li>
+              <a href={INVITE_URL} target="_blank" rel="noreferrer" className={ITEM}>
+                <Glyph>+</Glyph>
+                {addable.length > ADDABLE_LIMIT
+                  ? `${addable.length - ADDABLE_LIMIT} more`
+                  : "Other server"}
+              </a>
+            </li>
+          </ul>
+        </section>
+      )}
     </nav>
   );
 }

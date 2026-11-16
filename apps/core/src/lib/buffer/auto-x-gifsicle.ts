@@ -72,17 +72,14 @@ export class AutoXGifsicle extends xGifsicle {
 
   private async renderPreset(preset: Preset, delays: number[]) {
     const args: Arguments = [];
-    const argsBeforeInput: Arguments = [];
+    const unoptimize = !!preset.drop && preset.drop > 1;
 
-    if (preset.drop && preset.drop > 1) {
-      argsBeforeInput.push("-U");
-      args.push(...buildFrameDropArgs(delays, preset.drop));
-    }
+    if (unoptimize) args.push(...buildFrameDropArgs(delays, preset.drop!));
     if (preset.scale) args.push("--scale", preset.scale);
     if (preset.colors) args.push("--colors", preset.colors);
     args.push(`--lossy=${preset.lossy}`);
 
-    return this.process(args, argsBeforeInput, { saveToBuffer: false });
+    return this.process(args, [], { saveToBuffer: false, unoptimize });
   }
 
   async optimize() {

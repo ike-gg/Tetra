@@ -1,6 +1,6 @@
 # Feedback emotes
 
-Custom emotes for the bot's embed titles, one per reply type of `FeedbackManager` (`apps/core`). Designed and previewed at `/feedback` (`apps/web/src/components/feedback-emotes.tsx`); these files are exported from the same frames, 128×128, on a transparent background. Files are kebab-case like the rest of the repo; Discord emote names only take letters, digits and underscores, so upload them under the emote names below.
+Custom emotes for the bot's embed titles, one per reply type of `FeedbackManager` (`apps/core`). Designed and previewed at `/branding/feedback` (`apps/web/src/components/feedback-emotes.tsx`); these files are exported from the same frames, 128×128, on a transparent background. Files are kebab-case like the rest of the repo; Discord emote names only take letters, digits and underscores, so upload them under the emote names below.
 
 | File | Emote name | Reply type | Glyph color |
 | --- | --- | --- | --- |

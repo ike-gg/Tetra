@@ -15,14 +15,6 @@ import {
 // All sizes in CSS pixels
 const EMOTE_SIZE = 220;
 const REVEAL_RADIUS = 510;
-// Cursor movement leaves a trail where the ASCII filter scrambles and melts into the
-// emote image underneath, then settles back
-const TRAIL_POINTS = 48;
-const TRAIL_RADIUS = 55;
-const TRAIL_SPACING = 14;
-// Cursor speed (px per 60 Hz frame) that disturbs the field fully
-const TRAIL_FULL_SPEED = 24;
-const TRAIL_DECAY = 0.9;
 // Holding the mouse button on bare background presses a shallow dent into the plane: a
 // hollow in the surface itself (so it follows the perspective), shown by content shifting
 // a little along the tilt and by its walls catching the light by their slope. It follows
@@ -98,10 +90,6 @@ uniform float uIdleSaturation;
 uniform float uIntro;
 uniform float uDim;
 uniform vec2 uMouse;
-uniform vec3 uTrail[${TRAIL_POINTS}];
-uniform int uTrailCount;
-uniform float uTrailRadius;
-uniform float uAtlasCell;
 uniform vec2 uDentCenter;
 uniform float uDent;
 uniform float uDentRadius;
@@ -149,17 +137,9 @@ void main() {
   vec2 plane = toPlane(screen);
   vec2 world = plane - vec2(0.0, uScroll);
 
-  // Cursor effects are measured on the plane, so they follow its perspective
+  // The color reveal is measured on the plane, so it follows its perspective
   vec2 mouse = vec2(uMouse.x, clamp(uMouse.y, 0.0, uResolution.y));
   float mouseDistance = length(plane - toPlane(mouse));
-
-  float disturb = 0.0;
-  for (int i = 0; i < ${TRAIL_POINTS}; i++) {
-    if (i >= uTrailCount) break;
-    vec3 point = uTrail[i];
-    float d = length(plane - point.xy) / uTrailRadius;
-    disturb = max(disturb, point.z * exp(-d * d));
-  }
 
   // Press dent: a Gaussian hollow in the plane. Its depth shifts content along the tilt,
   // its slope (the gradient, in units of the radius) lights the walls.
@@ -181,10 +161,6 @@ void main() {
   float density = mix(0.15, 1.0, luma) * smoothstep(0.2, 0.6, emote.a);
 
   float glyphIndex = min(floor(density * GLYPH_COUNT), GLYPH_COUNT - 1.0);
-  float tick = floor(uTime * 24.0);
-  if (hash(cell + tick) < disturb * 0.8) {
-    glyphIndex = floor(hash(cell * 1.7 + tick) * GLYPH_COUNT);
-  }
   vec2 glyphLocal = vec2(fract(charCoord.x), 1.0 - fract(charCoord.y));
   vec2 glyphUv = vec2((glyphIndex + glyphLocal.x) / GLYPH_COUNT, glyphLocal.y);
   vec2 glyphGradient = vec2(1.0 / GLYPH_COUNT, 1.0);
@@ -214,16 +190,7 @@ void main() {
   color = mix(color, WAVE_COLOR * mix(0.8, 1.4, luma), flash);
 
   vec3 ascii = color * glyph;
-
-  // Where the trail is strong the filter melts into the slightly blurred emote image
-  float depth = 1.0 / (1.0 - screen.y / (uResolution.y * uHorizon));
-  float pixelLod = log2(max(uAtlasCell / uEmoteSize * depth, 0.0001)) + 0.8;
-  vec4 image = sampleEmote(world, pixelLod);
-  vec3 melted = image.rgb - background * image.a;
-  float melt = smoothstep(0.2, 0.95, disturb) * 0.85;
-
-  vec3 layer = mix(ascii, melted, melt);
-  outColor = vec4(background + layer * dentLight * fade * shown * uDim, 1.0);
+  outColor = vec4(background + ascii * dentLight * fade * shown * uDim, 1.0);
 }
 `;
 
@@ -240,8 +207,6 @@ export function EmoteBackground() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const mouse = { x: -1e4, y: -1e4 };
-    const trail: { x: number; y: number; strength: number }[] = [];
-    const lastPointer = { x: 0, y: 0, time: 0, tracking: false };
     let reveal = 0;
     let revealTarget = 0;
 
@@ -269,7 +234,6 @@ export function EmoteBackground() {
     const onPointerLeave = () => {
       revealTarget = 0;
       press.held = false;
-      lastPointer.tracking = false;
     };
 
     const start = async () => {
@@ -295,11 +259,6 @@ export function EmoteBackground() {
       const uScroll = uniform("uScroll");
       const uDim = uniform("uDim");
       const uMouse = uniform("uMouse");
-      const uTrail = uniform("uTrail");
-      const uTrailCount = uniform("uTrailCount");
-      const uTrailRadius = uniform("uTrailRadius");
-      gl.uniform1f(uniform("uAtlasCell"), layout.cell);
-      const trailData = new Float32Array(TRAIL_POINTS * 3);
       const uReveal = uniform("uReveal");
       const uRevealRadius = uniform("uRevealRadius");
 
@@ -316,54 +275,6 @@ export function EmoteBackground() {
       gl.uniform1f(uniform("uFrames"), layout.frames);
       gl.uniform1fv(uniform("uDurations"), layout.durations.slice(0, MAX_EMOTES));
       const uTime = uniform("uTime");
-
-      // Speeds and decay are per 60 Hz frame, so the trail feels the same on fast displays
-      const updateTrail = (time: number) => {
-        const frames = Math.max((time - lastPointer.time) / (1000 / 60), 0.25);
-        const decay = TRAIL_DECAY ** frames;
-
-        for (const point of trail) point.strength *= decay;
-        while (trail.length > 0 && trail[0].strength < 0.02) trail.shift();
-
-        const pointerActive = !reducedMotion && mouse.x > -1e3;
-        if (pointerActive && lastPointer.tracking) {
-          const dx = mouse.x - lastPointer.x;
-          const dy = mouse.y - lastPointer.y;
-          const distance = Math.hypot(dx, dy);
-          const strength = Math.min(distance / frames / TRAIL_FULL_SPEED, 1);
-          const steps = Math.min(Math.ceil(distance / TRAIL_SPACING), TRAIL_POINTS);
-
-          for (let step = 1; step <= steps && distance > 1; step++) {
-            trail.push({
-              x: lastPointer.x + (dx * step) / steps,
-              y: lastPointer.y + (dy * step) / steps,
-              strength,
-            });
-          }
-          if (trail.length > TRAIL_POINTS) trail.splice(0, trail.length - TRAIL_POINTS);
-        }
-
-        lastPointer.x = mouse.x;
-        lastPointer.y = mouse.y;
-        lastPointer.time = time;
-        lastPointer.tracking = pointerActive;
-      };
-
-      const uploadTrail = (width: number, height: number, dpr: number) => {
-        const horizon = height * HORIZON;
-
-        trail.forEach((point, i) => {
-          const y = Math.min(height - point.y * dpr, height);
-          const depth = horizon / (horizon - y);
-          trailData[i * 3] = (point.x * dpr - width / 2) * depth;
-          trailData[i * 3 + 1] = horizon * (depth - 1);
-          trailData[i * 3 + 2] = point.strength;
-        });
-
-        gl.uniform3fv(uTrail, trailData);
-        gl.uniform1i(uTrailCount, trail.length);
-        gl.uniform1f(uTrailRadius, TRAIL_RADIUS * dpr);
-      };
 
       const uDentCenter = uniform("uDentCenter");
       const uDent = uniform("uDent");
@@ -425,7 +336,6 @@ export function EmoteBackground() {
         }
 
         reveal += (revealTarget - reveal) * 0.08;
-        updateTrail(time);
         updateDent(time);
 
         const pageScroll = window.scrollY;
@@ -446,7 +356,6 @@ export function EmoteBackground() {
         gl.uniform1f(uScroll, scroll * dpr);
         gl.uniform1f(uDim, (1 - (1 - SCROLLED_DIM) * scrolled) * endFade);
         gl.uniform2f(uMouse, mouse.x * dpr, height - mouse.y * dpr);
-        uploadTrail(width, height, dpr);
         uploadDent(width, height, dpr);
         gl.uniform1f(uReveal, reveal);
         gl.uniform1f(uIntro, 1 - (1 - intro) ** 3);

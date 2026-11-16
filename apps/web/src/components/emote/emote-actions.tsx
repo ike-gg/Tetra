@@ -190,7 +190,7 @@ export function useEmoteActions(
       label: "Edit in editor",
       placement: "bar",
       section: "file",
-      run: () => editInQuickEditor(emote),
+      run: () => void editInQuickEditor(emote),
     });
   }
 

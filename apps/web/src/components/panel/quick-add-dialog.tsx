@@ -1,3 +1,4 @@
+import { useMatchRoute } from "@tanstack/react-router";
 import {
   Dialog,
   DialogBackdrop,
@@ -21,7 +22,7 @@ import { looksLikeEmoteLink } from "@/lib/catalog";
 
 export type QuickAddRequest = {
   text?: string;
-  /** Preselects this server instead of the last used one. */
+  /** Preselects this server; without it the user picks one. */
   guildId?: string;
 };
 
@@ -38,13 +39,18 @@ const isEditable = (target: EventTarget | null) =>
 
 /**
  * The Quick add dialog for the whole panel. A link pasted while no field has focus opens
- * it prefilled; plain text never does.
+ * it prefilled; plain text never does. On the editor's routes a paste belongs to the
+ * editor (its start screen opens links itself), so it never opens there.
  */
 export function QuickAddProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [request, setRequest] = useState<QuickAddRequest & { id: number }>({ id: 0 });
   const openRef = useRef(open);
   openRef.current = open;
+  const matchRoute = useMatchRoute();
+  const inEditor = Boolean(matchRoute({ to: "/panel/editor", fuzzy: true }));
+  const inEditorRef = useRef(inEditor);
+  inEditorRef.current = inEditor;
 
   const openQuickAdd = useCallback((next: QuickAddRequest) => {
     setRequest((current) => ({ ...next, id: current.id + 1 }));
@@ -53,7 +59,8 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const onPaste = (event: ClipboardEvent) => {
-      if (openRef.current || isEditable(event.target)) return;
+      if (openRef.current || inEditorRef.current || event.defaultPrevented) return;
+      if (isEditable(event.target)) return;
       // Images and files belong to whatever handles them (the editor), not here
       if (event.clipboardData?.files.length) return;
       const text = event.clipboardData?.getData("text/plain").trim() ?? "";
@@ -77,10 +84,10 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
         >
           <div className="flex items-center justify-between gap-4">
             <DialogTitle className="font-semibold text-base tracking-tight">
-              Quick add
+              quick add
             </DialogTitle>
             <DialogClose className={buttonClassName({ variant: "ghost", size: "sm" })}>
-              Close
+              close
             </DialogClose>
           </div>
           <QuickAdd
@@ -90,6 +97,7 @@ export function QuickAddProvider({ children }: { children: ReactNode }) {
             defaultGuildId={request.guildId}
             onAdded={() => setOpen(false)}
             onSearch={() => setOpen(false)}
+            onOpenedInEditor={() => setOpen(false)}
           />
         </DialogContent>
       </Dialog>

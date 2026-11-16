@@ -13,6 +13,13 @@
       "skillPath": "skills/animate/SKILL.md",
       "computedHash": "c622e29fa956aea703dc4e2b8726d9a017d438beb284a60bc3fdb2540c602102"
     },
+    "antislop-ui": {
+      "source": "miqdadbadjuber/anti-slop",
+      "commit": "35b54dc660aa7d11428ee62c5788ad36bc18ac3c",
+      "sourceType": "github",
+      "skillPath": "skills/antislop-ui/SKILL.md",
+      "computedHash": "09c3efcee47866061a1609e298068941eb1d35e73eea95ae67ea2453be3951a9"
+    },
     "apple-design": {
       "source": "emilkowalski/skills",
       "sourceType": "github",

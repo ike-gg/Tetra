@@ -9,6 +9,8 @@ export type MediaInfo = {
   delays: number[];
   // Seconds; 0 for still images
   duration: number;
+  // GIFs only, see `GifInfo`
+  localPalettes?: boolean;
 };
 
 export type MediaKind = "gif" | "image";

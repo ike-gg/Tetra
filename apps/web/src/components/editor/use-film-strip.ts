@@ -18,7 +18,7 @@ export function useFilmStrip(source: MediaFile) {
 
     runGifsicle(
       source.buffer,
-      [filmStripCommand(source.info, FILM_STRIP_FRAMES, FILM_STRIP_TILE)],
+      filmStripCommand(source.info, FILM_STRIP_FRAMES, FILM_STRIP_TILE),
       controller.signal
     )
       .then((outputs) => {

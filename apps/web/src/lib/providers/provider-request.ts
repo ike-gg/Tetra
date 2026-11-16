@@ -9,7 +9,12 @@ export const MAX_PAGE = 100;
 /** Pages are 1-based; past the last one `nextPage` is null. */
 export type SearchPage = { items: CatalogEmote[]; nextPage: number | null };
 
-export type ProviderErrorKind = "unreachable" | "rate-limited" | "failed" | "changed";
+export type ProviderErrorKind =
+  | "unreachable"
+  | "rate-limited"
+  | "not-found"
+  | "failed"
+  | "changed";
 
 /** A provider queried straight from the browser failed; `kind` decides the message. */
 export class ProviderError extends Error {
@@ -41,6 +46,7 @@ export const requestProviderJson = async <T extends z.ZodTypeAny>(
   }
 
   if (response.status === 429) throw new ProviderError(provider, "rate-limited");
+  if (response.status === 404) throw new ProviderError(provider, "not-found");
   if (!response.ok) throw new ProviderError(provider, "failed");
 
   let body: unknown;

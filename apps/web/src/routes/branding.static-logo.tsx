@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 
+import { ChapterCrumb } from "@/components/brand-book";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import {
@@ -16,12 +17,10 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { cn } from "@/lib/cn";
-import { NOINDEX_META } from "@/lib/seo";
+import { seoHead } from "@/lib/seo";
 
-export const Route = createFileRoute("/static-logo")({
-  head: () => ({
-    meta: [{ title: "Mark · tetra" }, NOINDEX_META],
-  }),
+export const Route = createFileRoute("/branding/static-logo")({
+  head: () => seoHead("static-logo"),
   component: StaticLogoPage,
 });
 
@@ -50,6 +49,7 @@ function StaticLogoPage() {
       <Navbar />
       <div className="mx-auto flex max-w-5xl flex-col gap-20 px-4 pt-28 pb-24 sm:px-6">
         <section className="flex flex-col gap-6">
+          <ChapterCrumb chapter="static-logo" />
           <Eyebrow index="01">static mark</Eyebrow>
           <Heading level={1}>A wall of ASCII, with a dense square.</Heading>
           <Text tone="muted" className="max-w-xl">

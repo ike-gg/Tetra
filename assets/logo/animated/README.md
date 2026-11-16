@@ -4,7 +4,7 @@ Both are 512×512 looping GIFs that start and end on the static mark (`../static
 
 ## Server icon
 
-`tetra-server-512.gif`, about 3.6 s per loop. The `/logo` drop, played on the static mark's ASCII grid (28 characters per side, see `../static/`):
+`tetra-server-512.gif`, about 3.6 s per loop. The `/branding/logo` drop, played on the static mark's ASCII grid (28 characters per side, see `../static/`):
 
 1. Rest (1.5 s): the static mark, a 50% square of dense glyphs on the wall. The first and last frames are this frame, so the icon Discord shows when it isn't playing is the static mark.
 2. Drop (1.33 s): the seven reel emotes fall in full size, one cell per emote (130 ms each, ease-out `cubic-bezier(0.23, 1, 0.32, 1)`), the same keyframes as `apps/web/src/components/logo.tsx`. The strip scrolls a whole row at a time, so everything stays on the grid.

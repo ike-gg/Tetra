@@ -8,9 +8,24 @@
 	root * /srv
 	encode zstd gzip
 
-	# The bot's Discord invite; INVITE_LINK is the same env var core uses
-	redir /invite {$INVITE_LINK} 302
-	redir /invite/ {$INVITE_LINK} 302
+	# The bot's Discord invite; INVITE_LINK is the same env var core uses (a Discord
+	# authorize URL, so it already has a query). ?guild=<id> (the panel's sidebar) picks
+	# that server in Discord's dialog. Only digits pass, so the param can't smuggle other
+	# authorize params (permissions, scope) into the link.
+	@invite path /invite /invite/
+	@inviteGuild expression `{query.guild}.matches("^[0-9]+$")`
+	route @invite {
+		redir @inviteGuild {$INVITE_LINK}&guild_id={query.guild}&disable_guild_select=true 302
+		redir {$INVITE_LINK} 302
+	}
+
+	# The brand pages became chapters of the brand book under /branding
+	@oldLogo path /logo /logo/
+	redir @oldLogo /branding/logo 301
+	@oldStaticLogo path /static-logo /static-logo/
+	redir @oldStaticLogo /branding/static-logo 301
+	@oldFeedback path /feedback /feedback/
+	redir @oldFeedback /branding/feedback 301
 
 	# Hashed file names, safe to cache forever
 	header /assets/* Cache-Control "public, max-age=31536000, immutable"

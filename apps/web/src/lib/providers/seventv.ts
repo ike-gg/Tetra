@@ -80,6 +80,17 @@ const toCatalogEmote = (emote: StvEmote): CatalogEmote => {
   };
 };
 
+/** One emote by id from 7TV's v3 REST API (CORS-enabled, like the GraphQL endpoint). */
+export const lookupSevenTvEmote = async (id: string, signal?: AbortSignal) =>
+  toCatalogEmote(
+    await requestProviderJson(
+      PROVIDER,
+      `https://7tv.io/v3/emotes/${encodeURIComponent(id)}`,
+      emoteSchema,
+      { signal }
+    )
+  );
+
 /** 7TV's v3 GraphQL search from the browser; an empty query lists the `TOP` category. */
 export const searchSevenTv = async (
   query: string,

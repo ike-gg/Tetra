@@ -17,10 +17,10 @@ type SeoPage = {
 export const SEO_PAGES = {
   home: {
     path: "/",
-    title: "tetra",
+    title: "tetra · add 7TV, BTTV and FFZ emotes to Discord",
     description:
       "add emotes from 7TV, BTTV, FFZ or any link to your Discord server. tetra shrinks them to fit Discord's 256 KB limit",
-    og: { eyebrow: "discord bot", heading: "add any emote.", accent: "that's it" },
+    og: { eyebrow: "Discord bot", heading: "add any emote.", accent: "that's it" },
   },
   editor: {
     path: "/editor",
@@ -31,16 +31,37 @@ export const SEO_PAGES = {
   },
   branding: {
     path: "/branding",
-    title: "branding · tetra",
+    title: "brand book · tetra",
     description:
-      "how tetra looks and talks: colors, type, square shapes, ASCII accents, motion, voice and every UI component",
-    og: { eyebrow: "branding", heading: "square, dark and", accent: "orange" },
+      "the tetra brand book: the guide, the logo, the static logo and the feedback emotes, one chapter each",
+    og: { eyebrow: "brand book", heading: "the tetra", accent: "book" },
+  },
+  guide: {
+    path: "/branding/guide",
+    title: "brand guide · tetra",
+    description:
+      "how tetra looks: colors, type, square shapes, the logo, ASCII accents, motion and every UI component",
+    og: { eyebrow: "brand guide", heading: "square, dark and", accent: "quiet" },
   },
   logo: {
-    path: "/logo",
+    path: "/branding/logo",
     title: "logo · tetra",
     description: "the tetra mark: a plain square that emotes fall into, one by one",
     og: { eyebrow: "logo", heading: "a square full of", accent: "emotes" },
+  },
+  "static-logo": {
+    path: "/branding/static-logo",
+    title: "static logo · tetra",
+    description:
+      "the frozen tetra mark for icons and avatars: a dense square on a wall of ASCII, from the favicon to the server icon",
+    og: { eyebrow: "static logo", heading: "a dense square in", accent: "ASCII" },
+  },
+  feedback: {
+    path: "/branding/feedback",
+    title: "feedback emotes · tetra",
+    description:
+      "the ASCII pictograms in front of the tetra bot's replies: success, error, warning, working and the rest",
+    og: { eyebrow: "feedback emotes", heading: "one emote per", accent: "reply" },
   },
   panel: {
     path: "/panel",
@@ -118,6 +139,16 @@ export const EDITOR_JSON_LD = {
     "export GIF, PNG, WebP or JPEG",
     "runs in the browser, files are never uploaded",
   ],
+};
+
+export const HOME_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: SITE_NAME,
+  url: absoluteUrl(SEO_PAGES.home.path),
+  description: SEO_PAGES.home.description,
+  applicationCategory: "CommunicationApplication",
+  operatingSystem: "Discord",
 };
 
 // For pages that must stay out of search. Head meta merges by name with the deepest route

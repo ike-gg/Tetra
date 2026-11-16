@@ -38,6 +38,12 @@ const fitted = (area: ElementSize): Rect => {
   };
 };
 
+const fitsInside = (rect: Rect, area: ElementSize) =>
+  rect.x >= 0 &&
+  rect.y >= 0 &&
+  rect.x + rect.width <= area.width &&
+  rect.y + rect.height <= area.height;
+
 const clampRect = (rect: Rect, area: ElementSize): Rect => {
   const width = clampNumber(rect.width, Math.min(MIN_WIDTH, area.width), area.width);
   const height = clampNumber(rect.height, Math.min(MIN_HEIGHT, area.height), area.height);
@@ -89,7 +95,8 @@ type CanvasWindowProps = {
 // The editor's workspace: a fixed area that never scrolls, holding one window the person
 // can move by its title bar and resize from its corner, like a document window on a
 // desktop. Its last position and size are remembered in this browser; double-clicking the
-// title bar (or Fit window) puts it back and forgets them.
+// title bar (or Fit window) puts it back and forgets them. A remembered window that
+// doesn't fit the workspace on open is forgotten too.
 export function CanvasWindow({ title, children, className }: CanvasWindowProps) {
   const workspace = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
@@ -108,7 +115,13 @@ export function CanvasWindow({ title, children, className }: CanvasWindowProps) 
 
   useEffect(() => {
     if (!area) return;
-    if (preferred.current === undefined) preferred.current = loadRect();
+    if (preferred.current === undefined) {
+      // On open, a remembered window that no longer fits the workspace (smaller browser
+      // window, other screen) is dropped for the default instead of being clamped
+      const stored = loadRect();
+      preferred.current = stored && fitsInside(stored, area) ? stored : null;
+      if (stored && !preferred.current) saveRect(null);
+    }
     setRect(clampRect(preferred.current ?? fitted(area), area));
   }, [area]);
 

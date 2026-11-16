@@ -64,6 +64,17 @@ const toCatalogEmote = (emote: FfzEmote): CatalogEmote | null => {
   };
 };
 
+/** One emote by id from FFZ's API; null when it has no image. */
+export const lookupFfzEmote = async (id: string, signal?: AbortSignal) => {
+  const body = await requestProviderJson(
+    PROVIDER,
+    `https://api.frankerfacez.com/v1/emote/${encodeURIComponent(id)}`,
+    z.object({ emote: emoteSchema }),
+    { signal }
+  );
+  return toCatalogEmote(body.emote);
+};
+
 /** FFZ's emote search from the browser, by usage (`count-desc`): empty = most used. */
 export const searchFfz = async (
   query: string,

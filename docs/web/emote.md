@@ -54,7 +54,7 @@ Per-emote UI state lives in `EmoteMenu`, keyed by `emote.key`, so it survives ti
 
 ## Opening the menu
 
-- Right click, long press on touch (ui-sdk's context trigger), the ContextMenu key (browser → `contextmenu`), and Shift+F10. Browsers turn Shift+F10 into `contextmenu` only on some platforms (not macOS), so `Emote` handles it itself with `controller.open({ payload, anchor, focus: "first" })` and prevents the key so it doesn't open twice.
+- Right click, long press on touch (ui-sdk's context trigger), the ContextMenu key (browser → `contextmenu`), and Shift+F10. Browsers turn Shift+F10 into `contextmenu` only on some platforms (not macOS), so `Emote` handles it itself with `controller.open({ payload, anchor, focus: "first" })` and prevents the key so it doesn't open twice. It's a keyboard fallback only: hints in the UI never mention Shift+F10 (owner's call, too obscure to be worth saying).
 - Focus returns to the tile on close; `finalFocus` gives up (`null`) when the tile is gone.
 - Submenus open below their trigger under 640px (`MenuSubContent` in `components/ui/menu.tsx`): side by side they left the screen on a phone.
 
@@ -82,7 +82,7 @@ Rendered by the owning `EmoteMenu` while it has a selection (keyed by the emote,
 
 - **CORS, verified 2026-11** from `http://localhost:*`: `cdn.discordapp.com` (emojis, `*`), `cdn.7tv.app` (`*`), `cdn.frankerfacez.com` (`*`) can be read. `cdn.betterttv.net` sends no `Access-Control-Allow-Origin`, so BTTV files (removed or task emotes from BTTV) can't be read; link sources depend on their host. A CORS failure and a network error look the same to `fetch` (a `TypeError`), so both count as "can't read" (`EmoteFileUnreadableError`).
 - **Download**: `toast.promise` (Downloading… → "Downloaded catJAM.gif"), saved with `downloadBlob`. Unreadable: opens the file in a new tab and says so ("BTTV doesn't let the browser read this file. Save it from there."); if the popup is blocked (the click's activation can expire while fetching), the toast has an Open action instead.
-- **Edit in editor**: fetches the file, loads it with the editor's `loadMediaFile` (validates it) and `saveToLibrary` (both imported lazily, so the panel doesn't ship the editor's model), then navigates to the panel's editor, `/panel/editor/$key` (the user never leaves the panel). Unreadable sources get an error toast asking to download it and drop it into the editor; there's no proxy for them.
+- **Edit in editor**: fetches the file, loads it with the editor's `loadMediaFile` (validates it) and `saveToLibrary` (both imported lazily, so the panel doesn't ship the editor's model), then navigates to the panel's editor, `/panel/editor/$key` (the user never leaves the panel). `useEditInQuickEditor(host?)` picks the host by route when none is given (`/editor/$key` outside the panel), see [editor.md](editor.md#local-library-srclibmedialocal-libraryts). Unreadable sources get an error toast asking to download it and drop it into the editor; there's no proxy for them.
 
 ## Mutations and cache (`src/lib/emote-mutations.ts`)
 
@@ -108,7 +108,7 @@ Every slot display reads two caches: the server list `["guilds"]` (`emojis.stati
 - Columns from the measured width (`useElementSize`): tiles at least 88px (72px under 480px wide), gap 4px; every row has the same height (tile + name line), so there's no per-row measuring, only `virtualizer.measure()` when the height changes. Overscan 3 rows.
 - `<ul>` with absolutely placed `<li>`s (each has `aria-setsize`/`aria-posinset`, since most aren't in the DOM). 500 emotes keep about 100–140 tiles and ~600–800 elements mounted.
 - `onEndReached` (infinite lists): called while the rendered rows include one of the last 4, about 6 rows before the end with overscan 3, and again after a page lands if the end is still that close. The caller guards it with `hasNextPage` / `isFetchingNextPage`.
-- One tab stop (roving tabindex): arrows (mirrored in RTL), Home/End within the row, Ctrl/Cmd+Home/End for the list. A move scrolls the target row in and focuses it after it renders. If the active tile is scrolled out, the first rendered tile takes the tab stop. When the focused tile disappears (removed), focus goes to whatever now holds the tab stop.
+- One tab stop (roving tabindex): arrows (mirrored in RTL), Home/End within the row, Ctrl/Cmd+Home/End for the list. A move scrolls the target row in and focuses it after it renders. The active tile's row is always rendered (`rangeExtractor` adds it to the range), so a focused tile never unmounts when scrolled out and always holds the tab stop. Before that, a clicked tile scrolled out lost focus, the fallback focused the first rendered tile, and that focus scrolled the page back up: scrolling down with a selection looped. When the focused tile disappears (removed), focus goes to whatever now holds the tab stop.
 
 ## Fitting preview
 

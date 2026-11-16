@@ -16,8 +16,10 @@ type Feature = {
   title: string;
   body: ReactNode;
   art: string[];
+  artClassName?: string;
   // A wide card across both columns, with a link under the text
   wide?: { label: string; to: "/editor" };
+  isNew?: boolean;
 };
 
 const FEATURES: Feature[] = [
@@ -30,6 +32,7 @@ const FEATURES: Feature[] = [
     title: "fits in 256 KB",
     body: "big animated emotes get resized and recompressed automatically until Discord accepts them",
     art: ["[######]", "[####  ]", "[##    ]"],
+    artClassName: "text-signal",
   },
   {
     title: "media from posts",
@@ -51,6 +54,7 @@ const FEATURES: Feature[] = [
     body: "crop, trim, resize and compress GIFs and images until they fit Discord's 256 KB emote limit. no account, and the file never leaves your device",
     art: [" .-  -. ", "  [##]  ", " '-  -' "],
     wide: { label: "resize a GIF for discord", to: "/editor" },
+    isNew: true,
   },
 ];
 
@@ -81,13 +85,26 @@ export function HomeSections() {
                 feature.wide && "sm:col-span-2"
               )}
             >
-              <pre aria-hidden className="font-mono text-muted text-sm leading-tight">
+              <pre
+                aria-hidden
+                className={cn(
+                  "font-mono text-muted text-sm leading-tight",
+                  feature.artClassName
+                )}
+              >
                 {feature.art.join("\n")}
               </pre>
               <div>
-                <Heading level={3} size="sm">
-                  {feature.title}
-                </Heading>
+                <div className="flex items-center gap-3">
+                  <Heading level={3} size="sm">
+                    {feature.title}
+                  </Heading>
+                  {feature.isNew && (
+                    <span className="font-mono text-signal text-xs tracking-widest">
+                      [new]
+                    </span>
+                  )}
+                </div>
                 <Text tone="muted" className="mt-2 max-w-2xl">
                   {feature.body}
                 </Text>
@@ -122,7 +139,12 @@ export function HomeSections() {
                 <span className="text-brand-500">0{index + 1}</span>
                 <span aria-hidden className="h-px flex-1 bg-border" />
               </div>
-              <code className="w-fit border border-border bg-surface px-2 py-1 font-mono text-foreground text-sm">
+              <code
+                className={cn(
+                  "w-fit border border-border bg-surface px-2 py-1 font-mono text-sm",
+                  index === STEPS.length - 1 ? "text-signal" : "text-foreground"
+                )}
+              >
                 {step.command}
               </code>
               <Text tone="muted">{step.text}</Text>

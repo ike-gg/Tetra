@@ -58,11 +58,11 @@ const require = createRequire(import.meta.url);
 const geistDir = join(dirname(require.resolve("geist/package.json")), "dist", "fonts");
 const font = (path: string) => readFile(join(geistDir, path));
 
-const [sansRegular, sansSemiBold, sansBlack, mono, serif] = await Promise.all([
+const [sansRegular, sansSemiBold, mono, monoBlack, serif] = await Promise.all([
   font("geist-sans/Geist-Regular.ttf"),
   font("geist-sans/Geist-SemiBold.ttf"),
-  font("geist-sans/Geist-Black.ttf"),
   font("geist-mono/GeistMono-Regular.ttf"),
+  font("geist-mono/GeistMono-Black.ttf"),
   // Geist Serif ships only as woff2, which satori can't read
   font("geist-serif/GeistSerif-Regular.woff2").then(async (woff2) =>
     Buffer.from(await decompress(woff2))
@@ -72,8 +72,8 @@ const [sansRegular, sansSemiBold, sansBlack, mono, serif] = await Promise.all([
 const FONTS: Font[] = [
   { name: "Geist", data: sansRegular, weight: 400, style: "normal" },
   { name: "Geist", data: sansSemiBold, weight: 600, style: "normal" },
-  { name: "Geist", data: sansBlack, weight: 900, style: "normal" },
   { name: "Geist Mono", data: mono, weight: 400, style: "normal" },
+  { name: "Geist Mono", data: monoBlack, weight: 900, style: "normal" },
   { name: "Geist Serif", data: serif, weight: 400, style: "normal" },
 ];
 
@@ -135,9 +135,10 @@ function texture(seed: number): string[][] {
   );
 }
 
-// "tetra" rasterized from heavy Geist and sampled once per cell, as on the homepage's
-// closing call to action: mono letters were too coarse at this size
-async function wordCoverage(word: string, rows: number) {
+// "tetra" set in Geist Serif and sampled once per cell, the same lockup word as the Discord
+// banners (assets/logo/banners). The stroke thickens the serif's hairlines: one cell wide
+// they turned pale. Mono letters were too coarse at this size.
+async function wordCoverage(word: string, rows: number, cellW: number, cellH: number) {
   const size = 400;
   const width = size * 4;
   const height = Math.round(size * 1.2);
@@ -148,11 +149,12 @@ async function wordCoverage(word: string, rows: number) {
           display: "flex",
           width: "100%",
           height: "100%",
-          fontFamily: "Geist",
-          fontWeight: 900,
+          fontFamily: "Geist Serif",
+          fontWeight: 400,
           fontSize: size,
-          letterSpacing: "-0.04em",
+          letterSpacing: "0.06em",
           color: "#fff",
+          WebkitTextStroke: `${size * 0.05}px #fff`,
         }}
       >
         {word}
@@ -179,7 +181,7 @@ async function wordCoverage(word: string, rows: number) {
 
   const boxW = right - left + 1;
   const boxH = bottom - top + 1;
-  const cols = Math.round(((rows * boxW) / boxH) * (CELL_H / CELL_W));
+  const cols = Math.round(((rows * boxW) / boxH) * (cellH / cellW));
   return Array.from({ length: rows }, (_, row) =>
     Array.from({ length: cols }, (_, col) => {
       const x0 = left + Math.floor((col * boxW) / cols);
@@ -193,32 +195,58 @@ async function wordCoverage(word: string, rows: number) {
   );
 }
 
-const WORD_ROWS = 13;
-const WORD_TOP = 4;
-const WORD_RIGHT = 9;
-const word = await wordCoverage("tetra", WORD_ROWS);
-const wordCols = word[0].length;
+// The word sits on a finer grid than the texture: the serif needs about a dozen rows to
+// read, so a smaller word means smaller cells, not fewer rows (as on the banners)
+const WORD_ROWS = 12;
+const WORD_GLYPH_SIZE = 7;
+const WORD_CELL_W = WORD_GLYPH_SIZE * 0.6;
+const WORD_CELL_H = (WORD_GLYPH_SIZE * CELL_H) / GLYPH_SIZE;
+// Dense end of the ramp for the body of a letter, lighter glyphs on its edges
+const WORD_DENSE = "#%@";
+const word = await wordCoverage("tetra", WORD_ROWS, WORD_CELL_W, WORD_CELL_H);
+const WORD_W = word[0].length * WORD_CELL_W;
+const WORD_H = WORD_ROWS * WORD_CELL_H;
+// Right edge on the text's margin, vertically centered on the logo square
+const WORD_LEFT = W - 72 - WORD_W;
+const WORD_TOP = 86 - WORD_H / 2;
 
 // --- image ----------------------------------------------------------------------------
 
-function Grid({ rows, color }: { rows: string[]; color: string }) {
+function Grid({
+  rows,
+  color,
+  weight = 400,
+  glyphSize = GLYPH_SIZE,
+  cellH = CELL_H,
+  top = 0,
+  left = 0,
+}: {
+  rows: string[];
+  color: string;
+  weight?: 400 | 900;
+  glyphSize?: number;
+  cellH?: number;
+  top?: number;
+  left?: number;
+}) {
   return (
     <div
       style={{
         position: "absolute",
-        top: 0,
-        left: 0,
+        top,
+        left,
         display: "flex",
         flexDirection: "column",
         fontFamily: "Geist Mono",
-        fontSize: GLYPH_SIZE,
-        lineHeight: `${CELL_H}px`,
+        fontWeight: weight,
+        fontSize: glyphSize,
+        lineHeight: `${cellH}px`,
         color,
       }}
     >
       {rows.map((line, index) => (
         // biome-ignore lint/suspicious/noArrayIndexKey: rows are fixed and never reorder
-        <div key={index} style={{ display: "flex", height: CELL_H, whiteSpace: "pre" }}>
+        <div key={index} style={{ display: "flex", height: cellH, whiteSpace: "pre" }}>
           {line}
         </div>
       ))}
@@ -228,16 +256,28 @@ function Grid({ rows, color }: { rows: string[]; color: string }) {
 
 function OgImage({ pageKey, seed }: { pageKey: SeoPageKey; seed: number }) {
   const page = SEO_PAGES[pageKey];
-  const index = String(Object.keys(SEO_PAGES).indexOf(pageKey) + 1).padStart(2, "0");
+  const glyphs = mulberry32(seed + 3);
   const field = texture(seed);
-  const letters = field.map((line) => line.map(() => " "));
-  const originCol = COLS - WORD_RIGHT - wordCols;
+  const letters = word.map((line) =>
+    line.map((coverage) =>
+      coverage < 0.12
+        ? " "
+        : coverage >= 0.45
+          ? WORD_DENSE[Math.floor(glyphs() * WORD_DENSE.length)]
+          : coverage >= 0.28
+            ? "*"
+            : "+"
+    )
+  );
 
-  word.forEach((line, row) => {
-    line.forEach((coverage, col) => {
-      if (coverage < 0.15) return;
-      letters[WORD_TOP + row][originCol + col] = RAMP[4 + Math.round(coverage * 4)];
-      field[WORD_TOP + row][originCol + col] = " ";
+  // Clear the texture under the letters so they don't sit on noise
+  field.forEach((line, row) => {
+    line.forEach((_, col) => {
+      const wordRow = Math.floor(((row + 0.5) * CELL_H - WORD_TOP) / WORD_CELL_H);
+      const wordCol = Math.floor(((col + 0.5) * CELL_W - WORD_LEFT) / WORD_CELL_W);
+      if (word[wordRow]?.[wordCol] !== undefined && word[wordRow][wordCol] >= 0.12) {
+        line[col] = " ";
+      }
     });
   });
 
@@ -252,7 +292,15 @@ function OgImage({ pageKey, seed }: { pageKey: SeoPageKey; seed: number }) {
       }}
     >
       <Grid rows={field.map((line) => line.join(""))} color={COLORS.texture} />
-      <Grid rows={letters.map((line) => line.join(""))} color={COLORS.primary} />
+      <Grid
+        rows={letters.map((line) => line.join(""))}
+        color={COLORS.primary}
+        weight={900}
+        glyphSize={WORD_GLYPH_SIZE}
+        cellH={WORD_CELL_H}
+        top={WORD_TOP}
+        left={WORD_LEFT}
+      />
 
       <div
         style={{
@@ -281,10 +329,10 @@ function OgImage({ pageKey, seed }: { pageKey: SeoPageKey; seed: number }) {
             fontFamily: "Geist Mono",
             fontSize: 22,
             letterSpacing: "0.08em",
-            color: COLORS.primary,
+            color: COLORS.muted,
           }}
         >
-          {`[${index}] / ${page.og.eyebrow}`}
+          {page.og.eyebrow}
         </div>
         <div
           style={{

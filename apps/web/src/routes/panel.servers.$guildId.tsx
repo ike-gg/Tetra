@@ -10,6 +10,7 @@ import { PanelError, PanelLoading } from "@/components/panel/query-state";
 import { QuickAdd } from "@/components/panel/quick-add";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
+import { Notice } from "@/components/ui/notice";
 import {
   SegmentedControl,
   SegmentedControlItem,
@@ -135,13 +136,27 @@ function Server({ guild }: { guild: ManagedGuild }) {
         </div>
       </header>
 
-      <div className="flex flex-col gap-4">
+      {/* Adding and filtering are separate sections with their own headings: one input
+          right above the other read as a single search over this server's emotes */}
+      <section aria-labelledby="server-add" className="flex flex-col gap-3">
+        <Heading id="server-add" level={2} size="sm">
+          add an emote
+        </Heading>
         <QuickAdd
           compact
           defaultGuildId={guild.id}
-          placeholder={`Search 7TV or paste a link to add to ${guild.name}`}
+          placeholder={`search 7TV or paste a link to add to ${guild.name}`}
           className="max-w-xl"
         />
+      </section>
+
+      <section
+        aria-labelledby="server-emotes"
+        className="flex flex-col gap-4 border-border border-t pt-8"
+      >
+        <Heading id="server-emotes" level={2} size="sm">
+          emotes on this server
+        </Heading>
         <div className="flex flex-wrap items-center gap-3">
           <SegmentedControl
             aria-label="Show"
@@ -158,11 +173,11 @@ function Server({ guild }: { guild: ManagedGuild }) {
             <SegmentedControlItem value="removed">Removed</SegmentedControlItem>
           </SegmentedControl>
           <TextField
-            label="Search by name"
+            label="filter by name"
             hideLabel
             value={query}
             onValueChange={setQuery}
-            placeholder="Search by name"
+            placeholder="filter by name"
             className="min-w-40 flex-1 sm:max-w-64"
           />
           <SegmentedControl
@@ -190,11 +205,14 @@ function Server({ guild }: { guild: ManagedGuild }) {
           canManage
         >
           {view === "removed" ? (
-            <RemovedEmotes
-              guildId={guild.id}
-              filters={filters}
-              onClear={() => setQuery("")}
-            />
+            <div className="flex flex-col gap-4">
+              <RemovedNotice />
+              <RemovedEmotes
+                guildId={guild.id}
+                filters={filters}
+                onClear={() => setQuery("")}
+              />
+            </div>
           ) : details.status === "pending" ? (
             <PanelLoading>loading emotes…</PanelLoading>
           ) : details.status === "error" ? (
@@ -212,8 +230,20 @@ function Server({ guild }: { guild: ManagedGuild }) {
             />
           )}
         </EmoteMenu>
-      </div>
+      </section>
     </div>
+  );
+}
+
+// Shown in every state of the Removed view: Discord itself keeps nothing, so people
+// shouldn't expect emotes from before tetra joined
+function RemovedNotice() {
+  return (
+    <Notice title="removed emotes are a tetra feature" className="max-w-2xl">
+      Discord doesn&apos;t keep removed emotes. tetra saves every emote removed while
+      it&apos;s on this server, from the panel or in Discord, so you can restore it.
+      emotes removed before tetra joined aren&apos;t here
+    </Notice>
   );
 }
 
@@ -290,8 +320,8 @@ function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: str
   }
   if (emotes.length === 0) {
     return (
-      <EmptyState title="Nothing to restore">
-        Emotes removed with Tetra show up here, so you can put them back.
+      <EmptyState title="nothing to restore">
+        no emote has been removed since tetra joined this server
       </EmptyState>
     );
   }
@@ -299,7 +329,7 @@ function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: str
   return (
     <div className="flex flex-col gap-3">
       <Text size="sm" tone="muted">
-        Select an emote to restore it, or right-click it (Shift+F10).
+        select an emote to restore it, or right-click it
       </Text>
       <EmoteGrid emotes={visible} label="Removed emotes" pendingKeys={pendingKeys} />
     </div>

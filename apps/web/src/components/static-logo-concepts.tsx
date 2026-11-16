@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 
+import { mulberry32 } from "@/lib/ascii";
+
 export type Surface = "dark" | "light";
 
 // Raw token values from app.css, so a mark stays self-contained when exported later
@@ -50,18 +52,6 @@ export const buildFor = (variant: Variant, px: number) =>
     variant.builds.find(({ from }) => px >= from) ??
     variant.builds[variant.builds.length - 1]
   ).build;
-
-// Small seeded PRNG: the same seed draws the same wall on the server and in the browser
-function mulberry32(seed: number) {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 type Cell = { col: number; row: number; inSquare: boolean; value: number };
 

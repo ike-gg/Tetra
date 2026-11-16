@@ -37,7 +37,7 @@ type LogoProps = {
   className?: string;
   // false renders the final mark right away (the logo's resting state)
   animated?: boolean;
-  // Duration multiplier, for slow-motion review on /logo
+  // Duration multiplier, for slow-motion review on /branding/logo
   slowdown?: number;
 };
 

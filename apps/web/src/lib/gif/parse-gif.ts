@@ -6,6 +6,9 @@ export type GifInfo = {
   delays: number[];
   // Seconds
   duration: number;
+  // A frame has its own color table and transparency (gif.ski does this): gifsicle can't
+  // unoptimize such a GIF, see `gif-commands.ts`
+  localPalettes: boolean;
 };
 
 const colorTableSize = (packed: number) =>
@@ -33,6 +36,8 @@ export const parseGif = (buffer: ArrayBuffer): GifInfo => {
 
   const delays: number[] = [];
   let pendingDelay = 0;
+  let pendingTransparent = false;
+  let localPalettes = false;
 
   while (offset < bytes.length) {
     const introducer = bytes[offset++];
@@ -41,15 +46,21 @@ export const parseGif = (buffer: ArrayBuffer): GifInfo => {
 
     if (introducer === 0x21) {
       const label = bytes[offset++];
-      if (label === 0xf9) pendingDelay = bytes[offset + 2] | (bytes[offset + 3] << 8);
+      if (label === 0xf9) {
+        pendingDelay = bytes[offset + 2] | (bytes[offset + 3] << 8);
+        pendingTransparent = (bytes[offset + 1] & 0x01) === 1;
+      }
       skipSubBlocks();
     } else if (introducer === 0x2c) {
       offset += 8;
-      offset += 1 + colorTableSize(bytes[offset]);
+      const localTable = colorTableSize(bytes[offset]);
+      if (localTable > 0 && pendingTransparent) localPalettes = true;
+      offset += 1 + localTable;
       offset += 1;
       skipSubBlocks();
       delays.push(pendingDelay);
       pendingDelay = 0;
+      pendingTransparent = false;
     } else {
       // Truncated or padded files are common; keep the frames read so far
       break;
@@ -67,5 +78,6 @@ export const parseGif = (buffer: ArrayBuffer): GifInfo => {
     frames: played.length,
     delays: played,
     duration: played.reduce((sum, delay) => sum + delay, 0) / 100,
+    localPalettes,
   };
 };

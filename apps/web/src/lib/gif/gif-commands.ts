@@ -28,6 +28,21 @@ export const planFrames = (info: MediaInfo, { settings, trim }: Edit) => {
   }));
 };
 
+// `-U` (unoptimize) silently does nothing when frames carry their own color tables and
+// transparency, so every frame stays a patch over the one before. Dropping frames (trim,
+// frame rate) or resizing those patches then leaves ghosts of earlier frames. Remapping
+// to one shared palette first makes unoptimizing possible; blend-diversity measured
+// closest to the original on a gif.ski webcam GIF (dither was noisier and bigger).
+const prepareInput = (info: MediaInfo) =>
+  info.localPalettes
+    ? {
+        commands: [
+          "input.gif --colors 256 --color-method blend-diversity -o /tem/palette.gif",
+        ],
+        input: "/tem/palette.gif",
+      }
+    : { commands: [], input: "input.gif" };
+
 export const buildCommands = (info: MediaInfo, edit: Edit) => {
   const { settings } = edit;
   const crop = effectiveCrop(info, edit);
@@ -51,8 +66,11 @@ export const buildCommands = (info: MediaInfo, edit: Edit) => {
     "-O3",
   ];
 
+  const prepared = prepareInput(info);
+
   return [
-    `-U input.gif ${frames} -o /tem/frames.gif`,
+    ...prepared.commands,
+    `-U ${prepared.input} ${frames} -o /tem/frames.gif`,
     [...before, "/tem/frames.gif", ...after, "-o /out/emote.gif"]
       .filter(Boolean)
       .join(" "),
@@ -64,5 +82,9 @@ export const filmStripCommand = (info: MediaInfo, count: number, tile: number) =
     { length: Math.min(count, info.frames) },
     (_, i) => `#${Math.floor(((i + 0.5) * info.frames) / Math.min(count, info.frames))}`
   );
-  return `-U --explode input.gif --resize-fit ${tile}x${tile} ${picks.join(" ")} -o /out/frame.gif`;
+  const prepared = prepareInput(info);
+  return [
+    ...prepared.commands,
+    `-U --explode ${prepared.input} --resize-fit ${tile}x${tile} ${picks.join(" ")} -o /out/frame.gif`,
+  ];
 };
