@@ -34,6 +34,7 @@ export type CatalogEmote = z.infer<typeof catalogEmoteSchema>;
 export type EmoteLookupErrorCode =
   | "UNSUPPORTED_LINK"
   | "EMOTE_NOT_FOUND"
+  | "CHANNEL_NOT_FOUND"
   | "URL_NOT_ALLOWED"
   | "UNSUPPORTED_FILE_TYPE"
   | "FILE_TOO_LARGE"

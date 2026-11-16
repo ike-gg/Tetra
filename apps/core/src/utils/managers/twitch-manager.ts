@@ -10,7 +10,7 @@ const authProvider = new RefreshingAuthProvider({
   clientSecret: env.TWITCH_SECRET_KEY,
 });
 
-const twitchApi = new ApiClient({
+export const twitchApi = new ApiClient({
   authProvider,
 });
 

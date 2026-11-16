@@ -13,6 +13,7 @@ import { emotesRouter } from "./routes/emotes/emotes-router";
 import { guildsRouter } from "./routes/guilds/guilds-router";
 import { meRouter } from "./routes/me/me-router";
 import { tasksRouter } from "./routes/tasks/tasks-router";
+import { twitchRouter } from "./routes/twitch/twitch-router";
 import { TetraAPIError } from "./tetra-api-error";
 
 import { ApiConsole } from "#/loggers";
@@ -22,7 +23,8 @@ export const routes = new Hono<AppEnv>()
   .route("/me", meRouter)
   .route("/guilds", guildsRouter)
   .route("/tasks", tasksRouter)
-  .route("/emotes", emotesRouter);
+  .route("/emotes", emotesRouter)
+  .route("/twitch", twitchRouter);
 
 export const app = new Hono<AppEnv>()
   .use(async (c, next) => {
