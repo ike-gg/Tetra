@@ -22,6 +22,7 @@ import { Route as EditorIndexRouteImport } from './routes/editor.index'
 import { Route as EditorKeyRouteImport } from './routes/editor.$key'
 import { Route as PanelIndexRouteImport } from './routes/panel.index'
 import { Route as PanelBrowseRouteImport } from './routes/panel.browse'
+import { Route as PanelChannelsRouteImport } from './routes/panel.channels'
 import { Route as PanelEditorIndexRouteImport } from './routes/panel.editor.index'
 import { Route as PanelEditorKeyRouteImport } from './routes/panel.editor.$key'
 import { Route as PanelServersGuildIdRouteImport } from './routes/panel.servers.$guildId'
@@ -93,6 +94,11 @@ const PanelBrowseRoute = PanelBrowseRouteImport.update({
   path: '/browse',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelChannelsRoute = PanelChannelsRouteImport.update({
+  id: '/channels',
+  path: '/channels',
+  getParentRoute: () => PanelRoute,
+} as any)
 const PanelEditorIndexRoute = PanelEditorIndexRouteImport.update({
   id: '/editor/',
   path: '/editor/',
@@ -135,6 +141,7 @@ export interface FileRoutesByFullPath {
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
+  '/panel/channels': typeof PanelChannelsRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
   '/panel/editor/$key': typeof PanelEditorKeyRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
+  '/panel/channels': typeof PanelChannelsRoute
   '/editor': typeof EditorIndexRoute
   '/panel': typeof PanelIndexRoute
   '/panel/editor/$key': typeof PanelEditorKeyRoute
@@ -175,6 +183,7 @@ export interface FileRoutesById {
   '/static-logo': typeof StaticLogoRoute
   '/editor/$key': typeof EditorKeyRoute
   '/panel/browse': typeof PanelBrowseRoute
+  '/panel/channels': typeof PanelChannelsRoute
   '/editor/': typeof EditorIndexRoute
   '/panel/': typeof PanelIndexRoute
   '/panel/editor/$key': typeof PanelEditorKeyRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
+    | '/panel/channels'
     | '/editor/'
     | '/panel/'
     | '/panel/editor/$key'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
+    | '/panel/channels'
     | '/editor'
     | '/panel'
     | '/panel/editor/$key'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/static-logo'
     | '/editor/$key'
     | '/panel/browse'
+    | '/panel/channels'
     | '/editor/'
     | '/panel/'
     | '/panel/editor/$key'
@@ -352,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelBrowseRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/panel/channels': {
+      id: '/panel/channels'
+      path: '/channels'
+      fullPath: '/panel/channels'
+      preLoaderRoute: typeof PanelChannelsRouteImport
+      parentRoute: typeof PanelRoute
+    }
     '/panel/editor/': {
       id: '/panel/editor/'
       path: '/editor'
@@ -392,6 +411,7 @@ declare module '@tanstack/react-router' {
 
 interface PanelRouteChildren {
   PanelBrowseRoute: typeof PanelBrowseRoute
+  PanelChannelsRoute: typeof PanelChannelsRoute
   PanelIndexRoute: typeof PanelIndexRoute
   PanelEditorKeyRoute: typeof PanelEditorKeyRoute
   PanelServersGuildIdRoute: typeof PanelServersGuildIdRoute
@@ -402,6 +422,7 @@ interface PanelRouteChildren {
 
 const PanelRouteChildren: PanelRouteChildren = {
   PanelBrowseRoute: PanelBrowseRoute,
+  PanelChannelsRoute: PanelChannelsRoute,
   PanelIndexRoute: PanelIndexRoute,
   PanelEditorKeyRoute: PanelEditorKeyRoute,
   PanelServersGuildIdRoute: PanelServersGuildIdRoute,

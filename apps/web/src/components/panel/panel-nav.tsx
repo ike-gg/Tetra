@@ -69,6 +69,12 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
           </NavLink>
         </li>
         <li>
+          <NavLink to="/panel/channels" onClick={onNavigate}>
+            <Glyph>@</Glyph>
+            Channels
+          </NavLink>
+        </li>
+        <li>
           <NavLink to="/panel/editor" onClick={onNavigate}>
             <Glyph>◱</Glyph>
             Editor

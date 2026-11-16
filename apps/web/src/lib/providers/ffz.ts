@@ -90,3 +90,24 @@ export const searchFfz = async (
   const hasMore = page < MAX_PAGE && page < body._pages;
   return { items, nextPage: hasMore ? page + 1 : null };
 };
+
+const roomSchema = z.object({
+  room: z.object({ set: z.number() }),
+  sets: z.record(z.string(), z.object({ emoticons: z.array(emoteSchema) })),
+});
+
+/** A Twitch channel's FFZ emotes (its room's set); 404 when the channel has no FFZ room. */
+export const getFfzChannelEmotes = async (
+  twitchId: string,
+  signal?: AbortSignal
+): Promise<CatalogEmote[]> => {
+  const body = await requestProviderJson(
+    PROVIDER,
+    `https://api.frankerfacez.com/v1/room/id/${encodeURIComponent(twitchId)}`,
+    roomSchema,
+    { signal }
+  );
+  return (body.sets[String(body.room.set)]?.emoticons ?? [])
+    .map(toCatalogEmote)
+    .filter((emote): emote is CatalogEmote => emote !== null);
+};

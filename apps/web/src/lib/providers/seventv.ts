@@ -111,3 +111,37 @@ export const searchSevenTv = async (
   const hasMore = page < MAX_PAGE && page * PAGE_SIZE < count;
   return { items: items.map(toCatalogEmote), nextPage: hasMore ? page + 1 : null };
 };
+
+const channelSchema = z.object({
+  emote_set: z
+    .object({
+      emotes: z
+        .array(
+          z.object({
+            // The channel's alias, which chat uses; `data.name` is the emote's own name
+            name: z.string(),
+            data: emoteSchema.nullable().optional(),
+          })
+        )
+        .nullable()
+        .optional(),
+    })
+    .nullable()
+    .optional(),
+});
+
+/** The emotes in a Twitch channel's active 7TV set; 404 when the channel has no 7TV account. */
+export const getSevenTvChannelEmotes = async (
+  twitchId: string,
+  signal?: AbortSignal
+): Promise<CatalogEmote[]> => {
+  const body = await requestProviderJson(
+    PROVIDER,
+    `https://7tv.io/v3/users/twitch/${encodeURIComponent(twitchId)}`,
+    channelSchema,
+    { signal }
+  );
+  return (body.emote_set?.emotes ?? []).flatMap(({ name, data }) =>
+    data ? [toCatalogEmote({ ...data, name })] : []
+  );
+};

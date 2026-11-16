@@ -74,6 +74,7 @@ function useCurrentView(): CurrentView {
   }
   if (matchRoute({ to: "/panel/tasks" })) return { label: "Tasks" };
   if (matchRoute({ to: "/panel/browse" })) return { label: "Browse" };
+  if (matchRoute({ to: "/panel/channels" })) return { label: "Channels" };
   return { label: "Home" };
 }
 
