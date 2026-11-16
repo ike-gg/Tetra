@@ -4,7 +4,7 @@ import * as z from "zod";
 import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 
 import { prepareCookies } from "./helper/cookies";
-import { downloadVideoPost, videoMetadata } from "./helper/download-video";
+import { downloadVideoPost, videoCaption, videoMetadata } from "./helper/download-video";
 import { fetchGallery, GalleryDlError } from "./helper/gallery-dl";
 import { FileLimitExceededError } from "./helper/media-errors";
 import { renderSlideshow } from "./helper/render-slideshow";
@@ -23,6 +23,7 @@ const numeric = z.coerce.number().nullish().catch(undefined);
 const postSchema = z
   .object({
     createTime: numeric,
+    desc: z.string().nullish(),
     author: z.object({ uniqueId: z.string().nullish() }).nullish(),
     stats: z.object({ diggCount: numeric, playCount: numeric }).nullish(),
   })
@@ -38,7 +39,7 @@ const downloadAsset = (url: string) =>
 // yt-dlp can't read photo posts; gallery-dl lists the images plus the post's sound
 const handleSlideshow = async (
   url: string,
-  { feedback, fileLimit, signal }: PlatformContext
+  { progress, fileLimit, signal }: PlatformContext
 ): Promise<PlatformResult> => {
   const dir = TempFileManager.create();
 
@@ -60,7 +61,7 @@ const handleSlideshow = async (
     throw new GalleryDlError("not-found", "no images in the TikTok post");
   }
 
-  await feedback.info("Downloading slideshow assets...");
+  await progress("Downloading slideshow assets...");
 
   const [images, audio] = await Promise.all([
     Promise.all(imageUrls.map(downloadAsset)),
@@ -68,7 +69,7 @@ const handleSlideshow = async (
     audioUrl ? downloadAsset(audioUrl).catch(() => undefined) : undefined,
   ]);
 
-  await feedback.info("Rendering slideshow...");
+  await progress("Rendering slideshow...");
 
   const movie = await renderSlideshow(images, audio, signal);
   if (movie.byteLength > fileLimit) throw new FileLimitExceededError();
@@ -76,6 +77,7 @@ const handleSlideshow = async (
   const post = postSchema.parse(gallery.post ?? {});
 
   return {
+    description: post.desc?.trim() || undefined,
     media: [{ type: "mp4", source: movie, size: movie.byteLength }],
     metadata: {
       author: post.author?.uniqueId ?? undefined,
@@ -100,7 +102,11 @@ export const handleTikTokMedia: PlatformHandlerCallback = async (url, context) =
         signal: context.signal,
       });
 
-      return { media, metadata: videos[0] && videoMetadata(videos[0]) };
+      return {
+        description: videos[0] && videoCaption(videos[0]),
+        media,
+        metadata: videos[0] && videoMetadata(videos[0]),
+      };
     } catch (error) {
       // Short links (vm./vt.tiktok.com) don't show that they lead to a photo post
       if (error instanceof YtDlpError && error.failure === "unsupported") {

@@ -5,7 +5,7 @@ import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 import { env } from "@/env";
 
 import { prepareCookies } from "./helper/cookies";
-import { downloadVideoPost, videoMetadata } from "./helper/download-video";
+import { downloadVideoPost, videoCaption, videoMetadata } from "./helper/download-video";
 import { fetchGallery, GalleryDlError } from "./helper/gallery-dl";
 import { FileLimitExceededError } from "./helper/media-errors";
 import { YtDlpError } from "./helper/yt-dlp";
@@ -84,6 +84,7 @@ export const handleInstagramMedia: PlatformHandlerCallback = async (
       });
 
       return {
+        description: videos[0] && videoCaption(videos[0]),
         media: media.slice(0, MAX_ITEMS),
         metadata: videos[0] && videoMetadata(videos[0]),
       };

@@ -36,6 +36,8 @@ export const downloadVideoPost = async (
   }
 };
 
+export const videoCaption = (video: YtDlpVideo) => video.description?.trim() || undefined;
+
 export const videoMetadata = (video: YtDlpVideo): PlatformResult["metadata"] => ({
   author: video.uploader ?? video.channel ?? undefined,
   date: video.timestamp ? new Date(video.timestamp * 1000) : undefined,

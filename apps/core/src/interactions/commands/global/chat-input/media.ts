@@ -1,14 +1,21 @@
+import { randomUUID } from "node:crypto";
 import {
-  ActionRowBuilder,
   ApplicationIntegrationType,
   AttachmentBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   type ChatInputCommandInteraction,
   InteractionContextType,
+  type InteractionReplyOptions,
+  MessageFlags,
   SlashCommandBuilder,
 } from "discord.js";
 
+import {
+  MEDIA_MESSAGE_FLAGS,
+  mediaErrorMessage,
+  mediaResultMessage,
+  mediaStatusMessage,
+  mediaWarningMessage,
+} from "@/components/media.component";
 import { EmbeddedError } from "@/constants/errors";
 import { Messages } from "@/constants/messages";
 import { ChatInputCommandHandler } from "@/interactions";
@@ -30,12 +37,10 @@ import {
   mediaQueue,
 } from "@/lib/media/queue";
 import type { PlatformHandlerCallback } from "@/lib/media/types";
-import { URLButton } from "@/utils/discord/components/url-button";
-import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
-import { formatDate } from "@/utils/format-date";
 import isValidURL from "@/utils/is-valid-url";
-import { FeedbackManager } from "@/utils/managers/feedback-manager";
 import { removeQueryFromUrl } from "@/utils/remove-query-from-url";
+
+import { BotConsole } from "#/loggers";
 
 interface PlatformHandler {
   name: string;
@@ -140,138 +145,90 @@ const command = new SlashCommandBuilder()
     option.setName("url").setDescription("Link to social media post:").setRequired(true)
   );
 
+type MediaPayload = ReturnType<typeof mediaStatusMessage> &
+  Pick<InteractionReplyOptions, "files">;
+
+/** Every /media state goes through here, so the message is v2 from its first reply. */
+class MediaReply {
+  constructor(private readonly interaction: ChatInputCommandInteraction) {}
+
+  async send(payload: MediaPayload, { ephemeral = false } = {}) {
+    if (this.interaction.replied || this.interaction.deferred) {
+      await this.interaction.editReply(payload);
+      return;
+    }
+
+    await this.interaction.reply({
+      ...payload,
+      flags: ephemeral
+        ? MEDIA_MESSAGE_FLAGS | MessageFlags.Ephemeral
+        : MEDIA_MESSAGE_FLAGS,
+    });
+  }
+
+  async error(error: unknown) {
+    const mapped = toMediaError(error);
+
+    if (mapped instanceof EmbeddedError) {
+      await this.send(mediaErrorMessage(mapped.embed));
+      return;
+    }
+
+    const trackingId = randomUUID();
+    BotConsole.error(`[ ${trackingId} ]`, mapped);
+    await this.send(
+      mediaErrorMessage({
+        title: "Unhandled error",
+        description: `Something broke on our side. Report it with this ID: \`${trackingId}\``,
+      })
+    );
+  }
+}
+
 const processMedia = async ({
   interaction,
-  feedback,
+  reply,
   platform,
   itemUrl,
   fileLimit,
   signal,
 }: {
   interaction: ChatInputCommandInteraction;
-  feedback: FeedbackManager;
+  reply: MediaReply;
   platform: PlatformHandler;
   itemUrl: string;
   fileLimit: number;
   signal: AbortSignal;
 }) => {
   const { description, media, metadata } = await platform.handler(itemUrl, {
-    feedback,
+    progress: (text) =>
+      reply.send(mediaStatusMessage(platform, `Fetching ${platform.name}...`, text)),
     fileLimit,
     signal,
   });
 
   const totalFilesSize = media.reduce((curr, acc) => curr + (acc.size ?? 0), 0);
-
   if (totalFilesSize > fileLimit) throw new FileLimitExceededError();
 
-  const mediaToUpload = media.map((m, index) => {
+  const files = media.map((m, index) => {
     const suffix = media.length > 1 ? `_${index + 1}` : "";
     return new AttachmentBuilder(m.source, {
       name: `tetra_${interaction.id}${suffix}.${m.type}`,
     });
   });
 
-  const metadataRow = new ActionRowBuilder<ButtonBuilder>();
-  const actionRow = new ActionRowBuilder<ButtonBuilder>();
-  const trimmedUrl = removeQueryFromUrl(itemUrl);
-
-  const { author, date, likes, views } = metadata || {};
-
-  metadataRow.addComponents(
-    new ButtonBuilder()
-      .setStyle(ButtonStyle.Secondary)
-      .setDisabled(true)
-      .setEmoji(platform.emote)
-      .setLabel(platform.name)
-      .setCustomId(interaction.id)
-  );
-
-  date &&
-    metadataRow.addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Secondary)
-        .setCustomId("datemedia")
-        .setEmoji({
-          name: "🗓️",
-        })
-        .setLabel(formatDate(date))
-        .setDisabled(true)
-    );
-
-  author &&
-    metadataRow.addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Secondary)
-        .setCustomId("author")
-        .setEmoji({
-          name: "👤",
-        })
-        .setLabel(`@${author}`)
-        .setDisabled(true)
-    );
-
-  views &&
-    metadataRow.addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Secondary)
-        .setCustomId("views")
-        .setEmoji({
-          name: "👀",
-        })
-        .setLabel(String(views))
-        .setDisabled(true)
-    );
-
-  likes &&
-    metadataRow.addComponents(
-      new ButtonBuilder()
-        .setStyle(ButtonStyle.Secondary)
-        .setCustomId("likes")
-        .setEmoji({
-          name: "👍",
-        })
-        .setLabel(String(likes))
-        .setDisabled(true)
-    );
-
-  actionRow.addComponents(
-    URLButton("Open", platform.name === "YouTube" ? itemUrl : trimmedUrl)
-  );
-
-  const components = [metadataRow];
-
-  if (actionRow.components.length > 0) components.push(actionRow);
-
   // The job timed out meanwhile and the user already got the error
   if (signal.aborted) return;
 
-  if (mediaToUpload.length === 0) {
-    await feedback.sendMessage({
-      embeds: [
-        TetraEmbed.media({
-          title: platform.name,
-          description: `${description}\n\n*No media found in this post.*`,
-          color: platform.color,
-        }),
-      ],
-      components,
-    });
-    return;
-  }
-
-  await feedback.sendMessage({
-    embeds: description
-      ? [
-          TetraEmbed.media({
-            description: description,
-            color: platform.color,
-            hideTitle: true,
-          }),
-        ]
-      : [],
-    files: mediaToUpload,
-    components,
+  await reply.send({
+    ...mediaResultMessage({
+      platform,
+      attachmentNames: files.map((file) => file.name ?? ""),
+      caption: description,
+      meta: metadata,
+      url: removeQueryFromUrl(itemUrl),
+    }),
+    files,
   });
 };
 
@@ -282,17 +239,16 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
 
   // Discord sends the real limit (guild boost level, perks) with every interaction
   const fileLimit = interaction.attachmentSizeLimit;
-  const feedback = new FeedbackManager(interaction);
-  const ephemeralFeedback = new FeedbackManager(interaction, { ephemeral: true });
-
-  const itemUrl = input.split(" ").find((i) => isValidURL(i));
-
-  if (!itemUrl) {
-    await feedback.error(Messages.INVALID_REFERENCE);
-    return;
-  }
+  const reply = new MediaReply(interaction);
 
   try {
+    const itemUrl = input.split(" ").find((i) => isValidURL(i));
+
+    if (!itemUrl) {
+      await reply.send(mediaErrorMessage(Messages.INVALID_REFERENCE));
+      return;
+    }
+
     const { hostname: host } = new URL(itemUrl);
 
     // Exact host or subdomain: the URL goes to yt-dlp / gallery-dl, which fetch it
@@ -301,7 +257,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     );
 
     if (!platform) {
-      await feedback.error(Messages.METDIA_PLATFORM_NOT_SUPPORED);
+      await reply.send(mediaErrorMessage(Messages.METDIA_PLATFORM_NOT_SUPPORED));
       return;
     }
 
@@ -310,22 +266,22 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     try {
       claimed = await mediaQueue.claimUser(interaction.user.id, interaction.id);
     } catch {
-      await ephemeralFeedback.warning(MEDIA_UNAVAILABLE);
+      await reply.send(mediaWarningMessage(MEDIA_UNAVAILABLE), { ephemeral: true });
       return;
     }
 
     if (!claimed) {
-      await ephemeralFeedback.warning(
-        "You already have a `/media` request in progress. Wait for it to finish, then try again."
+      await reply.send(
+        mediaWarningMessage(
+          "You already have a `/media` request in progress. Wait for it to finish, then try again."
+        ),
+        { ephemeral: true }
       );
       return;
     }
 
     try {
-      await feedback.media({
-        title: `${platform.emote}  Fetching ${platform.name}...`,
-        color: platform.color,
-      });
+      await reply.send(mediaStatusMessage(platform, `Fetching ${platform.name}...`));
 
       let shownPosition: number | undefined;
       let lastEdit = 0;
@@ -341,25 +297,25 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
             if (Date.now() - lastEdit < POSITION_EDIT_INTERVAL_MS) return;
             shownPosition = position;
             lastEdit = Date.now();
-            await feedback.media({
-              title: `${platform.emote}  In queue: #${position}`,
-              description:
-                "Someone else's download is running. This message updates on its own.",
-              color: platform.color,
-            });
+            await reply.send(
+              mediaStatusMessage(
+                platform,
+                `In queue: #${position}`,
+                "Someone else's download is running. This updates on its own."
+              )
+            );
           },
         },
         async (signal) => {
           if (shownPosition !== undefined) {
-            await feedback.media({
-              title: `${platform.emote}  Fetching ${platform.name}...`,
-              color: platform.color,
-            });
+            await reply.send(
+              mediaStatusMessage(platform, `Fetching ${platform.name}...`)
+            );
           }
 
           await processMedia({
             interaction,
-            feedback,
+            reply,
             platform,
             itemUrl,
             fileLimit,
@@ -367,14 +323,13 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
           });
         }
       );
-    } catch (error) {
-      await feedback.handleError(toMediaError(error)).catch(() => undefined);
     } finally {
       await mediaQueue
         .releaseUser(interaction.user.id, interaction.id)
         .catch(() => undefined);
     }
   } catch (error) {
-    await feedback.handleError(error);
+    // The interaction token may be gone (15 min); nothing left to tell the user then
+    await reply.error(error).catch(() => undefined);
   }
 });

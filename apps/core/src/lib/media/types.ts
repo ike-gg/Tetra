@@ -1,5 +1,3 @@
-import type { FeedbackManager } from "@/utils/managers/feedback-manager";
-
 export interface MediaOutput {
   type: "mp4" | "png" | "jpg";
   source: Buffer | string;
@@ -7,6 +5,7 @@ export interface MediaOutput {
 }
 
 export interface PlatformResult {
+  /** The post's caption or title as plain text; escaped when rendered. */
   description?: string;
   media: MediaOutput[];
   metadata?: {
@@ -18,7 +17,8 @@ export interface PlatformResult {
 }
 
 export interface PlatformContext {
-  feedback: FeedbackManager;
+  /** Shows a progress step under the "Fetching …" state. */
+  progress: (text: string) => Promise<void>;
   /** Per-attachment upload limit of the interaction (`interaction.attachmentSizeLimit`). */
   fileLimit: number;
   /** Aborted when the /media job times out; kills running tools. */

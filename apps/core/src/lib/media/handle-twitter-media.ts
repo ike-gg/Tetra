@@ -69,11 +69,8 @@ export const handleTwitterMedia: PlatformHandlerCallback = async (_url) => {
 
     const linkAtTheEnd = isValidURL(text.split(" ").at(-1) ?? "");
 
-    const description = linkAtTheEnd
-      ? `${text.split(" ").slice(0, -1).join(" ")}
-    
-_Read more on X..._`
-      : text;
+    // The trailing t.co link points back at the post itself
+    const description = linkAtTheEnd ? text.split(" ").slice(0, -1).join(" ") : text;
 
     return {
       description,
