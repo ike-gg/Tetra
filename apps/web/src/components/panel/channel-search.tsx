@@ -135,6 +135,18 @@ export function ChannelSearch({ defaultValue, onChoose }: ChannelSearchProps) {
                     {channel.login}
                   </span>
                 )}
+                {channel.broadcasterType && (
+                  <span
+                    className={cn(
+                      "shrink-0 border px-1 font-mono text-[11px] leading-4",
+                      channel.broadcasterType === "partner"
+                        ? "border-primary text-primary"
+                        : "border-neutral-700 text-muted"
+                    )}
+                  >
+                    {channel.broadcasterType}
+                  </span>
+                )}
                 {channel.live && (
                   <span className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-foreground text-xs">
                     <span aria-hidden="true" className="size-1.5 bg-primary" />

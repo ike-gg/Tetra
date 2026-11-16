@@ -24,13 +24,16 @@ export const twitchChannelSchema = z.object({
   avatarUrl: z.string(),
 });
 
+/** Only partners and affiliates have subscriber and bit emotes. */
+const broadcasterTypeSchema = z.enum(["partner", "affiliate"]).nullable();
+
 export const twitchChannelSearchResultSchema = twitchChannelSchema.extend({
   live: z.boolean(),
+  broadcasterType: broadcasterTypeSchema,
 });
 
 export const twitchChannelDetailsSchema = twitchChannelSchema.extend({
-  /** Only partners and affiliates have subscriber and bit emotes. */
-  broadcasterType: z.enum(["partner", "affiliate"]).nullable(),
+  broadcasterType: broadcasterTypeSchema,
 });
 
 export const twitchChannelEmoteSchema = catalogEmoteSchema.extend({
@@ -69,7 +72,18 @@ const helix = async <T>(what: string, run: () => Promise<T>): Promise<T> => {
   }
 };
 
-/** Channel search for autocomplete; an exact login match goes first. */
+const toBroadcasterType = (type: string): z.infer<typeof broadcasterTypeSchema> =>
+  type === "partner" || type === "affiliate" ? type : null;
+
+const BROADCASTER_RANK = { partner: 0, affiliate: 1 } as const;
+const broadcasterRank = (type: z.infer<typeof broadcasterTypeSchema>) =>
+  type ? BROADCASTER_RANK[type] : 2;
+
+/**
+ * Channel search for autocomplete: partners, then affiliates, then everyone else; within
+ * a group an exact login match goes first, the rest keep Helix's relevance order. Search
+ * results carry no broadcaster type, so one batched user lookup adds it.
+ */
 export const searchTwitchChannels = (query: string) =>
   cached(
     lookupCacheKey("twitch-channel-search", query.toLowerCase()),
@@ -79,18 +93,28 @@ export const searchTwitchChannels = (query: string) =>
       const result = await helix("channel search", () =>
         twitchApi.search.searchChannels(query, { limit: SEARCH_LIMIT })
       );
-      const channels = result.data.map((channel) => ({
-        id: channel.id,
-        login: channel.name,
-        displayName: channel.displayName,
-        avatarUrl: channel.thumbnailUrl,
-        live: channel.isLive,
-      }));
+      if (result.data.length === 0) return [];
+      const users = await helix("user lookup", () =>
+        twitchApi.users.getUsersByIds(result.data.map((channel) => channel.id))
+      );
+      const types = new Map(users.map((user) => [user.id, user.broadcasterType]));
       const login = query.toLowerCase();
-      return [
-        ...channels.filter((channel) => channel.login === login),
-        ...channels.filter((channel) => channel.login !== login),
-      ];
+      return result.data
+        .map((channel, order) => ({
+          id: channel.id,
+          login: channel.name,
+          displayName: channel.displayName,
+          avatarUrl: channel.thumbnailUrl,
+          live: channel.isLive,
+          broadcasterType: toBroadcasterType(types.get(channel.id) ?? ""),
+          order: channel.name === login ? -1 : order,
+        }))
+        .sort(
+          (a, b) =>
+            broadcasterRank(a.broadcasterType) - broadcasterRank(b.broadcasterType) ||
+            a.order - b.order
+        )
+        .map(({ order: _, ...channel }) => channel);
     }
   );
 
@@ -113,7 +137,7 @@ export const getTwitchChannel = (login: string) =>
         login: user.name,
         displayName: user.displayName,
         avatarUrl: user.profilePictureUrl,
-        broadcasterType: user.broadcasterType || null,
+        broadcasterType: toBroadcasterType(user.broadcasterType),
       };
     }
   );
