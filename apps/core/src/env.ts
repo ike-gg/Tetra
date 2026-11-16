@@ -19,6 +19,19 @@ const parseEncryptionKey = (value: string) => {
   return key?.length === 32 ? key : null;
 };
 
+// Base64 (env UIs mangle tabs and newlines) of a cookies.txt: tab-separated 7-field lines
+const parseNetscapeCookies = (value: string) => {
+  const compact = value.replace(/\s+/g, "");
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(compact)) return null;
+
+  const text = Buffer.from(compact, "base64").toString("utf8");
+  const hasCookieLine = text
+    .split(/\r?\n/)
+    .some((line) => !line.startsWith("# ") && line.split("\t").length >= 7);
+
+  return hasCookieLine ? text : null;
+};
+
 const parseOrigins = (value: string) =>
   value
     .split(",")
@@ -150,11 +163,27 @@ const envSchema = z.object({
       "ID of the Discord channel that receives error logs sent with the 'Send developers log' button; the button is unavailable when not set"
     ),
 
-  MEDIA_COOKIES_FILE: z
+  MEDIA_COOKIES: z
     .string()
     .optional()
+    .transform((value, ctx) => {
+      if (!value) return undefined;
+
+      const decoded = parseNetscapeCookies(value);
+      if (!decoded) {
+        // Never echo the value: it holds session cookies
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "Must be a base64-encoded Netscape cookies.txt, e.g. `base64 -i cookies.txt | tr -d '\\n'`",
+        });
+        return z.NEVER;
+      }
+
+      return decoded;
+    })
     .describe(
-      "Path to a Netscape cookies.txt passed to yt-dlp and gallery-dl for /media (needed for Instagram photo posts)"
+      "Base64 Netscape cookies.txt for yt-dlp and gallery-dl in /media (needed for Instagram photo posts)"
     ),
 
   TWITCH_CLIENT_ID: z.string().describe("Twitch Client ID"),

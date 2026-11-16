@@ -101,7 +101,7 @@ Handlers in `src/lib/media/` (`PlatformHandlerCallback(url, { feedback, fileLimi
 | TikTok video | yt-dlp (`--use-extractors TikTok,vm.tiktok`) |
 | TikTok photo post (`/photo/` in the path, or yt-dlp says "Unsupported URL", e.g. short links) | gallery-dl → images + sound downloaded with `getBufferFromUrl` → `render-slideshow.ts` |
 | Instagram reel / video post / video carousel | yt-dlp (`Instagram`) |
-| Instagram photo post (yt-dlp: "There is no video in this post") | gallery-dl, only with `MEDIA_COOKIES_FILE`; files downloaded with `getBufferFromUrl`, max 10 |
+| Instagram photo post (yt-dlp: "There is no video in this post") | gallery-dl, only with `MEDIA_COOKIES`; files downloaded with `getBufferFromUrl`, max 10 |
 | Twitch clip | yt-dlp (`twitch:clips`), title/clipper/broadcaster from its JSON |
 | X | vxtwitter API (unchanged) |
 | Streamable | Streamable API (unchanged) |
@@ -109,7 +109,7 @@ Handlers in `src/lib/media/` (`PlatformHandlerCallback(url, { feedback, fileLimi
 - Both tools run through `Bun.spawn` (`helper/run-command.ts`, no shell, timeouts) with `--ignore-config` / `--config-ignore`; their JSON is validated with Zod. `--use-extractors` keeps yt-dlp off its generic extractor, which would fetch any URL.
 - yt-dlp runs twice: `-J` (extract), then `--load-info-json` (download, no second extraction). The loaded JSON is re-sorted on every download attempt, so the download steps down `-S vcodec:h264,res:720|480|360` until the files fit `fileLimit`. `--max-filesize` rejects a format from its metadata or `Content-Length` before downloading; it skips silently (exit 0, no file printed). Videos whose `duration` can't fit even at ~250 kbit/s are rejected without a download.
 - Any non-H.264 download is transcoded to H.264/AAC (`helper/ensure-h264.ts`, bitrate capped to fit `fileLimit`).
-- Cookies: `MEDIA_COOKIES_FILE` is copied into the temp dir per run, because both tools write the cookie jar back on exit.
+- Cookies: `MEDIA_COOKIES` is a base64-encoded Netscape `cookies.txt` (base64 because env UIs mangle its tabs and newlines). `env.ts` decodes and checks it at startup (valid base64, at least one tab-separated 7-field line) and never prints the value. Each run writes the decoded text to its own temp file (mode 600), because both tools write the cookie jar back on exit. To produce it: export cookies from a logged-in **burner** Instagram account (`yt-dlp --cookies-from-browser <browser> --cookies cookies.txt` or a cookies.txt browser extension), then `base64 -i cookies.txt | tr -d '\n'` (macOS) and paste the output into Coolify.
 - Tool errors are classified from stderr (`helper/media-errors.ts`): unsupported URL, login required, region block, not found, timeout; anything else is logged (last 500 chars of stderr) and answered generically.
 - Slideshow (`render-slideshow.ts`, `planSlideshow` holds the timing rules): sharp pads every image to 720x1280 (`contain`, black), ffmpeg concat demuxer with per-slide durations, H.264 yuv420p (limited range) + AAC 128k, `+faststart`, `-tune stillimage`, CRF 23 capped at 1 Mbit/s, 10 fps (1 fps for a single image). Length = min(audio, 90 s) via ffprobe. One image: whole length. n images: audio/n per slide; under 2 s → 2 s each with the audio looped (max 90 s); over 5 s → cycle at 4 s until the audio ends. No audio: 2–3 s per slide, max 90 s, no audio track. Measured worst case (30 noise images, 90 s): 8.9 MB.
 
@@ -166,7 +166,7 @@ Handlers in `src/lib/media/` (`PlatformHandlerCallback(url, { feedback, fileLimi
 Validated in `src/env.ts` (Zod + a readable error table); the app doesn't start if a required one is missing. Empty strings count as unset (compose passes unset optional vars as `""`).
 
 - **Required**: `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_OAUTH_CLIENT_ID`, `DISCORD_OAUTH_CLIENT_SECRET`, `POSTGRES_URL`, `REDIS_URL`, `BACKEND_URL`, `FRONTEND_URL`, `SESSION_KEYS`, `TOKEN_ENCRYPTION_KEY` (32 bytes base64/hex, e.g. `openssl rand -base64 32`), `INVITE_LINK`, `TWITCH_CLIENT_ID`, `TWITCH_SECRET_KEY`, `TENOR_API_KEY`, `IMGUR_CLIENT_ID` (also when the API is disabled).
-- **Optional**: `ENV` (`production` enables trust proxy, secure cookies, temp cleanup at start and disables the dev shard watchdog; default development), `PORT` (3002), `API_ENABLED`, `CORS_ORIGINS`, `COOKIE_DOMAIN`, `TEMP_DIR_PATH` (default system tmp), `DEV_GUILDS`, `ERROR_LOG_CHANNEL_ID`, `MEDIA_COOKIES_FILE` (path to a Netscape `cookies.txt` for yt-dlp and gallery-dl, e.g. a burner Instagram account; without it Instagram photo posts fail with a login message).
+- **Optional**: `ENV` (`production` enables trust proxy, secure cookies, temp cleanup at start and disables the dev shard watchdog; default development), `PORT` (3002), `API_ENABLED`, `CORS_ORIGINS`, `COOKIE_DOMAIN`, `TEMP_DIR_PATH` (default system tmp), `DEV_GUILDS`, `ERROR_LOG_CHANNEL_ID`, `MEDIA_COOKIES` (base64 Netscape `cookies.txt` for yt-dlp and gallery-dl, see [/media](#media); without it Instagram photo posts fail with a login message).
 
 ## Conventions (core)
 

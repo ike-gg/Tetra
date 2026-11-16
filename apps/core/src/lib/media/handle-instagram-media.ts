@@ -26,9 +26,9 @@ const loginRequiredError = () =>
   });
 
 // yt-dlp only extracts videos; photo posts (and mixed carousels' photos) need gallery-dl,
-// which Instagram only serves with a logged-in session (MEDIA_COOKIES_FILE)
+// which Instagram only serves with a logged-in session (MEDIA_COOKIES)
 const handlePhotoPost = async (url: string, fileLimit: number) => {
-  if (!env.MEDIA_COOKIES_FILE) throw loginRequiredError();
+  if (!env.MEDIA_COOKIES) throw loginRequiredError();
 
   const dir = TempFileManager.create();
   let files: Awaited<ReturnType<typeof fetchGallery>>["files"];
