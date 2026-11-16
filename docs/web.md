@@ -118,6 +118,7 @@ Components accept `className` for layout (margins, width, animation); don't use 
 - Form parts (slider, switch, input…) render hidden inputs with `position: absolute` (`hiddenInputStyle` in `@ui-sdk/core` `foundation/forms/form.js`). Inside a scroll container, give the container or an ancestor `position: relative`: otherwise they're placed against the page and make it scroll (the editor's sidebar did, even under an `overflow: hidden` root).
 - Route files may use TanStack's dotted names and `$params` (`panel.lazy.tsx`, `editor.$key.lazy.tsx`, `panel.servers.$guildId.tsx`), an exception to kebab-case.
 - `web.css` draws icons with pseudo-elements on parts without an `svg` child: a chevron `::after` on a submenu trigger (`menu-trigger` inside `menu-content`) and an × `::before` on `toast-close`. Ours bring their own glyphs and hide these (`after:hidden`, `before:hidden`).
+- `AutocompleteEmpty` (and other list `Empty` parts) with a function child calls it on every render, items or not: only plain children are hidden by `state.empty`. Return `null` when `!state.empty` (the channel search showed "no channel matches" above its results otherwise).
 - `web.css` styles `menu-trigger`, `drawer-trigger` and `drawer-close` as bordered buttons and `drawer-content` with padding, a border and a shadow; the panel pins border, background, height, padding and shadow on them with Tailwind.
 
 ## Topic docs

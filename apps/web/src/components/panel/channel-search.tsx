@@ -111,8 +111,9 @@ export function ChannelSearch({ defaultValue, onChoose }: ChannelSearchProps) {
             }
           </AutocompleteStatus>
           <AutocompleteEmpty className="px-2 py-1.5 text-muted text-sm">
+            {/* A function child renders even when the list has items */}
             {(state) =>
-              !state.query.trim() || state.loading
+              !state.empty || !state.query.trim() || state.loading
                 ? null
                 : results.isError
                   ? "i couldn't search Twitch. keep typing to try again"
