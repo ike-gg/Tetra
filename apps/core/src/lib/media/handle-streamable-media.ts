@@ -1,8 +1,7 @@
 import * as z from "zod";
 
-import type { PlatformResult } from "@/interactions/commands/global/chat-input/media";
-
 import { EmbeddedError } from "../../constants/errors";
+import type { PlatformResult } from "./types";
 
 const streamableSchema = z.object({
   files: z.object({

@@ -19,6 +19,20 @@ RUN find node_modules -path "*/gifsicle/package.json" -exec dirname {} \; \
 
 FROM base AS runner
 ENV NODE_ENV=production
+
+# /media downloaders, unpinned on purpose: platforms break old versions within weeks.
+# ADD re-downloads the PyPI metadata on every build, so a new release busts this layer.
+ADD https://pypi.org/pypi/yt-dlp/json /tmp/versions/yt-dlp.json
+ADD https://pypi.org/pypi/gallery-dl/json /tmp/versions/gallery-dl.json
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 python3-venv \
+  && rm -rf /var/lib/apt/lists/* \
+  && python3 -m venv /opt/media-tools \
+  && /opt/media-tools/bin/pip install --no-cache-dir --upgrade "yt-dlp[default,curl-cffi]" gallery-dl \
+  && ln -s /opt/media-tools/bin/yt-dlp /opt/media-tools/bin/gallery-dl /usr/local/bin/ \
+  && rm -rf /tmp/versions \
+  && yt-dlp --version && gallery-dl --version
+
 COPY --from=deps /app/node_modules node_modules
 COPY tsconfig.base.json ./
 COPY apps/core apps/core

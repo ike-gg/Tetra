@@ -150,15 +150,12 @@ const envSchema = z.object({
       "ID of the Discord channel that receives error logs sent with the 'Send developers log' button; the button is unavailable when not set"
     ),
 
-  COBALT_URL: z
-    .string()
-    .url()
-    .optional()
-    .describe("URL of Cobalt API instance, media command depends on it"),
-  COBALT_API_KEY: z
+  MEDIA_COOKIES_FILE: z
     .string()
     .optional()
-    .describe("API key for Cobalt API, if its protected"),
+    .describe(
+      "Path to a Netscape cookies.txt passed to yt-dlp and gallery-dl for /media (needed for Instagram photo posts)"
+    ),
 
   TWITCH_CLIENT_ID: z.string().describe("Twitch Client ID"),
   TWITCH_SECRET_KEY: z.string().describe("Twitch Secret Key"),

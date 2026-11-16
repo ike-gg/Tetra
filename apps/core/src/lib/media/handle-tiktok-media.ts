@@ -1,61 +1,116 @@
-import type {
-  PlatformHandlerCallback,
-  PlatformResult,
-} from "@/interactions/commands/global/chat-input/media";
+import fs from "node:fs";
+import * as z from "zod";
 
-import { EmbeddedError } from "../../constants/errors";
-import { getRemoteResourceDetails } from "../../utils";
-import { fetchCobaltAPI } from "./helper/fetch-cobalt-api";
+import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 
-export const handleTikTokMedia: PlatformHandlerCallback = async (url) => {
-  const post = await fetchCobaltAPI(url);
+import { prepareCookies } from "./helper/cookies";
+import { downloadVideoPost, videoMetadata } from "./helper/download-video";
+import { fetchGallery, GalleryDlError } from "./helper/gallery-dl";
+import { FileLimitExceededError } from "./helper/media-errors";
+import { renderSlideshow } from "./helper/render-slideshow";
+import { YtDlpError } from "./helper/yt-dlp";
+import type { PlatformContext, PlatformHandlerCallback, PlatformResult } from "./types";
 
-  if (post.status === "error" || !post) {
-    throw new EmbeddedError(
-      "TikTok not found or link is invalid. (Cobalt response with error status)"
-    );
-  }
+import { TempFileManager } from "#/files/temp-file-manager";
 
-  // tiktok slideshow
-  if (post.status === "picker" && post.picker) {
-    const images = await Promise.all(
-      post.picker.map(async (item): Promise<PlatformResult["media"][0]> => {
-        const resource = await getRemoteResourceDetails(item.url);
+const PLATFORM = "TikTok";
+const MAX_ASSET_SIZE = 20 * 1024 * 1024;
+const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp"]);
+const AUDIO_EXTENSIONS = new Set(["mp3", "m4a", "aac"]);
 
-        return {
-          size: resource?.size,
-          type: "jpg",
-          source: item.url,
-        };
-      })
-    );
+const numeric = z.coerce.number().nullish().catch(undefined);
 
-    const audioUrl = post.audio;
+const postSchema = z
+  .object({
+    createTime: numeric,
+    author: z.object({ uniqueId: z.string().nullish() }).nullish(),
+    stats: z.object({ diggCount: numeric, playCount: numeric }).nullish(),
+  })
+  .catch({});
 
-    return {
-      media: images,
-      isSlideshow: true,
-      audio: audioUrl,
-    };
-  }
-
-  if (post.url) {
-    const { url } = post;
-
-    const resource = await getRemoteResourceDetails(url);
-
-    return {
-      media: [
-        {
-          size: resource?.size,
-          type: "mp4",
-          source: url,
-        },
-      ],
-    };
-  }
-
-  throw new EmbeddedError(`TikTok found but this type of post is not supported`, {
-    unsupportedFeature: true,
+const downloadAsset = (url: string) =>
+  getBufferFromUrl(url, {
+    maxBufferSize: MAX_ASSET_SIZE,
+    maxRetries: 2,
+    timeoutMs: 20_000,
   });
+
+// yt-dlp can't read photo posts; gallery-dl lists the images plus the post's sound
+const handleSlideshow = async (
+  url: string,
+  { feedback, fileLimit }: PlatformContext
+): Promise<PlatformResult> => {
+  const dir = TempFileManager.create();
+
+  let gallery: Awaited<ReturnType<typeof fetchGallery>>;
+  try {
+    gallery = await fetchGallery(url, { cookies: prepareCookies(dir) });
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+
+  const imageUrls = gallery.files
+    .filter((file) => file.type === "image" || IMAGE_EXTENSIONS.has(file.extension))
+    .map((file) => file.url);
+  const audioUrl = gallery.files.find(
+    (file) => file.type === "audio" || AUDIO_EXTENSIONS.has(file.extension)
+  )?.url;
+
+  if (imageUrls.length === 0) {
+    throw new GalleryDlError("not-found", "no images in the TikTok post");
+  }
+
+  await feedback.info("Downloading slideshow assets...");
+
+  const [images, audio] = await Promise.all([
+    Promise.all(imageUrls.map(downloadAsset)),
+    // A missing sound shouldn't cost the whole slideshow
+    audioUrl ? downloadAsset(audioUrl).catch(() => undefined) : undefined,
+  ]);
+
+  await feedback.info("Rendering slideshow...");
+
+  const movie = await renderSlideshow(images, audio);
+  if (movie.byteLength > fileLimit) throw new FileLimitExceededError();
+
+  const post = postSchema.parse(gallery.post ?? {});
+
+  return {
+    media: [{ type: "mp4", source: movie, size: movie.byteLength }],
+    metadata: {
+      author: post.author?.uniqueId ?? undefined,
+      date: post.createTime ? new Date(post.createTime * 1000) : undefined,
+      likes: post.stats?.diggCount ?? undefined,
+      views: post.stats?.playCount ?? undefined,
+    },
+  };
+};
+
+export const handleTikTokMedia: PlatformHandlerCallback = async (url, context) => {
+  try {
+    if (new URL(url).pathname.includes("/photo/")) {
+      return await handleSlideshow(url, context);
+    }
+
+    try {
+      const { media, videos } = await downloadVideoPost(url, {
+        platform: PLATFORM,
+        extractors: "TikTok,vm.tiktok",
+        fileLimit: context.fileLimit,
+      });
+
+      return { media, metadata: videos[0] && videoMetadata(videos[0]) };
+    } catch (error) {
+      // Short links (vm./vt.tiktok.com) don't show that they lead to a photo post
+      if (error instanceof YtDlpError && error.failure === "unsupported") {
+        return await handleSlideshow(url, context);
+      }
+      throw error;
+    }
+  } catch (error) {
+    if (error instanceof YtDlpError || error instanceof GalleryDlError) {
+      throw error.toEmbedded(PLATFORM);
+    }
+    throw error;
+  }
 };

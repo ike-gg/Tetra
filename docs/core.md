@@ -2,7 +2,7 @@
 
 The Discord bot and the REST API for the panel (`apps/core`). Paths in this document are relative to `apps/core`; commands are run from the repo root.
 
-**Stack:** Bun (runtime, `bun run`, `Bun.spawn`), TypeScript (strict), discord.js 14 with sharding, Hono (API, served by `Bun.serve`), Drizzle + PostgreSQL, Redis (ioredis), sharp + gifsicle (images), ffmpeg + Cobalt (`/media`), Zod (validation everywhere).
+**Stack:** Bun (runtime, `bun run`, `Bun.spawn`), TypeScript (strict), discord.js 14 with sharding, Hono (API, served by `Bun.serve`), Drizzle + PostgreSQL, Redis (ioredis), sharp + gifsicle (images), yt-dlp + gallery-dl + ffmpeg (`/media`), Zod (validation everywhere).
 
 ## Architecture
 
@@ -28,7 +28,7 @@ Two kinds of processes:
 | `src/interactions/subcommands` | `/addemote` subcommand logic. |
 | `src/emotes/` | Emote flow: `prepare-emote` → `edit-emote-by-user` → `add-emote-to-guild`; sources in `source/{7tv,bttv,ffz,file}`; `source/parse-emote-link.ts` finds provider + id in a link (bot and API). `lookup/`: link resolve for the panel (`CatalogEmote` shape, `EmoteLookupError` codes), no Discord or bot imports. |
 | `src/lib/buffer/` | Optimization pipeline (sharp + gifsicle). |
-| `src/lib/media/` | Platform handlers for `/media`. |
+| `src/lib/media/` | Platform handlers for `/media`, see [/media](#media). |
 | `src/lib/network/` | `url-guard.ts`: SSRF protection for server-side downloads. |
 | `src/lib/crypto/` | Encryption of Discord OAuth tokens at rest. |
 | `src/lib/discord-oauth`, `src/lib/sharding-manager`, `src/lib/shards` | Manager-side singletons and shard lifecycle helpers. |
@@ -92,6 +92,36 @@ Hono on `Bun.serve` (`src/api/index.ts`), the app is built in `src/api/app.ts`. 
 - **Discord tokens** (`users.access_token`, `refresh_token`) are encrypted with AES-256-GCM (`v1:<iv>:<tag>:<ciphertext>`) using `TOKEN_ENCRYPTION_KEY`. Values without `v1:` are legacy plaintext and get re-encrypted on the next write. Losing or changing the key logs everyone out.
 - Guild access checks: the user must be in the guild (OAuth guild list) and have `ManageGuildExpressions` for write endpoints.
 
+## /media
+
+Handlers in `src/lib/media/` (`PlatformHandlerCallback(url, { feedback, fileLimit })` → `PlatformResult`, types in `types.ts`); the command matches the URL's hostname exactly or as a subdomain of a platform host, never by substring (the URL goes to tools that fetch it).
+
+| Platform | Tool |
+|---|---|
+| TikTok video | yt-dlp (`--use-extractors TikTok,vm.tiktok`) |
+| TikTok photo post (`/photo/` in the path, or yt-dlp says "Unsupported URL", e.g. short links) | gallery-dl → images + sound downloaded with `getBufferFromUrl` → `render-slideshow.ts` |
+| Instagram reel / video post / video carousel | yt-dlp (`Instagram`) |
+| Instagram photo post (yt-dlp: "There is no video in this post") | gallery-dl, only with `MEDIA_COOKIES_FILE`; files downloaded with `getBufferFromUrl`, max 10 |
+| Twitch clip | yt-dlp (`twitch:clips`), title/clipper/broadcaster from its JSON |
+| X | vxtwitter API (unchanged) |
+| Streamable | Streamable API (unchanged) |
+
+- Both tools run through `Bun.spawn` (`helper/run-command.ts`, no shell, timeouts) with `--ignore-config` / `--config-ignore`; their JSON is validated with Zod. `--use-extractors` keeps yt-dlp off its generic extractor, which would fetch any URL.
+- yt-dlp runs twice: `-J` (extract), then `--load-info-json` (download, no second extraction). The loaded JSON is re-sorted on every download attempt, so the download steps down `-S vcodec:h264,res:720|480|360` until the files fit `fileLimit`. `--max-filesize` rejects a format from its metadata or `Content-Length` before downloading; it skips silently (exit 0, no file printed). Videos whose `duration` can't fit even at ~250 kbit/s are rejected without a download.
+- Any non-H.264 download is transcoded to H.264/AAC (`helper/ensure-h264.ts`, bitrate capped to fit `fileLimit`).
+- Cookies: `MEDIA_COOKIES_FILE` is copied into the temp dir per run, because both tools write the cookie jar back on exit.
+- Tool errors are classified from stderr (`helper/media-errors.ts`): unsupported URL, login required, region block, not found, timeout; anything else is logged (last 500 chars of stderr) and answered generically.
+- Slideshow (`render-slideshow.ts`, `planSlideshow` holds the timing rules): sharp pads every image to 720x1280 (`contain`, black), ffmpeg concat demuxer with per-slide durations, H.264 yuv420p (limited range) + AAC 128k, `+faststart`, `-tune stillimage`, CRF 23 capped at 1 Mbit/s, 10 fps (1 fps for a single image). Length = min(audio, 90 s) via ffprobe. One image: whole length. n images: audio/n per slide; under 2 s → 2 s each with the audio looped (max 90 s); over 5 s → cycle at 4 s until the audio ends. No audio: 2–3 s per slide, max 90 s, no audio track. Measured worst case (30 noise images, 90 s): 8.9 MB.
+
+### Platform facts (verified 2026-11, yt-dlp 2026.10.26, gallery-dl 1.32.20, residential IP, no cookies)
+
+- yt-dlp works for Instagram reels and video posts (one entry per video), TikTok videos (H.264 formats with `filesize` in the metadata), Twitch clips, X, Streamable, YouTube Shorts. It fails on TikTok photo posts ("Unsupported URL"), Instagram photo-only posts ("There is no video in this post") and Reddit (login).
+- gallery-dl works for TikTok photo posts without cookies (`-j`: `[2, post]`, `[3, url, {type: image|audio, extension}]`); image and sound URLs download without cookies or special headers. Instagram photo posts redirect to login without cookies. gallery-dl exits 0 on extraction errors: they come as `[-1, {error, message}]` or only on stderr with an empty list.
+- Twitch clip formats come without codec info and were all HEVC (360p–1080p, incl. portrait); 720p ≈ 8 Mbit/s (14 s clip = 13.7 MB). Hence the H.264 transcode and the resolution ladder.
+- TikTok answers "Your IP address is blocked from accessing this post" for region-blocked posts and also for ids that don't exist.
+- TikTok photo-post sound: gallery-dl's audio file is `music.playUrl` and its length equals `music.duration` / `preciseDuration` (checked: 18.3 s, 59.3 s). The item JSON has no start offset or segment fields, so for original sounds it is exactly the post's audio, while for library songs it is the sound's own clip from its start, not necessarily the segment the post uses (not verified on a library-song post).
+- The Instagram reel used in tests has no audio track at all; yt-dlp then picks a video-only DASH format, which is correct.
+
 ## Security rules
 
 - Every server-side download of a user-supplied URL goes through `src/lib/network/url-guard.ts` (`safeFetch`): private/loopback/link-local/metadata IPs blocked, each redirect hop re-checked. `getBufferFromUrl` reads the body in chunks and stops at `maxBufferSize`, so a missing or false `Content-Length` can't make it buffer more; always pass a limit for user URLs. `POST /guilds/:id/emote` additionally requires https and an allow-listed host (7TV, BTTV, FFZ, Twitch, Discord CDN, Tenor, Giphy, Imgur).
@@ -136,7 +166,7 @@ Hono on `Bun.serve` (`src/api/index.ts`), the app is built in `src/api/app.ts`. 
 Validated in `src/env.ts` (Zod + a readable error table); the app doesn't start if a required one is missing. Empty strings count as unset (compose passes unset optional vars as `""`).
 
 - **Required**: `DISCORD_BOT_ID`, `DISCORD_BOT_TOKEN`, `DISCORD_OAUTH_CLIENT_ID`, `DISCORD_OAUTH_CLIENT_SECRET`, `POSTGRES_URL`, `REDIS_URL`, `BACKEND_URL`, `FRONTEND_URL`, `SESSION_KEYS`, `TOKEN_ENCRYPTION_KEY` (32 bytes base64/hex, e.g. `openssl rand -base64 32`), `INVITE_LINK`, `TWITCH_CLIENT_ID`, `TWITCH_SECRET_KEY`, `TENOR_API_KEY`, `IMGUR_CLIENT_ID` (also when the API is disabled).
-- **Optional**: `ENV` (`production` enables trust proxy, secure cookies, temp cleanup at start and disables the dev shard watchdog; default development), `PORT` (3002), `API_ENABLED`, `CORS_ORIGINS`, `COOKIE_DOMAIN`, `TEMP_DIR_PATH` (default system tmp), `DEV_GUILDS`, `ERROR_LOG_CHANNEL_ID`, `COBALT_URL`, `COBALT_API_KEY`.
+- **Optional**: `ENV` (`production` enables trust proxy, secure cookies, temp cleanup at start and disables the dev shard watchdog; default development), `PORT` (3002), `API_ENABLED`, `CORS_ORIGINS`, `COOKIE_DOMAIN`, `TEMP_DIR_PATH` (default system tmp), `DEV_GUILDS`, `ERROR_LOG_CHANNEL_ID`, `MEDIA_COOKIES_FILE` (path to a Netscape `cookies.txt` for yt-dlp and gallery-dl, e.g. a burner Instagram account; without it Instagram photo posts fail with a login message).
 
 ## Conventions (core)
 
@@ -158,7 +188,7 @@ Run inside `apps/core`, or from the root with `bun --filter @tetra/core <script>
 
 ## Docker
 
-- Image: `docker/core.Dockerfile`, built from the **repo root** (it needs the root `bun.lock` and `tsconfig.base.json`). Base `oven/bun` (Debian slim) with `ffmpeg` and `gifsicle` from apt.
+- Image: `docker/core.Dockerfile`, built from the **repo root** (it needs the root `bun.lock` and `tsconfig.base.json`). Base `oven/bun` (Debian slim) with `ffmpeg` and `gifsicle` from apt. yt-dlp (`[default,curl-cffi]`) and gallery-dl are pip-installed unpinned into a venv (`/opt/media-tools`, symlinked to `/usr/local/bin`); `ADD`ing their PyPI JSON busts the layer cache, so every build gets the latest release. Locally both must be on `PATH` (e.g. `brew install yt-dlp gallery-dl` or `uv tool install`).
 - `bun install` runs with `--ignore-scripts`: the `gifsicle` npm package has no linux/arm64 binary and its postinstall tries to compile from source. Only sharp's install script is run (downloads libvips), and the npm gifsicle path is symlinked to `/usr/bin/gifsicle`. A new dependency that needs an install script must be run explicitly in the Dockerfile.
 - gifsicle versions differ (verified 2026-11): the npm package's prebuilt binaries (macOS, linux x64, Windows) are **1.93** and never updated; Debian's apt package in the image is **1.96**. So local dev runs 1.93 and the container 1.96 on every architecture. The flags used are the same in both, but output sizes can differ slightly. Using the system binary everywhere (brew/apt) would remove the mismatch and the Dockerfile workaround.
 - Manager, API and all shards run in one container.

@@ -1,12 +1,8 @@
 import * as z from "zod";
 
-import type {
-  MediaOutput,
-  PlatformHandlerCallback,
-} from "@/interactions/commands/global/chat-input/media";
-
 import { EmbeddedError } from "../../constants/errors";
 import isValidURL from "../../utils/is-valid-url";
+import type { MediaOutput, PlatformHandlerCallback } from "./types";
 
 const apiResponseSchema = z.object({
   mediaURLs: z.array(z.string().url()),

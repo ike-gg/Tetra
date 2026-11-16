@@ -51,8 +51,7 @@ services:
       TENOR_API_KEY: ${TENOR_API_KEY:?}
       IMGUR_CLIENT_ID: ${IMGUR_CLIENT_ID:?}
       ERROR_LOG_CHANNEL_ID: ${ERROR_LOG_CHANNEL_ID:-}
-      COBALT_URL: ${COBALT_URL:-}
-      COBALT_API_KEY: ${COBALT_API_KEY:-}
+      MEDIA_COOKIES_FILE: ${MEDIA_COOKIES_FILE:-}
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,49 +1,34 @@
-import type { PlatformResult } from "@/interactions/commands/global/chat-input/media";
+import { downloadVideoPost } from "./helper/download-video";
+import { YtDlpError } from "./helper/yt-dlp";
+import type { PlatformHandlerCallback } from "./types";
 
-import { EmbeddedError } from "../../constants/errors";
-import { getRemoteResourceDetails } from "../../utils";
-import { TwitchManager } from "../../utils/managers/twitch-manager";
-import { fetchCobaltAPI } from "./helper/fetch-cobalt-api";
+const PLATFORM = "Twitch";
 
-export const handleTwitchClip = async (_url: string): Promise<PlatformResult> => {
-  const url = new URL(_url);
+export const handleTwitchClip: PlatformHandlerCallback = async (url, { fileLimit }) => {
+  try {
+    const { media, videos } = await downloadVideoPost(url, {
+      platform: PLATFORM,
+      // Clips only: VODs and streams are far over any upload limit
+      extractors: "twitch:clips",
+      fileLimit,
+    });
 
-  if (url.pathname.endsWith("/")) {
-    url.pathname = url.pathname.slice(0, -1);
-  }
+    const clip = videos[0];
 
-  const clipId = url.pathname.split("/").pop();
-
-  if (!clipId) throw new EmbeddedError("Invalid clip ID.");
-
-  const clip = await TwitchManager.getClip(clipId);
-
-  if (!clip) throw new EmbeddedError("Clip not found.");
-
-  const media = await fetchCobaltAPI(_url, {
-    videoQuality: "720",
-  });
-
-  if (!media.url) {
-    throw new EmbeddedError("Media for clip not found (cobalt error).");
-  }
-
-  const mediaDetauls = await getRemoteResourceDetails(media.url);
-
-  return {
-    description: `${clip.title}
-    *Clipped by: ${clip.creator_name}*`,
-    media: [
-      {
-        source: media.url,
-        type: "mp4",
-        size: mediaDetauls?.size,
+    return {
+      description: clip?.title
+        ? `${clip.title}${clip.uploader ? `\n*Clipped by: ${clip.uploader}*` : ""}`
+        : undefined,
+      media,
+      metadata: clip && {
+        // yt-dlp: `creator` is the broadcaster, `uploader` the person who clipped it
+        author: clip.creator ?? clip.channel ?? undefined,
+        date: clip.timestamp ? new Date(clip.timestamp * 1000) : undefined,
+        views: clip.view_count ?? undefined,
       },
-    ],
-    metadata: {
-      author: clip.broadcaster_name,
-      date: new Date(clip.created_at),
-      views: clip.view_count,
-    },
-  };
+    };
+  } catch (error) {
+    if (error instanceof YtDlpError) throw error.toEmbedded(PLATFORM);
+    throw error;
+  }
 };

@@ -7,7 +7,6 @@ import {
 } from "discord.js";
 
 import { Messages } from "@/constants/messages";
-import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
 import { ChatInputCommandHandler } from "@/interactions";
 import {
   handleInstagramMedia,
@@ -16,7 +15,8 @@ import {
   handleTwitchClip,
   handleTwitterMedia,
 } from "@/lib/media";
-import { renderSlideshow } from "@/lib/media/helper/render-slideshow";
+import { FileLimitExceededError } from "@/lib/media/helper/media-errors";
+import type { PlatformHandlerCallback } from "@/lib/media/types";
 import { URLButton } from "@/utils/discord/components/url-button";
 import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
 import { formatDate } from "@/utils/format-date";
@@ -24,43 +24,12 @@ import isValidURL from "@/utils/is-valid-url";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";
 import { removeQueryFromUrl } from "@/utils/remove-query-from-url";
 
-export interface MediaOutput {
-  type: "mp4" | "png" | "jpg";
-  source: Buffer | string;
-  size?: number;
-}
-
-export interface PlatformResult {
-  description?: string;
-  media: MediaOutput[];
-  isSlideshow?: boolean;
-  audio?: string;
-  metadata?: {
-    author?: string;
-    date?: Date;
-    likes?: number;
-    views?: number;
-  };
-}
-
-export type PlatformHandlerCallback = (
-  url: string,
-  feedback: FeedbackManager
-) => Promise<PlatformResult>;
-
 interface PlatformHandler {
   name: string;
   hostnames: string[];
   handler: PlatformHandlerCallback;
   color: number;
   emote: string;
-}
-
-export enum MediaCommandError {
-  FILE_LIMIT_EXCEEDED,
-  POST_NOT_FOUND,
-  INSTAGRAM_NOT_FOUND_OR_NOT_SUPPORTED,
-  REDDIT_NOT_FOUND_OR_NOT_VIDEO,
 }
 
 const supportedPlatforms: PlatformHandler[] = [
@@ -133,10 +102,11 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
   }
 
   try {
-    const { host } = new URL(itemUrl);
+    const { hostname: host } = new URL(itemUrl);
 
+    // Exact host or subdomain: the URL goes to yt-dlp / gallery-dl, which fetch it
     const platform = supportedPlatforms.find((p) =>
-      p.hostnames.some((hostname) => host.includes(hostname))
+      p.hostnames.some((hostname) => host === hostname || host.endsWith(`.${hostname}`))
     );
 
     if (!platform) {
@@ -149,59 +119,21 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
       color: platform.color,
     });
 
-    const { description, media, metadata, isSlideshow, audio } = await platform.handler(
-      itemUrl,
-      feedback
-    );
+    const { description, media, metadata } = await platform.handler(itemUrl, {
+      feedback,
+      fileLimit,
+    });
 
     const totalFilesSize = media.reduce((curr, acc) => curr + (acc.size ?? 0), 0);
 
-    if (totalFilesSize > fileLimit) {
-      await feedback.fileLimitExceeded();
-      return;
-    }
+    if (totalFilesSize > fileLimit) throw new FileLimitExceededError();
 
-    const mediaToUpload: AttachmentBuilder[] = [];
-
-    if (isSlideshow) {
-      await feedback.info("Downloading slideshow assets...");
-
-      const sources = media.filter((m) => m.type !== "mp4");
-      const images = await Promise.all(
-        sources.map(async (image) => {
-          if (typeof image.source === "string") {
-            return await getBufferFromUrl(image.source);
-          }
-
-          return image.source;
-        })
-      );
-
-      const audioRawBuffer = audio ? await getBufferFromUrl(audio) : undefined;
-
-      const audioBuffer =
-        audioRawBuffer && audioRawBuffer.length > 1024 ? audioRawBuffer : undefined;
-
-      await feedback.info("Rendering slideshow...");
-
-      const movie = await renderSlideshow(images, audioBuffer);
-
-      mediaToUpload.push(
-        new AttachmentBuilder(movie, {
-          name: `tetra_${interaction.id}.mp4`,
-        })
-      );
-    }
-
-    if (!isSlideshow) {
-      for (const m of media) {
-        mediaToUpload.push(
-          new AttachmentBuilder(m.source, {
-            name: `tetra_${interaction.id}.${m.type}`,
-          })
-        );
-      }
-    }
+    const mediaToUpload = media.map((m, index) => {
+      const suffix = media.length > 1 ? `_${index + 1}` : "";
+      return new AttachmentBuilder(m.source, {
+        name: `tetra_${interaction.id}${suffix}.${m.type}`,
+      });
+    });
 
     const metadataRow = new ActionRowBuilder<ButtonBuilder>();
     const actionRow = new ActionRowBuilder<ButtonBuilder>();
@@ -302,10 +234,6 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
       components,
     });
   } catch (error) {
-    if (error === MediaCommandError.FILE_LIMIT_EXCEEDED) {
-      await feedback.fileLimitExceeded();
-    } else {
-      await feedback.handleError(error);
-    }
+    await feedback.handleError(error);
   }
 });
