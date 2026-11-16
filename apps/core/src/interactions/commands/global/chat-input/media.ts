@@ -20,6 +20,7 @@ import {
   handleTikTokMedia,
   handleTwitchClip,
   handleTwitterMedia,
+  handleYouTubeVideo,
 } from "@/lib/media";
 import { FileLimitExceededError } from "@/lib/media/helper/media-errors";
 import { CommandAbortedError } from "@/lib/media/helper/run-command";
@@ -71,11 +72,13 @@ const supportedPlatforms: PlatformHandler[] = [
     handler: handleTwitchClip,
     hostnames: ["twitch.tv"],
     emote: "<:_tetra_symbol_twitch:1245824662177448036>",
-  }, // {
-  //   name: "YouTube",
-  //   handler: handleYoutubeMedia,
-  //   hostnames: ["youtube.com", "youtu.be", "www.youtube.com"],
-  // },
+  },
+  {
+    // Shorts and videos up to 90 s; www., m. and music. match as subdomains
+    name: "YouTube",
+    handler: handleYouTubeVideo,
+    hostnames: ["youtube.com", "youtu.be"],
+  },
   {
     name: "Kick",
     handler: handleKickClip,
@@ -130,7 +133,7 @@ const command = new SlashCommandBuilder()
     InteractionContextType.PrivateChannel
   )
   .setDescription(
-    "download a video or images from X, Instagram, TikTok, Twitch, Kick or Streamable"
+    "download a video or images from X, Instagram, TikTok, YouTube, Twitch, Kick or Streamable"
   )
   .addStringOption((option) =>
     option.setName("url").setDescription("link to the post or clip").setRequired(true)
@@ -199,7 +202,7 @@ const processMedia = async ({
   fileLimit: number;
   signal: AbortSignal;
 }) => {
-  const { description, media, metadata } = await platform.handler(itemUrl, {
+  const { description, media, metadata, url } = await platform.handler(itemUrl, {
     progress: (text) =>
       reply.send(mediaStatus(`downloading from ${platform.name}`, text)),
     fileLimit,
@@ -229,7 +232,7 @@ const processMedia = async ({
       attachmentNames: files.map((file) => file.name ?? ""),
       caption: description,
       meta: metadata,
-      url: removeQueryFromUrl(itemUrl),
+      url: url ?? removeQueryFromUrl(itemUrl),
     }),
     files,
   });

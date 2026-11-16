@@ -25,6 +25,7 @@ export type MediaToolFailure =
   | "unsupported"
   | "no-video"
   | "login-required"
+  | "blocked"
   | "region-blocked"
   | "not-found"
   | "timeout"
@@ -38,6 +39,14 @@ export const classifyToolError = (output: string): MediaToolFailure => {
     return "unsupported";
   }
   if (text.includes("there is no video in this post")) return "no-video";
+  // YouTube on datacenter IPs: "Sign in to confirm you're not a bot", also mentions cookies
+  if (
+    text.includes("not a bot") ||
+    text.includes("rate-limited") ||
+    text.includes("rate limited")
+  ) {
+    return "blocked";
+  }
   if (
     text.includes("ip address is blocked") ||
     text.includes("not available in your country") ||
@@ -46,8 +55,12 @@ export const classifyToolError = (output: string): MediaToolFailure => {
   ) {
     return "region-blocked";
   }
+  // YouTube's "Private video. Sign in if you've been granted access" isn't fixable by login
+  if (text.includes("private video")) return "not-found";
   if (
     text.includes("login") ||
+    text.includes("sign in") ||
+    text.includes("members-only") ||
     text.includes("log in") ||
     text.includes("cookies") ||
     text.includes("authentication") ||
@@ -57,6 +70,8 @@ export const classifyToolError = (output: string): MediaToolFailure => {
   }
   if (
     text.includes("not available") ||
+    text.includes("unavailable") ||
+    text.includes("has been removed") ||
     text.includes("no longer available") ||
     text.includes("not found") ||
     text.includes("404") ||
@@ -75,6 +90,7 @@ const messages: Record<Exclude<MediaToolFailure, "unknown">, string> = {
   "no-video": "this post has no video",
   "login-required":
     "i can't download this post without logging in. it may be private, age-restricted or only visible to logged-in users",
+  blocked: "the platform is blocking my downloads right now. try again later",
   "region-blocked": "this post isn't available in my region, or it doesn't exist",
   "not-found": "i couldn't find this post. it may have been deleted or made private",
   timeout: "the platform took too long to answer. try again later",

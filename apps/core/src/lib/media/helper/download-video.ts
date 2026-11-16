@@ -11,16 +11,27 @@ import {
 
 import { TempFileManager } from "#/files/temp-file-manager";
 
-/** Extracts with yt-dlp, rejects what can't fit `fileLimit`, then downloads the videos. */
+/**
+ * Extracts with yt-dlp, rejects what can't fit `fileLimit`, then downloads the videos.
+ * `check` runs on the extracted metadata before anything is downloaded and throws to reject.
+ */
 export const downloadVideoPost = async (
   url: string,
-  { fileLimit, ...options }: Omit<YtDlpOptions, "cookies"> & { fileLimit: number }
+  {
+    fileLimit,
+    check,
+    ...options
+  }: Omit<YtDlpOptions, "cookies"> & {
+    fileLimit: number;
+    check?: (videos: YtDlpVideo[]) => void;
+  }
 ): Promise<{ media: MediaOutput[]; videos: YtDlpVideo[] }> => {
   const dir = TempFileManager.create();
 
   try {
     const ytDlpOptions = { ...options, cookies: prepareCookies(dir) };
     const info = await fetchVideoInfo(url, ytDlpOptions);
+    check?.(info.videos);
     const buffers = await downloadVideos(info, dir, fileLimit, ytDlpOptions);
 
     return {
@@ -38,9 +49,19 @@ export const downloadVideoPost = async (
 
 export const videoCaption = (video: YtDlpVideo) => video.description?.trim() || undefined;
 
+const UPLOAD_DATE = /^(\d{4})(\d{2})(\d{2})$/;
+
+export const videoDate = (video: YtDlpVideo) => {
+  if (video.timestamp) return new Date(video.timestamp * 1000);
+  const match = video.upload_date?.match(UPLOAD_DATE);
+  if (!match) return undefined;
+  const [, year, month, day] = match;
+  return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+};
+
 export const videoMetadata = (video: YtDlpVideo): PlatformResult["metadata"] => ({
   author: video.uploader ?? video.channel ?? undefined,
-  date: video.timestamp ? new Date(video.timestamp * 1000) : undefined,
+  date: videoDate(video),
   likes: video.like_count ?? undefined,
   views: video.view_count ?? undefined,
 });

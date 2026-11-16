@@ -27,9 +27,14 @@ const videoSchema = z.object({
   title: z.string().nullish(),
   description: z.string().nullish(),
   uploader: z.string().nullish(),
+  uploader_id: z.string().nullish(),
   creator: z.string().nullish(),
   channel: z.string().nullish(),
   timestamp: z.number().nullish(),
+  /** `YYYYMMDD`, for extractors without `timestamp` */
+  upload_date: z.string().nullish(),
+  /** `not_live`, `is_live`, `is_upcoming`, `was_live`, `post_live` */
+  live_status: z.string().nullish(),
   duration: z.number().nullish(),
   like_count: z.number().nullish(),
   view_count: z.number().nullish(),

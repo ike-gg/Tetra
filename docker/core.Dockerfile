@@ -20,6 +20,10 @@ RUN find node_modules -path "*/gifsicle/package.json" -exec dirname {} \; \
 FROM base AS runner
 ENV NODE_ENV=production
 
+# yt-dlp solves YouTube's JS challenges with an external runtime; deno is its default
+# (bun support is deprecated). Official single-binary image, multi-arch, latest release.
+COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
+
 # /media downloaders, unpinned on purpose: platforms break old versions within weeks.
 # ADD re-downloads the PyPI metadata on every build, so a new release busts this layer.
 ADD https://pypi.org/pypi/yt-dlp/json /tmp/versions/yt-dlp.json
@@ -31,7 +35,8 @@ RUN apt-get update \
   && /opt/media-tools/bin/pip install --no-cache-dir --upgrade "yt-dlp[default,curl-cffi]" gallery-dl \
   && ln -s /opt/media-tools/bin/yt-dlp /opt/media-tools/bin/gallery-dl /usr/local/bin/ \
   && rm -rf /tmp/versions \
-  && yt-dlp --version && gallery-dl --version
+  && /opt/media-tools/bin/python -c "import yt_dlp_ejs" \
+  && yt-dlp --version && gallery-dl --version && deno --version
 
 COPY --from=deps /app/node_modules node_modules
 COPY tsconfig.base.json ./

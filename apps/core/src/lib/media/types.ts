@@ -8,6 +8,8 @@ export interface PlatformResult {
   /** The post's caption or title as plain text; escaped when rendered. */
   description?: string;
   media: MediaOutput[];
+  /** Link for "open original" when the input URL can't just lose its query (`watch?v=`). */
+  url?: string;
   metadata?: {
     author?: string;
     date?: Date;
