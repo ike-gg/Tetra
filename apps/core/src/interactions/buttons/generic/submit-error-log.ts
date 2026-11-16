@@ -65,7 +65,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
 
       const guild = {
         name: interaction.guild?.name ?? "unknown guild",
-        id: interaction.guild?.id ?? "unknown id",
+        id: interaction.guildId ?? "unknown id",
         memberCount: interaction.guild?.memberCount ?? 0,
         iconURL: interaction.guild?.iconURL?.() ?? "",
       };

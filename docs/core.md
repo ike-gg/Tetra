@@ -113,6 +113,16 @@ Handlers in `src/lib/media/` (`PlatformHandlerCallback(url, { feedback, fileLimi
 - Tool errors are classified from stderr (`helper/media-errors.ts`): unsupported URL, login required, region block, not found, timeout; anything else is logged (last 500 chars of stderr) and answered generically.
 - Slideshow (`render-slideshow.ts`, `planSlideshow` holds the timing rules): sharp pads every image to 720x1280 (`contain`, black), ffmpeg concat demuxer with per-slide durations, H.264 yuv420p (limited range) + AAC 128k, `+faststart`, `-tune stillimage`, CRF 23 capped at 1 Mbit/s, 10 fps (1 fps for a single image). Length = min(audio, 90 s) via ffprobe. One image: whole length. n images: audio/n per slide; under 2 s → 2 s each with the audio looped (max 90 s); over 5 s → cycle at 4 s until the audio ends. No audio: 2–3 s per slide, max 90 s, no audio track. Measured worst case (30 noise images, 90 s): 8.9 MB.
 
+### User install
+
+`/media` is the only command with `integration_types` `[GuildInstall, UserInstall]` and `contexts` `[Guild, BotDM, PrivateChannel]`; every other command keeps the defaults (guild install, guild context).
+
+- A user-installed command runs wherever the user is: guilds without the bot, the bot's DM, DMs and group DMs between users (`PrivateChannel`). In a guild without the bot `interaction.guildId` and `member` are set (so `inGuild()` is true) but `interaction.guild` is null and the channel isn't cached; `authorizingIntegrationOwners` holds only the user key. In DMs `guildId` is null.
+- Such a command may answer only through the interaction (reply / deferReply / editReply / followUp, within the 15-minute token); no `channel.send`, no channel/guild fetches. `/media` uses `FeedbackManager` (reply, then editReply) and `interaction.attachmentSizeLimit` for its file limit, so it works the same everywhere.
+- If the user lacks **Use External Apps** in that guild channel, Discord forces the responses to be ephemeral (only the user sees them).
+- Shared path: `interaction-create.ts` lets interactions outside guilds through only for commands whose `metadata.contexts` contains a non-guild context (components always pass: they can only exist on messages such commands produced). The interaction log stores `interaction.guildId` (set also in guilds without the bot), not `guild.id`. Handlers that need the guild (emote flow) keep checking `interaction.guild`.
+- Setup (user side): Developer Portal → Installation → enable **User Install** with the `applications.commands` scope. `integration_types` and `contexts` only apply to **global** commands, so re-register with `bun --filter @tetra/core deployCommands` (`src/deploy/deploy-commands-global.ts`, PUTs all global commands). `deploy:dev` registers guild commands on `DEV_GUILDS`, which can't be user-installed.
+
 ### Platform facts (verified 2026-11, yt-dlp 2026.10.26, gallery-dl 1.32.20, residential IP, no cookies)
 
 - yt-dlp works for Instagram reels and video posts (one entry per video), TikTok videos (H.264 formats with `filesize` in the metadata), Twitch clips, X, Streamable, YouTube Shorts. It fails on TikTok photo posts ("Unsupported URL"), Instagram photo-only posts ("There is no video in this post") and Reddit (login).

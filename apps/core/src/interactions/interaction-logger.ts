@@ -37,7 +37,8 @@ const getLoggedInput = (interaction: CommandInteraction) => {
 
 export const interactionLogger = async (interaction: CommandInteraction) => {
   try {
-    const { guild, user, id } = interaction;
+    // `guild` is null where the bot isn't a member (user installs), `guildId` is still set
+    const { guild, guildId, user, id } = interaction;
 
     const command = [interaction.commandName];
 
@@ -53,12 +54,12 @@ export const interactionLogger = async (interaction: CommandInteraction) => {
     const commandName = command.join(".");
 
     BotConsole.log(
-      `${commandName} - [${id}] - ${user.username} (${user.id}) in ${guild?.name} (${guild?.id})`
+      `${commandName} - [${id}] - ${user.username} (${user.id}) in ${guildId ? `${guild?.name ?? "guild without bot"} (${guildId})` : "DM"}`
     );
 
     await db.insert(interactions).values({
       command: commandName,
-      guildId: guild?.id,
+      guildId,
       userId: user.id,
       id: BigInt(id),
       input: getLoggedInput(interaction),

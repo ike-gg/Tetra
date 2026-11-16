@@ -1,8 +1,10 @@
 import {
   ActionRowBuilder,
+  ApplicationIntegrationType,
   AttachmentBuilder,
   ButtonBuilder,
   ButtonStyle,
+  InteractionContextType,
   SlashCommandBuilder,
 } from "discord.js";
 
@@ -78,6 +80,16 @@ export const supportedMediaPlatforms = supportedPlatforms;
 
 const command = new SlashCommandBuilder()
   .setName("media")
+  // Also user-installable: everything below answers through the interaction only
+  .setIntegrationTypes(
+    ApplicationIntegrationType.GuildInstall,
+    ApplicationIntegrationType.UserInstall
+  )
+  .setContexts(
+    InteractionContextType.Guild,
+    InteractionContextType.BotDM,
+    InteractionContextType.PrivateChannel
+  )
   .setDescription(
     "Download media from various social media platforms like X, Instagram, TikTok etc."
   )
