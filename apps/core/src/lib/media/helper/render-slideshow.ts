@@ -102,7 +102,8 @@ export const renderSlideshow = async (
   audio?: Buffer,
   signal?: AbortSignal
 ) => {
-  if (images.length === 0) throw new EmbeddedError("No images found in this slideshow.");
+  if (images.length === 0)
+    throw new EmbeddedError("i couldn't find any images in this slideshow");
 
   const dir = TempFileManager.create();
 
@@ -199,7 +200,9 @@ export const renderSlideshow = async (
 
     if (result.exitCode !== 0 || result.timedOut || !fs.existsSync(outputPath)) {
       BotConsole.warn("[media] slideshow render failed:", result.stderr.slice(-500));
-      throw new EmbeddedError("Error occurred while rendering slideshow.");
+      throw new EmbeddedError(
+        "something broke on my side while making the slideshow. try again"
+      );
     }
 
     return fs.readFileSync(outputPath);

@@ -9,7 +9,7 @@ const CancelInteractionGenericButton = new GenericButtonInteractionHandler(
     name: BUTTON_INTERACTION_KEY,
     getButton: (data) =>
       new ButtonBuilder(data)
-        .setLabel("Cancel")
+        .setLabel("cancel")
         .setCustomId(BUTTON_INTERACTION_KEY)
         .setStyle(ButtonStyle.Danger),
   },
@@ -22,7 +22,7 @@ const CancelInteractionGenericButton = new GenericButtonInteractionHandler(
         : { content, components: [] };
 
     await interaction.update({
-      ...textOnly("-# Interaction cancelled"),
+      ...textOnly("-# cancelled"),
       files: [],
       ...(isV2 ? {} : { embeds: [] }),
     });
@@ -31,7 +31,7 @@ const CancelInteractionGenericButton = new GenericButtonInteractionHandler(
     } catch {
       await interaction.editReply(
         textOnly(
-          `-# Interaction cancelled, cannot delete message due to missing permissions. You can remove it manually.`
+          "-# cancelled. i couldn't delete this message, you can delete it yourself"
         )
       );
     }

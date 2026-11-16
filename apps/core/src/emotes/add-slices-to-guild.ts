@@ -23,11 +23,9 @@ export const addSlicesToGuild = async ({
   const guild = feedback.interaction.guild;
 
   if (!guild) {
-    throw new EmbeddedError({
-      title: "Guild not found",
-      keepTitle: true,
-      description: "It should never have happened, but it did. 🤨",
-    });
+    throw new EmbeddedError(
+      "something broke on my side, i lost track of this server. try again, and if it keeps happening, send an error report"
+    );
   }
 
   const { emotes: guildEmotes } = guildParsePremium(guild);
@@ -41,7 +39,7 @@ export const addSlicesToGuild = async ({
 
   try {
     await feedback.removeComponents();
-    await feedback.warning(`Uploading ${slices.length} emotes.. it could take a while`);
+    await feedback.warning(`uploading ${slices.length} emotes, this can take a minute`);
 
     const uploadedEmotes: GuildEmoji[] = [];
 
@@ -56,7 +54,7 @@ export const addSlicesToGuild = async ({
     }
 
     await feedback.success(
-      `Successfully uploaded all emotes. ${uploadedEmotes.join(", ")}`
+      `added ${uploadedEmotes.length} emotes: ${uploadedEmotes.join(", ")}`
     );
   } catch (error) {
     await feedback.handleError(error);

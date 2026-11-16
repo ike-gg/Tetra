@@ -70,7 +70,7 @@ const optimizeStatic = async (
   if (paletted.byteLength <= targetSize) return paletted;
 
   throw new EmoteTooLargeError(
-    "Tetra couldn't compress this image under Discord's 256 KB limit."
+    "i couldn't get this image under Discord's 256 KB limit. try a smaller image"
   );
 };
 

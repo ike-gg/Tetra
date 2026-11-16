@@ -102,7 +102,9 @@ export const mediaResultMessage = ({
   const captionText = caption?.trim() ? formatCaption(caption) : undefined;
   const body =
     attachmentNames.length === 0
-      ? [captionText, "No media found in this post."].filter(Boolean).join("\n\n")
+      ? [captionText, "i couldn't find any media in this post"]
+          .filter(Boolean)
+          .join("\n\n")
       : captionText;
 
   container.addTextDisplayComponents(
@@ -113,7 +115,7 @@ export const mediaResultMessage = ({
 
   container.addActionRowComponents(
     new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("Open original").setURL(url)
+      new ButtonBuilder().setStyle(ButtonStyle.Link).setLabel("open original").setURL(url)
     )
   );
 

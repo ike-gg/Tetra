@@ -38,14 +38,10 @@ export const EmoteOptimizationComponent = async ({
 
   const mainEmbed = TetraEmbed.attention({
     description: multilineText(
-      "Emote exceeded maximum size.",
-      `**${emoteSize}** / ${maxSize} *(exceeds by ${diffSize})*`,
-      isWayTooBig ? " " : false,
+      `this emote is **${emoteSize}** and Discord allows ${maxSize} (${diffSize} over). choose how to shrink it`,
       isWayTooBig
-        ? "*The emote size is significantly too large. Automatic optimization results may not be satisfactory in this case. Consider using manual adjustment instead.*"
-        : false,
-      " ",
-      "Choose the optimization method."
+        ? "-# it's more than 1 MB over, so automatic optimization may look bad. the editor gives you more control"
+        : false
     ),
   });
 
@@ -65,7 +61,7 @@ export const EmoteOptimizationComponent = async ({
       .setEmoji({
         name: "🤖",
       })
-      .setLabel("Auto optimization")
+      .setLabel("optimize automatically")
       .setStyle(isWayTooBig ? ButtonStyle.Secondary : ButtonStyle.Primary)
   );
 
@@ -77,7 +73,7 @@ export const EmoteOptimizationComponent = async ({
     new ButtonBuilder()
       .setCustomId(openInEditorButtonId)
       .setEmoji("✏️")
-      .setLabel("Open in editor")
+      .setLabel("open in editor")
       .setStyle(isWayTooBig ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 

@@ -41,7 +41,7 @@ export const EmoteListComponent = async (
       const button = new ButtonBuilder()
         .setCustomId(buttonId)
         .setEmoji(emoji)
-        .setLabel("Select")
+        .setLabel("select")
         .setStyle(ButtonStyle.Secondary);
 
       return {
@@ -62,21 +62,21 @@ export const EmoteListComponent = async (
 
   navigationActionRow.addComponents(
     new ButtonBuilder()
-      .setLabel(`Page ${currentPage}/${pageCount}`)
+      .setLabel(`page ${currentPage}/${pageCount}`)
       .setDisabled(true)
       .setStyle(ButtonStyle.Secondary)
       .setCustomId("static-navigator")
   );
 
   const previousPageButton = new ButtonBuilder()
-    .setLabel("Previous")
+    .setLabel("previous")
     .setEmoji({ name: "⬅️" })
     .setStyle(ButtonStyle.Primary)
     .setDisabled(true)
     .setCustomId("previous-page-static");
 
   const nextPageButton = new ButtonBuilder()
-    .setLabel("Next")
+    .setLabel("next")
     .setEmoji({ name: "➡️" })
     .setStyle(ButtonStyle.Primary)
     .setDisabled(true)

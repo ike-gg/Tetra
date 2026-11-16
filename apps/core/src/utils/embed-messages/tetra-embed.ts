@@ -1,16 +1,10 @@
 import { EmbedBuilder, type EmbedData } from "discord.js";
 
-import { inlineTitle, tightText } from "@/utils/discord/components-v2";
+import { tightText } from "@/utils/discord/components-v2";
 import { type FeedbackType, feedbackEmoji } from "@/utils/discord/feedback-emojis";
 
 interface ExtraEmbedData extends EmbedData {
   hideTitle?: boolean;
-  /**
-   * Keeps the title as a bold first line above the description. Only for messages whose
-   * title says something the description doesn't (see docs/core.md, "Generic replies");
-   * everything else drops the title when there is a description.
-   */
-  keepTitle?: boolean;
 }
 
 export type TetraEmbedContent = ExtraEmbedData | string;
@@ -21,44 +15,39 @@ export type TetraEmbedContent = ExtraEmbedData | string;
  */
 export const TETRA_ACCENT_COLOR = 0xfbfaf9;
 
+// Texts follow docs/voice.md; only shown when a reply has neither title nor description
 const DEFAULT_TEXT: Record<FeedbackType, string> = {
-  success: "Success",
-  error: "Something went wrong",
-  attention: "Attention",
-  panel: "Tetra Panel",
-  warning: "Warning",
-  info: "Information",
-  media: "Media",
-  premium: "Tetra Premium",
-  working: "Working on it...",
+  success: "done",
+  error: "something went wrong",
+  attention: "check this",
+  panel: "panel",
+  warning: "warning",
+  info: "info",
+  media: "media",
+  premium: "premium",
+  working: "working on it",
 };
-
-// Old animated loading emotes some texts still end with; the working emoji replaces them
-const CUSTOM_EMOJI_SUFFIX = /\s*<a?:\w+:\d+>\s*$/;
 
 /**
  * Compact body, one block of text: `<emoji> <description>` (the title is dropped),
- * `<emoji> **Title** · first line` with `keepTitle`, `<emoji> <title>` when there is only a
- * title, fields as `-# name: value` lines, blank lines removed. Media and the rest stay.
+ * `<emoji> <title>` when there is only a title, fields as `-# name: value` lines, blank
+ * lines removed. Media and the rest stay.
  */
 const compactBody = (type: FeedbackType, content: TetraEmbedContent): EmbedData => {
   if (typeof content === "string") {
     return { description: `${feedbackEmoji(type)} ${tightText(content).trimStart()}` };
   }
 
-  const { hideTitle, keepTitle, title, description, fields, ...rest } = content;
+  const { hideTitle, title, description, fields, ...rest } = content;
   const emoji = feedbackEmoji(type);
-  const cleanTitle = type === "working" ? title?.replace(CUSTOM_EMOJI_SUFFIX, "") : title;
 
   let body: string;
   if (hideTitle) {
     body = tightText(description ?? "");
-  } else if (description && keepTitle && cleanTitle) {
-    body = `${emoji} ${inlineTitle(cleanTitle, description)}`;
   } else if (description) {
     body = `${emoji} ${tightText(description).trimStart()}`;
   } else {
-    body = `${emoji} ${cleanTitle || DEFAULT_TEXT[type]}`;
+    body = `${emoji} ${title || DEFAULT_TEXT[type]}`;
   }
 
   const fieldLines = (fields ?? []).map((field) => `-# ${field.name}: ${field.value}`);
@@ -80,7 +69,7 @@ export class TetraEmbed {
         description: content,
       };
     }
-    const { hideTitle: _hide, keepTitle: _keep, ...data } = content;
+    const { hideTitle: _hide, ...data } = content;
     return data;
   }
 

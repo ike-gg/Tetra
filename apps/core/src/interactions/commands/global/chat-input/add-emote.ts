@@ -9,21 +9,19 @@ import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new SlashCommandBuilder()
   .setName("addemote")
-  .setDescription("Add emote using name, url or Twitch channel name.")
+  .setDescription("add an emote by name, link or Twitch channel")
   //subcommand byname
   .addSubcommand((subcommand) =>
     subcommand
       .setName("byname")
-      .setDescription(
-        "Use emote name to search emotes, select source of emotes- default is 7TV."
-      )
+      .setDescription("search for an emote by name on 7TV (default), BTTV or FFZ")
       .addStringOption((option) =>
-        option.setName("name").setDescription("Enter emote name:").setRequired(true)
+        option.setName("name").setDescription("emote name").setRequired(true)
       )
       .addStringOption((option) =>
         option
           .setName("source")
-          .setDescription("Select source of emotes:")
+          .setDescription("where to search, 7TV by default")
           .addChoices(
             {
               name: "7TV",
@@ -45,41 +43,30 @@ const command = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName("bylink")
-      .setDescription(
-        "Use link to add emote, supports 7TV, BTTV, FFZ and direct links to the images."
-      )
+      .setDescription("add an emote from a 7TV, BTTV or FFZ link or a direct image link")
       .addStringOption((option) =>
-        option
-          .setName("link")
-          .setDescription("Enter link to the emote:")
-          .setRequired(true)
+        option.setName("link").setDescription("link to the emote").setRequired(true)
       )
   )
   //subcommand bychannel
   .addSubcommand((subcommand) =>
     subcommand
       .setName("bychannel")
-      .setDescription("Use Twitch channel name to fetch emotes from it.")
+      .setDescription("browse a Twitch channel's emotes")
       .addStringOption((option) =>
-        option
-          .setName("channel")
-          .setDescription("Enter Twitch channel name:")
-          .setRequired(true)
+        option.setName("channel").setDescription("Twitch channel name").setRequired(true)
       )
       .addStringOption((option) =>
-        option.setName("search").setDescription("Enter search query:").setRequired(false)
+        option.setName("search").setDescription("filter by emote name").setRequired(false)
       )
   )
   //subcommand subemotesbychannel
   .addSubcommand((subcommand) =>
     subcommand
       .setName("subemotes")
-      .setDescription("Use Twitch channel name to fetch subemotes from it.")
+      .setDescription("browse a Twitch channel's sub emotes")
       .addStringOption((option) =>
-        option
-          .setName("channel")
-          .setDescription("Enter Twitch channel name:")
-          .setRequired(true)
+        option.setName("channel").setDescription("Twitch channel name").setRequired(true)
       )
   );
 
@@ -111,7 +98,7 @@ export default new ChatInputCommandHandler(
         await addSubEmoteChannel(interaction, feedback);
         break;
       default:
-        await feedback.error("Subcommand not supported yet.");
+        await feedback.error("that subcommand isn't supported yet");
         break;
     }
   }

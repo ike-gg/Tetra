@@ -10,11 +10,11 @@ import { ChatInputCommandHandler } from "@/interactions";
 
 const command = new SlashCommandBuilder()
   .setName("invite")
-  .setDescription("Add Tetra to your server.");
+  .setDescription("add tetra to your server");
 
 export default new ChatInputCommandHandler(command, async (interaction) => {
   const button = new ButtonBuilder()
-    .setLabel("Add Tetra to your server")
+    .setLabel("add tetra to your server")
     .setStyle(ButtonStyle.Link)
     .setURL(env.INVITE_LINK);
 

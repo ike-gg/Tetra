@@ -21,8 +21,8 @@ const VIDEO_EXTENSIONS = new Set(["mp4", "mov", "webm"]);
 const loginRequiredError = () =>
   new EmbeddedError({
     title: PLATFORM,
-    description: `Instagram only shows photo posts to logged-in users, so they can't be downloaded right now.
--# Reels and video posts work.`,
+    description: `Instagram only shows photo posts to logged-in users, so i can't download them right now
+-# reels and video posts work`,
   });
 
 // yt-dlp only extracts videos; photo posts (and mixed carousels' photos) need gallery-dl,

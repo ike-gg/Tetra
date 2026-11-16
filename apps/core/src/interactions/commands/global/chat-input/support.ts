@@ -4,8 +4,8 @@ import { ChatInputCommandHandler } from "@/interactions";
 
 const command = new SlashCommandBuilder()
   .setName("help")
-  .setDescription("Get started with Tetra");
+  .setDescription("get started with tetra");
 
 export default new ChatInputCommandHandler(command, async (interaction) => {
-  await interaction.reply("Soon");
+  await interaction.reply("help is coming soon");
 });

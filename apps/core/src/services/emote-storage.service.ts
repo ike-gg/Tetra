@@ -64,10 +64,7 @@ export class EmoteStorageService {
     const { emotes, pageCount } = (await this.get(storageKey)) ?? {};
 
     if (!emotes || !pageCount)
-      throw new EmbeddedError({
-        title: "Database Error",
-        description: "Failed to get page from database, it might got expired",
-      });
+      throw new EmbeddedError("this menu expired. run the command again");
 
     const chunkedEmotes = chunk(emotes, this.emotesPerPage);
 

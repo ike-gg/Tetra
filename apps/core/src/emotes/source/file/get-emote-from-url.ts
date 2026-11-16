@@ -12,17 +12,15 @@ const getEmoteFromUrl = async (sourceUrl: string): Promise<Emote> => {
 
   // Files above Discord's limit are fine, they get optimized later.
   if (size && size > MAX_SUPPORTED_SIZE) {
-    throw new EmbeddedError({
-      title: "Resource too large",
-      description: `The file is larger than ${prettyBytes(MAX_SUPPORTED_SIZE)}, which is the maximum Tetra can process.`,
-    });
+    throw new EmbeddedError(
+      `that file is larger than ${prettyBytes(MAX_SUPPORTED_SIZE)}, the most i can process. try a smaller one`
+    );
   }
 
   if (mimeType && !/^image\/(gif|jpe?g|png|webp|avif)/.test(mimeType)) {
-    throw new EmbeddedError({
-      title: "Not supported file.",
-      description: "The file you are trying to upload is not supported by Tetra.",
-    });
+    throw new EmbeddedError(
+      "that file type isn't supported. use a GIF, PNG, JPEG, WebP or AVIF image"
+    );
   }
 
   return {

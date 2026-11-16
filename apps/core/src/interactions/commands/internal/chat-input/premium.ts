@@ -4,10 +4,10 @@ import { ChatInputCommandHandler } from "@/interactions";
 
 const command = new SlashCommandBuilder()
   .setName("premium")
-  .setDescription("Check premium status.");
+  .setDescription("check premium status");
 
 export default new ChatInputCommandHandler(command, async (interaction) => {
-  interaction.reply("TODO :)");
+  interaction.reply("todo");
   // const feedback = new FeedbackManager(interaction);
   // const { hasPremium, purchasedEntitlement, testEntitlement } =
   //   parseEntitlementsData(interaction);

@@ -84,7 +84,7 @@ export class FeedbackManager {
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
-          .setLabel(`Open Tetra Panel`)
+          .setLabel("open panel")
           .setURL(`${env.FRONTEND_URL}/panel`)
       ),
     ];
@@ -276,17 +276,9 @@ export class FeedbackManager {
   async unhandledError(error: unknown) {
     const trackingId = randomUUID();
     CoreConsole.error(`[ ${trackingId} ]`, error);
-    await this.error({
-      title: "Unhandled error",
-      description:
-        "An unhandled error has occurred. Please report this to the developers.",
-      fields: [
-        {
-          name: "Tracking ID",
-          value: trackingId,
-        },
-      ],
-    });
+    await this.error(
+      `something broke on my side. try again, and if it keeps happening, report it with code \`${trackingId}\``
+    );
   }
 
   async updateComponents(
@@ -342,12 +334,12 @@ export class FeedbackManager {
   }
 
   async notFoundFile() {
-    await this.error("Not found any files in message.");
+    await this.error("i couldn't find a file in that message");
   }
 
   async fileLimitExceeded() {
     await this.error(
-      "File limit exceeded. Boost your server using Nitro Boosting to increase the file limit."
+      "that's over this server's upload limit. boosting the server raises it"
     );
   }
 }

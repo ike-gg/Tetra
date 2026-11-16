@@ -4,9 +4,7 @@ import { BotConsole } from "#/loggers";
 
 export class FileLimitExceededError extends EmbeddedError {
   constructor() {
-    super(
-      "File limit exceeded. Boost your server using Nitro Boosting to increase the file limit."
-    );
+    super("that's over this server's upload limit. boosting the server raises it");
     this.name = "FileLimitExceededError";
   }
 }
@@ -60,14 +58,14 @@ export const classifyToolError = (output: string): MediaToolFailure => {
 };
 
 const messages: Record<Exclude<MediaToolFailure, "unknown">, string> = {
-  unsupported: "This link isn't supported. Make sure it points to a single post or clip.",
-  "no-video": "This post has no video.",
+  unsupported:
+    "i can't download from this link. make sure it points to a single post or clip",
+  "no-video": "this post has no video",
   "login-required":
-    "This post can't be downloaded without logging in (private, age-restricted or login-walled).",
-  "region-blocked":
-    "This post isn't available from the bot's region (TikTok also says this for posts that don't exist).",
-  "not-found": "Post not found. It may have been deleted or made private.",
-  timeout: "The platform took too long to respond. Try again later.",
+    "i can't download this post without logging in. it may be private, age-restricted or only visible to logged-in users",
+  "region-blocked": "this post isn't available in my region, or it doesn't exist",
+  "not-found": "i couldn't find this post. it may have been deleted or made private",
+  timeout: "the platform took too long to answer. try again later",
 };
 
 export const mediaToolError = (
@@ -78,16 +76,10 @@ export const mediaToolError = (
   if (failure === "unknown") {
     // stderr of these tools carries URLs and error text, never cookies
     BotConsole.warn(`[media] ${platform} download failed:`, details?.trim().slice(-500));
-    return new EmbeddedError({
-      title: `Couldn't fetch ${platform} media`,
-      keepTitle: true,
-      description: "The platform returned an unexpected error. Try again later.",
-    });
+    return new EmbeddedError(
+      `i couldn't download from ${platform}, it sent an unexpected error. try again later`
+    );
   }
 
-  return new EmbeddedError({
-    title: `${platform}`,
-    description: messages[failure],
-    keepTitle: true,
-  });
+  return new EmbeddedError(`${platform}: ${messages[failure]}`);
 };

@@ -9,115 +9,63 @@ import { MAX_EMOTE_SIZE } from ".";
 
 type T = TetraEmbedContent;
 
-const loadingEmotes = [
-  "<a:tetraLoading:1165905111432839171>",
-  "<a:tetraLoading:1165904467120627723>",
-  "<a:tetraLoading:1165904251252391997>",
-  "<a:tetraLoading:1165904242997985311>",
-  "<a:tetraLoading:1165904168205156372>",
-  "<a:tetraLoading:1165904037800050788>",
-];
-
-export const getRandomLoadingEmote = () =>
-  loadingEmotes[Math.floor(Math.random() * loadingEmotes.length)];
-
+// Texts follow docs/voice.md: lowercase, no trailing period, no emoji, first person in errors
 export class Messages {
   //generic
-  static readonly INTERACTION_TIMEOUT: T = {
-    title: "Interaction expired",
-    keepTitle: true,
-    description: "This interaction has expired. Please start a new one.",
-  };
+  static readonly INTERACTION_TIMEOUT: T = "this menu expired. run the command again";
 
   static INTERACTION_TIMEOUT_WITH_REASON(reason: string): T {
-    return {
-      title: "Interaction expired",
-      keepTitle: true,
-      description: `This interaction has expired (${reason}). Please start a new one.`,
-    };
+    return `this menu expired (${reason}). run the command again`;
   }
 
   static WORKING(): T {
-    return {
-      title: `Working on it... ${getRandomLoadingEmote()}`,
-    };
+    return "working on it";
   }
   static readonly RATE_LIMIT_EXCEEDED: T =
-    "The bot is rate limited. The action will be automatically carried out once the limit expires.";
-  static readonly EMOTE_NOT_FOUND: T = "Emote(s) not found.";
-  static readonly MISSING_PERMISSIONS: T = {
-    title: "Permissions",
-    description: "You don't have sufficient permissions to use this command.",
-  };
-  static readonly BOT_MISSING_PERMISSIONS: T = {
-    title: "Tetra missing permissions",
-    keepTitle: true,
-    description: `Tetra doesn't have sufficient permissions.
-    
-Make sure Tetra has the following permissions:
-- Create Expressions
-- Manage Expressions
-`,
-  };
-  static readonly INVALID_REFERENCE: T = "Invalid URL.";
-  static readonly FILE_NOT_FOUND: T = "File not found.";
-  static readonly URL_NOT_FOUND: T = "URL not found.";
-  static readonly ERROR_GUILD_ONLY: T = {
-    title: "This action can only be used in a server.",
-  };
+    "Discord is rate limiting me. i'll finish this by myself once the limit resets";
+  static readonly EMOTE_NOT_FOUND: T = "i couldn't find any emotes";
+  static readonly MISSING_PERMISSIONS: T =
+    "you need the manage expressions permission to use this command";
+  static readonly BOT_MISSING_PERMISSIONS: T =
+    "i need the create expressions and manage expressions permissions on this server. ask a server admin to add them to tetra's role";
+  static readonly INVALID_REFERENCE: T =
+    "that link doesn't look valid. check it and try again";
+  static readonly FILE_NOT_FOUND: T = "i couldn't find the file";
+  static readonly URL_NOT_FOUND: T = "i couldn't find that link";
+  static readonly ERROR_GUILD_ONLY: T = "this only works in a server";
 
-  static readonly ERROR_LOG_UNAVAILABLE: T = {
-    title: "Error log unavailable",
-    keepTitle: true,
-    description: "Sending error logs is not set up for this bot.",
-  };
+  static readonly ERROR_LOG_UNAVAILABLE: T = "error reports aren't set up for this bot";
 
-  static readonly TASK_IN_EDITOR: T = {
-    title: "Emote ready in the editor",
-    keepTitle: true,
-    description: multilineText(
-      "Open the editor in Tetra Panel to adjust the emote and add it to this server.",
-      "You may need to log in with Discord first."
-    ),
-  };
+  static readonly TASK_IN_EDITOR: T = multilineText(
+    "emote ready in the editor. open the panel to adjust it and add it to this server",
+    "-# you may need to log in with Discord first"
+  );
 
   //emote case
-  static readonly MULTIPLE_EMOTES_NOT_SUPPORTED: T = {
-    title: "Not supported",
-    description: "Multiple emotes are not currently supported.",
-  };
+  static readonly MULTIPLE_EMOTES_NOT_SUPPORTED: T =
+    "i can only add one emote at a time here";
 
   //guilds case
   static readonly NO_COMMON_SERVERS_PERMISSIONS: T =
-    "No common servers found where you have permissions";
+    "i couldn't find a server we share where you have the manage expressions permission";
 
   //special
-  static readonly NEW_MEDIA_COMMAND: T = {
-    title: "Command deprecated.",
-    keepTitle: true,
-    description: `Use \`/media\` command instead.
-    
-    \`/media\` command combines multiple commands (\`/instagram\`, \`/tiktok\`, \`/twitter\` etc.) into one.
-    `,
-  };
+  static readonly NEW_MEDIA_COMMAND: T =
+    "this command was replaced by `/media`, which downloads from X, Instagram, TikTok and more in one command";
 
   //media
-  static readonly METDIA_PLATFORM_NOT_SUPPORED: T = {
-    title: "Platform not supported",
-    keepTitle: true,
-    description: `Currently supported platforms:
-  ${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`,
-  };
+  static readonly METDIA_PLATFORM_NOT_SUPPORED: T =
+    `i can't download from that site yet. supported:
+${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`;
 
   //twitch case
-  static readonly CHANNEL_NOT_FOUND: T = "Channel not found.";
+  static readonly CHANNEL_NOT_FOUND: T = "i couldn't find that Twitch channel";
 
   //interactive
 
   static ADDED_EMOTE(emote: GuildEmoji): T {
     return {
-      title: "Success!",
-      description: `Added \`${emote.name}\` emote ${emote} in \`${emote.guild.name}\``,
+      description: `added \`${emote.name}\` ${emote} to \`${emote.guild.name}\``,
       image: {
         url: emote.imageURL({ animated: true, size: 256 }),
       },
@@ -127,16 +75,8 @@ Make sure Tetra has the following permissions:
   static EXCEEDED_EMOTE_SIZE(size: number): T {
     const maxSize = prettyBytes(MAX_EMOTE_SIZE);
     const emoteSize = prettyBytes(size);
-    const differenceSize = prettyBytes(size - MAX_EMOTE_SIZE);
 
-    return {
-      description: multilineText(
-        "Emote exceeded maximum size.",
-        `**${emoteSize}** / ${maxSize} *(exceeds by ${differenceSize})*`,
-        " ",
-        "Choose the optimization method."
-      ),
-    };
+    return `this emote is ${emoteSize} and Discord allows ${maxSize}. choose how to shrink it`;
   }
 
   static REMAINING_EMOTE_SLOTS_WARNING({
@@ -146,16 +86,9 @@ Make sure Tetra has the following permissions:
     remainingSlots: number;
     emoteType: "animated" | "static";
   }): T {
-    return {
-      title:
-        remainingSlots === 0
-          ? `No ${emoteType} slots left`
-          : `Only ${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left`,
-      description:
-        remainingSlots === 0
-          ? `There are no available ${emoteType} emote slots. Please remove some existing ${emoteType} emotes to free up space.`
-          : undefined,
-    };
+    return remainingSlots === 0
+      ? `this server has no free ${emoteType} emote slots. remove one or boost the server for more`
+      : `only ${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left`;
   }
 
   static NOT_ENOUGH_EMOTE_SLOTS_SLICES({
@@ -167,25 +100,18 @@ Make sure Tetra has the following permissions:
     uploadCount: number;
     emoteType: "animated" | "static";
   }): T {
-    return {
-      title: "Not enough emote slots",
-      keepTitle: true,
-      description: multilineText(
-        `Not enough slots to upload ${uploadCount} emotes.`,
-        `${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left.`
-      ),
-    };
+    return `not enough emote slots: ${uploadCount} parts need ${uploadCount} ${emoteType} slots and ${remainingSlots} ${remainingSlots !== 1 ? "are" : "is"} free. remove some emotes or split into fewer parts`;
   }
 
   static ANNOUNCE_ADDED_EMOTE(emote: GuildEmoji): string {
-    return `Someone just added an emote ${emote} to their server!`;
+    return `someone added ${emote} to their server`;
   }
 
   static ANNOUNCE_ADDED_MULTIPLE_EMOTES(emote: GuildEmoji[]): string {
-    return `Someone just added multiple emotes ${emote.join()} to their server!`;
+    return `someone added ${emote.join()} to their server`;
   }
 
   static ANNOUNCE_ADDED_EMOTE_PANEL(emote: GuildEmoji): string {
-    return `> Someone just added an emote ${emote} to their server using **Tetra Panel**!`;
+    return `> someone added ${emote} to their server with the panel`;
   }
 }

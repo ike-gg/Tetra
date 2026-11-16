@@ -23,10 +23,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
     getButton: (data) =>
       new ButtonBuilder(data)
         .setCustomId(BUTTON_INTERACTION_KEY)
-        .setEmoji({
-          name: "📠",
-        })
-        .setLabel(`Send developers log`)
+        .setLabel("send error report")
         .setStyle(ButtonStyle.Danger),
   },
   async (interaction, client) => {
@@ -44,10 +41,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
     const receivedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setCustomId(`received`)
-        .setEmoji({
-          name: "📨",
-        })
-        .setLabel(`Log received!`)
+        .setLabel("report sent")
         .setStyle(ButtonStyle.Danger)
         .setDisabled(true)
     );

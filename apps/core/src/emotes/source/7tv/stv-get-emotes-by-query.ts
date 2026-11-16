@@ -83,11 +83,9 @@ const stvGetEmotesByQuery = async (query: string): Promise<Emote[]> => {
   }
 
   if (!data) {
-    throw new EmbeddedError({
-      title: "7TV is unavailable",
-      description:
-        "7TV search is not responding right now. Try again later or use another source (BTTV, FFZ).",
-    });
+    throw new EmbeddedError(
+      "7TV search isn't responding right now. try again later or search BTTV or FFZ"
+    );
   }
 
   const emotes: Emote[] = data.emotes.items.map((emote) => {

@@ -29,15 +29,9 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
 
   const errorRows = FeedbackManager.errorRows();
   const samples: Parameters<typeof feedbackPayload>[] = [
-    ["info", "Downloading slideshow assets..."],
-    ["success", "Test entitlement deleted successfully."],
-    [
-      "attention",
-      {
-        title: "Review emote",
-        description: "Rescale or rename your emote now.",
-      },
-    ],
+    ["info", "downloading the slideshow images"],
+    ["success", "added `catJAM`"],
+    ["attention", "rename or resize the emote before adding it"],
     [
       "warning",
       Messages.REMAINING_EMOTE_SLOTS_WARNING({
@@ -48,18 +42,13 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     ["warning", Messages.RATE_LIMIT_EXCEEDED],
     ["panel", Messages.TASK_IN_EDITOR, { rows: FeedbackManager.panelRows() }],
     ["media", Messages.NEW_MEDIA_COMMAND],
-    ["premium", "Premium perks are coming soon."],
+    ["premium", "premium perks are coming soon"],
     ["error", Messages.EMOTE_NOT_FOUND, { rows: errorRows }],
     ["error", Messages.BOT_MISSING_PERMISSIONS, { rows: errorRows }],
     ["error", Messages.INTERACTION_TIMEOUT, { rows: errorRows }],
     [
       "error",
-      {
-        title: "Unhandled error",
-        description:
-          "An unhandled error has occurred. Please report this to the developers.",
-        fields: [{ name: "Tracking ID", value: crypto.randomUUID() }],
-      },
+      `something broke on my side. try again, and if it keeps happening, report it with code \`${crypto.randomUUID()}\``,
       { rows: errorRows },
     ],
   ];
@@ -69,5 +58,5 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
   }
 
   await sleep(1500);
-  await feedback.success("Emote `pepeHands` was added to the server.");
+  await feedback.success("added `pepeHands`");
 });

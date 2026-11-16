@@ -22,7 +22,7 @@ export const handleTwitchClip: PlatformHandlerCallback = async (
     return {
       // Plain text: captions are escaped when rendered
       description: clip?.title
-        ? `${clip.title}${clip.uploader ? `\nClipped by ${clip.uploader}` : ""}`
+        ? `${clip.title}${clip.uploader ? `\nclipped by ${clip.uploader}` : ""}`
         : undefined,
       media,
       metadata: clip && {

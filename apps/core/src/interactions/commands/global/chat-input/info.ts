@@ -14,7 +14,7 @@ import { URLButton } from "@/utils/discord/components/url-button";
 
 const command = new SlashCommandBuilder()
   .setName("info")
-  .setDescription("Display information about Tetra.");
+  .setDescription("info about tetra");
 
 export default new ChatInputCommandHandler(command, async (interaction, client) => {
   const guildsCount = (
@@ -24,37 +24,37 @@ export default new ChatInputCommandHandler(command, async (interaction, client) 
   const componentsRow = new ActionRowBuilder<ButtonBuilder>();
 
   componentsRow.addComponents(
-    URLButton("Invite link", APP.INVITE_LINK),
-    URLButton("Owner", APP.DISCORD_OWNER).setEmoji(APP_EMOTES.LOGO_DISCORD),
-    URLButton("Source code", APP.GITHUB_REPO).setEmoji(APP_EMOTES.LOGO_GITHUB)
+    URLButton("invite", APP.INVITE_LINK),
+    URLButton("owner", APP.DISCORD_OWNER).setEmoji(APP_EMOTES.LOGO_DISCORD),
+    URLButton("source code", APP.GITHUB_REPO).setEmoji(APP_EMOTES.LOGO_GITHUB)
   );
 
   const messagePayload = new EmbedBuilder();
 
   messagePayload.addFields({
-    name: "Add Tetra to your server",
-    value: hyperlink("Click here", APP.INVITE_LINK),
+    name: "add tetra to your server",
+    value: hyperlink("invite tetra", APP.INVITE_LINK),
     inline: true,
   });
   messagePayload.addFields({
-    name: "Servers count",
+    name: "servers",
     value: guildsCount.toString(),
     inline: true,
   });
   messagePayload.addFields({
-    name: "Users count",
+    name: "users",
     // todo fetch count from all shards
     // value: usersCount.toString(),
     value: "-",
     inline: true,
   });
   messagePayload.addFields({
-    name: `${formatEmoji(APP_EMOTES.LOGO_DISCORD)} Owner`,
-    value: hyperlink("Click here", APP.DISCORD_OWNER),
+    name: `${formatEmoji(APP_EMOTES.LOGO_DISCORD)} owner`,
+    value: hyperlink("open profile", APP.DISCORD_OWNER),
     inline: true,
   });
   messagePayload.addFields({
-    name: `${formatEmoji(APP_EMOTES.LOGO_GITHUB)} Source code`,
+    name: `${formatEmoji(APP_EMOTES.LOGO_GITHUB)} source code`,
     value: hyperlink("@ike-gg/Tetra", APP.GITHUB_REPO),
     inline: true,
   });

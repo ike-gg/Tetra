@@ -48,18 +48,16 @@ const PPRenameContinuity = new PPRenameButtonInteraction(
 
       if (!interaction) {
         await feedback.error(
-          "Something went wrong. Please try again. `INTERACTION_OBJECT_MISSING`"
+          "something broke on my side. try again, and if it keeps happening, report it with code `INTERACTION_OBJECT_MISSING`"
         );
         return;
       }
 
-      const modal = new ModalBuilder()
-        .setCustomId(modalId)
-        .setTitle("Change name for emote");
+      const modal = new ModalBuilder().setCustomId(modalId).setTitle("rename emote");
 
       const newNameField = new TextInputBuilder()
         .setCustomId("newname")
-        .setLabel("New name")
+        .setLabel("new name")
         .setStyle(TextInputStyle.Short)
         .setMaxLength(28)
         .setMinLength(2)

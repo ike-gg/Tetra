@@ -47,9 +47,7 @@ const PPSplitContinuity = new PPSplitSelectMenuInteraction(
         : await ProcessingEmoteService.getBuffer(processingEmoteKey);
 
       if (!bufferSplitFrom) {
-        throw new EmbeddedError({
-          title: "Failed to get emote buffer.",
-        });
+        throw new EmbeddedError("i couldn't read the emote to split it. try again");
       }
 
       const sharpOptions: SharpOptions = {
@@ -63,9 +61,9 @@ const PPSplitContinuity = new PPSplitSelectMenuInteraction(
       const height = pageHeight || originalHeight;
 
       if (!height) {
-        throw new EmbeddedError({
-          title: "Failed to get emote height.",
-        });
+        throw new EmbeddedError(
+          "i couldn't read the emote's size to split it. try again"
+        );
       }
 
       const newWidth = height * splitInto;

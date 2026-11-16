@@ -24,9 +24,9 @@ export const editEmoteByUser = async ({
     : await ProcessingEmoteService.getBuffer(processingEmoteKey);
 
   if (!emoteRawBuffer) {
-    throw new EmbeddedError({
-      title: "Buffer not found for preview (EEBU)",
-    });
+    throw new EmbeddedError(
+      "something broke on my side while making the preview. try again, and if it keeps happening, report it with code `EEBU`"
+    );
   }
 
   const emoteSharp = await sharp(emoteRawBuffer, {

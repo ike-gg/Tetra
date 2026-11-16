@@ -83,14 +83,12 @@ export const EmoteReviewComponent = async ({
   }
 
   const mainEmbed = TetraEmbed.attention({
-    title: "Review emote",
     description: multilineText(
       isMultiUpload
-        ? "Emote will be uploaded in parts as shown below."
-        : `Rescale or rename your emote now.`,
-      "",
+        ? "the emote will be added in the parts shown below"
+        : "rename or resize the emote before adding it",
       (aspectRatio >= 1.5 || aspectRatio <= 0.5) &&
-        "> It seems like your emote is a bit too wide, consider using scaling options to get best results."
+        "> this emote is very wide or tall, so Discord shows it small. stretch or crop it to fit"
     ),
     image: {
       url: "attachment://preview.gif",
@@ -113,7 +111,7 @@ export const EmoteReviewComponent = async ({
       .setEmoji({
         name: "✏️",
       })
-      .setLabel("Rename emote")
+      .setLabel("rename")
       .setStyle(ButtonStyle.Secondary)
   );
 
@@ -127,7 +125,7 @@ export const EmoteReviewComponent = async ({
       .setEmoji({
         name: "🖼️",
       })
-      .setLabel("Stretch to fit")
+      .setLabel("stretch to fit")
       .setStyle(ButtonStyle.Secondary)
   );
 
@@ -141,7 +139,7 @@ export const EmoteReviewComponent = async ({
       .setEmoji({
         name: "🔍",
       })
-      .setLabel("Center and crop to fit")
+      .setLabel("crop to fit")
       .setStyle(ButtonStyle.Secondary)
   );
 
@@ -161,11 +159,11 @@ export const EmoteReviewComponent = async ({
 
   const selectMenuSplit = new StringSelectMenuBuilder()
     .setCustomId(ppSplitSelectMenuId)
-    .setPlaceholder("Split emote into...");
+    .setPlaceholder("split into parts");
 
   [2, 3, 4, 5, 6].forEach((splitCount) => {
     selectMenuSplit.addOptions({
-      label: `Split into ${splitCount} parts`,
+      label: `split into ${splitCount} parts`,
       value: splitCount.toString(),
     });
   });
@@ -184,7 +182,7 @@ export const EmoteReviewComponent = async ({
       .setEmoji({
         name: "✅",
       })
-      .setLabel(`Add emote as "${emoteName}"`)
+      .setLabel(`add as ${emoteName}`)
       .setStyle(ButtonStyle.Success)
   );
 
@@ -197,7 +195,7 @@ export const EmoteReviewComponent = async ({
       new ButtonBuilder()
         .setCustomId(openInEditorButtonId)
         .setEmoji("✏️")
-        .setLabel("Open in editor")
+        .setLabel("open in editor")
         .setStyle(ButtonStyle.Secondary)
     );
   }

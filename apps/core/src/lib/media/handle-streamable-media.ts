@@ -15,7 +15,10 @@ export const handleStreamableMedia = async (_url: string): Promise<PlatformResul
   try {
     const videoId = new URL(_url).pathname.split("/").at(1);
 
-    if (!videoId) throw new EmbeddedError("Invalid Streamable URL.");
+    if (!videoId)
+      throw new EmbeddedError(
+        "that Streamable link doesn't look right. check it and try again"
+      );
 
     const url = new URL(videoId, "https://api.streamable.com/videos/").href;
 
@@ -23,7 +26,7 @@ export const handleStreamableMedia = async (_url: string): Promise<PlatformResul
 
     if (request.status !== 200) {
       const error = await request.text();
-      throw new EmbeddedError(`Streamable API error: ${error}`);
+      throw new EmbeddedError(`Streamable answered with an error: ${error}`);
     }
 
     const response = await request.json();
@@ -46,7 +49,7 @@ export const handleStreamableMedia = async (_url: string): Promise<PlatformResul
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new EmbeddedError("Received wrong response from Streamable API.");
+      throw new EmbeddedError("Streamable sent data i couldn't read. try again later");
     } else {
       throw error;
     }

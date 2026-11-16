@@ -35,7 +35,7 @@ export const interactionCreateHandler: EventHandler<Events.InteractionCreate> = 
   // `guild` is null. Handlers that need the guild check `interaction.guild` themselves.
   if (!interaction.inGuild() && !allowedOutsideGuild(interaction, internalClient)) {
     if (!interaction.isRepliable()) return;
-    await interaction.reply("This command can only be used in a server.");
+    await interaction.reply("this command only works in a server");
     return;
   }
 

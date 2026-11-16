@@ -116,7 +116,9 @@ export class ProcessingEmoteService {
   static async readBufferSafely(bufferPath: string) {
     if (!fs.existsSync(bufferPath))
       throw new EmbeddedError(
-        Messages.INTERACTION_TIMEOUT_WITH_REASON("Buffer was removed due to inactivity")
+        Messages.INTERACTION_TIMEOUT_WITH_REASON(
+          "the emote was cleared after 15 min without activity"
+        )
       );
 
     return fs.readFileSync(bufferPath);

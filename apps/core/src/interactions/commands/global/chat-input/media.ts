@@ -106,21 +106,23 @@ const QUEUE_WAIT_LIMIT_MS = 10 * 60 * 1000;
 const JOB_TIMEOUT_MS = 4 * 60 * 1000;
 const POSITION_EDIT_INTERVAL_MS = 5000;
 
-const MEDIA_UNAVAILABLE = "`/media` is temporarily unavailable. Try again in a moment.";
+const MEDIA_UNAVAILABLE = "`/media` is unavailable right now. try again in a minute";
 
 const toMediaError = (error: unknown) => {
   if (error instanceof MediaQueueUnavailableError)
     return new EmbeddedError(MEDIA_UNAVAILABLE);
   if (error instanceof MediaQueueWaitTimeoutError) {
-    return new EmbeddedError("The queue is too long right now. Try again in a moment.");
+    return new EmbeddedError(
+      "the download queue is too long right now. try again in a few minutes"
+    );
   }
   if (error instanceof MediaJobTimeoutError || error instanceof CommandAbortedError) {
     return new EmbeddedError(
-      "This took too long and was stopped. Try again in a moment."
+      "this took longer than 4 min, so i stopped it. try again or pick a shorter clip"
     );
   }
   if (error instanceof MediaLockLostError) {
-    return new EmbeddedError("The download was interrupted. Try again in a moment.");
+    return new EmbeddedError("the download was interrupted. try again");
   }
   return error;
 };
@@ -138,10 +140,10 @@ const command = new SlashCommandBuilder()
     InteractionContextType.PrivateChannel
   )
   .setDescription(
-    "Download media from various social media platforms like X, Instagram, TikTok etc."
+    "download a video or images from X, Instagram, TikTok, Twitch, Kick or Streamable"
   )
   .addStringOption((option) =>
-    option.setName("url").setDescription("Link to social media post:").setRequired(true)
+    option.setName("url").setDescription("link to the post or clip").setRequired(true)
   );
 
 interface MediaPayload extends Pick<InteractionReplyOptions, "files"> {
@@ -189,10 +191,9 @@ class MediaReply {
     const trackingId = randomUUID();
     BotConsole.error(`[ ${trackingId} ]`, mapped);
     await this.send(
-      mediaError({
-        title: "Unhandled error",
-        description: `Something broke on our side. Report it with this ID: \`${trackingId}\``,
-      })
+      mediaError(
+        `something broke on my side. try again, and if it keeps happening, report it with code \`${trackingId}\``
+      )
     );
   }
 }
@@ -213,7 +214,8 @@ const processMedia = async ({
   signal: AbortSignal;
 }) => {
   const { description, media, metadata } = await platform.handler(itemUrl, {
-    progress: (text) => reply.send(mediaStatus(`Fetching ${platform.name}...`, text)),
+    progress: (text) =>
+      reply.send(mediaStatus(`downloading from ${platform.name}`, text)),
     fileLimit,
     signal,
   });
@@ -284,7 +286,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     if (!claimed) {
       await reply.send(
         mediaWarning(
-          "You already have a `/media` request in progress. Wait for it to finish, then try again."
+          "you already have a `/media` download running. try again when it's done"
         ),
         { ephemeral: true }
       );
@@ -292,7 +294,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     }
 
     try {
-      await reply.send(mediaStatus(`Fetching ${platform.name}...`));
+      await reply.send(mediaStatus(`downloading from ${platform.name}`));
 
       let shownPosition: number | undefined;
       let lastEdit = 0;
@@ -310,15 +312,15 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
             lastEdit = Date.now();
             await reply.send(
               mediaStatus(
-                `In queue: #${position}`,
-                "Someone else's download is running. This updates on its own."
+                `in queue: #${position}`,
+                "another download is running, this updates by itself"
               )
             );
           },
         },
         async (signal) => {
           if (shownPosition !== undefined) {
-            await reply.send(mediaStatus(`Fetching ${platform.name}...`));
+            await reply.send(mediaStatus(`downloading from ${platform.name}`));
           }
 
           await processMedia({

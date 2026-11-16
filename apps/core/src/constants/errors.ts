@@ -22,7 +22,7 @@ const defaultOptions: EmbeddedErrorOptions = {
 
 const errorStaticMessages = {
   unsupportedFeature:
-    "-# This feature is unsupported, submit an issue on the GitHub repository if you want this feature to be added.",
+    "-# this isn't supported yet. open an issue on GitHub if you'd like it",
 };
 
 export class EmbeddedError extends Error {
@@ -74,10 +74,7 @@ export class EmoteTooLargeError extends EmbeddedError {
 /** The file isn't an image sharp can read. Mapped by type in the API (`INVALID_EMOTE_FILE`). */
 export class UnsupportedEmoteFileError extends EmbeddedError {
   constructor() {
-    super({
-      title: "Not supported file.",
-      description: "The file you are trying to upload is not a supported image.",
-    });
+    super("that file isn't an image i can read. try a different file");
     this.name = "UnsupportedEmoteFileError";
   }
 }
@@ -85,11 +82,7 @@ export class UnsupportedEmoteFileError extends EmbeddedError {
 /** A download exceeded its size limit. Mapped by type in the API (`FILE_TOO_LARGE`). */
 export class ResourceTooLargeError extends EmbeddedError {
   constructor() {
-    super({
-      title: "Resource too large",
-      description:
-        "The resource you are trying to fetch is too large to be processed by Tetra.",
-    });
+    super("that file is too large for me to process. try a smaller one");
     this.name = "ResourceTooLargeError";
   }
 }

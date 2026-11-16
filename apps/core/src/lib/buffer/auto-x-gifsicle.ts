@@ -118,7 +118,7 @@ export class AutoXGifsicle extends xGifsicle {
 
     if (best === -1) {
       throw new EmoteTooLargeError(
-        "Tetra couldn't compress this animation under Discord's 256 KB limit without destroying it. Try a shorter clip or fewer frames."
+        "i couldn't get this animation under Discord's 256 KB limit without ruining it. try a shorter clip or fewer frames"
       );
     }
 

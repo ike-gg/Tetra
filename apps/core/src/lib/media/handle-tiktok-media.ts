@@ -61,7 +61,7 @@ const handleSlideshow = async (
     throw new GalleryDlError("not-found", "no images in the TikTok post");
   }
 
-  await progress("Downloading slideshow assets...");
+  await progress("downloading the slideshow images");
 
   const [images, audio] = await Promise.all([
     Promise.all(imageUrls.map(downloadAsset)),
@@ -69,7 +69,7 @@ const handleSlideshow = async (
     audioUrl ? downloadAsset(audioUrl).catch(() => undefined) : undefined,
   ]);
 
-  await progress("Rendering slideshow...");
+  await progress("making the slideshow video");
 
   const movie = await renderSlideshow(images, audio, signal);
   if (movie.byteLength > fileLimit) throw new FileLimitExceededError();

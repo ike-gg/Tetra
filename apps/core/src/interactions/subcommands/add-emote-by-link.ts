@@ -26,11 +26,9 @@ export const addEmoteLink = async (
 
   const emoteURL = new URL(emoteUrl);
 
-  const cantFindReference = new EmbeddedError({
-    title: "Cant find reference",
-    description:
-      "Link to the emote is from known source, but we couldn't find the emote. Maybe link include invalid characters or is not a valid emote link.",
-  });
+  const cantFindReference = new EmbeddedError(
+    "i couldn't find an emote at that link. check that it points to a single emote on 7TV, BTTV or FFZ"
+  );
 
   try {
     const link = parseEmoteLink(emoteURL);

@@ -81,7 +81,7 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
         emoteSource = await getGiphyGif(attachment.url);
         break;
       default:
-        await feedback.error(`${attachment.provider} provider not supported yet.`);
+        await feedback.error(`i can't add emotes from ${attachment.provider} yet`);
         return;
     }
   } catch (error) {
@@ -90,7 +90,9 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
   }
 
   if (!emoteSource) {
-    await feedback.error("Cant reach original source file.");
+    await feedback.error(
+      "i couldn't reach the original file. try again or use a direct link"
+    );
     return;
   }
 

@@ -20,11 +20,9 @@ export const addEmoteToGuild = async ({
   const guild = feedback.interaction.guild;
 
   if (!guild) {
-    throw new EmbeddedError({
-      title: "Guild not found",
-      keepTitle: true,
-      description: "It should never have happened, but it did. 🤨",
-    });
+    throw new EmbeddedError(
+      "something broke on my side, i lost track of this server. try again, and if it keeps happening, send an error report"
+    );
   }
 
   const { emotes: guildEmotes } = guildParsePremium(guild);

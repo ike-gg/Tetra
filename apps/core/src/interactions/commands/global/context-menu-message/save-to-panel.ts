@@ -26,7 +26,7 @@ export default new ContextMenuMessageCommandHandler(command, async (interaction)
   // const savedEmoteExpireTime = 1000 * 60 * 60 * 24 * 7;
   // const currentTime = new Date();
 
-  await feedback.panel("TODO");
+  await feedback.panel("saving to the panel isn't available yet");
 
   // try {
   //   const prisma = new PrismaClient();

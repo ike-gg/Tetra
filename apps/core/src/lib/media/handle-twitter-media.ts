@@ -83,7 +83,7 @@ export const handleTwitterMedia: PlatformHandlerCallback = async (_url) => {
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new EmbeddedError("X provided unexpected data.", {
+      throw new EmbeddedError("X sent data i couldn't read. try again later", {
         unsupportedFeature: true,
         origin: error,
       });
