@@ -1,4 +1,5 @@
-import { useRef, useState } from "react";
+import { Link } from "@tanstack/react-router";
+import { type ReactNode, useRef, useState } from "react";
 
 import { Footer } from "@/components/footer";
 import { Stats } from "@/components/stats";
@@ -8,38 +9,58 @@ import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { cn } from "@/lib/cn";
 import { INVITE_URL } from "@/lib/links";
 
-const FEATURES = [
+type Feature = {
+  title: string;
+  body: ReactNode;
+  art: string[];
+  // A wide card across both columns, with a link under the text
+  wide?: { label: string; to: "/editor" };
+};
+
+const FEATURES: Feature[] = [
   {
-    title: "Every source",
-    body: "7TV, BTTV and FFZ links, emote names, direct image links or an emote from another message.",
+    title: "every source",
+    body: "7TV, BTTV and FFZ links, emote names, direct image links or an emote from another message",
     art: ["  .--.  ", " ( @@ ) ", "  `--'  "],
   },
   {
-    title: "Fits in 256 KB",
-    body: "Big animated emotes get resized and recompressed automatically until Discord accepts them.",
+    title: "fits in 256 KB",
+    body: "big animated emotes get resized and recompressed automatically until Discord accepts them",
     art: ["[######]", "[####  ]", "[##    ]"],
   },
   {
-    title: "Media from posts",
-    body: "/media pulls videos and images out of social media posts straight into the chat.",
+    title: "media from posts",
+    body: (
+      <>
+        <code className="font-mono text-foreground">/media</code> downloads videos and
+        images from social posts straight into the chat
+      </>
+    ),
     art: [" +----+ ", " | >  | ", " +----+ "],
   },
   {
-    title: "Web panel",
-    body: "Browse server emotes, restore deleted ones and edit them in the browser.",
+    title: "web panel",
+    body: "browse server emotes, restore removed ones and edit them in the browser",
     art: [" _____  ", "|=|   | ", "|_|___| "],
+  },
+  {
+    title: "editor in your browser",
+    body: "crop, trim, resize and compress GIFs and images until they fit Discord's 256 KB emote limit. no account, and the file never leaves your device",
+    art: [" .-  -. ", "  [##]  ", " '-  -' "],
+    wide: { label: "resize a GIF for discord", to: "/editor" },
   },
 ];
 
 const STEPS = [
-  { command: "invite", text: "Add Tetra to your server with the invite link." },
+  { command: "invite", text: "add tetra to your server with the invite link" },
   {
     command: "/addemote",
-    text: "Paste a link or a name. Tetra finds, optimizes and uploads it.",
+    text: "paste a link or a name. tetra finds it, optimizes it and adds it",
   },
-  { command: ":catJAM:", text: "Use it right away. Manage the rest from the panel." },
+  { command: ":catJAM:", text: "use it right away. manage the rest from the panel" },
 ];
 
 export function HomeSections() {
@@ -48,14 +69,17 @@ export function HomeSections() {
       <section className="mx-auto max-w-6xl px-6 pt-40 pb-28">
         <Eyebrow index="01">features</Eyebrow>
         <Heading level={2} className="mt-4 max-w-2xl">
-          Built for chats that speak in <Accent>emotes</Accent>.
+          built for chats that speak in <Accent>emotes</Accent>
         </Heading>
 
         <div className="mt-14 grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
           {FEATURES.map((feature) => (
             <article
               key={feature.title}
-              className="flex flex-col gap-6 bg-background p-8"
+              className={cn(
+                "flex flex-col gap-6 bg-background p-8",
+                feature.wide && "sm:col-span-2"
+              )}
             >
               <pre aria-hidden className="font-mono text-muted text-sm leading-tight">
                 {feature.art.join("\n")}
@@ -64,9 +88,21 @@ export function HomeSections() {
                 <Heading level={3} size="sm">
                   {feature.title}
                 </Heading>
-                <Text tone="muted" className="mt-2">
+                <Text tone="muted" className="mt-2 max-w-2xl">
                   {feature.body}
                 </Text>
+                {feature.wide && (
+                  <Button
+                    size="sm"
+                    className="mt-6"
+                    render={<Link to={feature.wide.to} />}
+                  >
+                    {feature.wide.label}
+                    <span aria-hidden className="font-mono">
+                      →
+                    </span>
+                  </Button>
+                )}
               </div>
             </article>
           ))}
@@ -76,7 +112,7 @@ export function HomeSections() {
       <section className="mx-auto max-w-6xl px-6 py-28">
         <Eyebrow index="02">how it works</Eyebrow>
         <Heading level={2} className="mt-4 max-w-2xl">
-          Three steps, <Accent>zero</Accent> resizing.
+          three steps, <Accent>zero</Accent> resizing
         </Heading>
 
         <ol className="mt-14 grid gap-10 sm:grid-cols-3">
@@ -115,10 +151,10 @@ function CallToAction() {
         <TetraField revealAll={reveal} originRef={buttonRef} />
         <div className="relative">
           <Heading level={2} className="mx-auto max-w-xl">
-            Give your server <Accent>better</Accent> emotes.
+            give your server <Accent>better</Accent> emotes
           </Heading>
           <Text tone="muted" className="mx-auto mt-4 max-w-md">
-            Ready the moment it joins your server.
+            ready the moment it joins your server
           </Text>
           <div ref={buttonRef} className="mt-10 inline-flex">
             <Button
@@ -134,7 +170,7 @@ function CallToAction() {
               }
               onBlur={() => setReveal(false)}
             >
-              Add to Discord <span aria-hidden>→</span>
+              add to discord <span aria-hidden>→</span>
             </Button>
           </div>
         </div>

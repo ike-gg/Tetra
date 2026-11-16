@@ -13,7 +13,9 @@ const PAGES = [
   { to: "/logo", label: "logo" },
 ] as const;
 
-const LINK = "hover:text-foreground data-[status=active]:text-foreground";
+// Color and underline pinned: on /editor ui-sdk's web.css styles every link
+const LINK =
+  "text-muted no-underline hover:text-foreground data-[status=active]:text-foreground";
 
 export function Footer({ className }: { className?: string }) {
   return (
@@ -26,7 +28,7 @@ export function Footer({ className }: { className?: string }) {
       <span className="flex items-center gap-2.5">
         <Logo animated={false} className="size-3 text-foreground" />
         <span>
-          <span className="text-brand-500">tetra</span> · emote manager for discord
+          <span className="text-brand-500">tetra</span> · emote manager for Discord
         </span>
       </span>
       <nav aria-label="Site" className="flex flex-wrap justify-center gap-x-6 gap-y-2">

@@ -6,7 +6,7 @@ import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 
 const STATS = [
-  { value: "3,500", label: "servers use Tetra" },
+  { value: "3,500", label: "servers use tetra" },
   { value: "1.5M", label: "people on those servers" },
   { value: "150K", label: "emotes added" },
 ];
@@ -47,7 +47,7 @@ export function Stats() {
     <section ref={sectionRef} className="mx-auto max-w-6xl px-6 py-28">
       <Eyebrow index="03">in numbers</Eyebrow>
       <Heading level={2} className="mt-4 max-w-2xl">
-        Already in <Accent>thousands</Accent> of servers.
+        already in <Accent>thousands</Accent> of servers
       </Heading>
 
       <dl className="mt-14 grid gap-px border border-border bg-border sm:grid-cols-3">

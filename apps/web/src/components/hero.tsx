@@ -63,9 +63,9 @@ export function Hero() {
           level={1}
           className="motion-safe:animate-hero-rise [animation-delay:350ms]"
         >
-          <span className="block">Add any emote.</span>
+          <span className="block">add any emote.</span>
           <Accent>
-            <EmoteDropText text="That's it." delayMs={ACCENT_DROP_DELAY_MS} />
+            <EmoteDropText text="that's it" delayMs={ACCENT_DROP_DELAY_MS} />
           </Accent>
         </Heading>
 
@@ -74,20 +74,19 @@ export function Hero() {
           tone="muted"
           className="motion-safe:animate-hero-rise mt-6 max-w-xl text-balance [animation-delay:500ms]"
         >
-          Type a name or paste a link from 7TV, BTTV or FFZ. Tetra takes care of sizes and
-          Discord&apos;s limits for you, so there&apos;s nothing to tweak and nothing to
-          worry about.
+          type a name or paste a link from 7TV, BTTV or FFZ. tetra shrinks it to fit
+          Discord&apos;s 256 KB limit, so there&apos;s nothing to tweak
         </Text>
 
         <div className="motion-safe:animate-hero-rise mt-10 flex flex-col items-center gap-3 sm:flex-row [animation-delay:650ms]">
           <Button variant="primary" size="lg" glow render={<a href={INVITE_URL} />}>
-            Add to Discord
+            add to discord
             <span aria-hidden className="font-mono group-hover/button:translate-x-0.5">
               →
             </span>
           </Button>
           <Button size="lg" render={<Link to="/panel" />}>
-            Open panel
+            open panel
           </Button>
         </div>
 
@@ -105,7 +104,7 @@ export function Hero() {
             />
           </div>
           <p className="mt-3 font-mono text-muted/70 text-xs tracking-widest">
-            7TV · BTTV · FFZ · LINKS · MESSAGES
+            7TV · BTTV · FFZ · links · messages
           </p>
         </div>
       </div>

@@ -7,8 +7,8 @@ import { cn } from "@/lib/cn";
 import { INVITE_URL } from "@/lib/links";
 
 const LINKS = [
-  { to: "/editor", label: "Editor" },
-  { to: "/panel", label: "Panel" },
+  { to: "/editor", label: "editor" },
+  { to: "/panel", label: "panel" },
 ] as const;
 
 // The logo's drop plays once per page load: a refresh replays it, moving between pages
@@ -68,7 +68,7 @@ export function Navbar({ className, logoIntro = true }: NavbarProps) {
       <nav className="relative mx-auto flex h-14 max-w-6xl select-none items-center justify-between gap-6 px-4 sm:px-6">
         <Link
           to="/"
-          aria-label="Tetra home"
+          aria-label="tetra home"
           onClick={() => {
             replayClickedAt = performance.now();
             setReplays((count) => count + 1);
@@ -95,7 +95,7 @@ export function Navbar({ className, logoIntro = true }: NavbarProps) {
             </Link>
           ))}
           <Button size="sm" className="ml-2" render={<a href={INVITE_URL} />}>
-            Add to Discord
+            add to discord
           </Button>
         </div>
       </nav>
