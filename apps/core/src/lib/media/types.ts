@@ -21,6 +21,8 @@ export interface PlatformContext {
   feedback: FeedbackManager;
   /** Per-attachment upload limit of the interaction (`interaction.attachmentSizeLimit`). */
   fileLimit: number;
+  /** Aborted when the /media job times out; kills running tools. */
+  signal: AbortSignal;
 }
 
 export type PlatformHandlerCallback = (

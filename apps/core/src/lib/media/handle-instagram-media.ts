@@ -27,13 +27,13 @@ const loginRequiredError = () =>
 
 // yt-dlp only extracts videos; photo posts (and mixed carousels' photos) need gallery-dl,
 // which Instagram only serves with a logged-in session (MEDIA_COOKIES)
-const handlePhotoPost = async (url: string, fileLimit: number) => {
+const handlePhotoPost = async (url: string, fileLimit: number, signal: AbortSignal) => {
   if (!env.MEDIA_COOKIES) throw loginRequiredError();
 
   const dir = TempFileManager.create();
   let files: Awaited<ReturnType<typeof fetchGallery>>["files"];
   try {
-    ({ files } = await fetchGallery(url, { cookies: prepareCookies(dir) }));
+    ({ files } = await fetchGallery(url, { cookies: prepareCookies(dir), signal }));
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -72,7 +72,7 @@ const handlePhotoPost = async (url: string, fileLimit: number) => {
 
 export const handleInstagramMedia: PlatformHandlerCallback = async (
   url,
-  { fileLimit }
+  { fileLimit, signal }
 ) => {
   try {
     try {
@@ -80,6 +80,7 @@ export const handleInstagramMedia: PlatformHandlerCallback = async (
         platform: PLATFORM,
         extractors: "Instagram",
         fileLimit,
+        signal,
       });
 
       return {
@@ -88,7 +89,7 @@ export const handleInstagramMedia: PlatformHandlerCallback = async (
       };
     } catch (error) {
       if (error instanceof YtDlpError && error.failure === "no-video") {
-        return await handlePhotoPost(url, fileLimit);
+        return await handlePhotoPost(url, fileLimit, signal);
       }
       throw error;
     }

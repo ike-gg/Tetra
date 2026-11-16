@@ -72,7 +72,10 @@ export const planSlideshow = (count: number, audioDuration?: number): SlideshowP
   return { slides: fill(count, perSlide, audio), total: audio, loopAudio: false };
 };
 
-const probeDuration = async (file: string): Promise<number | undefined> => {
+const probeDuration = async (
+  file: string,
+  signal?: AbortSignal
+): Promise<number | undefined> => {
   const result = await runCommand(
     [
       "ffprobe",
@@ -84,7 +87,7 @@ const probeDuration = async (file: string): Promise<number | undefined> => {
       "csv=p=0",
       file,
     ],
-    { timeoutMs: 15_000 }
+    { timeoutMs: 15_000, signal }
   );
 
   const duration = Number.parseFloat(result.stdout.trim());
@@ -94,7 +97,11 @@ const probeDuration = async (file: string): Promise<number | undefined> => {
 };
 
 /** Renders a 720x1280 H.264/AAC mp4 from images (and the post's audio, if any). */
-export const renderSlideshow = async (images: Buffer[], audio?: Buffer) => {
+export const renderSlideshow = async (
+  images: Buffer[],
+  audio?: Buffer,
+  signal?: AbortSignal
+) => {
   if (images.length === 0) throw new EmbeddedError("No images found in this slideshow.");
 
   const dir = TempFileManager.create();
@@ -123,7 +130,7 @@ export const renderSlideshow = async (images: Buffer[], audio?: Buffer) => {
     let audioDuration: number | undefined;
     if (audio) {
       fs.writeFileSync(audioPath, audio);
-      audioDuration = await probeDuration(audioPath);
+      audioDuration = await probeDuration(audioPath, signal);
     }
 
     const plan = planSlideshow(images.length, audioDuration);
@@ -187,7 +194,7 @@ export const renderSlideshow = async (images: Buffer[], audio?: Buffer) => {
         "+faststart",
         "slideshow.mp4",
       ],
-      { cwd: dir, timeoutMs: RENDER_TIMEOUT_MS }
+      { cwd: dir, timeoutMs: RENDER_TIMEOUT_MS, signal }
     );
 
     if (result.exitCode !== 0 || result.timedOut || !fs.existsSync(outputPath)) {

@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import * as z from "zod";
 
@@ -15,7 +16,7 @@ const probeSchema = z.object({
   format: z.object({ duration: z.coerce.number().optional() }).optional(),
 });
 
-const probe = async (file: string) => {
+const probe = async (file: string, signal?: AbortSignal) => {
   const result = await runCommand(
     [
       "ffprobe",
@@ -27,7 +28,7 @@ const probe = async (file: string) => {
       "json",
       file,
     ],
-    { timeoutMs: 15_000 }
+    { timeoutMs: 15_000, signal }
   );
   if (result.exitCode !== 0) return undefined;
 
@@ -40,19 +41,28 @@ const probe = async (file: string) => {
 };
 
 /**
- * Returns `file` when its video is H.264, otherwise an H.264/AAC copy capped to a bitrate
- * that fits `fileLimit`. Platforms serve HEVC (all Twitch clip formats as of 2026-11) with
- * no codec in the metadata, and Discord doesn't play HEVC in every client.
+ * Returns `file` when it is H.264 and fits `maxBytes`, otherwise an H.264/AAC copy with
+ * the short side capped at 720 px, at most 30 fps, and a bitrate cap that fits `maxBytes`.
+ * Platforms serve HEVC (all Twitch clip formats as of 2026-11) with no codec in the
+ * metadata, Discord doesn't play HEVC in every client, and some sources (Kick clips) have
+ * a single format larger than the upload limit.
  */
-export const ensureH264 = async (file: string, fileLimit: number): Promise<string> => {
-  const info = await probe(file);
+export const fitVideo = async (
+  file: string,
+  maxBytes: number,
+  signal?: AbortSignal
+): Promise<string> => {
+  const info = await probe(file, signal);
   const video = info?.streams.find((stream) => stream.codec_type === "video");
-  if (!info || !video || video.codec_name === "h264") return file;
+  if (!info || !video) return file;
+
+  const tooLarge = fs.statSync(file).size > maxBytes;
+  if (video.codec_name === "h264" && !tooLarge) return file;
 
   const audio = info.streams.find((stream) => stream.codec_type === "audio");
   const duration = info.format?.duration || 60;
   const videoKbps = Math.round(
-    Math.min(5000, Math.max(300, (fileLimit * 8 * 0.9) / duration / 1000 - AUDIO_KBPS))
+    Math.min(5000, Math.max(300, (maxBytes * 8 * 0.9) / duration / 1000 - AUDIO_KBPS))
   );
 
   const output = path.join(
@@ -83,6 +93,10 @@ export const ensureH264 = async (file: string, fileLimit: number): Promise<strin
       `${videoKbps}k`,
       "-bufsize",
       `${videoKbps * 2}k`,
+      "-vf",
+      "scale='if(gte(iw,ih),-2,min(720,iw))':'if(gte(iw,ih),min(720,ih),-2)'",
+      "-fpsmax",
+      "30",
       "-pix_fmt",
       "yuv420p",
       "-c:a",
@@ -92,11 +106,11 @@ export const ensureH264 = async (file: string, fileLimit: number): Promise<strin
       "+faststart",
       output,
     ],
-    { timeoutMs: TRANSCODE_TIMEOUT_MS }
+    { timeoutMs: TRANSCODE_TIMEOUT_MS, signal }
   );
 
   if (result.exitCode !== 0 || result.timedOut) {
-    // Better an HEVC file that some clients can't play than no file
+    // Keep the original: the caller rejects it if it is still too large
     BotConsole.warn("[media] H.264 transcode failed:", result.stderr.slice(-500));
     return file;
   }

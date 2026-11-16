@@ -38,13 +38,13 @@ const downloadAsset = (url: string) =>
 // yt-dlp can't read photo posts; gallery-dl lists the images plus the post's sound
 const handleSlideshow = async (
   url: string,
-  { feedback, fileLimit }: PlatformContext
+  { feedback, fileLimit, signal }: PlatformContext
 ): Promise<PlatformResult> => {
   const dir = TempFileManager.create();
 
   let gallery: Awaited<ReturnType<typeof fetchGallery>>;
   try {
-    gallery = await fetchGallery(url, { cookies: prepareCookies(dir) });
+    gallery = await fetchGallery(url, { cookies: prepareCookies(dir), signal });
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
@@ -70,7 +70,7 @@ const handleSlideshow = async (
 
   await feedback.info("Rendering slideshow...");
 
-  const movie = await renderSlideshow(images, audio);
+  const movie = await renderSlideshow(images, audio, signal);
   if (movie.byteLength > fileLimit) throw new FileLimitExceededError();
 
   const post = postSchema.parse(gallery.post ?? {});
@@ -97,6 +97,7 @@ export const handleTikTokMedia: PlatformHandlerCallback = async (url, context) =
         platform: PLATFORM,
         extractors: "TikTok,vm.tiktok",
         fileLimit: context.fileLimit,
+        signal: context.signal,
       });
 
       return { media, metadata: videos[0] && videoMetadata(videos[0]) };

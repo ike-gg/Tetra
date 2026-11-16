@@ -4,13 +4,17 @@ import type { PlatformHandlerCallback } from "./types";
 
 const PLATFORM = "Twitch";
 
-export const handleTwitchClip: PlatformHandlerCallback = async (url, { fileLimit }) => {
+export const handleTwitchClip: PlatformHandlerCallback = async (
+  url,
+  { fileLimit, signal }
+) => {
   try {
     const { media, videos } = await downloadVideoPost(url, {
       platform: PLATFORM,
       // Clips only: VODs and streams are far over any upload limit
       extractors: "twitch:clips",
       fileLimit,
+      signal,
     });
 
     const clip = videos[0];

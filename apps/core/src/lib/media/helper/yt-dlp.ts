@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import * as z from "zod";
 
-import { ensureH264 } from "./ensure-h264";
+import { fitVideo } from "./fit-video";
 import {
   classifyToolError,
   FileLimitExceededError,
@@ -17,6 +17,8 @@ const DOWNLOAD_TIMEOUT_MS = 180_000;
 const formatSort = (res: number) => `vcodec:h264,res:${res},acodec:aac,ext:mp4:m4a`;
 // Twitch clips are ~8 Mbit/s at 720p, so long clips only fit at a lower resolution
 const RESOLUTION_LADDER = [720, 480, 360];
+// Source cap for the last resort (download anyway and re-encode to fit)
+const MAX_SOURCE_FACTOR = 4;
 // Rough floor for any usable format: longer videos fit the limit at no resolution
 const MIN_BYTES_PER_SECOND = 250_000 / 8;
 
@@ -31,6 +33,7 @@ const videoSchema = z.object({
   duration: z.number().nullish(),
   like_count: z.number().nullish(),
   view_count: z.number().nullish(),
+  formats: z.array(z.unknown()).nullish(),
 });
 
 const infoSchema = z.union([
@@ -54,6 +57,7 @@ export interface YtDlpOptions {
   /** `--use-extractors` value; keeps yt-dlp off its generic extractor (no arbitrary fetches). */
   extractors: string;
   cookies?: string;
+  signal?: AbortSignal;
 }
 
 const baseArgs = ({ cookies }: YtDlpOptions) => [
@@ -92,7 +96,7 @@ export const fetchVideoInfo = async (url: string, options: YtDlpOptions) => {
       "--",
       url,
     ],
-    { timeoutMs: EXTRACT_TIMEOUT_MS }
+    { timeoutMs: EXTRACT_TIMEOUT_MS, signal: options.signal }
   );
 
   if (result.timedOut) throw new YtDlpError("timeout", result.stderr);
@@ -120,7 +124,7 @@ const downloadAttempt = async (
   infoPath: string,
   dir: string,
   res: number,
-  fileLimit: number,
+  maxFileSize: number,
   options: YtDlpOptions
 ) => {
   fs.mkdirSync(dir);
@@ -136,7 +140,7 @@ const downloadAttempt = async (
       formatSort(res),
       // Checked against the metadata or Content-Length before anything is downloaded
       "--max-filesize",
-      String(fileLimit),
+      String(maxFileSize),
       "--merge-output-format",
       "mp4",
       "--remux-video",
@@ -147,7 +151,7 @@ const downloadAttempt = async (
       "--print",
       "after_move:filepath",
     ],
-    { timeoutMs: DOWNLOAD_TIMEOUT_MS }
+    { timeoutMs: DOWNLOAD_TIMEOUT_MS, signal: options.signal }
   );
 
   if (result.timedOut) throw new YtDlpError("timeout", result.stderr);
@@ -180,20 +184,42 @@ export const downloadVideos = async (
   const infoPath = path.join(dir, "info.json");
   fs.writeFileSync(infoPath, info.raw);
 
-  for (const res of RESOLUTION_LADDER) {
+  const fit = async (files: string[]) => {
+    const buffers: Buffer[] = [];
+    for (const file of files) {
+      const fitted = await fitVideo(file, fileLimit / files.length, options.signal);
+      buffers.push(fs.readFileSync(fitted));
+    }
+    const total = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
+    return total <= fileLimit ? buffers : undefined;
+  };
+
+  // A single format (Kick clips) is the same at every step; HLS sources have no size
+  // to check up front, so each step would download it again
+  const singleFormat = info.videos.every((video) => (video.formats?.length ?? 1) <= 1);
+
+  for (const res of singleFormat ? [] : RESOLUTION_LADDER) {
     const attemptDir = path.join(dir, String(res));
     const files = await downloadAttempt(infoPath, attemptDir, res, fileLimit, options);
 
     // --max-filesize skips a file silently (exit code 0, nothing printed)
     if (files.length < info.videos.length) continue;
 
-    const buffers: Buffer[] = [];
-    for (const file of files) {
-      buffers.push(fs.readFileSync(await ensureH264(file, fileLimit)));
-    }
-    const total = buffers.reduce((sum, buffer) => sum + buffer.byteLength, 0);
-    if (total <= fileLimit) return buffers;
+    const buffers = await fit(files);
+    if (buffers) return buffers;
   }
+
+  // No format fits as is: download one up to a few times the limit and re-encode it
+  const lastDir = path.join(dir, "re-encode");
+  const files = await downloadAttempt(
+    infoPath,
+    lastDir,
+    RESOLUTION_LADDER[0] as number,
+    fileLimit * MAX_SOURCE_FACTOR,
+    options
+  );
+  const buffers = files.length === info.videos.length ? await fit(files) : undefined;
+  if (buffers) return buffers;
 
   throw new FileLimitExceededError();
 };

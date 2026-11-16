@@ -51,7 +51,7 @@ export class GalleryDlError extends Error {
 
 export const fetchGallery = async (
   url: string,
-  { cookies }: { cookies?: string }
+  { cookies, signal }: { cookies?: string; signal?: AbortSignal }
 ): Promise<GalleryResult> => {
   const result = await runCommand(
     [
@@ -64,7 +64,7 @@ export const fetchGallery = async (
       "--",
       url,
     ],
-    { timeoutMs: EXTRACT_TIMEOUT_MS }
+    { timeoutMs: EXTRACT_TIMEOUT_MS, signal }
   );
 
   if (result.timedOut) throw new GalleryDlError("timeout", result.stderr);
