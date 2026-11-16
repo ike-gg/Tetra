@@ -7,8 +7,6 @@ import {
   MessageFlags,
 } from "discord.js";
 
-import { isDevelopment } from "@/env";
-
 /**
  * Components v2 helpers for `FeedbackManager`. A message that has the v2 flag keeps it
  * forever and can't carry `content`/`embeds`, so every message the manager creates is v2
@@ -20,9 +18,6 @@ export type TopLevelComponent = APIMessageTopLevelComponent;
 type EmbedLike = APIEmbed | JSONEncodable<APIEmbed>;
 
 export const V2_FLAG = MessageFlags.IsComponentsV2;
-
-/** Bottom line of every generic reply (the embed footer used to carry the bot's name). */
-export const footerText = () => `-# tetra${isDevelopment ? " · dev" : ""}`;
 
 const toJSON = <T>(value: T | JSONEncodable<T>): T =>
   isJSONEncodable(value) ? value.toJSON() : value;
@@ -131,17 +126,9 @@ export const bodyToComponents = (
   return body;
 };
 
-/** Adds the `-# tetra` line to the last container (or as its own line). */
-export const withFooter = (body: TopLevelComponent[]): TopLevelComponent[] => {
-  const last = body.at(-1);
-  if (last?.type === ComponentType.Container) {
-    return [
-      ...body.slice(0, -1),
-      { ...last, components: [...last.components, text(footerText())] },
-    ];
-  }
-  return [...body, text(footerText())];
-};
+/** A v2 message needs at least one component; an edit that empties it keeps a blank line. */
+export const nonEmpty = (components: TopLevelComponent[]): TopLevelComponent[] =>
+  components.length > 0 ? components : [text("\u200b")];
 
 export const isActionRow = (component: { type: ComponentType }) =>
   component.type === ComponentType.ActionRow;

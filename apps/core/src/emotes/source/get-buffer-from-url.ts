@@ -23,6 +23,7 @@ export class SourceRespondedError extends EmbeddedError {
   constructor(public readonly status: number) {
     super({
       title: "Failed to fetch source file.",
+      keepTitle: true,
       description: `The source responded with ${status}. Maybe the URL is invalid or the file was removed.`,
     });
     this.name = "SourceRespondedError";

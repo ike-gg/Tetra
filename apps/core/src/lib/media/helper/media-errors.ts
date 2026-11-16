@@ -80,9 +80,14 @@ export const mediaToolError = (
     BotConsole.warn(`[media] ${platform} download failed:`, details?.trim().slice(-500));
     return new EmbeddedError({
       title: `Couldn't fetch ${platform} media`,
+      keepTitle: true,
       description: "The platform returned an unexpected error. Try again later.",
     });
   }
 
-  return new EmbeddedError({ title: `${platform}`, description: messages[failure] });
+  return new EmbeddedError({
+    title: `${platform}`,
+    description: messages[failure],
+    keepTitle: true,
+  });
 };

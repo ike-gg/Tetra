@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { ActionRowBuilder, ButtonBuilder, EmbedBuilder } from "@discordjs/builders";
+import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import {
   type BaseMessageOptions,
   type ButtonInteraction,
@@ -19,14 +19,14 @@ import SubmitErrorLogGenericButton from "@/interactions/buttons/generic/submit-e
 
 import { EmbeddedError } from "../../constants/errors";
 import { Messages } from "../../constants/messages";
-import { env, isDevelopment } from "../../env";
+import { env } from "../../env";
 import type { TetraClient } from "../../types";
 import {
   bodyToComponents,
   isActionRow,
+  nonEmpty,
   type TopLevelComponent,
   V2_FLAG,
-  withFooter,
   withoutAttachmentMedia,
 } from "../discord/components-v2";
 import { feedbackPayload } from "../discord/feedback-payload";
@@ -139,34 +139,6 @@ export class FeedbackManager {
     }
   }
 
-  private async sendLegacy(content: BaseMessageOptions) {
-    const { embeds } = content;
-
-    if (embeds && embeds.length > 0) {
-      const lastIndex = embeds.length - 1;
-      let lastEmbedText = this.client.user!.username;
-
-      if (isDevelopment) {
-        lastEmbedText += " | dev";
-      }
-
-      let lastEmbedData = embeds[lastIndex];
-      if (!lastEmbedData) return;
-      if (isJSONEncodable(lastEmbedData)) lastEmbedData = lastEmbedData.toJSON();
-
-      const lastEmbedBuilder = new EmbedBuilder(lastEmbedData);
-      lastEmbedBuilder.setFooter({
-        text: lastEmbedText,
-        iconURL: this.client.user!.avatarURL()!,
-      });
-
-      //@ts-expect-error - embeds is a readonly property
-      embeds[lastIndex] = lastEmbedBuilder.toJSON();
-    }
-
-    await this.deliver(content);
-  }
-
   /**
    * Takes v1-style options (embeds, action rows, files) and sends them as Components v2.
    * Like a v1 edit, what isn't given stays: no `embeds`/`content` keeps the current body,
@@ -174,7 +146,7 @@ export class FeedbackManager {
    */
   async sendMessage(content: BaseMessageOptions) {
     if (this.isLegacyMessage) {
-      await this.sendLegacy(content);
+      await this.deliver(content);
       return;
     }
 
@@ -184,7 +156,7 @@ export class FeedbackManager {
       hasBody && hasRows ? { body: [], rows: [] } : await this.currentState();
 
     let body = hasBody
-      ? withFooter(bodyToComponents(content.content, content.embeds ?? []))
+      ? bodyToComponents(content.content, content.embeds ?? [])
       : current.body;
 
     // New files replace the old attachments, so gallery items pointing at others must go
@@ -198,8 +170,7 @@ export class FeedbackManager {
     }
 
     const rows = hasRows ? (content.components ?? []).map(toJSONComponent) : current.rows;
-    // A v2 message needs at least one component
-    if (body.length === 0 && rows.length === 0) body = withFooter([]);
+    if (rows.length === 0) body = nonEmpty(body);
 
     await this.deliver({
       components: [...body, ...rows],

@@ -25,12 +25,14 @@ export class Messages {
   //generic
   static readonly INTERACTION_TIMEOUT: T = {
     title: "Interaction expired",
+    keepTitle: true,
     description: "This interaction has expired. Please start a new one.",
   };
 
   static INTERACTION_TIMEOUT_WITH_REASON(reason: string): T {
     return {
       title: "Interaction expired",
+      keepTitle: true,
       description: `This interaction has expired (${reason}). Please start a new one.`,
     };
   }
@@ -49,6 +51,7 @@ export class Messages {
   };
   static readonly BOT_MISSING_PERMISSIONS: T = {
     title: "Tetra missing permissions",
+    keepTitle: true,
     description: `Tetra doesn't have sufficient permissions.
     
 Make sure Tetra has the following permissions:
@@ -65,11 +68,13 @@ Make sure Tetra has the following permissions:
 
   static readonly ERROR_LOG_UNAVAILABLE: T = {
     title: "Error log unavailable",
+    keepTitle: true,
     description: "Sending error logs is not set up for this bot.",
   };
 
   static readonly TASK_IN_EDITOR: T = {
     title: "Emote ready in the editor",
+    keepTitle: true,
     description: multilineText(
       "Open the editor in Tetra Panel to adjust the emote and add it to this server.",
       "You may need to log in with Discord first."
@@ -89,6 +94,7 @@ Make sure Tetra has the following permissions:
   //special
   static readonly NEW_MEDIA_COMMAND: T = {
     title: "Command deprecated.",
+    keepTitle: true,
     description: `Use \`/media\` command instead.
     
     \`/media\` command combines multiple commands (\`/instagram\`, \`/tiktok\`, \`/twitter\` etc.) into one.
@@ -98,6 +104,7 @@ Make sure Tetra has the following permissions:
   //media
   static readonly METDIA_PLATFORM_NOT_SUPPORED: T = {
     title: "Platform not supported",
+    keepTitle: true,
     description: `Currently supported platforms:
   ${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.join(", ")})`).join("\n")}`,
   };
@@ -162,6 +169,7 @@ Make sure Tetra has the following permissions:
   }): T {
     return {
       title: "Not enough emote slots",
+      keepTitle: true,
       description: multilineText(
         `Not enough slots to upload ${uploadCount} emotes.`,
         `${remainingSlots} ${emoteType} slot${remainingSlots !== 1 ? "s" : ""} left.`

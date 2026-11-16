@@ -25,6 +25,7 @@ export const addSlicesToGuild = async ({
   if (!guild) {
     throw new EmbeddedError({
       title: "Guild not found",
+      keepTitle: true,
       description: "It should never have happened, but it did. 🤨",
     });
   }

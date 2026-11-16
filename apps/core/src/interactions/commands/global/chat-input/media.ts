@@ -150,8 +150,8 @@ interface MediaPayload extends Pick<InteractionReplyOptions, "files"> {
 }
 
 // Progress and errors use the generic reply style; only the result has the platform colour
-const mediaStatus = (title: string, description?: string) =>
-  feedbackPayload("working", description ? { title, description } : { title });
+const mediaStatus = (title: string, detail?: string) =>
+  feedbackPayload("working", detail ? `${title}\n-# ${detail}` : title);
 const mediaError = (content: TetraEmbedContent) =>
   feedbackPayload("error", content, { rows: FeedbackManager.errorRows() });
 const mediaWarning = (content: TetraEmbedContent) => feedbackPayload("warning", content);

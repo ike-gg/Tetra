@@ -2,12 +2,7 @@ import { type ActionRowBuilder, isJSONEncodable, MessageFlags } from "discord.js
 
 import { TetraEmbed, type TetraEmbedContent } from "@/utils/embed-messages/tetra-embed";
 
-import {
-  bodyToComponents,
-  type TopLevelComponent,
-  V2_FLAG,
-  withFooter,
-} from "./components-v2";
+import { bodyToComponents, type TopLevelComponent, V2_FLAG } from "./components-v2";
 
 export type FeedbackPayloadType = Exclude<
   keyof typeof TetraEmbed,
@@ -15,8 +10,7 @@ export type FeedbackPayloadType = Exclude<
 >;
 
 /**
- * A fresh Components v2 reply in the generic style (emoji title, neutral container,
- * `-# tetra`), for answers outside a `FeedbackManager` message: ephemeral notices,
+ * A fresh Components v2 reply in the generic style (emoji inline, neutral container), for answers outside a `FeedbackManager` message: ephemeral notices,
  * /media states. Mentions never ping.
  */
 export const feedbackPayload = (
@@ -25,7 +19,7 @@ export const feedbackPayload = (
   options: { rows?: ActionRowBuilder[]; ephemeral?: boolean } = {}
 ) => ({
   components: [
-    ...withFooter(bodyToComponents(null, [TetraEmbed[type](content)])),
+    ...bodyToComponents(null, [TetraEmbed[type](content)]),
     ...(options.rows ?? []).map(
       (row) => (isJSONEncodable(row) ? row.toJSON() : row) as TopLevelComponent
     ),
