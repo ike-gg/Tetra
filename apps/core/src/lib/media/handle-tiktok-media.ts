@@ -72,7 +72,9 @@ const handleSlideshow = async (
   await progress("making the slideshow video");
 
   const movie = await renderSlideshow(images, audio, signal);
-  if (movie.byteLength > fileLimit) throw new FileLimitExceededError();
+  if (movie.byteLength > fileLimit) {
+    throw new FileLimitExceededError(fileLimit, { size: movie.byteLength });
+  }
 
   const post = postSchema.parse(gallery.post ?? {});
 

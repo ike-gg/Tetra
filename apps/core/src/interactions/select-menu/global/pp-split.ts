@@ -3,7 +3,7 @@ import sharp, { type SharpOptions } from "sharp";
 import { z } from "zod";
 
 import { MAX_EMOTE_SIZE } from "@/constants";
-import { EmbeddedError } from "@/constants/errors";
+import { InternalError } from "@/constants/errors";
 import { editEmoteByUser } from "@/emotes/edit-emote-by-user";
 import { emoteOptimize } from "@/emotes/emote-optimize";
 import {
@@ -47,7 +47,7 @@ const PPSplitContinuity = new PPSplitSelectMenuInteraction(
         : await ProcessingEmoteService.getBuffer(processingEmoteKey);
 
       if (!bufferSplitFrom) {
-        throw new EmbeddedError("i couldn't read the emote to split it. try again");
+        throw new InternalError("i couldn't read the emote to split it");
       }
 
       const sharpOptions: SharpOptions = {
@@ -61,9 +61,7 @@ const PPSplitContinuity = new PPSplitSelectMenuInteraction(
       const height = pageHeight || originalHeight;
 
       if (!height) {
-        throw new EmbeddedError(
-          "i couldn't read the emote's size to split it. try again"
-        );
+        throw new InternalError("i couldn't read the emote's size to split it");
       }
 
       const newWidth = height * splitInto;

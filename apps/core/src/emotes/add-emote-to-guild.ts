@@ -1,4 +1,4 @@
-import { EmbeddedError } from "@/constants/errors";
+import { InternalError } from "@/constants/errors";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import type { FeedbackManager } from "@/utils/managers/feedback-manager";
 
@@ -20,9 +20,7 @@ export const addEmoteToGuild = async ({
   const guild = feedback.interaction.guild;
 
   if (!guild) {
-    throw new EmbeddedError(
-      "something broke on my side, i lost track of this server. try again, and if it keeps happening, send an error report"
-    );
+    throw new InternalError("i lost track of this server");
   }
 
   const { emotes: guildEmotes } = guildParsePremium(guild);

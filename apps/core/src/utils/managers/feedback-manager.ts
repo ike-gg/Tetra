@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { ActionRowBuilder, ButtonBuilder } from "@discordjs/builders";
 import {
   type BaseMessageOptions,
@@ -30,8 +29,7 @@ import {
 } from "../discord/components-v2";
 import { feedbackPayload } from "../discord/feedback-payload";
 import { TetraEmbed, type TetraEmbedContent } from "../embed-messages/tetra-embed";
-
-import { CoreConsole } from "#/loggers";
+import { createErrorCode, logErrorCode, reportWithCode } from "../error-code";
 
 export class UnhandledError extends Error {
   constructor(message: string) {
@@ -274,11 +272,9 @@ export class FeedbackManager {
   }
 
   async unhandledError(error: unknown) {
-    const trackingId = randomUUID();
-    CoreConsole.error(`[ ${trackingId} ]`, error);
-    await this.error(
-      `something broke on my side. try again, and if it keeps happening, report it with code \`${trackingId}\``
-    );
+    const code = createErrorCode();
+    logErrorCode(code, error);
+    await this.error(`something broke on my side. ${reportWithCode(code)}`);
   }
 
   async updateComponents(
@@ -335,11 +331,5 @@ export class FeedbackManager {
 
   async notFoundFile() {
     await this.error("i couldn't find a file in that message");
-  }
-
-  async fileLimitExceeded() {
-    await this.error(
-      "that's over this server's upload limit. boosting the server raises it"
-    );
   }
 }

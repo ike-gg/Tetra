@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import {
   ApplicationIntegrationType,
   AttachmentBuilder,
@@ -35,18 +34,17 @@ import type { PlatformHandlerCallback } from "@/lib/media/types";
 import type { TopLevelComponent } from "@/utils/discord/components-v2";
 import { feedbackPayload } from "@/utils/discord/feedback-payload";
 import type { TetraEmbedContent } from "@/utils/embed-messages/tetra-embed";
+import { createErrorCode, logErrorCode, reportWithCode } from "@/utils/error-code";
 import isValidURL from "@/utils/is-valid-url";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";
 import { removeQueryFromUrl } from "@/utils/remove-query-from-url";
-
-import { BotConsole } from "#/loggers";
 
 interface PlatformHandler {
   name: string;
   hostnames: string[];
   handler: PlatformHandlerCallback;
-  color: number;
-  emote: string;
+  /** Custom platform emoji for the meta line; without one the name is shown */
+  emote?: string;
 }
 
 const supportedPlatforms: PlatformHandler[] = [
@@ -54,28 +52,24 @@ const supportedPlatforms: PlatformHandler[] = [
     name: "X",
     handler: handleTwitterMedia,
     hostnames: ["twitter.com", "x.com", "fxtwitter.com"],
-    color: 0x1da1f2,
     emote: "<:_tetra_symbol_x:1245824654568984687>",
   },
   {
     name: "Instagram",
     handler: handleInstagramMedia,
     hostnames: ["instagram.com", "www.instagram.com"],
-    color: 0xc32aa3,
     emote: "<:_tetra_symbol_ig:1245824656154562560>",
   },
   {
     name: "TikTok",
     handler: handleTikTokMedia,
     hostnames: ["tiktok.com", "www.tiktok.com"],
-    color: 0x010101,
     emote: "<:_tetra_symbol_tiktok:1245824660726349945>",
   },
   {
     name: "Twitch",
     handler: handleTwitchClip,
     hostnames: ["twitch.tv"],
-    color: 0x9146ff,
     emote: "<:_tetra_symbol_twitch:1245824662177448036>",
   }, // {
   //   name: "YouTube",
@@ -86,15 +80,11 @@ const supportedPlatforms: PlatformHandler[] = [
     name: "Kick",
     handler: handleKickClip,
     hostnames: ["kick.com"],
-    color: 0x53fc18,
-    // No custom Kick emoji uploaded yet
-    emote: "🟩",
   },
   {
     name: "Streamable",
     handler: handleStreamableMedia,
     hostnames: ["streamable.com"],
-    color: 0x007aff,
     emote: "<:_tetra_symbol_streamable:1245825591089827861>",
   },
 ];
@@ -188,13 +178,9 @@ class MediaReply {
       return;
     }
 
-    const trackingId = randomUUID();
-    BotConsole.error(`[ ${trackingId} ]`, mapped);
-    await this.send(
-      mediaError(
-        `something broke on my side. try again, and if it keeps happening, report it with code \`${trackingId}\``
-      )
-    );
+    const code = createErrorCode();
+    logErrorCode(code, mapped);
+    await this.send(mediaError(`something broke on my side. ${reportWithCode(code)}`));
   }
 }
 
@@ -221,7 +207,11 @@ const processMedia = async ({
   });
 
   const totalFilesSize = media.reduce((curr, acc) => curr + (acc.size ?? 0), 0);
-  if (totalFilesSize > fileLimit) throw new FileLimitExceededError();
+  if (totalFilesSize > fileLimit) {
+    throw new FileLimitExceededError(fileLimit, {
+      size: totalFilesSize,
+    });
+  }
 
   const files = media.map((m, index) => {
     const suffix = media.length > 1 ? `_${index + 1}` : "";

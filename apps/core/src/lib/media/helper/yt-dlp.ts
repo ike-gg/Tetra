@@ -179,7 +179,14 @@ export const downloadVideos = async (
     (sum, video) => sum + (video.duration ?? 0) * MIN_BYTES_PER_SECOND,
     0
   );
-  if (minimumSize > fileLimit) throw new FileLimitExceededError();
+  if (minimumSize > fileLimit) {
+    throw new FileLimitExceededError(fileLimit, {
+      what:
+        info.videos.length > 1
+          ? "these videos are too long and"
+          : "this video is too long and",
+    });
+  }
 
   const infoPath = path.join(dir, "info.json");
   fs.writeFileSync(infoPath, info.raw);
@@ -221,5 +228,7 @@ export const downloadVideos = async (
   const buffers = files.length === info.videos.length ? await fit(files) : undefined;
   if (buffers) return buffers;
 
-  throw new FileLimitExceededError();
+  throw new FileLimitExceededError(fileLimit, {
+    what: info.videos.length > 1 ? "these videos" : "this video, even at lower quality,",
+  });
 };

@@ -11,6 +11,7 @@ import {
   time,
 } from "discord.js";
 
+import { TETRA_ACCENT_COLOR } from "@/utils/embed-messages/tetra-embed";
 import { formatCompactNumber } from "@/utils/format-compact-number";
 
 // /media answers with Components v2 from its first reply on: a message can't drop the
@@ -23,8 +24,7 @@ const AUTHOR_MAX_CHARS = 20;
 
 export interface MediaPlatformStyle {
   name: string;
-  emote: string;
-  color: number;
+  emote?: string;
 }
 
 const truncate = (text: string, max: number) =>
@@ -46,7 +46,10 @@ export interface MediaMeta {
   views?: number;
 }
 
-/** `<emote> @author · 11/12/2026 · ❤ 13.6k · 👁 1.6M`, missing fields skipped. */
+/**
+ * `<emote> @author · 11/12/2026 · ❤ 13.6k · 👁 1.6M` (`Kick · @author · …` without an emote),
+ * missing fields skipped.
+ */
 export const formatMetaLine = (platform: MediaPlatformStyle, meta: MediaMeta = {}) => {
   const parts = [
     meta.author
@@ -59,7 +62,8 @@ export const formatMetaLine = (platform: MediaPlatformStyle, meta: MediaMeta = {
     meta.views ? `👁 ${formatCompactNumber(meta.views)}` : undefined,
   ].filter(Boolean);
 
-  // The emote stands in for the platform name when there is anything else to show
+  // The platform's emoji stands in for its name; platforms without one show the name
+  if (!platform.emote) return `-# ${[platform.name, ...parts].join(" · ")}`;
   return `-# ${platform.emote} ${parts.length > 0 ? parts.join(" · ") : platform.name}`;
 };
 
@@ -89,7 +93,8 @@ export const mediaResultMessage = ({
   meta?: MediaMeta;
   url: string;
 }) => {
-  const container = new ContainerBuilder().setAccentColor(platform.color);
+  // Neutral like every generic reply: no per-platform colours
+  const container = new ContainerBuilder().setAccentColor(TETRA_ACCENT_COLOR);
 
   if (attachmentNames.length > 0) {
     container.addMediaGalleryComponents(

@@ -1,9 +1,9 @@
 import type { GuildEmoji } from "discord.js";
-import prettyBytes from "pretty-bytes";
 
 import { supportedMediaPlatforms } from "@/interactions/commands/global/chat-input/media";
 
 import type { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
+import { formatBytes } from "../utils/format-bytes";
 import multilineText from "../utils/multiline-text";
 import { MAX_EMOTE_SIZE } from ".";
 
@@ -73,8 +73,8 @@ ${supportedMediaPlatforms.map((media) => `- ${media.name} (${media.hostnames.joi
   }
 
   static EXCEEDED_EMOTE_SIZE(size: number): T {
-    const maxSize = prettyBytes(MAX_EMOTE_SIZE);
-    const emoteSize = prettyBytes(size);
+    const maxSize = formatBytes(MAX_EMOTE_SIZE);
+    const emoteSize = formatBytes(size);
 
     return `this emote is ${emoteSize} and Discord allows ${maxSize}. choose how to shrink it`;
   }

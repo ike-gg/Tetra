@@ -1,8 +1,7 @@
-import prettyBytes from "pretty-bytes";
-
 import { MAX_SUPPORTED_SIZE } from "@/constants";
 import { EmbeddedError } from "@/constants/errors";
 import { getRemoteResourceDetails } from "@/utils";
+import { formatBytes } from "@/utils/format-bytes";
 
 import type { Emote } from "../../../types";
 
@@ -13,7 +12,7 @@ const getEmoteFromUrl = async (sourceUrl: string): Promise<Emote> => {
   // Files above Discord's limit are fine, they get optimized later.
   if (size && size > MAX_SUPPORTED_SIZE) {
     throw new EmbeddedError(
-      `that file is larger than ${prettyBytes(MAX_SUPPORTED_SIZE)}, the most i can process. try a smaller one`
+      `that file is ${formatBytes(size)} and i can process up to ${formatBytes(MAX_SUPPORTED_SIZE)}. try a smaller one`
     );
   }
 

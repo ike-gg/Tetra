@@ -2,12 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 
-import { EmbeddedError } from "@/constants/errors";
+import { EmbeddedError, InternalError } from "@/constants/errors";
 
 import { runCommand } from "./run-command";
 
 import { TempFileManager } from "#/files/temp-file-manager";
-import { BotConsole } from "#/loggers";
 
 const WIDTH = 720;
 const HEIGHT = 1280;
@@ -199,9 +198,9 @@ export const renderSlideshow = async (
     );
 
     if (result.exitCode !== 0 || result.timedOut || !fs.existsSync(outputPath)) {
-      BotConsole.warn("[media] slideshow render failed:", result.stderr.slice(-500));
-      throw new EmbeddedError(
-        "something broke on my side while making the slideshow. try again"
+      throw new InternalError(
+        "i couldn't make the slideshow video",
+        result.stderr.slice(-500)
       );
     }
 

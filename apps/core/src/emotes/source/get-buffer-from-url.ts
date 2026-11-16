@@ -34,7 +34,7 @@ const readBody = async (response: Response, maxBufferSize?: number) => {
   if (!maxBufferSize || !response.body) {
     const buffer = Buffer.from(await response.arrayBuffer());
     if (maxBufferSize && buffer.byteLength > maxBufferSize) {
-      throw new ResourceTooLargeError();
+      throw new ResourceTooLargeError(maxBufferSize, buffer.byteLength);
     }
     return buffer;
   }
@@ -48,7 +48,7 @@ const readBody = async (response: Response, maxBufferSize?: number) => {
     size += value.byteLength;
     if (size > maxBufferSize) {
       void reader.cancel().catch(() => undefined);
-      throw new ResourceTooLargeError();
+      throw new ResourceTooLargeError(maxBufferSize);
     }
     chunks.push(value);
   }
@@ -80,7 +80,7 @@ async function getBufferFromUrl(
       const declaredSize = Number(response.headers.get("content-length"));
       if (maxBufferSize && declaredSize > maxBufferSize) {
         void response.body?.cancel().catch(() => undefined);
-        throw new ResourceTooLargeError();
+        throw new ResourceTooLargeError(maxBufferSize, declaredSize);
       }
 
       return await readBody(response, maxBufferSize);

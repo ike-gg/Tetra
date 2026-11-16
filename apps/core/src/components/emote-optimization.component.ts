@@ -5,7 +5,6 @@ import {
   ButtonStyle,
   type EmbedBuilder,
 } from "discord.js";
-import prettyBytes from "pretty-bytes";
 
 import { MAX_EMOTE_SIZE } from "@/constants";
 import CancelInteractionGenericButton from "@/interactions/buttons/generic/cancel-interaction";
@@ -13,6 +12,7 @@ import AutoOptimizeEmoteContinuity from "@/interactions/buttons/global/auto-opti
 import OpenInEditorEmoteContinuity from "@/interactions/buttons/global/open-in-editor-emote";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
+import { formatBytes } from "@/utils/format-bytes";
 import multilineText from "@/utils/multiline-text";
 
 interface EmoteOptimizationComponentOptions {
@@ -29,10 +29,10 @@ export const EmoteOptimizationComponent = async ({
 
   const embeds: EmbedBuilder[] = [];
 
-  const maxSize = prettyBytes(MAX_EMOTE_SIZE);
-  const emoteSize = prettyBytes(emoteBufferSize);
+  const maxSize = formatBytes(MAX_EMOTE_SIZE);
+  const emoteSize = formatBytes(emoteBufferSize);
   const diffSizeRaw = emoteBufferSize - MAX_EMOTE_SIZE;
-  const diffSize = prettyBytes(diffSizeRaw);
+  const diffSize = formatBytes(diffSizeRaw);
 
   const isWayTooBig = diffSizeRaw > 1024 * 1024;
 

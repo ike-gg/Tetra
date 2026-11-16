@@ -1,10 +1,22 @@
 import { EmbeddedError } from "@/constants/errors";
+import { formatBytes } from "@/utils/format-bytes";
 
 import { BotConsole } from "#/loggers";
 
+/**
+ * Over the interaction's upload limit. With the real size when there is one file of known
+ * size, otherwise says what doesn't fit (`what`, e.g. "this video").
+ */
 export class FileLimitExceededError extends EmbeddedError {
-  constructor() {
-    super("that's over this server's upload limit. boosting the server raises it");
+  constructor(
+    limit: number,
+    { size, what = "this" }: { size?: number; what?: string } = {}
+  ) {
+    super(
+      size
+        ? `that's ${formatBytes(size)} and this server allows ${formatBytes(limit)}. boosting the server raises it`
+        : `${what} can't fit in this server's ${formatBytes(limit)} upload limit. boosting the server raises it`
+    );
     this.name = "FileLimitExceededError";
   }
 }

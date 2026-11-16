@@ -10,6 +10,7 @@ import { Messages } from "@/constants/messages";
 import { env } from "@/env";
 import { collectText, isActionRow } from "@/utils/discord/components-v2";
 import { feedbackPayload } from "@/utils/discord/feedback-payload";
+import { findErrorCode } from "@/utils/error-code";
 
 import { GenericButtonInteractionHandler } from "../..";
 
@@ -82,6 +83,8 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
       const errorEmbedMessage = isV2
         ? { description: collectText(interaction.message.components).slice(0, 4096) }
         : (interaction.message?.embeds[0]?.toJSON?.() ?? null);
+      // The code the user saw; the console line `[ CODE ] <time>` has the full error
+      const errorCode = findErrorCode(errorEmbedMessage?.description ?? "") ?? null;
 
       await client.shard?.broadcastEval(
         async (
@@ -93,6 +96,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
             originalInteractionId,
             originalInteractionCommandName,
             errorEmbedMessage,
+            errorCode,
           }
         ) => {
           const { EmbedBuilder } = await import("discord.js");
@@ -105,7 +109,9 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
 
           const embedData = {
             title: originalInteractionId,
-            description: originalInteractionCommandName,
+            description: errorCode
+              ? `${originalInteractionCommandName} · code ${errorCode}`
+              : originalInteractionCommandName,
             author: {
               name: user.username,
               icon_url: user.avatarURL,
@@ -146,6 +152,7 @@ const SubmitErrorLogGenericButton = new GenericButtonInteractionHandler(
             originalInteractionId,
             originalInteractionCommandName,
             errorEmbedMessage,
+            errorCode,
           },
         }
       );

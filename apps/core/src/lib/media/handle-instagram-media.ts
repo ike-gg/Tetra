@@ -43,14 +43,18 @@ const handlePhotoPost = async (url: string, fileLimit: number, signal: AbortSign
 
   for (const file of files.slice(0, MAX_ITEMS)) {
     const remaining = fileLimit - total;
-    if (remaining <= 0) throw new FileLimitExceededError();
+    if (remaining <= 0) {
+      throw new FileLimitExceededError(fileLimit, { what: "these files" });
+    }
     const buffer = await getBufferFromUrl(file.url, {
       maxBufferSize: remaining,
       maxRetries: 2,
       timeoutMs: 30_000,
     }).catch((error: unknown) => {
       if (error instanceof ResourceTooLargeError) {
-        throw new FileLimitExceededError();
+        throw new FileLimitExceededError(fileLimit, {
+          what: media.length > 0 ? "these files" : "this file",
+        });
       }
       throw error;
     });

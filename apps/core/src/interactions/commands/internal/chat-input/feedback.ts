@@ -4,6 +4,7 @@ import { Messages } from "@/constants/messages";
 import { env } from "@/env";
 import { ChatInputCommandHandler } from "@/interactions";
 import { feedbackPayload } from "@/utils/discord/feedback-payload";
+import { createErrorCode, reportWithCode } from "@/utils/error-code";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new SlashCommandBuilder()
@@ -48,7 +49,7 @@ export default new ChatInputCommandHandler(command, async (interaction) => {
     ["error", Messages.INTERACTION_TIMEOUT, { rows: errorRows }],
     [
       "error",
-      `something broke on my side. try again, and if it keeps happening, report it with code \`${crypto.randomUUID()}\``,
+      `something broke on my side. ${reportWithCode(createErrorCode())}`,
       { rows: errorRows },
     ],
   ];

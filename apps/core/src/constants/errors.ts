@@ -1,4 +1,6 @@
 import type { TetraEmbedContent } from "../utils/embed-messages/tetra-embed";
+import { createErrorCode, logErrorCode, reportWithCode } from "../utils/error-code";
+import { formatBytes } from "../utils/format-bytes";
 
 export enum ErrorType {
   WARNING = "warning",
@@ -81,8 +83,33 @@ export class UnsupportedEmoteFileError extends EmbeddedError {
 
 /** A download exceeded its size limit. Mapped by type in the API (`FILE_TOO_LARGE`). */
 export class ResourceTooLargeError extends EmbeddedError {
-  constructor() {
-    super("that file is too large for me to process. try a smaller one");
+  /** `size` only where it's known (a declared `Content-Length`). */
+  constructor(
+    public readonly limit: number,
+    size?: number
+  ) {
+    super(
+      size
+        ? `that file is ${formatBytes(size)} and i can process up to ${formatBytes(limit)}. try a smaller one`
+        : `that file is over the ${formatBytes(limit)} i can process. try a smaller one`
+    );
     this.name = "ResourceTooLargeError";
+  }
+}
+
+/**
+ * Something broke on our side with no next step for the user: the text ends with a
+ * generated code, which is logged with the time and `origin` when the error is created.
+ */
+export class InternalError extends EmbeddedError {
+  public readonly code: string;
+
+  /** `what` continues "something broke on my side", e.g. "i lost track of this server". */
+  constructor(what: string, origin?: unknown) {
+    const code = createErrorCode();
+    super(`something broke on my side, ${what}. ${reportWithCode(code)}`, { origin });
+    this.code = code;
+    this.name = "InternalError";
+    logErrorCode(code, what, ...(origin === undefined ? [] : [origin]));
   }
 }
