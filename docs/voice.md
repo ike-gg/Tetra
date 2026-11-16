@@ -23,6 +23,7 @@ We drop:
 ## Rules
 
 - **Lowercase, like chat.** Sentences, buttons, headings and labels start with a lowercase letter, and so does "i". Proper nouns keep their spelling: Discord, Twitch, 7TV, BTTV, FFZ, and emote names exactly as they are (`catJAM`). The wordmark is always `tetra`, never `Tetra`.
+- **One exception: `discord` in buttons.** Calls to action write the platform lowercase (`add to discord`), so a button reads as one lowercase label. In running text, headings, descriptions and page titles it stays `Discord`.
 - **No trailing period.** One-line messages, buttons and labels end without a period. Longer text uses periods between sentences but not after the last one. Question marks stay: `replace it?`
 - **No exclamation marks.**
 - **No emoji, no emotes, no emoticons** in any message or copy (`⏳`, `🤨`, `:)`, `KEKW` are all out). The only exception is the feedback emotes (the status pictograms from [branding.md](branding.md#logo)) used as status icons in bot replies.
@@ -31,7 +32,7 @@ We drop:
 - **Direct.** Longer explanations are fine when they're needed. Say it plainly and stop, without filler, apologies, "unfortunately" or "please note".
 - **No slang.** Words from the user's own world are terms, not slang: `animated`, `zero-width`, `sub emotes`, `your 7TV set`. Words that try to sound like chat are out: `banger`, `W`, `gg`, `nice`, `no cap`.
 - **Concrete numbers.** `312 KB`, not `too big`. Units are written technically: `KB`, `MB`, `px`, `fps`.
-- **Commands in code formatting:** `/add`, `/media`.
+- **Commands in code formatting:** `/addemote`, `/media`.
 
 ## Humor
 
@@ -106,7 +107,7 @@ The site follows the same voice but may sell a little more:
 
 Before handing in any user-facing text:
 
-- [ ] lowercase start, proper nouns intact, `tetra` lowercase
+- [ ] lowercase start, proper nouns intact (`discord` lowercase only in buttons), `tetra` lowercase
 - [ ] no trailing period, no exclamation marks
 - [ ] no emoji, emotes or emoticons
 - [ ] no slang, no humor in errors
