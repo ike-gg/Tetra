@@ -110,7 +110,7 @@ export function ChannelSearch({ defaultValue, onChoose }: ChannelSearchProps) {
                   : ""
             }
           </AutocompleteStatus>
-          <AutocompleteEmpty className="px-2 py-1.5 text-muted text-sm">
+          <AutocompleteEmpty className="px-2 py-1.5 text-muted text-sm empty:hidden">
             {/* A function child renders even when the list has items */}
             {(state) =>
               !state.empty || !state.query.trim() || state.loading
