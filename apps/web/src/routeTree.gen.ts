@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as R404RouteImport } from './routes/404'
 import { Route as BrandingRouteImport } from './routes/branding'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as LogoRouteImport } from './routes/logo'
 import { Route as PanelRouteImport } from './routes/panel'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
@@ -40,6 +41,11 @@ const R404Route = R404RouteImport.update({
 const BrandingRoute = BrandingRouteImport.update({
   id: '/branding',
   path: '/branding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogoRoute = LogoRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/404': typeof R404Route
   '/branding': typeof BrandingRoute
+  '/feedback': typeof FeedbackRoute
   '/logo': typeof LogoRoute
   '/panel': typeof PanelRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
@@ -140,6 +147,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/404': typeof R404Route
   '/branding': typeof BrandingRoute
+  '/feedback': typeof FeedbackRoute
   '/logo': typeof LogoRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/404': typeof R404Route
   '/branding': typeof BrandingRoute
+  '/feedback': typeof FeedbackRoute
   '/logo': typeof LogoRoute
   '/panel': typeof PanelRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
@@ -180,6 +189,7 @@ export interface FileRouteTypes {
     | '/'
     | '/404'
     | '/branding'
+    | '/feedback'
     | '/logo'
     | '/panel'
     | '/robots.txt'
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/'
     | '/404'
     | '/branding'
+    | '/feedback'
     | '/logo'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/'
     | '/404'
     | '/branding'
+    | '/feedback'
     | '/logo'
     | '/panel'
     | '/robots.txt'
@@ -237,6 +249,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R404Route: typeof R404Route
   BrandingRoute: typeof BrandingRoute
+  FeedbackRoute: typeof FeedbackRoute
   LogoRoute: typeof LogoRoute
   PanelRoute: typeof PanelRouteWithChildren
   RobotsDottxtRoute: typeof RobotsDottxtRoute
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/branding'
       fullPath: '/branding'
       preLoaderRoute: typeof BrandingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/logo': {
@@ -396,6 +416,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R404Route: R404Route,
   BrandingRoute: BrandingRoute,
+  FeedbackRoute: FeedbackRoute,
   LogoRoute: LogoRoute,
   PanelRoute: PanelRouteWithChildren,
   RobotsDottxtRoute: RobotsDottxtRoute,

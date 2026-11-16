@@ -98,8 +98,8 @@ const OpenInEditorEmoteContinuity = new OpenInEditorEmoteButtonInteraction(
         new ButtonBuilder()
           .setStyle(ButtonStyle.Link)
           .setEmoji("✏️")
-          .setLabel("Open in editor")
-          .setURL(`${env.FRONTEND_URL}/panel/editor/${task.id}`)
+          .setLabel("open in editor")
+          .setURL(`${env.FRONTEND_URL}/panel/tasks/${task.id}`)
       );
 
       await feedback.sendMessage({

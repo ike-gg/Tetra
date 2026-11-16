@@ -4,7 +4,8 @@ Project description and lasting knowledge for people and agents working on this 
 
 - [core.md](core.md) – Discord bot + REST API (`apps/core`)
 - [web.md](web.md) – website and panel (`apps/web`)
-- [branding.md](branding.md) – visual and verbal identity (rendered at `/branding`, logo at `/logo`)
+- [branding.md](branding.md) – visual identity (rendered at `/branding`, logo at `/logo`)
+- [voice.md](voice.md) – how tetra talks: tone, casing, message patterns, words
 
 ## What Tetra is
 

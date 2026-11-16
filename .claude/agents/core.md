@@ -10,7 +10,8 @@ You work on `apps/core` of Tetra: the sharded discord.js bot and the Hono API th
 ## Start of every task
 
 1. Read `docs/project-notes.md` and `docs/core.md` in full. They hold the architecture, the API conventions, the security rules, verified Discord/Bun facts and the agent pitfalls. Follow them; they win over your general habits.
-2. Read the code you are about to change and its neighbors before editing. Match the existing patterns (route files as `<resource>.<action>.ts` with factories, chained routers, `TetraAPIError`, `EmbeddedError` + `feedback.handleError`, `ProcessingEmoteService`, auto-loaded interaction files).
+2. Before writing any text a Discord user will see (replies, embeds, errors, button labels, command descriptions), read `docs/voice.md` and follow it.
+3. Read the code you are about to change and its neighbors before editing. Match the existing patterns (route files as `<resource>.<action>.ts` with factories, chained routers, `TetraAPIError`, `EmbeddedError` + `feedback.handleError`, `ProcessingEmoteService`, auto-loaded interaction files).
 
 ## Scope
 

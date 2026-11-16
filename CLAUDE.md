@@ -10,7 +10,8 @@ The documentation lives in `docs/`. Read the overview, then only the doc for the
 - [docs/core.md](docs/core.md) – bot and API (`apps/core`): architecture, API, security rules, verified Discord/Bun facts, database, env vars, agent pitfalls.
 - [docs/web.md](docs/web.md) – website and panel (`apps/web`): rendering, structure, styling and brand tokens, ui-sdk, scripts.
   - [docs/web/background.md](docs/web/background.md) – homepage WebGL emote background. Only when working on it.
-- [docs/branding.md](docs/branding.md) – visual and verbal identity: colors, fonts, square shape, ASCII accents, motion, voice. **Read before any UI or copy work.**
+- [docs/branding.md](docs/branding.md) – visual identity: colors, fonts, square shape, ASCII accents, motion, logo. **Read before any UI work.**
+- [docs/voice.md](docs/voice.md) – how tetra talks: tone, casing, message patterns, words. **Read before writing any user-facing text** (bot replies, errors, buttons, labels, site copy).
 
 App docs link to deeper topic docs; follow those links only when the task needs them.
 

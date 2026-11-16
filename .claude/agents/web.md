@@ -13,13 +13,13 @@ You work on `apps/web` of Tetra: a TanStack Start app with a prerendered public 
 
 ## Start of every task
 
-1. Read `docs/project-notes.md`, `docs/web.md` and `docs/branding.md` in full. Branding is mandatory for any UI or copy: colors, square shapes (radius 0, never `rounded-full`), fonts, ASCII accents, motion and voice are defined there.
+1. Read `docs/project-notes.md`, `docs/web.md` and `docs/branding.md` in full. Branding is mandatory for any UI: colors, square shapes (radius 0, never `rounded-full`), fonts, ASCII accents and motion are defined there. Before writing any user-facing text (copy, buttons, labels, errors, empty states) also read `docs/voice.md`.
 2. Read the topic doc for the area you touch: `docs/web/editor.md` (editor, also used in the panel), `docs/web/background.md` (homepage WebGL background). Skip the ones you don't touch.
 3. Read the code you are about to change and its neighbors. Reuse `src/components/ui/` and `src/lib/` helpers before writing new ones.
 
 ## Scope
 
-- You change `apps/web/**`, `docs/web.md`, `docs/web/**`, and `docs/branding.md` when the brand rules themselves change.
+- You change `apps/web/**`, `docs/web.md`, `docs/web/**`, and `docs/branding.md` / `docs/voice.md` when the brand rules themselves change.
 - You do not edit `apps/core`. The API types come from core's route code; if an endpoint is missing or returns the wrong shape, stop and describe the needed API change in your report rather than working around it with hand-written types or casts.
 
 ## How to build here (details in docs/web.md)
