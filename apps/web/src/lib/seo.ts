@@ -19,35 +19,35 @@ export const SEO_PAGES = {
     path: "/",
     title: "tetra",
     description:
-      "Add emotes from 7TV, BTTV, FFZ or any link to your Discord server. Tetra shrinks them to fit Discord's limits.",
-    og: { eyebrow: "discord bot", heading: "Add any emote.", accent: "That's it." },
+      "add emotes from 7TV, BTTV, FFZ or any link to your Discord server. tetra shrinks them to fit Discord's 256 KB limit",
+    og: { eyebrow: "discord bot", heading: "add any emote.", accent: "that's it" },
   },
   editor: {
     path: "/editor",
-    title: "Editor · tetra",
+    title: "Discord emote resizer and GIF compressor · 256 KB limit · tetra",
     description:
-      "Crop, trim, resize and compress GIFs and images in your browser. Made for Discord's 256 KB emote limit, works for anything.",
-    og: { eyebrow: "editor", heading: "Make any GIF", accent: "fit." },
+      "crop, trim, resize and compress GIFs and images to fit Discord's 256 KB emote limit. free, right in your browser, no account and no upload",
+    og: { eyebrow: "editor", heading: "make any GIF", accent: "fit" },
   },
   branding: {
     path: "/branding",
-    title: "Branding · tetra",
+    title: "branding · tetra",
     description:
-      "How Tetra looks and talks: colors, type, square shapes, ASCII accents, motion, voice and every UI component.",
-    og: { eyebrow: "branding", heading: "Square, dark and", accent: "orange." },
+      "how tetra looks and talks: colors, type, square shapes, ASCII accents, motion, voice and every UI component",
+    og: { eyebrow: "branding", heading: "square, dark and", accent: "orange" },
   },
   logo: {
     path: "/logo",
-    title: "Logo · tetra",
-    description: "The Tetra mark: a plain square that emotes fall into, one by one.",
-    og: { eyebrow: "logo", heading: "A square full of", accent: "emotes." },
+    title: "logo · tetra",
+    description: "the tetra mark: a plain square that emotes fall into, one by one",
+    og: { eyebrow: "logo", heading: "a square full of", accent: "emotes" },
   },
   panel: {
     path: "/panel",
-    title: "Panel · tetra",
+    title: "panel · tetra",
     description:
-      "Manage your servers' emotes in the browser: add them from 7TV and FFZ, restore removed ones, fix the ones that didn't fit.",
-    og: { eyebrow: "panel", heading: "Your emotes,", accent: "one panel." },
+      "manage your servers' emotes in the browser: add them from 7TV and FFZ, restore removed ones, fix the ones that didn't fit",
+    og: { eyebrow: "panel", heading: "your emotes,", accent: "one panel" },
   },
 } satisfies Record<string, SeoPage>;
 
@@ -89,6 +89,36 @@ export function seoHead(key: SeoPageKey) {
     links: [{ rel: "canonical", href: url }],
   };
 }
+
+// schema.org data for a page, rendered as a JSON-LD script in its head. `<` is escaped so
+// no string in the data can close the script tag.
+export function jsonLdScript(data: Record<string, unknown>) {
+  return {
+    type: "application/ld+json",
+    children: JSON.stringify(data).replace(/</g, "\\u003c"),
+  };
+}
+
+export const EDITOR_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "tetra editor",
+  url: absoluteUrl(SEO_PAGES.editor.path),
+  description: SEO_PAGES.editor.description,
+  applicationCategory: "MultimediaApplication",
+  operatingSystem: "Any",
+  browserRequirements: "Requires JavaScript and WebAssembly",
+  isAccessibleForFree: true,
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  featureList: [
+    "crop GIFs and images",
+    "trim GIFs",
+    "resize GIFs and images",
+    "compress GIFs to fit Discord's 256 KB emote limit",
+    "export GIF, PNG, WebP or JPEG",
+    "runs in the browser, files are never uploaded",
+  ],
+};
 
 // For pages that must stay out of search. Head meta merges by name with the deepest route
 // winning, so put it on leaf routes only: on a layout it would reach every child.
