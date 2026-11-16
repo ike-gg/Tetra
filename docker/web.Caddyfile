@@ -11,10 +11,11 @@
 	# The bot's Discord invite; INVITE_LINK is the same env var core uses (a Discord
 	# authorize URL, so it already has a query). ?guild=<id> (the panel's sidebar) picks
 	# that server in Discord's dialog. Only digits pass, so the param can't smuggle other
-	# authorize params (permissions, scope) into the link.
+	# authorize params (permissions, scope) into the link. `handle`, not `route`: Caddy
+	# orders `route` after `handle`, so the catch-all handle below would answer 404 first.
 	@invite path /invite /invite/
 	@inviteGuild expression `{query.guild}.matches("^[0-9]+$")`
-	route @invite {
+	handle @invite {
 		redir @inviteGuild {$INVITE_LINK}&guild_id={query.guild}&disable_guild_select=true 302
 		redir {$INVITE_LINK} 302
 	}
