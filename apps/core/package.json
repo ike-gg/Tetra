@@ -9,6 +9,7 @@
     "dev": "bun --watch src/index.ts",
     "deploy:dev": "bun run src/deploy/deploy-commands-dev.ts",
     "deployCommands": "bun run src/deploy/deploy-commands-global.ts",
+    "emojis:sync": "bun run src/deploy/sync-emojis.ts",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
