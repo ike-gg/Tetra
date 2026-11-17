@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { DEFAULT_RULES, rulesSchema } from "./rules";
+import { DEFAULT_RULES, readStoredRules, rulesSchema } from "./rules";
 
 /** Discord shows emotes in a square, so very wide emotes end up tiny. */
 export const MAX_ASPECT_RATIO_LIMIT = 4;
@@ -8,12 +8,13 @@ export const MAX_ASPECT_RATIO_LIMIT = 4;
 /** 7TV ids: 26-char ULIDs, or the old 24-hex ids. */
 export const stvIdSchema = z.string().regex(/^[0-9A-Za-z]{24,26}$/);
 
+/** On = emotes of that kind are synced; off = they go to review. */
 const filtersSchema = z.object({
   includeStatic: z.boolean(),
   includeAnimated: z.boolean(),
-  skipZeroWidth: z.boolean(),
+  includeZeroWidth: z.boolean(),
   /** 7TV's sensitive flag. */
-  skipNsfw: z.boolean(),
+  includeNsfw: z.boolean(),
 });
 
 const optimizationSchema = z.object({
@@ -41,8 +42,8 @@ export const DEFAULT_SYNC_SETTINGS: SyncSettings = {
   filters: {
     includeStatic: true,
     includeAnimated: true,
-    skipZeroWidth: true,
-    skipNsfw: true,
+    includeZeroWidth: false,
+    includeNsfw: false,
   },
   excludedEmoteIds: [],
   optimization: { maxAspectRatio: 2 },
@@ -61,7 +62,7 @@ const parseOr = <T extends z.ZodTypeAny>(
 /**
  * Settings stored in the database, read defensively: a row written by an older version
  * (missing or unknown keys, an invalid section) falls back to the defaults per section and
- * per field instead of failing.
+ * per field instead of failing; rules that no longer parse are dropped one by one.
  */
 export const readStoredSettings = (stored: unknown): SyncSettings => {
   const value = (stored && typeof stored === "object" ? stored : {}) as Record<
@@ -87,11 +88,8 @@ export const readStoredSettings = (stored: unknown): SyncSettings => {
       { ...DEFAULT_SYNC_SETTINGS.optimization, ...section("optimization") },
       DEFAULT_SYNC_SETTINGS.optimization
     ),
-    advancedRules: parseOr(
-      rulesSchema,
-      value.advancedRules ?? DEFAULT_SYNC_SETTINGS.advancedRules,
-      DEFAULT_SYNC_SETTINGS.advancedRules
-    ),
+    advancedRules:
+      readStoredRules(value.advancedRules) ?? DEFAULT_SYNC_SETTINGS.advancedRules,
   };
 };
 
@@ -113,7 +111,7 @@ export const findRejectingFilter = (
   if (emote.animated ? !filters.includeAnimated : !filters.includeStatic) {
     return emote.animated ? "animated" : "static";
   }
-  if (filters.skipZeroWidth && emote.zeroWidth) return "zero_width";
-  if (filters.skipNsfw && emote.nsfw) return "nsfw";
+  if (!filters.includeZeroWidth && emote.zeroWidth) return "zero_width";
+  if (!filters.includeNsfw && emote.nsfw) return "nsfw";
   return null;
 };

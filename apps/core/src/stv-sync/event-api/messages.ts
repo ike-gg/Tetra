@@ -90,16 +90,11 @@ export const activeEmoteSchema = z.object({
   name: z.string(),
   flags: z.number().nullish(),
   timestamp: z.number().nullish(),
-  /** 7TV user id of whoever added it to the set; null on old entries. */
-  actor_id: z.string().nullish(),
   data: z
     .object({
       id: z.string(),
       name: z.string(),
       flags: z.number().nullish(),
-      tags: z.array(z.string()).nullish(),
-      /** Approved for 7TV's public listing. */
-      listed: z.boolean().nullish(),
       animated: z.boolean(),
       owner: z.object({ id: z.string(), username: z.string() }).passthrough().nullish(),
       host: z.object({

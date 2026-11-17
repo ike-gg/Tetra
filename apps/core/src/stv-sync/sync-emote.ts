@@ -4,7 +4,6 @@ import {
   EMOTE_FLAG_SENSITIVE,
   EMOTE_FLAG_ZERO_WIDTH,
 } from "./event-api/messages";
-import type { RuleEventFacts } from "./rules";
 import type { FilterableEmote } from "./settings";
 
 /** Everything the add flow needs, also stored in review so a retry needs no 7TV call. */
@@ -44,7 +43,6 @@ export const toSyncEmote = (
 ): {
   source: SyncEmoteSource;
   filterable: FilterableEmote;
-  facts: RuleEventFacts;
 } | null => {
   const { data } = emote;
   if (!data) return null;
@@ -71,15 +69,6 @@ export const toSyncEmote = (
         ((emote.flags ?? 0) & ACTIVE_EMOTE_FLAG_ZERO_WIDTH) !== 0 ||
         ((data.flags ?? 0) & EMOTE_FLAG_ZERO_WIDTH) !== 0,
       nsfw: ((data.flags ?? 0) & EMOTE_FLAG_SENSITIVE) !== 0,
-    },
-    facts: {
-      stvEmoteId: emote.id,
-      name: emote.name,
-      originalName: data.name,
-      author: owner ? { id: owner.id, username: owner.username } : null,
-      actorId: emote.actor_id ?? null,
-      tags: data.tags ?? [],
-      listed: data.listed ?? null,
     },
   };
 };

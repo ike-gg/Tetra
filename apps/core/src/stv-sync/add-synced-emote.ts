@@ -18,9 +18,8 @@ import { createErrorCode, logErrorCode } from "@/utils/error-code";
 
 import { Semaphore } from "./job-queue";
 import { type ReviewDetail, type ReviewReason, upsertReviewEntry } from "./review";
-import { findMatchingRule, type RuleEventFacts, type RuleFacts } from "./rules";
+import { findMatchingRule } from "./rules";
 import type { SyncSettings } from "./settings";
-import { getStvUsername } from "./stv-user";
 import type { SyncEmoteSource } from "./sync-emote";
 
 import { StvSyncConsole } from "#/loggers";
@@ -159,12 +158,6 @@ const freeSlots = (guild: RestGuild, animated: boolean) => {
   return Math.max(0, limit - used);
 };
 
-/** Case-insensitive: `Pog` next to `pog` is the confusion the default rule avoids. */
-const isNameTaken = (guild: RestGuild, name: string) => {
-  const lower = name.toLowerCase();
-  return guild.emojis.some((emoji) => emoji.name?.toLowerCase() === lower);
-};
-
 const memo = <T>(load: () => Promise<T>) => {
   let value: Promise<T> | undefined;
   return () => {
@@ -245,15 +238,15 @@ export const linkSyncedEmoji = async (
 
 /**
  * Adds one 7TV emote to a guild, or puts it in review with the reason. Basic filters are
- * the caller's job. `rules` = the event's facts, so the advanced rules run; a retry passes
- * none (the admin picked the emote). Run it through `runForGuild`, so slot counts stay
+ * the caller's job. Events pass `runRules`, so the advanced rules run; a retry doesn't
+ * (the admin picked the emote). Run it through `runForGuild`, so slot counts stay
  * correct.
  */
 export const addSyncedEmote = async (
   guildId: string,
   emote: SyncEmoteSource,
   settings: SyncSettings,
-  rules?: RuleEventFacts
+  { runRules = false }: { runRules?: boolean } = {}
 ): Promise<AddOutcome> => {
   const tag = `[guild ${guildId}] ${emote.name} (${emote.stvEmoteId})`;
 
@@ -280,21 +273,15 @@ export const addSyncedEmote = async (
   const name = parseDiscordRegexName(emote.name);
 
   try {
-    if (rules) {
-      const facts: RuleFacts = {
-        event: rules,
+    if (runRules) {
+      const match = await findMatchingRule(settings.advancedRules, {
+        name: emote.name,
         file,
-        server: async () => {
+        freeSlots: async () => {
           const [prepared, rest] = await Promise.all([file(), guild()]);
-          return {
-            freeSlots: freeSlots(rest, prepared.animated),
-            nameTaken: isNameTaken(rest, name),
-          };
+          return freeSlots(rest, prepared.animated);
         },
-        actorUsername: () =>
-          rules.actorId ? getStvUsername(rules.actorId) : Promise.resolve(null),
-      };
-      const match = await findMatchingRule(settings.advancedRules, facts);
+      });
       if (match?.rule.action === "skip") {
         StvSyncConsole.info(`${tag} skipped by rule ${match.position}`);
         return { status: "skipped", why: "rule" };

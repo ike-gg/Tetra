@@ -32,7 +32,7 @@ Code in `src/stv-sync/` (manager process; never imports `@/bot`), routes in `src
 | `job-queue.ts` | `runForGuild`: per-guild serial job runner, internal (events, retries and editor uploads of one guild never overlap, so slot counts stay right). `Semaphore(2)` around downloads and optimization. |
 | `add-synced-emote.ts` | Add flow, see below; `linkSyncedEmoji`. |
 | `remove-synced-emote.ts` | Drops the review entry, deletes the link, then the Discord emoji (Unknown Emoji = fine; other failures put the link back). |
-| `settings.ts`, `rules.ts`, `review.ts`, `sync-emote.ts`, `stv-user.ts`, `links.ts` | Settings schema and basic filters; advanced rules (schema, defaults, evaluation); review rows and their messages; 7TV active emote → source, filter input and rule facts; 7TV user by Twitch id and username by id; link drop for the shard's `emojiDelete`. |
+| `settings.ts`, `rules.ts`, `review.ts`, `sync-emote.ts`, `stv-user.ts`, `links.ts` | Settings schema and basic filters; advanced rules (schema, defaults, evaluation); review rows and their messages; 7TV active emote → source and filter input; 7TV user by Twitch id; link drop for the shard's `emojiDelete`. |
 
 ### Add flow
 
@@ -56,55 +56,43 @@ Download and optimization results are cached in memory for 10 min (by file URL),
 - **Pause** (`enabled: false`) keeps links and the review list and unsubscribes (when no other server needs the set). Events while paused are lost.
 - **Review** has one entry per (guild, 7TV emote); a new failure updates it (reason, `flaggedAt`). Freed slots never retry anything. A `skip` rule leaves an existing entry alone.
 - **Moderator deletes**: the shard's `emojiDelete` handler drops the link (`dropSyncLinkForEmoji`, idempotent). Sync removals delete the link before calling Discord, so their own `emojiDelete` finds nothing; the existing removed-emotes record is still written (`deletedWithPanel: false`), so the panel can restore them.
-- **Rule regex** (`matches_regex`): case-insensitive, max 100 chars, tested on the first 100 chars; patterns with a quantified group containing a quantifier (`(a+)+`) are rejected (they run on the manager's event loop).
-- **Wording**: 7TV's `1<<16` flag is called "sexual" in its code but covers more; user-facing text says "sensitive" (`skipNsfw` keeps its key).
+- **Rule fields were cut down** before release to what admins actually use: original name, name length, renamed, name taken, author, added by, tags, listed, emote age, width/height and `matches_regex` were dropped (with the GraphQL actor lookup and the regex guard they needed).
+- **Wording**: 7TV's `1<<16` flag is called "sexual" in its code but covers more; user-facing text says "sensitive" (`includeNsfw` keeps its key).
 
 ### Settings
 
-Stored as `jsonb` in `stv_sync_configs.settings`, validated by `syncSettingsSchema`; reads go through `readStoredSettings`: unknown keys are dropped, and each section (`filters`, `excludedEmoteIds`, `optimization`, `advancedRules`) that is missing or invalid falls back to its default. Defaults:
+Stored as `jsonb` in `stv_sync_configs.settings`, validated by `syncSettingsSchema`; reads go through `readStoredSettings`: unknown keys are dropped, missing keys take their default, and each section (`filters`, `excludedEmoteIds`, `optimization`) that is invalid falls back to its default. `advancedRules` that isn't an array falls back to the default rules; otherwise each rule that doesn't parse (e.g. a removed field) is dropped on its own, duplicates by id too. Old keys (`skipZeroWidth`, `skipNsfw`) aren't converted, they just fall to the defaults. Filters are "include" toggles: on = that kind is synced, off = it goes to review. Defaults:
 
 ```json
 {
-  "filters": { "includeStatic": true, "includeAnimated": true, "skipZeroWidth": true, "skipNsfw": true },
+  "filters": { "includeStatic": true, "includeAnimated": true, "includeZeroWidth": false, "includeNsfw": false },
   "excludedEmoteIds": [],
   "optimization": { "maxAspectRatio": 2 },
   "advancedRules": [
-    { "id": "unlisted", "enabled": true, "action": "review",
-      "conditions": [{ "field": "listed", "operator": "is", "value": false }] },
-    { "id": "name-taken", "enabled": true, "action": "review",
-      "conditions": [{ "field": "name_taken", "operator": "is", "value": true }] },
-    { "id": "few-slots", "enabled": true, "action": "review",
-      "conditions": [{ "field": "free_slots", "operator": "lt", "value": 5 }] }
+    { "id": "wide", "enabled": true, "action": "review",
+      "conditions": [{ "field": "aspect_ratio", "operator": "gt", "value": 1.75 }] },
+    { "id": "large-file", "enabled": true, "action": "review",
+      "conditions": [{ "field": "file_size_kb", "operator": "gt", "value": 1024 }] }
   ]
 }
 ```
 
-`excludedEmoteIds` ≤ 1000 7TV ids (the "never sync" list, filled by dismiss with `exclude`, oldest dropped first). `maxAspectRatio` 1–4, rounded to one decimal; a 7TV emote wider than 4:1 always needs review. Zero-width = active flag `1` or emote flag `1<<8`; sensitive = emote flag `1<<16`.
+`excludedEmoteIds` ≤ 1000 7TV ids (the "never sync" list, filled by dismiss with `exclude`, oldest dropped first). `maxAspectRatio` 1–4, rounded to one decimal; a 7TV emote wider than 4:1 always needs review. It is a hard limit checked after the rules: even an `add` rule can't bypass it. Zero-width = active flag `1` or emote flag `1<<8`; sensitive = emote flag `1<<16`.
 
 ### Advanced rules
 
 `advancedRules`: ≤ 25 rules `{ id (1–32 chars [A-Za-z0-9_-], unique, client-generated), enabled, conditions (1–5, all must match), action: review | skip | add }`. Top to bottom, the first enabled rule whose conditions all match wins; no match = normal flow. Positions count disabled rules too, so `RULE` detail `2` is the second rule in the list. Conditions are checked in order and stop at the first miss; file and server facts are loaded lazily (download / one `GET /guilds/:id`) only when a condition reaches them, so put cheap conditions first.
 
-Conditions `{ field, operator, value }` (`ruleConditionSchema`, a Zod union of objects, so the client gets a discriminated union on `field` + `operator`). Text comparisons are case-insensitive.
+Conditions `{ field, operator, value }` (`ruleConditionSchema`, a Zod union of objects, so the client gets a discriminated union on `field` + `operator`). The schema is the source of truth; nothing else is accepted.
 
 | field | operators | value | source |
 |---|---|---|---|
-| `name` (set alias), `original_name` (7TV name) | `contains`, `not_contains`, `starts_with`, `ends_with`, `equals`, `not_equals`, `matches_regex` | string 1–100 | event |
-| `name_length` (alias) | `gt`, `lt`, `eq` | int 0–100 | event |
-| `renamed` (alias ≠ original, case-sensitive) | `is` | boolean | event |
-| `name_taken` | `is` | boolean | server: an emoji with the sanitized name exists, case-insensitive |
-| `author` (owner id or username) | `is`, `is_not` / `in`, `not_in` | string 1–64 / array of 1–100 such | event |
-| `added_by` (actor id or username) | same as `author` | same | event `actor_id`; username via GraphQL only when reached |
-| `tags` | `contains`, `not_contains` | string 1–100, equals one tag | event |
-| `listed` | `is` | boolean | event |
-| `emote_age_days` | `gt`, `lt` | 0–36500 | the id's ULID time (or ObjectId time) |
-| `width`, `height` (px of the downloaded file, frame height for animations) | `gt`, `lt` | 0–10000 | file |
+| `name` (the alias in the set) | `contains`, `not_contains`, `starts_with`, `ends_with`, `equals`, `not_equals` (case-insensitive) | string 1–100 | event |
 | `aspect_ratio` (long / short side) | `gt`, `lt` | 0–100 | file |
 | `file_size_kb` (downloaded file, KiB) | `gt`, `lt` | 0–10240 | file |
-| `frame_count`, `duration_s` (static: 1, 0) | `gt`, `lt` | int 0–10000, 0–3600 | file |
+| `duration_s` (static: 0) | `gt`, `lt` | 0–3600 | file |
+| `frame_count` (static: 1) | `gt`, `lt` | int 0–10000 | file |
 | `free_slots` (of the file's type, before adding) | `gt`, `lt` | int 0–250 | server + file |
-
-Unknown values never match, whatever the operator: no owner (`author`), no `actor_id` or an unresolvable actor (`added_by`), `listed` missing in the event. The actor's username comes from `POST 7tv.io/v3/gql` `user(id) { id username }` (≈ 0.6 KB; REST `/v3/users/<id>` is > 1 MB because it embeds every set), cached 1 h, failures not cached and treated as unknown; 7TV answers an unknown id with the placeholder `00000000000000000000000000` / `*DeletedUser` (verified 2026-11-17), which counts as unknown.
 
 ### Tables
 
@@ -155,7 +143,7 @@ Sources: a live connection to `wss://events.7tv.io/v3`, the archived [SevenTV/Ev
 - Active emote `flags` (per set): `1` = zero-width, `1<<16` / `1<<17` / `1<<18` = override Twitch global / Twitch subscriber / BTTV.
 - Emote `data.flags`: `1` = private, `1<<1` = authentic, `1<<8` = zero-width by default, `1<<16` = sexual (NSFW), `1<<17` = epilepsy, `1<<18` = edgy, `1<<24` = Twitch disallowed. The current server only ever sets private, zero-width and sexual in v3 output.
 - `data.animated` is 7TV's flag; the slot type comes from the downloaded file.
-- Also on the active emote (checked against REST `GET /v3/users/twitch/<id>`, 2026-11-17): `actor_id` (who added it; null on old entries, 968 of 969 set in a big set), `data.tags` (array), `data.listed` (boolean), `data.owner` `{ id, username, … }`. The dispatch shape comes from the same server type (not seen live yet).
+- Also on the active emote (checked against REST `GET /v3/users/twitch/<id>`, 2026-11-17): `actor_id` (who added it; null on old entries, 968 of 969 set in a big set), `data.tags` (array), `data.listed` (boolean), `data.owner` `{ id, username, … }`. The dispatch shape comes from the same server type (not seen live yet). Only `owner` is parsed (review's author); the rest is unused since rules were cut down.
 
 ### Not verified yet
 

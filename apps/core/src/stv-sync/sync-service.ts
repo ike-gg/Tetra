@@ -225,7 +225,7 @@ class StvSyncService {
           await reviewFilteredEmote(guildId, sync.source, filter);
           return;
         }
-        await addSyncedEmote(guildId, sync.source, settings, sync.facts);
+        await addSyncedEmote(guildId, sync.source, settings, { runRules: true });
       }).catch((error) =>
         StvSyncConsole.error(
           `[guild ${guildId}] syncing ${emote.id} failed:`,
