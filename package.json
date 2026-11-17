@@ -12,6 +12,8 @@
     "build:web": "bun --filter @tetra/web build",
     "db:up": "docker compose up -d postgres redis",
     "db:down": "docker compose down",
+    "db:generate": "bun --filter @tetra/core db:generate",
+    "db:migrate": "bun --filter @tetra/core db:migrate",
     "db:push": "bun --filter @tetra/core db:push",
     "db:studio": "bun --filter @tetra/core db:studio",
     "lint": "biome lint",

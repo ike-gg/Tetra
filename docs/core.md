@@ -8,7 +8,7 @@ The Discord bot and the REST API for the panel (`apps/core`). Paths in this docu
 
 Two kinds of processes:
 
-- **Manager process** (`src/index.ts`): startup only (temp cleanup in production, continuity cleanup, the **Hono API** when `API_ENABLED`, the 7TV sync's EventAPI client when `SEVENTV_SYNC_ENABLED`, shard spawn and shutdown hooks). It exports nothing. `shardingManager` and `discordOauth` live in `src/lib/sharding-manager` and `src/lib/discord-oauth`; the API imports them from there.
+- **Manager process** (`src/index.ts`): startup only (database migrations first, temp cleanup in production, continuity cleanup, the **Hono API** when `API_ENABLED`, the 7TV sync's EventAPI client when `SEVENTV_SYNC_ENABLED`, shard spawn and shutdown hooks). It exports nothing. `shardingManager` and `discordOauth` live in `src/lib/sharding-manager` and `src/lib/discord-oauth`; the API imports them from there.
 - **Shard processes** (`src/bot.ts`): discord.js client, events, interactions. Exports `internalClient`. Spawned by `ShardingManager` as child processes (mode `process`, `respawn: true`).
 
 ⚠️ Never import `@/bot` from API code (manager process): importing it creates a client and **logs in with the bot token**. To talk to Discord from the API use `discordRestApi` (`src/lib/discord-rest-api`) or `shardingManager.broadcastEval`. The same applies to tests and tools: loading interaction modules can pull in `@/bot` (some button handlers import it), so stub `@/bot` in such tests.
@@ -36,7 +36,7 @@ Two kinds of processes:
 | `src/services/` | `ProcessingEmoteService` (state of the emote being added), `EmoteStorageService` (search results, pagination). |
 | `src/components/` | Functions returning `BaseMessageOptions` (embeds + buttons). |
 | `src/api/` | REST API for the panel, see [API](#api). |
-| `src/db/schemas/` | Drizzle schema (no migrations in the repo, `db:push` is used). |
+| `src/db/schemas/` | Drizzle schema. Migrations in `drizzle/` (app root), applied by `src/db/migrate.ts`, see [Database](#database). |
 | `src/helpers/` | Loggers (`#/loggers`), temp files, interaction loader. |
 | `src/utils/` | Misc helpers; `managers/feedback-manager.ts` = replies to the user. |
 
@@ -113,7 +113,7 @@ Hono on `Bun.serve` (`src/api/index.ts`), the app is built in `src/api/app.ts`. 
 - **Rate limiting** (in-memory, per IP): ~120 req/min for `/api`, ~10/min for `/api/auth`; `429 RATE_LIMITED` with `Retry-After`. In production the client IP is the **last** `X-Forwarded-For` entry (exactly one proxy hop, the one Coolify adds; earlier entries are client-controlled), otherwise the socket address. With more proxy hops all clients would share one IP. Responses carry `RateLimit-Limit/Remaining/Reset`.
 - **CORS**: origins from `CORS_ORIGINS` (comma-separated), default = `FRONTEND_URL` origin, with `credentials: true`. It is per origin, not per path, so every page of the site (`/editor` as well as `/panel`) can call the API with the session cookie (cookie `path: /`). Other origins get no `Access-Control-Allow-Origin`.
 - **Hono behaviour the API relies on** (verified): headers set with `c.header` before a throw are kept on the error response built by `onError` (rate-limit headers, `Retry-After`); a thrown error is turned into a response inside the middleware chain, so middleware after `await next()` still runs (the session middleware clears or re-sends the cookie on 401s).
-- **Testing without the bot**: import `app` from `src/api/app.ts` and call `app.fetch(new Request("http://localhost/api/..."), { server: { requestIP: () => ({ address: "10.0.0.1", family: "IPv4", port: 1 }) } })` (vary the address to avoid the rate limiter). Run it from `apps/core` (for `.env`) against a throwaway database: `POSTGRES_PORT=55432 REDIS_PORT=56379 docker compose -p tetra-api-test up -d --wait postgres redis`, `db:push` with `POSTGRES_URL` overridden, and `down -v` afterwards. A user row with `encryptToken("fake")` and a session row give a valid cookie (base64 JSON `{ session_token, user_discord_id }`); endpoints that call Discord then fail on the fake token, which is enough to check auth, validation and errors. Importing `app` doesn't log the bot in.
+- **Testing without the bot**: import `app` from `src/api/app.ts` and call `app.fetch(new Request("http://localhost/api/..."), { server: { requestIP: () => ({ address: "10.0.0.1", family: "IPv4", port: 1 }) } })` (vary the address to avoid the rate limiter). Run it from `apps/core` (for `.env`) against a throwaway database: `POSTGRES_PORT=55432 REDIS_PORT=56379 docker compose -p tetra-api-test up -d --wait postgres redis`, `db:migrate` with `POSTGRES_URL` overridden, and `down -v` afterwards. A user row with `encryptToken("fake")` and a session row give a valid cookie (base64 JSON `{ session_token, user_discord_id }`); endpoints that call Discord then fail on the fake token, which is enough to check auth, validation and errors. Importing `app` doesn't log the bot in.
 - **Bun.serve `idleTimeout`** is 120 s: Bun's default (10 s) closes the connection while an emote is optimized in-process.
 - **JSON body limit**: 2 MB (editor submits emotes as base64 data URLs; other payloads too). Don't lower it. Over it: `413 PAYLOAD_TOO_LARGE` (checked through `app.fetch`; `Bun.serve`'s own `maxRequestBodySize` default, 128 MB, is far above it).
 - **Discord tokens** (`users.access_token`, `refresh_token`) are encrypted with AES-256-GCM (`v1:<iv>:<tag>:<ciphertext>`) using `TOKEN_ENCRYPTION_KEY`. Values without `v1:` are legacy plaintext and get re-encrypted on the next write. Losing or changing the key logs everyone out.
@@ -206,8 +206,11 @@ Handlers in `src/lib/media/` (`PlatformHandlerCallback(url, { progress, fileLimi
 
 ## Database
 
-- Schema in `src/db/schemas/`, applied with `bun run db:push` (no migration files). `db:push` can propose destructive changes (e.g. truncating a table): read its output, abort anything that isn't additive, and run it on production yourself.
-- 7TV sync tables `stv_sync_configs`, `stv_sync_links`, `stv_sync_review`, `stv_sync_log` (`src/db/schemas/stv-sync.ts`); they need a `db:push` before the sync or its routes work.
+- Schema in `src/db/schemas/`, migrations in `drizzle/` (SQL + drizzle-kit's `meta/` snapshots and journal, all committed; `meta/` is excluded from Biome because drizzle-kit rewrites it).
+- **Workflow**: change the schema → `bun db:generate` (random file name; `bunx drizzle-kit generate --name <slug>` inside `apps/core` names it) → read the SQL (drizzle-kit can emit drops or renames you didn't mean) → commit it with the schema change → deploy. Never edit a migration that has been deployed; write a new one.
+- **Applied on start**: `runMigrations()` (`src/db/migrate.ts`, drizzle-orm's node-postgres migrator, own one-connection pool closed afterwards) runs at the top of `src/index.ts`, so only in the manager, never in shards, before the API, cleanups and shard spawn. A failure logs and exits 1. The folder is resolved from the module's URL (`../../drizzle`), which is `apps/core/drizzle` locally and `/app/apps/core/drizzle` in the image (`COPY apps/core` ships it). Applied migrations are tracked in `drizzle.__drizzle_migrations` (by journal timestamp, so a hand-edit after deploy is never re-run). All pending migrations run in one transaction.
+- `0000_baseline` (the schema before the 7TV sync) and `0001_stv_sync` are hand-edited to be idempotent (`CREATE … IF NOT EXISTS`, enum in a `duplicate_object` block, FKs added only if the table has no FK to that target yet), because production had those tables from `db:push` before migrations existed. Verified 2026-11 on Postgres 17: on a fresh DB, a DB pushed with the pre-sync schema (rows kept) and one pushed with the full schema, the result is identical to a push of the current schema (`pg_dump --schema-only`), `drizzle-kit push` sees no changes and `generate` finds nothing new. New migrations need no such guards.
+- `bun db:migrate` (`drizzle-kit migrate`, same table) applies them without starting the bot. `bun db:push` is for throwaway prototyping on a local DB only: it bypasses the migration history, so reset that DB (`bun db:down`, remove the volume) before generating the real migration. Production uses migrations only.
 - `emotes.external_id` is not unique (several rows can share a source/Discord id).
 - Drizzle `relations()` are code only; changing them doesn't change the DB.
 
@@ -232,7 +235,7 @@ Run inside `apps/core`, or from the root with `bun --filter @tetra/core <script>
 - `dev` – watch, `start` – production
 - `deploy:dev` – register commands on `DEV_GUILDS`; `deployCommands` – globally
 - `emojis:sync` – upload the feedback emojis as application emojis of the current env's app (`--force` replaces changed ones)
-- `db:push` / `db:studio` – Drizzle (also available from the root)
+- `db:generate` (new migration from the schema), `db:migrate` (apply), `db:push` (local prototyping only), `db:studio` – Drizzle (also available from the root)
 - `typecheck` – `tsc --noEmit`
 
 `tsconfig.api-types.json` emits declarations to `dist/types` (gitignored) for the web app's project reference; nothing else uses it.
@@ -242,7 +245,7 @@ Run inside `apps/core`, or from the root with `bun --filter @tetra/core <script>
 - Image: `docker/core.Dockerfile`, built from the **repo root** (it needs the root `bun.lock` and `tsconfig.base.json`). Base `oven/bun` (Debian slim) with `ffmpeg` and `gifsicle` from apt, and deno (`COPY --from=denoland/deno:bin`, official multi-arch single-binary image, latest; yt-dlp's YouTube JS runtime). yt-dlp (`[default,curl-cffi]`) and gallery-dl are pip-installed unpinned into a venv (`/opt/media-tools`, symlinked to `/usr/local/bin`; the build fails if `yt_dlp_ejs` isn't importable); `ADD`ing their PyPI JSON busts the layer cache, so every build gets the latest release. Locally both must be on `PATH` (e.g. `brew install yt-dlp gallery-dl` or `uv tool install`).
 - `bun install` runs with `--ignore-scripts`: the `gifsicle` npm package has no linux/arm64 binary and its postinstall tries to compile from source. Only sharp's install script is run (downloads libvips), and the npm gifsicle path is symlinked to `/usr/bin/gifsicle`. A new dependency that needs an install script must be run explicitly in the Dockerfile.
 - gifsicle versions differ (verified 2026-11): the npm package's prebuilt binaries (macOS, linux x64, Windows) are **1.93** and never updated; Debian's apt package in the image is **1.96**. So local dev runs 1.93 and the container 1.96 on every architecture. The flags used are the same in both, but output sizes can differ slightly. Using the system binary everywhere (brew/apt) would remove the mismatch and the Dockerfile workaround.
-- Manager, API and all shards run in one container.
+- Manager, API and all shards run in one container. The manager applies migrations from `drizzle/` before anything else starts; `drizzle-kit` stays out of the image.
 
 ## Agent pitfalls (core)
 

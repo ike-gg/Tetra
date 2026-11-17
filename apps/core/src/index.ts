@@ -1,3 +1,4 @@
+import { runMigrations } from "@/db/migrate";
 import { startContinuityCleanup } from "@/interactions/continuity/cleanup-continuity";
 import { shardingManager } from "@/lib/sharding-manager";
 import { stvSync } from "@/stv-sync/sync-service";
@@ -7,6 +8,15 @@ import { env, isProduction } from "./env";
 
 import { TempFileManager } from "#/files/temp-file-manager";
 import { BotConsole, CoreConsole, StvSyncConsole } from "#/loggers";
+
+// Manager only: shards never run migrations. A failed migration stops startup.
+try {
+  await runMigrations();
+  CoreConsole.success("Database migrations applied.");
+} catch (error) {
+  CoreConsole.error("Database migration failed:", error);
+  process.exit(1);
+}
 
 if (isProduction) {
   CoreConsole.warn("Running in production mode.");

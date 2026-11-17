@@ -12,6 +12,7 @@
       "!**/bun.lock",
       "!**/*.md",
       "!**/routeTree.gen.ts",
+      "!apps/core/drizzle/meta",
       "!**/emote-atlas.json",
       "!videos/*/assets/lib/matter.min.js",
       "!videos/*/assets/emotes.json",

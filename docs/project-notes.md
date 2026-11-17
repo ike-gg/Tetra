@@ -34,7 +34,7 @@ Shared code goes to `packages/*` once there is any (nothing yet). Package names 
 1. `bun install` in the root.
 2. `apps/core/.env` from `apps/core/.env.example` (see [core.md](core.md#environment-variables)).
 3. `bun db:up` – Postgres and Redis in Docker (`tetra`/`tetra`, db `tetra`, ports 5432/6379; override with `POSTGRES_PORT`/`REDIS_PORT`).
-4. `bun db:push` – create the tables.
+4. `bun db:migrate` – create the tables (`bun dev` also applies pending migrations on start).
 5. `bun dev` – core and web together (web on `http://localhost:3000`, API on `http://localhost:3002`).
 
 `docker compose --profile full up --build` runs core in its production image against the compose databases (it reads `apps/core/.env`, `POSTGRES_URL`/`REDIS_URL` are overridden to the compose services).
@@ -44,7 +44,7 @@ Shared code goes to `packages/*` once there is any (nothing yet). Package names 
 - `bun dev` – core and web side by side through `concurrently` (prefixed logs; when one exits, the other is stopped too); `bun dev:core`, `bun dev:web` – one app. Not `bun --filter '@tetra/*' dev`: `--filter` runs scripts in dependency order, and web depends on `@tetra/core` (for the API types), so web would wait forever for core's never-ending `--watch`.
 - `bun build:web` – production build of the web app
 - `bun db:up` / `bun db:down` – compose Postgres + Redis
-- `bun db:push` / `bun db:studio` – Drizzle (core)
+- `bun db:generate` / `bun db:migrate` / `bun db:push` / `bun db:studio` – Drizzle (core), see [core.md](core.md#database)
 - `bun check` – Biome lint + format + imports (`check:fix` applies fixes), `bun lint`, `bun format`
 - `bun typecheck` – type-checks every app (core: `tsc --noEmit`, web: `tsc -b`, which also checks the API types web uses). Biome doesn't type-check; both must pass.
 - No tests yet.
@@ -60,7 +60,7 @@ One Coolify resource, Docker Compose build pack: `docker-compose.prod.yml` at th
 - **postgres**, **redis**: no published ports, data in named volumes. The Postgres password is Coolify's generated `SERVICE_PASSWORD_POSTGRES`; core's `POSTGRES_URL` / `REDIS_URL` are built in the compose file from the service names.
 - **core**: `docker/core.Dockerfile`, port 3002 (domain e.g. `api.tetra.lol`). `ENV=production` and `API_ENABLED=true` (core's default is `false`) are set in the compose file; every other var comes from Coolify's env list (the compose file names them, `${VAR:?}` = required). Unset optional vars arrive as empty strings, which `env.ts` treats as unset.
 - **web**: `docker/web.Dockerfile` builds the site (Node runs Vite, Bun installs and runs `build:seo`) and serves `dist/client` with Caddy on port 80 (`docker/web.Caddyfile`): `/invite` redirects (302) to `INVITE_LINK` (the same env var as core, passed to web at runtime; it must be a Discord authorize URL with a query, because `/invite?guild=<id>` appends `&guild_id=…&disable_guild_select=true`); `/logo`, `/static-logo` and `/feedback` redirect (301) to their brand book chapters under `/branding`; under `/panel` and `/editor/*` a file, else `<path>/index.html`, else `_shell.html` (client-only routes); anywhere else a file or `<path>/index.html`, otherwise `404.html` with status 404. `/assets/*` is cached as immutable. `VITE_API_URL` (required), `VITE_SITE_URL` and `VITE_GA_MEASUREMENT_ID` (optional, the GA4 `G-…` ID; empty = no analytics, see web.md Analytics) are **build** args: mark them as build variables in Coolify.
-- **Schema**: no migrations and `drizzle-kit` isn't in the core image, so run `bun run db:push` from a machine with `POSTGRES_URL` pointed at production (SSH tunnel) after a schema change.
+- **Schema**: Drizzle migrations from `apps/core/drizzle/`, applied by core's manager process on every start, before the API and shards (a failed migration stops the container). Nothing to run by hand; never `db:push` against production.
 - Discord OAuth redirect: `<BACKEND_URL>/api/auth/callback` must be listed in the Developer Portal.
 - Only one bot instance may run per token: stop any old deployment before the first start.
 

@@ -123,7 +123,7 @@ Retention: trimmed on every insert to the guild's newest 200 entries and 30 days
 
 - `stv_sync_configs` (pk `guild_id`): Twitch id/login/display name, 7TV user id, active set id (null without one), `enabled`, `settings`, `linked_by` (Discord user id), timestamps.
 - `stv_sync_links`: (guild, 7TV emote) unique → Discord emoji id, name, animated; index on the emoji id.
-- `stv_sync_review`: (guild, 7TV emote) unique; alias, animated, file and preview URL, width/height, author, `reason` (`FILTERED | RULE | TOO_LARGE | ASPECT_RATIO | NO_SLOT | FAILED`), `detail`, `flagged_at`. Renamed from `stv_sync_queue` before release; `db:push` proposes dropping the old table, which is fine (nothing released).
+- `stv_sync_review`: (guild, 7TV emote) unique; alias, animated, file and preview URL, width/height, author, `reason` (`FILTERED | RULE | TOO_LARGE | ASPECT_RATIO | NO_SLOT | FAILED`), `detail`, `flagged_at`. Renamed from `stv_sync_queue` before release; a database that still has the old table (from an earlier push) can drop it, nothing reads it.
 - `stv_sync_log`: guild, `action`, nullable emote columns (`stv_emote_id`, `name`, `animated`, `discord_emoji_id`), `reason` / `detail` (per action: review reason/detail, rule position, `excluded`, failure stage/code, old/new set id, Twitch id), `created_at`. See [Activity log](#activity-log).
 
 ### API
