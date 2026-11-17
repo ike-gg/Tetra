@@ -10,7 +10,6 @@ const PAGES = [
   { to: "/editor", label: "editor" },
   { to: "/panel", label: "panel" },
   { to: "/branding", label: "branding" },
-  { to: "/branding/logo", label: "logo" },
 ] as const;
 
 // Color and underline pinned: on /editor ui-sdk's web.css styles every link
