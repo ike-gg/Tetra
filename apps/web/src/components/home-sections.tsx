@@ -8,6 +8,7 @@ import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { Tooltip, TooltipContent, TooltipTerm } from "@/components/ui/tooltip";
 import { formatBytes } from "@/lib/format-bytes";
 import { INVITE_URL } from "@/lib/links";
 
@@ -112,19 +113,27 @@ export function HomeSections() {
 function Optimization() {
   return (
     <section className="mx-auto max-w-6xl px-6 pt-40 pb-28">
-      <Heading level={2} className="max-w-2xl">
-        same emote, a fraction of the size
-      </Heading>
+      <Tooltip>
+        <Heading level={2} className="max-w-2xl">
+          <TooltipTerm className="italic">nearly</TooltipTerm> the same emote, a fraction
+          of the size
+        </Heading>
+        <TooltipContent>
+          Discord&apos;s 256 KB limit is tight, so some detail goes. at chat size
+          it&apos;s hard to spot
+        </TooltipContent>
+      </Tooltip>
       <Text tone="muted" className="mt-4 max-w-xl">
         Discord rejects emotes over 256 KB, and about one in three of 7TV&apos;s most
-        popular animated emotes is bigger than that. tetra resizes and recompresses them
-        until they fit
+        popular animated emotes is bigger than that. tetra fits them automatically, with
+        no hand tuning. side by side you can see a difference: that&apos;s how strict the
+        limit is
       </Text>
 
       <div className="mt-14 border-border border-t">
         <div className="flex items-baseline justify-between gap-4 py-3 font-mono text-muted text-xs tracking-widest">
           <span>7TV&apos;s file → tetra&apos;s</span>
-          <span>measured on 7TV&apos;s GIFs</span>
+          <span>automatic, measured on 7TV&apos;s GIFs</span>
         </div>
         <ul className="m-0 list-none p-0">
           {OPTIMIZED.map((emote) => (

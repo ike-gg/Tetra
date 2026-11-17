@@ -34,6 +34,7 @@ import { Switch } from "@/components/ui/switch";
 import { Text } from "@/components/ui/text";
 import { TextField } from "@/components/ui/text-field";
 import { Toaster, toast } from "@/components/ui/toaster";
+import { Tooltip, TooltipContent, TooltipTerm } from "@/components/ui/tooltip";
 import type { PanelEmote } from "@/lib/emote";
 import { seoHead } from "@/lib/seo";
 
@@ -738,6 +739,21 @@ function ControlsSheet() {
           <SlotMeter label="animated" used={47} limit={50} />
           <SlotMeter label="animated" used={50} limit={50} />
         </div>
+      </div>
+      <div className="flex flex-col gap-3 bg-background p-6 sm:col-span-2">
+        <p className="font-mono text-muted text-xs">
+          &lt;Tooltip&gt; &lt;TooltipTerm&gt; &lt;TooltipContent&gt; · a note on a word,
+          on hover, focus or tap
+        </p>
+        <Tooltip>
+          <Text>
+            <TooltipTerm>nearly</TooltipTerm> the same emote, a fraction of the size
+          </Text>
+          <TooltipContent>
+            Discord&apos;s 256 KB limit is tight, so some detail goes. at chat size
+            it&apos;s hard to spot
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div className="flex flex-col gap-3 bg-background p-6 sm:col-span-2">
         <p className="font-mono text-muted text-xs">
