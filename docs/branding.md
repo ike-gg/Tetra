@@ -53,7 +53,7 @@ Three roles. Dark only (`color-scheme: dark`); there is no light theme.
 | Geist Mono | `font-mono` | ASCII art, labels, commands, code, small technical captions. |
 
 - Headings: Geist semibold, tight tracking (`tracking-tight`), balanced wrapping (`text-balance`). In code: `Heading`, `Text`, `Accent` and `Eyebrow` from `apps/web/src/components/ui/` (see [web.md](web.md#ui-components)).
-- The serif accent is the brand's one flourish per heading: "add any emote. *that's it*"
+- The serif accent is the brand's one flourish per heading: "add any emote. *that's it*". Not every heading gets one: on the homepage only the hero and the closing call to action do.
 - Small labels and eyebrows: Geist Mono, `text-xs`, wide tracking, lowercase or uppercase consistently within a block.
 - Fonts are self-hosted from the `geist` npm package (OFL) in `apps/web/src/assets/fonts/`.
 
@@ -80,7 +80,7 @@ The web panel should feel like a native desktop app. Controls behave like OS con
 ## ASCII
 
 - The ramp `" .:-=+*#%@"` (light to dense) is shared by the emote background and decorative fills. Reuse it instead of inventing new ones.
-- Allowed uses: small character illustrations in feature cards, section labels like `[01] / features`, terminal-style command lines, a faint ASCII texture behind a block (`brand-500` at around 10% opacity).
+- Allowed uses: small character illustrations, section labels like `[01] / features` (the homepage has none: numbered eyebrows on every section read as a template), terminal-style command lines, a faint ASCII texture behind a block (`brand-500` at around 10% opacity).
 - Keep it decorative: mark it `aria-hidden`, never put meaning only in ASCII art.
 - The closing call to action on the homepage has the one interactive ASCII field: shimmering ramp glyphs in which the word `tetra` appears as a shape drawn by denser, brighter glyphs, one big word around the cursor and a grid of them while "add to discord" is hovered (`TetraField`).
 - The brand book's cover has the second one, the cube (`BrandCube`, below under [Motion](#motion)).

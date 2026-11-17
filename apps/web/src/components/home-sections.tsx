@@ -6,159 +6,184 @@ import { Stats } from "@/components/stats";
 import { TetraField } from "@/components/tetra-field";
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
-import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-import { cn } from "@/lib/cn";
+import { formatBytes } from "@/lib/format-bytes";
 import { INVITE_URL } from "@/lib/links";
 
+const KB = 1024;
+const MB = KB * 1024;
+const DISCORD_LIMIT = 256 * KB;
+
+// Illustrative sizes, labelled "example sizes" on the page: a full-size animated 7TV
+// emote against what a 128 px re-encode typically lands at. Not measured runs.
+const OPTIMIZED = [
+  { name: "catJAM", before: 1.4 * MB, after: 248 * KB },
+  { name: "pepeD", before: 3.1 * MB, after: 231 * KB },
+  { name: "ratJAM", before: 2.2 * MB, after: 254 * KB },
+  { name: "NODDERS", before: 860 * KB, after: 196 * KB },
+];
+const SCALE_MAX = Math.max(...OPTIMIZED.map((emote) => emote.before));
+const percent = (bytes: number) => `${(bytes / SCALE_MAX) * 100}%`;
+
 type Feature = {
-  title: string;
+  key: string;
+  title: ReactNode;
   body: ReactNode;
-  art: string[];
-  artClassName?: string;
-  // A wide card across both columns, with a link under the text
-  wide?: { label: string; to: "/editor" };
+  link?: { label: string; to: "/editor" };
   isNew?: boolean;
 };
 
 const FEATURES: Feature[] = [
   {
-    title: "every source",
-    body: "7TV, BTTV and FFZ links, emote names, direct image links or an emote from another message",
-    art: ["  .--.  ", " ( @@ ) ", "  `--'  "],
+    key: "sources",
+    title: "7TV, BTTV and FFZ",
+    body: "paste a link or just type the emote's name",
   },
   {
-    title: "fits in 256 KB",
-    body: "big animated emotes get resized and recompressed automatically until Discord accepts them",
-    art: ["[######]", "[####  ]", "[##    ]"],
-    artClassName: "text-signal",
+    key: "links",
+    title: "image links",
+    body: "any direct link to a GIF or an image works too",
   },
   {
-    title: "media from posts",
-    body: (
-      <>
-        <code className="font-mono text-foreground">/media</code> downloads videos and
-        images from social posts straight into the chat
-      </>
-    ),
-    art: [" +----+ ", " | >  | ", " +----+ "],
+    key: "messages",
+    title: "from a message",
+    body: "take an emote someone used in another message",
   },
   {
+    key: "media",
+    title: <code className="font-mono">/media</code>,
+    body: "downloads videos and images from social posts straight into the chat",
+  },
+  {
+    key: "panel",
     title: "web panel",
-    body: "browse server emotes, restore removed ones and edit them in the browser",
-    art: [" _____  ", "|=|   | ", "|_|___| "],
+    body: "browse your server's emotes, restore removed ones and edit them in the browser",
   },
   {
-    title: "editor in your browser",
-    body: "crop, trim, resize and compress GIFs and images until they fit Discord's 256 KB emote limit. no account, and the file never leaves your device",
-    art: [" .-  -. ", "  [##]  ", " '-  -' "],
-    wide: { label: "resize a GIF for discord", to: "/editor" },
+    key: "editor",
+    title: "editor",
+    body: "crop, trim, resize and compress GIFs and images in the browser. no account, and the file never leaves your device",
+    link: { label: "resize a GIF for discord", to: "/editor" },
     isNew: true,
   },
-];
-
-const STEPS = [
-  { command: "invite", text: "add tetra to your server with the invite link" },
-  {
-    command: "/addemote",
-    text: "paste a link or a name. tetra finds it, optimizes it and adds it",
-  },
-  { command: ":catJAM:", text: "use it right away. manage the rest from the panel" },
 ];
 
 export function HomeSections() {
   return (
     <div className="relative bg-linear-to-b from-transparent via-background/85 via-30% to-background">
-      <section className="mx-auto max-w-6xl px-6 pt-40 pb-28">
-        <Eyebrow index="01">features</Eyebrow>
-        <Heading level={2} className="mt-4 max-w-2xl">
-          built for chats that speak in <Accent>emotes</Accent>
-        </Heading>
-
-        <div className="mt-14 grid gap-px overflow-hidden border border-border bg-border sm:grid-cols-2">
-          {FEATURES.map((feature) => (
-            <article
-              key={feature.title}
-              className={cn(
-                "flex flex-col gap-6 bg-background p-8",
-                feature.wide && "sm:col-span-2"
-              )}
-            >
-              <pre
-                aria-hidden
-                className={cn(
-                  "font-mono text-muted text-sm leading-tight",
-                  feature.artClassName
-                )}
-              >
-                {feature.art.join("\n")}
-              </pre>
-              <div>
-                <div className="flex items-center gap-3">
-                  <Heading level={3} size="sm">
-                    {feature.title}
-                  </Heading>
-                  {feature.isNew && (
-                    <span className="font-mono text-signal text-xs tracking-widest">
-                      [new]
-                    </span>
-                  )}
-                </div>
-                <Text tone="muted" className="mt-2 max-w-2xl">
-                  {feature.body}
-                </Text>
-                {feature.wide && (
-                  <Button
-                    size="sm"
-                    className="mt-6"
-                    render={<Link to={feature.wide.to} />}
-                  >
-                    {feature.wide.label}
-                    <span aria-hidden className="font-mono">
-                      →
-                    </span>
-                  </Button>
-                )}
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-28">
-        <Eyebrow index="02">how it works</Eyebrow>
-        <Heading level={2} className="mt-4 max-w-2xl">
-          three steps, <Accent>zero</Accent> resizing
-        </Heading>
-
-        <ol className="mt-14 grid gap-10 sm:grid-cols-3">
-          {STEPS.map((step, index) => (
-            <li key={step.command} className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 font-mono text-sm">
-                <span className="text-brand-500">0{index + 1}</span>
-                <span aria-hidden className="h-px flex-1 bg-border" />
-              </div>
-              <code
-                className={cn(
-                  "w-fit border border-border bg-surface px-2 py-1 font-mono text-sm",
-                  index === STEPS.length - 1 ? "text-signal" : "text-foreground"
-                )}
-              >
-                {step.command}
-              </code>
-              <Text tone="muted">{step.text}</Text>
-            </li>
-          ))}
-        </ol>
-      </section>
-
+      <Optimization />
+      <FeatureList />
       <Stats />
-
       <CallToAction />
-
       <Footer />
     </div>
+  );
+}
+
+function Optimization() {
+  return (
+    <section className="mx-auto max-w-6xl px-6 pt-40 pb-28">
+      <Heading level={2} className="max-w-2xl">
+        big emotes, shrunk until Discord takes them
+      </Heading>
+      <Text tone="muted" className="mt-4 max-w-xl">
+        Discord rejects emotes over 256 KB, and most animated ones from 7TV are far
+        bigger. tetra resizes and recompresses them until they fit
+      </Text>
+
+      <div className="mt-14 border-border border-t">
+        <div className="flex items-baseline justify-between gap-4 py-3 font-mono text-muted text-xs tracking-widest">
+          <span>before → after</span>
+          <span>example sizes</span>
+        </div>
+        <ul className="m-0 list-none p-0">
+          {OPTIMIZED.map((emote) => (
+            <li
+              key={emote.name}
+              className="grid grid-cols-[1fr_auto] items-center gap-x-6 gap-y-2 border-border border-t py-4 sm:grid-cols-[9rem_1fr_13rem]"
+            >
+              <span className="font-mono text-foreground text-sm">{emote.name}</span>
+              <span className="order-last col-span-2 flex flex-col gap-1 sm:order-none sm:col-span-1">
+                <span className="relative block h-2">
+                  <span
+                    className="absolute inset-y-0 left-0 bg-primary"
+                    style={{ width: percent(emote.before) }}
+                  />
+                  <LimitMark />
+                </span>
+                <span className="relative block h-2">
+                  <span
+                    className="absolute inset-y-0 left-0 bg-foreground"
+                    style={{ width: percent(emote.after) }}
+                  />
+                  <LimitMark />
+                </span>
+              </span>
+              <span className="text-right font-mono text-sm tabular-nums">
+                <span className="text-primary">{formatBytes(emote.before)}</span>
+                <span className="text-muted"> → </span>
+                <span className="text-foreground">{formatBytes(emote.after)}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="flex items-center gap-2 border-border border-t py-3 font-mono text-muted text-xs tracking-widest">
+          <span aria-hidden className="h-3 w-px bg-muted" />
+          Discord&apos;s limit, 256 KB
+        </p>
+      </div>
+    </section>
+  );
+}
+
+function LimitMark() {
+  return (
+    <span
+      aria-hidden
+      className="absolute -inset-y-1 w-px bg-muted"
+      style={{ left: percent(DISCORD_LIMIT) }}
+    />
+  );
+}
+
+function FeatureList() {
+  return (
+    <section className="mx-auto grid max-w-6xl gap-10 px-6 py-28 lg:grid-cols-[1fr_2fr] lg:gap-16">
+      <Heading level={2} size="lg" className="max-w-xs">
+        everything else tetra does
+      </Heading>
+
+      <dl className="m-0 border-border border-t">
+        {FEATURES.map((feature) => (
+          <div
+            key={feature.key}
+            className="grid gap-1 border-border border-b py-4 sm:grid-cols-[11rem_1fr] sm:gap-6"
+          >
+            <dt className="flex items-center gap-3 font-medium text-foreground">
+              {feature.title}
+              {feature.isNew && (
+                <span className="font-mono text-signal text-xs tracking-widest">
+                  [new]
+                </span>
+              )}
+            </dt>
+            <dd className="m-0 text-muted">
+              {feature.body}
+              {feature.link && (
+                <Button
+                  size="sm"
+                  className="mt-3 flex w-fit"
+                  render={<Link to={feature.link.to} />}
+                >
+                  {feature.link.label}
+                </Button>
+              )}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -176,7 +201,8 @@ function CallToAction() {
             give your server <Accent>better</Accent> emotes
           </Heading>
           <Text tone="muted" className="mx-auto mt-4 max-w-md">
-            ready the moment it joins your server
+            invite tetra, run <code className="font-mono text-foreground">/addemote</code>{" "}
+            with a name or a link, and the emote is ready to use
           </Text>
           <div ref={buttonRef} className="mt-10 inline-flex">
             <Button
@@ -192,7 +218,7 @@ function CallToAction() {
               }
               onBlur={() => setReveal(false)}
             >
-              add to discord <span aria-hidden>→</span>
+              add to discord
             </Button>
           </div>
         </div>

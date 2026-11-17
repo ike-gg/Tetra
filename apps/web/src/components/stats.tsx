@@ -1,9 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { EASE_OUT } from "@/components/logo";
-import { Accent } from "@/components/ui/accent";
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { Heading } from "@/components/ui/heading";
 
 const STATS = [
   { value: "3,500", label: "servers use tetra" },
@@ -44,37 +41,37 @@ export function Stats() {
   }, []);
 
   return (
-    <section ref={sectionRef} className="mx-auto max-w-6xl px-6 py-28">
-      <Eyebrow index="03">in numbers</Eyebrow>
-      <Heading level={2} className="mt-4 max-w-2xl">
-        already in <Accent>thousands</Accent> of servers
-      </Heading>
-
-      <dl className="mt-14 grid gap-px border border-border bg-border sm:grid-cols-3">
-        {STATS.map((stat, index) => {
-          return (
-            <div key={stat.label} className="flex flex-col gap-3 bg-background p-8">
-              <dt className="order-last font-mono text-muted text-xs tracking-widest">
-                {stat.label}
-              </dt>
-              <dd className="font-semibold text-5xl tabular-nums leading-none tracking-tight sm:text-6xl">
-                <span className="sr-only">{stat.value}+</span>
-                <span aria-hidden>
-                  {phase === "static" ? (
-                    stat.value
-                  ) : (
-                    <RollingValue
-                      value={stat.value}
-                      rolling={phase === "rolling"}
-                      delayMs={index * STAT_STAGGER_MS}
-                    />
-                  )}
-                  <span className="text-muted">+</span>
-                </span>
-              </dd>
-            </div>
-          );
-        })}
+    <section
+      ref={sectionRef}
+      aria-label="tetra in numbers"
+      className="mx-auto max-w-6xl px-6"
+    >
+      <dl className="m-0 flex flex-col border-border border-y sm:flex-row">
+        {STATS.map((stat, index) => (
+          <div
+            key={stat.label}
+            className="flex flex-1 items-baseline gap-4 border-border py-6 not-first:border-t sm:flex-col sm:gap-2 sm:not-first:border-t-0 sm:not-first:border-l sm:not-first:pl-8"
+          >
+            <dt className="order-last font-mono text-muted text-xs tracking-widest">
+              {stat.label}
+            </dt>
+            <dd className="m-0 font-semibold text-4xl tabular-nums leading-none tracking-tight sm:text-5xl">
+              <span className="sr-only">{stat.value}+</span>
+              <span aria-hidden>
+                {phase === "static" ? (
+                  stat.value
+                ) : (
+                  <RollingValue
+                    value={stat.value}
+                    rolling={phase === "rolling"}
+                    delayMs={index * STAT_STAGGER_MS}
+                  />
+                )}
+                <span className="text-muted">+</span>
+              </span>
+            </dd>
+          </div>
+        ))}
       </dl>
     </section>
   );
