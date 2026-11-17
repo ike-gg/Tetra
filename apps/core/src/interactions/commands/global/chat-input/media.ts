@@ -136,7 +136,7 @@ const command = new SlashCommandBuilder()
     "download a video or images from X, Instagram, TikTok, YouTube, Twitch, Kick or Streamable"
   )
   .addStringOption((option) =>
-    option.setName("url").setDescription("link to the post or clip").setRequired(true)
+    option.setName("link").setDescription("link to the post or clip").setRequired(true)
   );
 
 interface MediaPayload extends Pick<InteractionReplyOptions, "files"> {
@@ -239,7 +239,7 @@ const processMedia = async ({
 };
 
 export default new ChatInputCommandHandler(command, async (interaction) => {
-  const input = interaction.options.getString("url");
+  const input = interaction.options.getString("link");
 
   if (!input) return;
 

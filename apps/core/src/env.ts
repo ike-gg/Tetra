@@ -171,6 +171,13 @@ const envSchema = z.object({
       "ID of the Discord channel that receives error logs sent with the 'Send developers log' button; the button is unavailable when not set"
     ),
 
+  FEEDBACK_CHANNEL_ID: z
+    .string()
+    .optional()
+    .describe(
+      "ID of the Discord channel that receives messages sent with /feedback; the command answers with an error when not set"
+    ),
+
   MEDIA_COOKIES: z
     .string()
     .optional()

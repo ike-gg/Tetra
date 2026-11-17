@@ -14,7 +14,7 @@ const command = new SlashCommandBuilder()
   .addSubcommand((subcommand) =>
     subcommand
       .setName("byname")
-      .setDescription("search for an emote by name on 7TV (default), BTTV or FFZ")
+      .setDescription("add an emote by name from 7TV, BTTV or FFZ")
       .addStringOption((option) =>
         option.setName("name").setDescription("emote name").setRequired(true)
       )
@@ -45,14 +45,17 @@ const command = new SlashCommandBuilder()
       .setName("bylink")
       .setDescription("add an emote from a 7TV, BTTV or FFZ link or a direct image link")
       .addStringOption((option) =>
-        option.setName("link").setDescription("link to the emote").setRequired(true)
+        option
+          .setName("link")
+          .setDescription("7TV, BTTV, FFZ or image link")
+          .setRequired(true)
       )
   )
   //subcommand bychannel
   .addSubcommand((subcommand) =>
     subcommand
       .setName("bychannel")
-      .setDescription("browse a Twitch channel's emotes")
+      .setDescription("browse a Twitch channel's 7TV emotes")
       .addStringOption((option) =>
         option.setName("channel").setDescription("Twitch channel name").setRequired(true)
       )

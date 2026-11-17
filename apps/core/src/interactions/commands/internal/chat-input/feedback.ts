@@ -8,12 +8,12 @@ import { createErrorCode, reportWithCode } from "@/utils/error-code";
 import { FeedbackManager } from "@/utils/managers/feedback-manager";
 
 const command = new SlashCommandBuilder()
-  .setName("feedback")
+  .setName("feedbackpreview")
   .setDescription("internal: preview every FeedbackManager reply type");
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Internal commands only load in development (registered as `internal-feedback` by
+// Internal commands only load in development (registered as `internal-feedbackpreview` by
 // deploy:dev); the guild check keeps it out of anything but DEV_GUILDS regardless
 export default new ChatInputCommandHandler(command, async (interaction) => {
   if (!interaction.guildId || !env.DEV_GUILDS?.includes(interaction.guildId)) {

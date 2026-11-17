@@ -14,7 +14,7 @@ import { URLButton } from "@/utils/discord/components/url-button";
 
 const command = new SlashCommandBuilder()
   .setName("info")
-  .setDescription("info about tetra");
+  .setDescription("stats, invite and source code");
 
 export default new ChatInputCommandHandler(command, async (interaction, client) => {
   const guildsCount = (
@@ -32,20 +32,8 @@ export default new ChatInputCommandHandler(command, async (interaction, client) 
   const messagePayload = new EmbedBuilder();
 
   messagePayload.addFields({
-    name: "add tetra to your server",
-    value: hyperlink("invite tetra", APP.INVITE_LINK),
-    inline: true,
-  });
-  messagePayload.addFields({
     name: "servers",
     value: guildsCount.toString(),
-    inline: true,
-  });
-  messagePayload.addFields({
-    name: "users",
-    // todo fetch count from all shards
-    // value: usersCount.toString(),
-    value: "-",
     inline: true,
   });
   messagePayload.addFields({
@@ -59,7 +47,9 @@ export default new ChatInputCommandHandler(command, async (interaction, client) 
     inline: true,
   });
 
-  messagePayload.setImage("https://i.imgur.com/dFft3ZU.png");
+  messagePayload.setImage(
+    "https://raw.githubusercontent.com/ike-gg/Tetra/main/assets/logo/banners/tetra-server-banner-960x540.png"
+  );
   messagePayload.setColor(APP.PRIMARY_COLOR);
   await interaction.reply({
     embeds: [messagePayload],
