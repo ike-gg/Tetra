@@ -69,8 +69,8 @@ export function StvSyncSettings({ guildId, sync, defaults, form }: StvSyncSettin
               onCheckedChange={(value) => setFilter("includeZeroWidth", value)}
             />
             <Switch
-              label="sensitive emotes"
-              description="emotes 7TV marks as sensitive content"
+              label="NSFW emotes"
+              description="emotes 7TV marks as NSFW"
               checked={draft.filters.includeNsfw}
               onCheckedChange={(value) => setFilter("includeNsfw", value)}
             />
