@@ -11,43 +11,14 @@ import { Text } from "@/components/ui/text";
 import { Tooltip, TooltipContent, TooltipTerm } from "@/components/ui/tooltip";
 import { formatBytes } from "@/lib/format-bytes";
 import { INVITE_URL } from "@/lib/links";
+import {
+  DISCORD_EMOTE_LIMIT,
+  OPTIMIZED_EMOTES,
+  optimizedEmoteUrl,
+  sevenTvPreviewUrl,
+} from "@/lib/optimized-emotes";
 
-const DISCORD_LIMIT = 256 * 1024;
-
-// Measured 2026-11-17: core's optimizeBuffer (default contain fitting) on the 3x.gif the
-// bot downloads from 7TV. The outputs are in public/home/; the original is shown from
-// 7TV's lighter 2x.webp, the sizes are of the 3x.gif.
-const OPTIMIZED = [
-  {
-    name: "AINTNOWAY",
-    id: "01GDDQVMH000038Q48APH8VE3Q",
-    file: "aintnoway",
-    before: 1454083,
-    after: 250943,
-  },
-  {
-    name: "WhoAsked",
-    id: "01FNSSG3T8000EJT2EVEY3FBSY",
-    file: "whoasked",
-    before: 2102067,
-    after: 253775,
-  },
-  {
-    name: "OOOO",
-    id: "01GB4PT9NG000DGEZ8VYY59RSM",
-    file: "oooo",
-    before: 1350403,
-    after: 211469,
-  },
-  {
-    name: "Vibe",
-    id: "01FRTYR8RR0005FHRFCCZBSEKR",
-    file: "vibe",
-    before: 1166850,
-    after: 241746,
-  },
-];
-const SCALE_MAX = Math.max(...OPTIMIZED.map((emote) => emote.before));
+const SCALE_MAX = Math.max(...OPTIMIZED_EMOTES.map((emote) => emote.before));
 const percent = (bytes: number) => `${(bytes / SCALE_MAX) * 100}%`;
 
 const PRODUCTS: { title: string; isNew?: boolean; body: string; button: ReactNode }[] = [
@@ -126,21 +97,21 @@ function Optimization() {
           <span>automatic, measured on 7TV&apos;s GIFs</span>
         </div>
         <ul className="m-0 list-none p-0">
-          {OPTIMIZED.map((emote) => (
+          {OPTIMIZED_EMOTES.map((emote) => (
             <li
               key={emote.id}
               className="grid grid-cols-[auto_1fr] items-center gap-x-6 gap-y-3 border-border border-t py-4 sm:grid-cols-[auto_7rem_1fr_12rem]"
             >
               <span className="flex items-center gap-2">
                 <EmoteImage
-                  src={`https://cdn.7tv.app/emote/${emote.id}/2x.webp`}
+                  src={sevenTvPreviewUrl(emote)}
                   alt={`${emote.name} from 7TV`}
                 />
                 <span aria-hidden className="font-mono text-muted text-sm">
                   →
                 </span>
                 <EmoteImage
-                  src={`/home/${emote.file}.gif`}
+                  src={optimizedEmoteUrl(emote)}
                   alt={`${emote.name} from tetra`}
                 />
               </span>
@@ -199,7 +170,7 @@ function LimitMark() {
     <span
       aria-hidden
       className="absolute -inset-y-1 w-px bg-muted"
-      style={{ left: percent(DISCORD_LIMIT) }}
+      style={{ left: percent(DISCORD_EMOTE_LIMIT) }}
     />
   );
 }
