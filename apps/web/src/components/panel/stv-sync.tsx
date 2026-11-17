@@ -5,7 +5,11 @@ import type { ReactNode } from "react";
 import { ChannelSearch } from "@/components/panel/channel-search";
 import { GuildIcon } from "@/components/panel/guild-icon";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
-import { StvSyncQueue } from "@/components/panel/stv-sync-queue";
+import { StvSyncReview } from "@/components/panel/stv-sync-review";
+import {
+  StvSyncSaveBar,
+  UnsavedSettingsGuard,
+} from "@/components/panel/stv-sync-save-bar";
 import { StvSyncSettings } from "@/components/panel/stv-sync-settings";
 import { UnlinkSyncDialog } from "@/components/panel/unlink-sync-dialog";
 import { Badge } from "@/components/ui/badge";
@@ -21,15 +25,17 @@ import { relativeTime } from "@/lib/relative-time";
 import {
   connectionStatus,
   type LinkedSync,
+  needReviewLabel,
   type SyncState,
   syncErrorMessage,
   syncQueryOptions,
 } from "@/lib/stv-sync";
 import { useLinkChannel, useSetSyncEnabled } from "@/lib/stv-sync-mutations";
+import { useSyncSettingsDraft } from "@/lib/stv-sync-settings-draft";
 
 /**
- * A server's 7TV channel sync: setup, the linked channel and its status, the queue of
- * emotes it couldn't add, and its settings.
+ * A server's 7TV channel sync: setup, the linked channel and its status, the emotes that
+ * need review, and its settings.
  */
 export function StvSync({ guild }: { guild: ManagedGuild }) {
   const state = useQuery(syncQueryOptions(guild.id));
@@ -82,16 +88,37 @@ function SyncBody({ guild, state }: { guild: ManagedGuild; state: SyncState }) {
     return available ? <LinkChannel guildId={guild.id} /> : <Unavailable />;
   }
 
+  return <LinkedSyncBody guild={guild} state={state} sync={sync} />;
+}
+
+function LinkedSyncBody({
+  guild,
+  state,
+  sync,
+}: {
+  guild: ManagedGuild;
+  state: SyncState;
+  sync: LinkedSync;
+}) {
+  const form = useSyncSettingsDraft(guild.id, sync.settings);
+
   return (
     <>
-      {!available && <Unavailable />}
+      {!state.available && <Unavailable />}
       <SyncStatus guild={guild} state={state} sync={sync} />
-      <Section id="sync-queue" title="queue" count={sync.queuedEmotes}>
-        <StvSyncQueue guild={guild} />
+      <Section id="sync-review" title="needs review" count={sync.reviewEmotes}>
+        <StvSyncReview guild={guild} />
       </Section>
       <Section id="sync-settings" title="settings">
-        <StvSyncSettings guildId={guild.id} sync={sync} defaults={state.defaults} />
+        <StvSyncSettings
+          guildId={guild.id}
+          sync={sync}
+          defaults={state.defaults}
+          form={form}
+        />
       </Section>
+      <StvSyncSaveBar form={form} />
+      <UnsavedSettingsGuard dirty={form.dirty} />
     </>
   );
 }
@@ -241,8 +268,8 @@ function SyncStatus({
           <dd className="m-0 text-foreground tabular-nums">{sync.linkedEmotes}</dd>
         </div>
         <div className="flex flex-col gap-1">
-          <dt className="text-muted">in the queue</dt>
-          <dd className="m-0 text-foreground tabular-nums">{sync.queuedEmotes}</dd>
+          <dt className="text-muted">needs review</dt>
+          <dd className="m-0 text-foreground tabular-nums">{sync.reviewEmotes}</dd>
         </div>
       </dl>
 
@@ -270,8 +297,8 @@ function SyncStatus({
 }
 
 /**
- * The server page's way in: whether a channel is synced and how many emotes wait in the
- * queue. Hidden where the sync isn't running and nothing is linked.
+ * The server page's way in: whether a channel is synced and how many emotes need review.
+ * Hidden where the sync isn't running and nothing is linked.
  */
 export function StvSyncTile({ guildId }: { guildId: string }) {
   const state = useQuery({ ...syncQueryOptions(guildId), refetchInterval: false });
@@ -290,9 +317,9 @@ export function StvSyncTile({ guildId }: { guildId: string }) {
             ? `${sync.enabled ? "following" : "paused on"} ${sync.channel.displayName}`
             : "add emotes from a Twitch channel's 7TV set"}
         </p>
-        {sync && sync.queuedEmotes > 0 && (
+        {sync && sync.reviewEmotes > 0 && (
           <p className="m-0 font-mono text-primary text-xs tabular-nums">
-            {sync.queuedEmotes} in the queue
+            {needReviewLabel(sync.reviewEmotes)}
           </p>
         )}
       </div>

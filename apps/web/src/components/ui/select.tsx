@@ -1,5 +1,6 @@
 import {
   SelectContent as SelectContentPrimitive,
+  SelectGroupLabel as SelectGroupLabelPrimitive,
   SelectItem as SelectItemPrimitive,
   SelectTrigger as SelectTriggerPrimitive,
 } from "@ui-sdk/react/select";
@@ -9,6 +10,7 @@ import { cn } from "@/lib/cn";
 
 export {
   Select,
+  SelectGroup,
   SelectItemIcon,
   SelectLabel,
   SelectValue,
@@ -85,5 +87,21 @@ export function SelectItem({
       />
       {children}
     </SelectItemPrimitive>
+  );
+}
+
+// Mono like the menus' group labels; names a group of items for screen readers too
+export function SelectGroupLabel({
+  className,
+  ...props
+}: WithClassName<ComponentProps<typeof SelectGroupLabelPrimitive>>) {
+  return (
+    <SelectGroupLabelPrimitive
+      className={cn(
+        "m-0 select-none px-2.5 pt-2 pb-1 font-mono text-muted text-xs first:pt-1",
+        className
+      )}
+      {...props}
+    />
   );
 }

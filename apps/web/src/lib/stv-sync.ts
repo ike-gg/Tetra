@@ -26,16 +26,16 @@ export const syncQueryOptions = (guildId: string) =>
     refetchInterval: REFRESH_MS,
   });
 
-const fetchQueue = (guildId: string) =>
-  unwrap(api.guilds[":guildId"].sync.queue.$get({ param: { guildId } }));
+const fetchReview = (guildId: string) =>
+  unwrap(api.guilds[":guildId"].sync.review.$get({ param: { guildId } }));
 
-export type QueueEntry = Awaited<ReturnType<typeof fetchQueue>>["entries"][number];
+export type ReviewEntry = Awaited<ReturnType<typeof fetchReview>>["entries"][number];
 
-/** Emotes the sync couldn't add, newest first (`["stv-sync", id, "queue"]`). */
-export const syncQueueQueryOptions = (guildId: string) =>
+/** Emotes the sync didn't add and that need review, newest first. */
+export const syncReviewQueryOptions = (guildId: string) =>
   queryOptions({
-    queryKey: [...syncKey(guildId), "queue"],
-    queryFn: async () => (await fetchQueue(guildId)).entries,
+    queryKey: [...syncKey(guildId), "review"],
+    queryFn: async () => (await fetchReview(guildId)).entries,
     refetchInterval: REFRESH_MS,
   });
 
@@ -51,8 +51,8 @@ export const syncErrorMessage = (error: unknown) => {
         return "Twitch or 7TV didn't answer. try again in a moment";
       case "SYNC_NOT_LINKED":
         return "this server doesn't sync a channel anymore. reload the page to set it up again";
-      case "QUEUE_ENTRY_NOT_FOUND":
-        return "this emote isn't in the queue anymore";
+      case "REVIEW_ENTRY_NOT_FOUND":
+        return "this emote doesn't need review anymore";
       case "EMOTE_ALREADY_SYNCED":
         return "this emote is already synced to the server";
     }
@@ -88,45 +88,8 @@ export const connectionStatus = (
   return { label: CONNECTION_LABELS[state], tone: "off" };
 };
 
-// Same rules as core's settings schema, so the form says what's wrong before saving
-export const SETTINGS_LIMITS = {
-  nameContains: { count: 50, length: 32 },
-  nameRegex: 100,
-  authors: { count: 100, length: 64 },
-  maxAspectRatio: { min: 1, max: 8 },
-} as const;
+export const MAX_ASPECT_RATIO = { min: 1, max: 4, step: 0.1 } as const;
 
-/** Comma or space separated words, trimmed, without empties or duplicates. */
-export const parseList = (text: string) => [
-  ...new Set(
-    text
-      .split(/[\s,]+/)
-      .map((word) => word.trim())
-      .filter(Boolean)
-  ),
-];
-
-/** Core checks the same, plus nested repeats like `(a+)+`, which only it rejects. */
-export const nameRegexError = (pattern: string) => {
-  if (pattern.length > SETTINGS_LIMITS.nameRegex) {
-    return `keep it under ${SETTINGS_LIMITS.nameRegex} characters`;
-  }
-  try {
-    new RegExp(pattern, "i");
-    return undefined;
-  } catch {
-    return "that isn't a valid regular expression";
-  }
-};
-
-export const listError = (
-  words: string[],
-  { count, length }: { count: number; length: number },
-  noun: string
-) => {
-  if (words.length > count) return `up to ${count} ${noun}`;
-  if (words.some((word) => word.length > length)) {
-    return `each one can be up to ${length} characters`;
-  }
-  return undefined;
-};
+/** "3 need review", "1 needs review". */
+export const needReviewLabel = (count: number) =>
+  `${count} ${count === 1 ? "needs" : "need"} review`;

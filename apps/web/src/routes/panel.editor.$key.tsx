@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { NOINDEX_META } from "@/lib/seo";
 
-// Set when the file came from a server's 7TV sync queue: "add" then goes to that entry
+// Set when the file came from a server's 7TV sync review list: "add" then goes to that
+// entry
 type EditorSearch = { syncGuild?: string; syncEntry?: number };
 
 // The editor and its engines load with the lazy half of the route

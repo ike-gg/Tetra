@@ -28,6 +28,8 @@ type TextFieldProps = {
   action?: ReactNode;
   /** Not editable and out of the tab order; the value stays visible. */
   disabled?: boolean;
+  /** The on-screen keyboard for numbers (`decimal`, `numeric`). */
+  inputMode?: "text" | "decimal" | "numeric";
 };
 
 export function TextField({
@@ -48,6 +50,7 @@ export function TextField({
   type = "text",
   action,
   disabled = false,
+  inputMode,
 }: TextFieldProps) {
   const affix = "shrink-0 select-none font-mono text-muted text-sm";
 
@@ -78,6 +81,7 @@ export function TextField({
             onPaste={onPaste}
             onKeyDown={onKeyDown}
             name={name}
+            inputMode={inputMode}
             value={value}
             onValueChange={(next) => onValueChange(next)}
             placeholder={placeholder}

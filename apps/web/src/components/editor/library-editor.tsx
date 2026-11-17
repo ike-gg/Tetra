@@ -25,7 +25,7 @@ const SAVE_DELAY_MS = 400;
 const AddToServerMenu = lazy(() =>
   import("./add-to-server-menu").then((module) => ({ default: module.AddToServerMenu }))
 );
-// Only for a file opened from a server's 7TV sync queue (panel)
+// Only for a file opened from a server's 7TV sync review list (panel)
 const AddToSyncButton = lazy(() =>
   import("./add-to-sync-button").then((module) => ({ default: module.AddToSyncButton }))
 );
@@ -40,7 +40,7 @@ const Toaster = lazy(() =>
 type LibraryEditorProps = {
   fileKey: string;
   host: EditorHost;
-  // A 7TV sync queue entry the result goes to instead of "add to server ▾"
+  // A 7TV sync review entry the result goes to instead of "add to server ▾"
   syncTarget?: SyncTarget;
 };
 

@@ -13,7 +13,7 @@ import { useUnlinkSync } from "@/lib/stv-sync-mutations";
 
 type UnlinkSyncDialogProps = { guildId: string; channelName: string };
 
-// Unlinking drops the links and the queue for good, so it asks first. The dialog stays
+// Unlinking drops the links and the review list for good, so it asks first. The dialog stays
 // open while the request runs and shows its error inline.
 export function UnlinkSyncDialog({ guildId, channelName }: UnlinkSyncDialogProps) {
   const unlink = useUnlinkSync(guildId);
@@ -33,7 +33,7 @@ export function UnlinkSyncDialog({ guildId, channelName }: UnlinkSyncDialogProps
             unlink {channelName}?
           </AlertDialogTitle>
           <AlertDialogDescription className="m-0 text-muted text-sm">
-            the emotes tetra already added stay on the server. the queue is cleared and
+            the emotes tetra already added stay on the server. needs review is cleared and
             tetra forgets which emotes came from 7TV, so removing them on 7TV won&apos;t
             remove them here anymore
           </AlertDialogDescription>

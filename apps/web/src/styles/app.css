@@ -165,8 +165,10 @@
     overscroll-behavior: none;
   }
 
-  /* Focus and scrollIntoView keep content above the emote selection bar (h-14) */
-  html:has([data-selection-bar]) {
+  /* Focus and scrollIntoView keep content above the bottom bars (h-14): the emote
+     selection bar and the sync settings' save bar */
+  html:has([data-selection-bar]),
+  html:has([data-settings-bar]) {
     scroll-padding-bottom: 3.5rem;
   }
 

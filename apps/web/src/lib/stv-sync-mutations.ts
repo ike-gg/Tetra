@@ -13,7 +13,7 @@ import {
   slotTypeOfPreview,
 } from "@/lib/guild-slots";
 import {
-  type QueueEntry,
+  type ReviewEntry,
   type SyncSettings,
   type SyncState,
   syncErrorMessage,
@@ -21,7 +21,7 @@ import {
   syncQueryOptions,
 } from "@/lib/stv-sync";
 
-// Every write answers the new state: show it at once, then refresh the queue and counts
+// Every write answers the new state: show it at once, then refresh the review list and counts
 function useApplyState(guildId: string) {
   const queryClient = useQueryClient();
   return (state?: SyncState) => {
@@ -71,7 +71,10 @@ export function useUnlinkSync(guildId: string) {
   };
 }
 
-export function useSaveSyncSettings(guildId: string) {
+export function useSaveSyncSettings(
+  guildId: string,
+  message = "saved the sync settings"
+) {
   const apply = useApplyState(guildId);
   return useMutation({
     mutationFn: (settings: SyncSettings) =>
@@ -79,7 +82,7 @@ export function useSaveSyncSettings(guildId: string) {
         api.guilds[":guildId"].sync.settings.$put({ param: { guildId }, json: settings })
       ),
     onSuccess: (state) => {
-      toast.success("saved the sync settings");
+      toast.success(message);
       return apply(state);
     },
   });
@@ -88,17 +91,17 @@ export function useSaveSyncSettings(guildId: string) {
 type Guild = { id: string; name: string };
 
 /**
- * Runs the add again for one queued emote, filters skipped. Still failing isn't an error:
- * the toast shows the entry's new reason as tetra wrote it.
+ * Runs the add again for an emote that needs review, filters and rules skipped. Still
+ * failing isn't an error: the toast shows the entry's new reason as tetra wrote it.
  */
-export function useRetryQueueEntry(guild: Guild) {
+export function useRetryReviewEntry(guild: Guild) {
   const queryClient = useQueryClient();
   const apply = useApplyState(guild.id);
 
   return useMutation({
-    mutationFn: (entry: QueueEntry) =>
+    mutationFn: (entry: ReviewEntry) =>
       unwrap(
-        api.guilds[":guildId"].sync.queue[":entryId"].retry.$post({
+        api.guilds[":guildId"].sync.review[":entryId"].retry.$post({
           param: { guildId: guild.id, entryId: String(entry.id) },
         })
       ),
@@ -110,11 +113,11 @@ export function useRetryQueueEntry(guild: Guild) {
         await holdSlotCounts(queryClient, guild.id);
         shiftSlotCounts(queryClient, guild.id, slotTypeOf(outcome.emote.animated), 1);
         void refreshSlotCounts(queryClient, guild.id);
-      } else if (outcome.result === "queued") {
-        toast(`${label} is still in the queue`, { description: outcome.entry.message });
+      } else if (outcome.result === "review") {
+        toast(`${label} still needs review`, { description: outcome.entry.message });
       } else {
         toast(`${label} is already synced`, {
-          description: "it's on the server, so i took it off the queue",
+          description: "it's on the server, so it doesn't need review anymore",
         });
       }
       await apply();
@@ -128,15 +131,15 @@ export function useRetryQueueEntry(guild: Guild) {
   });
 }
 
-type DismissVariables = { entry: QueueEntry; exclude: boolean };
+type DismissVariables = { entry: ReviewEntry; exclude: boolean };
 
-export function useDismissQueueEntry(guildId: string) {
+export function useDismissReviewEntry(guildId: string) {
   const apply = useApplyState(guildId);
 
   return useMutation({
     mutationFn: ({ entry, exclude }: DismissVariables) =>
       unwrap(
-        api.guilds[":guildId"].sync.queue[":entryId"].$delete({
+        api.guilds[":guildId"].sync.review[":entryId"].$delete({
           param: { guildId, entryId: String(entry.id) },
           query: exclude ? { exclude: "true" } : {},
         })
@@ -166,13 +169,14 @@ const EXTENSIONS: Record<string, string> = {
 };
 
 /**
- * Puts the queued emote's 7TV file into the editor's local library and opens it in the
- * panel's editor with the queue entry as its target, so "add" goes back to the sync.
+ * Puts the 7TV file of an emote that needs review into the editor's local library and
+ * opens it in the panel's editor with the entry as its target, so "add" goes back to the
+ * sync.
  */
-export function useOpenQueueEntryInEditor(guildId: string) {
+export function useOpenReviewEntryInEditor(guildId: string) {
   const navigate = useNavigate();
 
-  return async (entry: QueueEntry) => {
+  return async (entry: ReviewEntry) => {
     const label = `:${entry.discordName}:`;
     const request = (async () => {
       const [response, { importToLibrary }] = await Promise.all([
@@ -215,17 +219,17 @@ export function useOpenQueueEntryInEditor(guildId: string) {
 type UploadVariables = { blob: Blob; name: string };
 
 /**
- * The editor's "add to <server>" for a queue entry: uploads the result as it is, links it
- * to the 7TV emote, then goes back to the sync page.
+ * The editor's "add to <server>" for an entry that needs review: uploads the result as it
+ * is, links it to the 7TV emote, then goes back to the sync page.
  */
-export function useUploadQueueEntry(guild: Guild, entryId: number) {
+export function useUploadReviewEntry(guild: Guild, entryId: number) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const mutation = useMutation({
     mutationFn: async ({ blob, name }: UploadVariables) =>
       unwrap(
-        api.guilds[":guildId"].sync.queue[":entryId"].upload.$post({
+        api.guilds[":guildId"].sync.review[":entryId"].upload.$post({
           param: { guildId: guild.id, entryId: String(entryId) },
           json: { emote: await toEmoteDataUrl(blob), name },
         })
