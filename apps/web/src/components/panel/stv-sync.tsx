@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { ChannelSearch } from "@/components/panel/channel-search";
 import { GuildIcon } from "@/components/panel/guild-icon";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
-import { StvSyncLog } from "@/components/panel/stv-sync-log";
+import { StvSyncLogPreview } from "@/components/panel/stv-sync-log";
 import { StvSyncReview } from "@/components/panel/stv-sync-review";
 import {
   StvSyncSaveBar,
@@ -112,7 +112,7 @@ function LinkedSyncBody({
         <StvSyncReview guild={guild} />
       </Section>
       <Section id="sync-activity" title="activity">
-        <StvSyncLog guildId={guild.id} />
+        <StvSyncLogPreview guildId={guild.id} />
       </Section>
       <Section id="sync-settings" title="settings">
         <StvSyncSettings

@@ -31,6 +31,7 @@ import { Route as PanelServersGuildIdRouteImport } from './routes/panel.servers.
 import { Route as PanelTasksIndexRouteImport } from './routes/panel.tasks.index'
 import { Route as PanelTasksTaskIdRouteImport } from './routes/panel.tasks.$taskId'
 import { Route as PanelServersGuildIdSyncRouteImport } from './routes/panel.servers.$guildId_.sync'
+import { Route as PanelServersGuildIdSyncActivityRouteImport } from './routes/panel.servers.$guildId_.sync_.activity'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -146,6 +147,12 @@ const PanelServersGuildIdSyncRoute = PanelServersGuildIdSyncRouteImport.update({
   path: '/servers/$guildId/sync',
   getParentRoute: () => PanelRoute,
 } as any)
+const PanelServersGuildIdSyncActivityRoute =
+  PanelServersGuildIdSyncActivityRouteImport.update({
+    id: '/servers/$guildId_/sync_/activity',
+    path: '/servers/$guildId/sync/activity',
+    getParentRoute: () => PanelRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/panel/editor/': typeof PanelEditorIndexRoute
   '/panel/tasks/': typeof PanelTasksIndexRoute
   '/panel/servers/$guildId/sync': typeof PanelServersGuildIdSyncRoute
+  '/panel/servers/$guildId/sync/activity': typeof PanelServersGuildIdSyncActivityRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -193,6 +201,7 @@ export interface FileRoutesByTo {
   '/panel/editor': typeof PanelEditorIndexRoute
   '/panel/tasks': typeof PanelTasksIndexRoute
   '/panel/servers/$guildId/sync': typeof PanelServersGuildIdSyncRoute
+  '/panel/servers/$guildId/sync/activity': typeof PanelServersGuildIdSyncActivityRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -218,6 +227,7 @@ export interface FileRoutesById {
   '/panel/editor/': typeof PanelEditorIndexRoute
   '/panel/tasks/': typeof PanelTasksIndexRoute
   '/panel/servers/$guildId_/sync': typeof PanelServersGuildIdSyncRoute
+  '/panel/servers/$guildId_/sync_/activity': typeof PanelServersGuildIdSyncActivityRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/panel/editor/'
     | '/panel/tasks/'
     | '/panel/servers/$guildId/sync'
+    | '/panel/servers/$guildId/sync/activity'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -267,6 +278,7 @@ export interface FileRouteTypes {
     | '/panel/editor'
     | '/panel/tasks'
     | '/panel/servers/$guildId/sync'
+    | '/panel/servers/$guildId/sync/activity'
   id:
     | '__root__'
     | '/'
@@ -291,6 +303,7 @@ export interface FileRouteTypes {
     | '/panel/editor/'
     | '/panel/tasks/'
     | '/panel/servers/$guildId_/sync'
+    | '/panel/servers/$guildId_/sync_/activity'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -465,6 +478,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelServersGuildIdSyncRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/panel/servers/$guildId_/sync_/activity': {
+      id: '/panel/servers/$guildId_/sync_/activity'
+      path: '/servers/$guildId/sync/activity'
+      fullPath: '/panel/servers/$guildId/sync/activity'
+      preLoaderRoute: typeof PanelServersGuildIdSyncActivityRouteImport
+      parentRoute: typeof PanelRoute
+    }
   }
 }
 
@@ -478,6 +498,7 @@ interface PanelRouteChildren {
   PanelEditorIndexRoute: typeof PanelEditorIndexRoute
   PanelTasksIndexRoute: typeof PanelTasksIndexRoute
   PanelServersGuildIdSyncRoute: typeof PanelServersGuildIdSyncRoute
+  PanelServersGuildIdSyncActivityRoute: typeof PanelServersGuildIdSyncActivityRoute
 }
 
 const PanelRouteChildren: PanelRouteChildren = {
@@ -490,6 +511,7 @@ const PanelRouteChildren: PanelRouteChildren = {
   PanelEditorIndexRoute: PanelEditorIndexRoute,
   PanelTasksIndexRoute: PanelTasksIndexRoute,
   PanelServersGuildIdSyncRoute: PanelServersGuildIdSyncRoute,
+  PanelServersGuildIdSyncActivityRoute: PanelServersGuildIdSyncActivityRoute,
 }
 
 const PanelRouteWithChildren = PanelRoute._addFileChildren(PanelRouteChildren)

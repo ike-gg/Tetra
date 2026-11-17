@@ -28,7 +28,11 @@ type CurrentView = {
   // A crumb between Panel and the label, for views that live under another one
   parent?:
     | { label: string; to: "/panel/tasks" | "/panel/editor" }
-    | { label: string; to: "/panel/servers/$guildId"; params: { guildId: string } };
+    | {
+        label: string;
+        to: "/panel/servers/$guildId" | "/panel/servers/$guildId/sync";
+        params: { guildId: string };
+      };
   // The editor fills the content area edge to edge
   fullBleed?: boolean;
 };
@@ -68,6 +72,17 @@ function useCurrentView(): CurrentView {
   const serverName = (guildId: string) =>
     guilds.data?.guildsWithUserPermissions.find((guild) => guild.id === guildId)?.name ??
     "server";
+  const activity = matchRoute({ to: "/panel/servers/$guildId/sync/activity" });
+  if (activity) {
+    return {
+      label: "activity",
+      parent: {
+        label: "7TV sync",
+        to: "/panel/servers/$guildId/sync",
+        params: { guildId: activity.guildId },
+      },
+    };
+  }
   const sync = matchRoute({ to: "/panel/servers/$guildId/sync" });
   if (sync) {
     return {
