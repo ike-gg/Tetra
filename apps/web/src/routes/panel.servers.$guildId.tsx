@@ -8,6 +8,7 @@ import { GuildIcon } from "@/components/panel/guild-icon";
 import { GuildsError } from "@/components/panel/guilds-error";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
 import { QuickAdd } from "@/components/panel/quick-add";
+import { SimilarEmotes } from "@/components/panel/similar-emotes";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Notice } from "@/components/ui/notice";
@@ -34,12 +35,12 @@ import {
 } from "@/lib/guilds";
 import { NOINDEX_META } from "@/lib/seo";
 
-type ServerSearch = { view?: "removed" };
+type ServerSearch = { view?: "removed" | "similar" };
 
 export const Route = createFileRoute("/panel/servers/$guildId")({
   head: () => ({ meta: [NOINDEX_META] }),
   validateSearch: (search: Record<string, unknown>): ServerSearch =>
-    search.view === "removed" ? { view: "removed" } : {},
+    search.view === "removed" || search.view === "similar" ? { view: search.view } : {},
   component: PanelServer,
 });
 
@@ -47,8 +48,7 @@ function PanelServer() {
   const { guildId } = Route.useParams();
   const guilds = useQuery(guildsQueryOptions);
 
-  if (guilds.status === "pending")
-    return <PanelLoading>loading the server…</PanelLoading>;
+  if (guilds.status === "pending") return <PanelLoading>loading the server</PanelLoading>;
 
   if (guilds.status === "error") {
     return (
@@ -68,15 +68,15 @@ function PanelServer() {
   return (
     <div className="flex max-w-lg flex-col items-start gap-4">
       <Heading level={1} size="lg">
-        {readOnly ? `You can't manage emotes on ${readOnly.name}` : "Server not found"}
+        {readOnly ? `you can't manage emotes on ${readOnly.name}` : "server not found"}
       </Heading>
       <Text size="sm" tone="muted">
         {readOnly
-          ? "Tetra is there, but you need the Manage Expressions permission on that server."
-          : "Tetra isn't on this server, or you're not a member of it. Check the link, or pick a server from the list."}
+          ? "tetra is there, but you need the manage expressions permission on that server"
+          : "tetra isn't on this server, or you're not a member of it. check the link, or pick a server from the list"}
       </Text>
       <Button size="sm" render={<Link to="/panel" />}>
-        Back to Home
+        back to home
       </Button>
     </div>
   );
@@ -85,7 +85,7 @@ function PanelServer() {
 type TypeFilter = "all" | "static" | "animated";
 type Sort = "newest" | "name";
 
-const LEVELS = ["No boost", "Boost level 1", "Boost level 2", "Boost level 3"];
+const LEVELS = ["no boost", "boost level 1", "boost level 2", "boost level 3"];
 
 function Server({ guild }: { guild: ManagedGuild }) {
   const { view } = Route.useSearch();
@@ -127,7 +127,7 @@ function Server({ guild }: { guild: ManagedGuild }) {
             className="ml-auto shrink-0"
             render={<Link to="/panel/browse" search={{ guild: guild.id }} />}
           >
-            Browse emotes
+            browse emotes
           </Button>
         </div>
         <div className="grid max-w-md grid-cols-2 gap-6 border border-border p-4">
@@ -159,18 +159,19 @@ function Server({ guild }: { guild: ManagedGuild }) {
         </Heading>
         <div className="flex flex-wrap items-center gap-3">
           <SegmentedControl
-            aria-label="Show"
+            aria-label="show"
             value={view ?? "emotes"}
             onValueChange={(next) =>
               next &&
               void navigate({
-                search: next === "removed" ? { view: "removed" } : {},
+                search: next === "removed" || next === "similar" ? { view: next } : {},
                 replace: true,
               })
             }
           >
-            <SegmentedControlItem value="emotes">Emotes</SegmentedControlItem>
-            <SegmentedControlItem value="removed">Removed</SegmentedControlItem>
+            <SegmentedControlItem value="emotes">emotes</SegmentedControlItem>
+            <SegmentedControlItem value="removed">removed</SegmentedControlItem>
+            <SegmentedControlItem value="similar">similar names</SegmentedControlItem>
           </SegmentedControl>
           <TextField
             label="filter by name"
@@ -181,22 +182,25 @@ function Server({ guild }: { guild: ManagedGuild }) {
             className="min-w-40 flex-1 sm:max-w-64"
           />
           <SegmentedControl
-            aria-label="Type"
+            aria-label="type"
             value={type}
             onValueChange={(next) => next && setType(next as TypeFilter)}
           >
-            <SegmentedControlItem value="all">All</SegmentedControlItem>
-            <SegmentedControlItem value="static">Static</SegmentedControlItem>
-            <SegmentedControlItem value="animated">Animated</SegmentedControlItem>
+            <SegmentedControlItem value="all">all</SegmentedControlItem>
+            <SegmentedControlItem value="static">static</SegmentedControlItem>
+            <SegmentedControlItem value="animated">animated</SegmentedControlItem>
           </SegmentedControl>
-          <SegmentedControl
-            aria-label="Sort"
-            value={sort}
-            onValueChange={(next) => next && setSort(next as Sort)}
-          >
-            <SegmentedControlItem value="newest">Newest</SegmentedControlItem>
-            <SegmentedControlItem value="name">A–Z</SegmentedControlItem>
-          </SegmentedControl>
+          {/* Groups keep their own order: strongest likeness first */}
+          {view !== "similar" && (
+            <SegmentedControl
+              aria-label="sort"
+              value={sort}
+              onValueChange={(next) => next && setSort(next as Sort)}
+            >
+              <SegmentedControlItem value="newest">newest</SegmentedControlItem>
+              <SegmentedControlItem value="name">A–Z</SegmentedControlItem>
+            </SegmentedControl>
+          )}
         </div>
 
         <EmoteMenu
@@ -214,7 +218,7 @@ function Server({ guild }: { guild: ManagedGuild }) {
               />
             </div>
           ) : details.status === "pending" ? (
-            <PanelLoading>loading emotes…</PanelLoading>
+            <PanelLoading>loading emotes</PanelLoading>
           ) : details.status === "error" ? (
             <PanelError
               retrying={details.isFetching}
@@ -222,6 +226,13 @@ function Server({ guild }: { guild: ManagedGuild }) {
             >
               {guildErrorMessage(details.error)}
             </PanelError>
+          ) : view === "similar" ? (
+            <SimilarEmotes
+              guild={target}
+              emotes={details.data.emotes.map(fromGuildEmote)}
+              query={query}
+              type={type}
+            />
           ) : (
             <ServerEmotes
               emotes={details.data.emotes.map(fromGuildEmote)}
@@ -249,9 +260,9 @@ function RemovedNotice() {
 
 const guildErrorMessage = (error: Error) => {
   if (error instanceof ApiError && error.status === 404) {
-    return "Tetra couldn't open this server on Discord. It may have been removed from it.";
+    return "i couldn't open this server on Discord. tetra may have been removed from it";
   }
-  return "Couldn't load this server's emotes.";
+  return "i couldn't load this server's emotes";
 };
 
 type Filters = { query: string; type: TypeFilter; sort: Sort };
@@ -286,14 +297,14 @@ function ServerEmotes({
 
   if (emotes.length === 0) {
     return (
-      <EmptyState title="No emotes yet">
-        Add one with <span className="font-mono text-foreground">/addemote</span> in
-        Discord, or select an emote anywhere in the panel and pick Add to server.
+      <EmptyState title="no emotes yet">
+        add one with <span className="font-mono text-foreground">/addemote</span> in
+        Discord, or select an emote anywhere in the panel and pick add to server
       </EmptyState>
     );
   }
   if (visible.length === 0) return <NoMatches filters={filters} onClear={onClear} />;
-  return <EmoteGrid emotes={visible} label="Emotes" />;
+  return <EmoteGrid emotes={visible} label="emotes" />;
 }
 
 function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: string }) {
@@ -310,11 +321,11 @@ function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: str
   );
 
   if (removed.status === "pending")
-    return <PanelLoading>loading removed emotes…</PanelLoading>;
+    return <PanelLoading>loading removed emotes</PanelLoading>;
   if (removed.status === "error") {
     return (
       <PanelError retrying={removed.isFetching} onRetry={() => void removed.refetch()}>
-        Couldn&apos;t load the removed emotes.
+        i couldn&apos;t load the removed emotes
       </PanelError>
     );
   }
@@ -331,7 +342,7 @@ function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: str
       <Text size="sm" tone="muted">
         select an emote to restore it, or right-click it
       </Text>
-      <EmoteGrid emotes={visible} label="Removed emotes" pendingKeys={pendingKeys} />
+      <EmoteGrid emotes={visible} label="removed emotes" pendingKeys={pendingKeys} />
     </div>
   );
 }
@@ -354,12 +365,12 @@ function NoMatches({ filters, onClear }: ListProps) {
     <div className="flex flex-col items-start gap-3">
       <Text size="sm" tone="muted">
         {filters.query.trim()
-          ? `Nothing matches “${filters.query.trim()}”${filters.type === "all" ? "" : ` among ${filters.type} emotes`}.`
-          : `No ${filters.type} emotes here.`}
+          ? `nothing matches “${filters.query.trim()}”${filters.type === "all" ? "" : ` among ${filters.type} emotes`}`
+          : `no ${filters.type} emotes here`}
       </Text>
       {filters.query && (
         <Button size="sm" onClick={onClear}>
-          Clear search
+          clear search
         </Button>
       )}
     </div>
