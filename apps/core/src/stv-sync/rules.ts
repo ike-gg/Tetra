@@ -8,8 +8,11 @@ import { z } from "zod";
 export const MAX_RULES = 25;
 export const MAX_CONDITIONS = 5;
 
+export const NUMBER_OPERATORS = ["gt", "gte", "eq", "lte", "lt"] as const;
+type NumberOperator = (typeof NUMBER_OPERATORS)[number];
+
 const numberCondition = <F extends string>(field: F, value: z.ZodNumber) =>
-  z.object({ field: z.literal(field), operator: z.enum(["gt", "lt"]), value });
+  z.object({ field: z.literal(field), operator: z.enum(NUMBER_OPERATORS), value });
 
 export const ruleConditionSchema = z.union([
   z.object({
@@ -129,8 +132,40 @@ const matchText = (operator: TextOperator, value: string, text: string) => {
   }
 };
 
-const matchNumber = (operator: "gt" | "lt", value: number, actual: number) =>
-  operator === "gt" ? actual > value : actual < value;
+/**
+ * Decimal places `eq` compares at, per field: measured values are rarely exact (a 112x64
+ * emote is 1.75, a 113x64 one 1.765625), so both sides are rounded first.
+ */
+const EQ_DECIMALS = {
+  aspect_ratio: 2,
+  file_size_kb: 0,
+  duration_s: 1,
+  frame_count: 0,
+  free_slots: 0,
+} as const;
+
+/** `gt` / `lt` compare raw values (as before); `gte` / `lte` are `gt` / `lt` or `eq`. */
+const matchNumber = (
+  operator: NumberOperator,
+  value: number,
+  actual: number,
+  decimals: number
+) => {
+  const scale = 10 ** decimals;
+  const equal = Math.round(actual * scale) === Math.round(value * scale);
+  switch (operator) {
+    case "gt":
+      return actual > value;
+    case "gte":
+      return actual > value || equal;
+    case "eq":
+      return equal;
+    case "lte":
+      return actual < value || equal;
+    case "lt":
+      return actual < value;
+  }
+};
 
 const matchCondition = async (
   condition: RuleCondition,
@@ -142,28 +177,41 @@ const matchCondition = async (
     case "aspect_ratio": {
       const { width, height } = await facts.file();
       const ratio = Math.max(width, height) / Math.max(1, Math.min(width, height));
-      return matchNumber(condition.operator, condition.value, ratio);
+      return matchNumber(
+        condition.operator,
+        condition.value,
+        ratio,
+        EQ_DECIMALS.aspect_ratio
+      );
     }
     case "file_size_kb":
       return matchNumber(
         condition.operator,
         condition.value,
-        (await facts.file()).sizeBytes / 1024
+        (await facts.file()).sizeBytes / 1024,
+        EQ_DECIMALS.file_size_kb
       );
     case "duration_s":
       return matchNumber(
         condition.operator,
         condition.value,
-        (await facts.file()).durationMs / 1000
+        (await facts.file()).durationMs / 1000,
+        EQ_DECIMALS.duration_s
       );
     case "frame_count":
       return matchNumber(
         condition.operator,
         condition.value,
-        (await facts.file()).frames
+        (await facts.file()).frames,
+        EQ_DECIMALS.frame_count
       );
     case "free_slots":
-      return matchNumber(condition.operator, condition.value, await facts.freeSlots());
+      return matchNumber(
+        condition.operator,
+        condition.value,
+        await facts.freeSlots(),
+        EQ_DECIMALS.free_slots
+      );
   }
 };
 

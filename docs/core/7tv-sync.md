@@ -89,11 +89,13 @@ Conditions `{ field, operator, value }` (`ruleConditionSchema`, a Zod union of o
 | field | operators | value | source |
 |---|---|---|---|
 | `name` (the alias in the set) | `contains`, `not_contains`, `starts_with`, `ends_with`, `equals`, `not_equals` (case-insensitive) | string 1–100 | event |
-| `aspect_ratio` (long / short side) | `gt`, `lt` | 0–100 | file |
-| `file_size_kb` (downloaded file, KiB) | `gt`, `lt` | 0–10240 | file |
-| `duration_s` (static: 0) | `gt`, `lt` | 0–3600 | file |
-| `frame_count` (static: 1) | `gt`, `lt` | int 0–10000 | file |
-| `free_slots` (of the file's type, before adding) | `gt`, `lt` | int 0–250 | server + file |
+| `aspect_ratio` (long / short side) | `gt`, `gte`, `eq`, `lte`, `lt` | 0–100 | file |
+| `file_size_kb` (downloaded file, KiB) | `gt`, `gte`, `eq`, `lte`, `lt` | 0–10240 | file |
+| `duration_s` (static: 0) | `gt`, `gte`, `eq`, `lte`, `lt` | 0–3600 | file |
+| `frame_count` (static: 1) | `gt`, `gte`, `eq`, `lte`, `lt` | int 0–10000 | file |
+| `free_slots` (of the file's type, before adding) | `gt`, `gte`, `eq`, `lte`, `lt` | int 0–250 | server + file |
+
+Number operators: `gt` / `lt` compare the raw measured value (unchanged from before). `eq` rounds both the measured value and the setting to the field's precision and compares those: `aspect_ratio` 2 decimals, `duration_s` 1 decimal, `file_size_kb` whole KiB, `frame_count` / `free_slots` exact (integers). `gte` = `gt` or `eq`, `lte` = `lt` or `eq`, so a 1.749 ratio matches `eq 1.75` and `gte 1.75` but not `gt 1.75`. Precision lives in `EQ_DECIMALS` in `rules.ts`; the schema doesn't limit the value's decimals.
 
 ### Activity log
 
