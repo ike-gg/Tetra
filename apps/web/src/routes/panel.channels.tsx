@@ -217,7 +217,7 @@ function ChannelEmotes({ channel, provider: picked, guild }: ChannelEmotesProps)
 
       <div className="flex flex-wrap items-center gap-3">
         <SegmentedControl
-          aria-label="Emote site"
+          aria-label="emote site"
           value={provider}
           onValueChange={(next) =>
             next &&
@@ -240,7 +240,7 @@ function ChannelEmotes({ channel, provider: picked, guild }: ChannelEmotesProps)
           ))}
         </SegmentedControl>
         <TextField
-          label="Filter by name"
+          label="filter by name"
           hideLabel
           type="search"
           value={filter}

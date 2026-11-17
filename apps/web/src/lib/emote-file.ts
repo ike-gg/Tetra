@@ -35,10 +35,11 @@ export const fetchEmoteFile = async (emote: PanelEmote) => {
     response = await fetch(emote.url);
   } catch {
     throw new EmoteFileUnreadableError(
-      `${SOURCE_LABELS[emote.source]} doesn't let the browser read this file.`
+      `${SOURCE_LABELS[emote.source]} doesn't let the browser read this file`
     );
   }
-  if (!response.ok) throw new Error(`The source answered ${response.status}.`);
+  if (!response.ok)
+    throw new Error(`the source answered ${response.status}. try again in a moment`);
   const blob = await response.blob();
   return { blob, fileName: fileNameOf(emote.name, extensionOf(blob.type, emote.url)) };
 };
@@ -65,22 +66,22 @@ export const downloadEmote = (emote: PanelEmote) => {
     }
   );
   toast.promise(request, {
-    loading: `Downloading ${emote.name}…`,
+    loading: `downloading ${emote.name}`,
     success: (result) =>
       "saved" in result
-        ? { title: `Downloaded ${result.saved}` }
+        ? { title: `downloaded ${result.saved}` }
         : result.opened
           ? {
-              title: `Opened ${emote.name} in a new tab`,
-              description: `${result.reason} Save it from there.`,
+              title: `opened ${emote.name} in a new tab`,
+              description: `${result.reason}. save it from there`,
             }
           : {
-              title: `Couldn't download ${emote.name}`,
-              description: `${result.reason} Open it and save it from there.`,
-              action: { label: "Open", onAction: () => void openInNewTab(emote.url) },
+              title: `couldn't download ${emote.name}`,
+              description: `${result.reason}. open it and save it from there`,
+              action: { label: "open", onAction: () => void openInNewTab(emote.url) },
             },
     error: (error) => ({
-      title: `Couldn't download ${emote.name}`,
+      title: `couldn't download ${emote.name}`,
       description: error instanceof Error ? error.message : undefined,
     }),
   });
@@ -101,23 +102,20 @@ export function useEditInQuickEditor(host?: EditorHost) {
   return async (emote: PanelEmote) => {
     const request = (async () => {
       // The editor's model loads only when it's used, not with the panel
-      const [{ blob, fileName }, mediaFile, library] = await Promise.all([
+      const [{ blob, fileName }, { importToLibrary }] = await Promise.all([
         fetchEmoteFile(emote),
-        import("@/lib/media/media-file"),
-        import("@/lib/media/local-library"),
+        import("@/lib/media/import-media"),
       ]);
-      const media = await mediaFile.loadMediaFile(blob, fileName);
-      mediaFile.releaseMediaFile(media);
-      return library.saveToLibrary(blob, media, fileName);
+      return importToLibrary(blob, fileName);
     })();
     toast.promise(request, {
-      loading: `Opening ${emote.name} in the editor…`,
-      success: { title: `Opened ${emote.name} in the editor` },
+      loading: `opening ${emote.name} in the editor`,
+      success: { title: `opened ${emote.name} in the editor` },
       error: (error) => ({
-        title: `Couldn't open ${emote.name} in the editor`,
+        title: `couldn't open ${emote.name} in the editor`,
         description:
           error instanceof EmoteFileUnreadableError
-            ? `${error.message} Download it, then drop it into the editor.`
+            ? `${error.message}. download it, then drop it into the editor`
             : error instanceof Error
               ? error.message
               : undefined,

@@ -71,7 +71,7 @@ export function EmoteSelectionBar({
     // A labelled <section> is a region landmark
     <section
       ref={ref}
-      aria-label="Selected emote"
+      aria-label="selected emote"
       data-selection-bar=""
       onKeyDown={(event) => {
         // An open menu handles its own Escape
@@ -96,7 +96,7 @@ export function EmoteSelectionBar({
         </div>
         {width !== undefined && (
           <Toolbar
-            aria-label={`Actions for ${emote.name}`}
+            aria-label={`actions for ${emote.name}`}
             // web.css draws the toolbar as a bordered, padded, wrapping box
             className="m-0 flex max-w-none shrink-0 flex-nowrap items-center gap-2 border-0 bg-transparent p-0"
           >
@@ -118,7 +118,7 @@ export function EmoteSelectionBar({
                   className: "data-open:bg-surface",
                 })}
               >
-                More
+                more
                 <Caret />
               </ToolbarButton>
               <MenuContent side="top" align="end">
@@ -132,7 +132,7 @@ export function EmoteSelectionBar({
               </MenuContent>
             </Menu>
             <ToolbarButton
-              aria-label="Clear selection"
+              aria-label="clear selection"
               onClick={onClose}
               className={buttonClassName({
                 variant: "ghost",
@@ -208,7 +208,7 @@ function ActionButton({
   });
   const text = (phone && action.compactLabel) || action.barLabel || action.label;
   const label = <span className="truncate">{text}</span>;
-  // A shortened button keeps the full name for screen readers ("Remove from Chat Cafe")
+  // A shortened button keeps the full name for screen readers ("remove from Chat Cafe")
   const ariaLabel =
     text === action.label
       ? undefined

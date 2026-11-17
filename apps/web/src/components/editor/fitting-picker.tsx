@@ -30,10 +30,19 @@ const ICONS: Record<Fitting, ReactNode> = {
   ),
 };
 
-export const FITTING_LABELS: Record<Fitting, string> = {
-  contain: "Contain",
-  cover: "Cover",
-  fill: "Fill",
+// Plain words for what happens to the shape; the stored values stay the CSS-like ones
+// because saved edits use them
+const FITTING_LABELS: Record<Fitting, string> = {
+  contain: "keep shape",
+  cover: "square",
+  fill: "stretch",
+};
+
+// What the result does with the crop, under the result
+export const FITTING_HINTS: Record<Fitting, string> = {
+  contain: "keeps the crop's shape",
+  cover: "the square crop, nothing stretched",
+  fill: "the crop squeezed into a square",
 };
 
 const OPTIONS = (Object.keys(FITTING_LABELS) as Fitting[]).map((value) => ({
@@ -46,12 +55,13 @@ type FittingPickerProps = {
   onValueChange: (value: Fitting) => void;
 };
 
-// Lives in the Crop view's toolbar only: fitting and crop are one decision, made where
-// the crop is visible. The sidebar shows a summary.
+// Sits under the original image, next to the crop it shapes: fitting and crop are one
+// decision, made where the crop is visible
 export function FittingPicker({ value, onValueChange }: FittingPickerProps) {
   return (
     <SegmentedControl
-      aria-label="Fitting"
+      aria-label="shape"
+      size="sm"
       value={value}
       onValueChange={(next) => next && onValueChange(next as Fitting)}
     >
@@ -63,7 +73,7 @@ export function FittingPicker({ value, onValueChange }: FittingPickerProps) {
             fill="none"
             stroke="currentColor"
             strokeWidth="1"
-            className="size-4 shrink-0"
+            className="size-3.5 shrink-0"
           >
             {ICONS[option.value]}
           </svg>

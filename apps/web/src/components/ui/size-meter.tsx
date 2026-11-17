@@ -21,7 +21,7 @@ type SizeMeterProps = {
 };
 
 export function SizeMeter({
-  label = "File size",
+  label = "file size",
   value,
   limit,
   max,

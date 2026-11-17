@@ -14,13 +14,13 @@ Every emote in the panel (server grid, removed list, task tiles, later browse li
 | `id` | Id at the source (Discord emoji id, 7TV id…). |
 | `name`, `animated` | |
 | `previewUrl` | Small image for tiles (Discord: `imageURL?size=128`). |
-| `url` | Full-size file: what "Add to server" sends as `file` and "Open original" opens. Discord's `cdn.discordapp.com` is on core's allowed source hosts. |
+| `url` | Full-size file: what "add to server" sends as `file` and "open original" opens. Discord's `cdn.discordapp.com` is on core's allowed source hosts. |
 | `source` | `discord` · `7tv` · `bttv` · `ffz` · `twitch` · `link` (`SOURCE_LABELS` for display). |
 | `guildId?` | Server it's on, was removed from, or a task belongs to. |
 | `managed?`, `available?` | Discord flags: integration emotes can't be removed; unavailable = over the slot limit after a lost boost. |
 | `restoreId?` | Removed emotes: the id `POST /guilds/:guildId/restore/:restoreId` takes. |
-| `taskId?` | Task emotes: the editor task "Open in editor" opens (`/panel/tasks/$taskId`). |
-| `pageUrl?` | Catalog emotes: the emote's page on 7TV / BTTV / FFZ; "Open original" prefers it over `url`. |
+| `taskId?` | Task emotes: the editor task "open in editor" opens (`/panel/tasks/$taskId`). |
+| `pageUrl?` | Catalog emotes: the emote's page on 7TV / BTTV / FFZ; "open original" prefers it over `url`. |
 | `width?`, `height?` | Pixel size when the source states it (catalog emotes). |
 
 Adapters build it from API shapes: `fromGuildEmote` (`GET /guilds/:guildId`), `fromRemovedEmote` (`GET /guilds/:guildId/removed`), `fromTask` (`GET /tasks`), `fromCatalogEmote` (`GET /emotes/resolve` and Browse's searches from `lib/providers/`; key `<source>:<id>`). A new source gets its own adapter there; nothing else changes.
@@ -35,20 +35,20 @@ Per-emote UI state lives in `EmoteMenu`, keyed by `emote.key`, so it survives ti
 
 ## Actions (`src/components/emote/emote-actions.tsx`)
 
-`useEmoteActions(emote, context, fitting)` returns every action for an emote as data: `id`, `label` (plus `barLabel` / `compactLabel` for the bar), `type` (`run` with a `run()`, `link` with a TanStack `<Link />` element, `external` with an `href`, `add-to-server`, `note`), `variant` (`destructive`), `disabled` + `hint` (why), `section` (`main` | `file` | `share`, separators in menus) and `placement` in the bar (`primary` always a button, `bar` a button when there's room, `more` always in More). The context menu and the selection bar both render this one list, so an action added here shows up in both. `EmoteActionItems` renders actions as menu items (sections, then Temporary fitting › after `main` and Info › after `share`); the context menu passes all of them under a `:name:` label, the bar's More menu those without a button.
+`useEmoteActions(emote, context, fitting)` returns every action for an emote as data: `id`, `label` (plus `barLabel` / `compactLabel` for the bar), `type` (`run` with a `run()`, `link` with a TanStack `<Link />` element, `external` with an `href`, `add-to-server`, `note`), `variant` (`destructive`), `disabled` + `hint` (why), `section` (`main` | `file` | `share`, separators in menus) and `placement` in the bar (`primary` always a button, `bar` a button when there's room, `more` always in more). The context menu and the selection bar both render this one list, so an action added here shows up in both. `EmoteActionItems` renders actions as menu items (sections, then temporary fitting › after `main` and info › after `share`); the context menu passes all of them under a `:name:` label, the bar's more menu those without a button.
 
 | Action | Shown | Bar |
 |---|---|---|
-| Open in editor | `task`: a `Link` to `/panel/tasks/$taskId` | primary |
-| Restore to *server* | `removed`, with `canManage` | primary ("Restore") |
-| Add to *server* | `catalog` with a `guild`: that server (disabled with "static full" / "animated full") | primary |
-| Add to server › / ▾ | not on `task`. The user's manageable servers (sorted by name) with free slots of the emote's type; a full server stays listed but disabled; the emote's own server is marked "here". Sends `{ file: url, name, fitting }` with `useAddEmote`. A submenu in menus, a dropdown in the bar; the rows are `ServerMenuItems`, shared with the editors' Add to server. | primary on `server` and on a `catalog` without a preferred server, else a button |
-| Remove from *server* | `server`, with `canManage`; managed emotes get the note "Managed by an integration" instead | button ("Remove", `destructive`, last) |
-| Download | always | button |
-| Edit in editor | not on `task` (tasks have the panel editor) | button |
-| Temporary fitting › | not on `task`. contain / cover / fill: changes the tile preview and the `fitting` sent by Add to server | More |
-| Copy name, Copy image link, Open original ↗ | always; Open original goes to `pageUrl` (the provider's page) when set, else the file | More |
-| Info › | always: name, type, source, file size (HEAD `Content-Length`, falls back to downloading; "unknown" without CORS), pixel size, id. Fetched only when the submenu opens (`emoteFileQueryOptions`: `["emote-file", url]`, cached forever). | More |
+| open in editor | `task`: a `Link` to `/panel/tasks/$taskId` | primary |
+| restore to *server* | `removed`, with `canManage` | primary ("restore") |
+| add to *server* | `catalog` with a `guild`: that server (disabled with "static full" / "animated full") | primary |
+| add to server › / ▾ | not on `task`. The user's manageable servers (sorted by name) with free slots of the emote's type; a full server stays listed but disabled; the emote's own server is marked "here". Sends `{ file: url, name, fitting }` with `useAddEmote`. A submenu in menus, a dropdown in the bar; the rows are `ServerMenuItems`, shared with the editors' add to server. | primary on `server` and on a `catalog` without a preferred server, else a button |
+| remove from *server* | `server`, with `canManage`; managed emotes get the note "managed by an integration" instead | button ("remove", `destructive`, last) |
+| download | always | button |
+| open in editor | not on `task` (tasks have the panel editor) | button |
+| temporary fitting › | not on `task`. contain / cover / fill: changes the tile preview and the `fitting` sent by add to server | more |
+| copy name, copy image link, open original ↗ | always; open original goes to `pageUrl` (the provider's page) when set, else the file | more |
+| info › | always: name, type, source, file size (HEAD `Content-Length`, falls back to downloading; "unknown" without CORS), pixel size, id. Fetched only when the submenu opens (`emoteFileQueryOptions`: `["emote-file", url]`, cached forever). | more |
 
 **Adding an action:** push it in `useEmoteActions`, guarded by `kind`, `canManage` and the emote's fields, with a `placement` and `section`. Mutations go in `src/lib/emote-mutations.ts` as a hook returning a function that runs the request inside `toast.promise`. If a list needs a new combination of actions, add a `kind` rather than flags.
 
@@ -63,7 +63,7 @@ Per-emote UI state lives in `EmoteMenu`, keyed by `emote.key`, so it survives ti
 - **Model** (`emote-selection.ts`): one selection in the whole panel, a small external store (`useSyncExternalStore`) holding the owning `EmoteMenu`'s id (`useId`) and a list of `PanelEmote`s. Selecting in another list replaces it. It's a list so Shift/Cmd+click can add to it later; today it holds at most one and the bar shows the first.
 - **Select / deselect**: left click or Enter/Space on a tile selects it (orange 2px ring, `aria-pressed`) and calls `onOpen`; clicking the selected tile again, Esc on a tile, Esc in the bar or the bar's × deselect. The ring is a border on an overlay span above the preview, as is the keyboard focus ring: an outline on the button hid under the preview on tiles without padding (task tiles).
 - **Lifetime**: lists call `syncSelection(emotes)` with what they show (`EmoteGrid` does it; `TaskList` too), which drops selected emotes no longer there and takes their fresh objects. So a removed or restored emote, a filtered-out one, a new Browse query or a fixed task closes the bar. The menu clears its selection when it unmounts (route change) or its `kind` changes (Emotes ↔ Removed).
-- Screen readers: a polite `role="status"` line in `EmoteMenu` says "Selected X. Its actions follow the list." / "Selection cleared."
+- Screen readers: a polite `role="status"` line in `EmoteMenu` says "selected X. its actions follow the list" / "selection cleared"
 
 ## Selection bar (`emote-selection-bar.tsx`)
 
@@ -71,18 +71,18 @@ Rendered by the owning `EmoteMenu` while it has a selection (keyed by the emote,
 
 - **Place**: `fixed` at the bottom of the content area: `left: var(--panel-inset)` (the sidebar's width where it shows, see [web.md](../web.md#panel-layout)), full width on phones; `h-14`, `bg-surface`, top hairline, z-30. Contents are aligned with the content column (`max-w-5xl`). No motion: it appears and goes instantly, like the selection ring (tens of times a day, control feedback; branding.md).
 - **Left**: 40px preview on `bg-checker`, the name (selectable text), a mono line: source · static/animated · managed/unavailable · pixel size (measured, else the source's) · file size (the same `emoteFileQueryOptions` as Info, fetched on selection), and the fitting in orange when not contain.
-- **Right**: a ui-sdk `Toolbar` (one tab stop, arrows between buttons; menu triggers through `ToolbarButton render={<MenuTrigger />}`, Down opens them, menus open upward). Buttons by `placement`; More ▾ (secondary) with the rest; × "Clear selection". web.css draws the toolbar as a bordered, padded, wrapping box, so it's pinned flat (`border-0 p-0 flex-nowrap`).
-- **Narrow**: the bar measures itself (`useElementSize`; actions render only once measured, so there's no wide→narrow flash). Under 760px only the primary action stays a button and everything else moves into More; under 480px the primary takes its `compactLabel` ("Add", "Add here", "Open") with the full name as `aria-label`.
+- **Right**: a ui-sdk `Toolbar` (one tab stop, arrows between buttons; menu triggers through `ToolbarButton render={<MenuTrigger />}`, Down opens them, menus open upward). Buttons by `placement`; more ▾ (secondary) with the rest; × "clear selection". web.css draws the toolbar as a bordered, padded, wrapping box, so it's pinned flat (`border-0 p-0 flex-nowrap`).
+- **Narrow**: the bar measures itself (`useElementSize`; actions render only once measured, so there's no wide→narrow flash). Under 760px only the primary action stays a button and everything else moves into more; under 480px the primary takes its `compactLabel` ("add", "add here", "open") with the full name as `aria-label`.
 - **Not covering content**: main's 64px bottom padding already clears the 56px bar; `html:has([data-selection-bar])` sets `scroll-padding-bottom` (focus and scrollIntoView stop above it) and `EmoteGrid` passes `scrollPaddingEnd` to the virtualizer while something is selected, so arrow keys never land on a row under the bar. The `Toaster` moves up above it.
 - **Keyboard**: selecting keeps focus in the grid; the bar comes right after the list in the DOM, so Tab reaches it. Esc in the bar deselects (an open menu handles its own Esc first, `defaultPrevented`). When the bar closes with focus inside (Esc, ×, or its emote removed from the bar), focus goes back to the tile, or, if the tile is gone, to its list's tab stop (`[data-emote][tabindex="0"]`, the list remembered per tile in a `WeakMap`).
 
-## Files: download, edit in editor
+## Files: download, open in editor
 
 `src/lib/emote-file.ts`. Both fetch `emote.url` (Discord: the CDN link without `?size`, so the original size) and name the file `<name>.<gif|png|webp|jpg>` from the response's content type (the URL's extension as fallback).
 
 - **CORS, verified 2026-11** from `http://localhost:*`: `cdn.discordapp.com` (emojis, `*`), `cdn.7tv.app` (`*`), `cdn.frankerfacez.com` (`*`) can be read. `cdn.betterttv.net` sends no `Access-Control-Allow-Origin`, so BTTV files (removed or task emotes from BTTV) can't be read; link sources depend on their host. A CORS failure and a network error look the same to `fetch` (a `TypeError`), so both count as "can't read" (`EmoteFileUnreadableError`).
-- **Download**: `toast.promise` (Downloading… → "Downloaded catJAM.gif"), saved with `downloadBlob`. Unreadable: opens the file in a new tab and says so ("BTTV doesn't let the browser read this file. Save it from there."); if the popup is blocked (the click's activation can expire while fetching), the toast has an Open action instead.
-- **Edit in editor**: fetches the file, loads it with the editor's `loadMediaFile` (validates it) and `saveToLibrary` (both imported lazily, so the panel doesn't ship the editor's model), then navigates to the panel's editor, `/panel/editor/$key` (the user never leaves the panel). `useEditInQuickEditor(host?)` picks the host by route when none is given (`/editor/$key` outside the panel), see [editor.md](editor.md#local-library-srclibmedialocal-libraryts). Unreadable sources get an error toast asking to download it and drop it into the editor; there's no proxy for them.
+- **Download**: `toast.promise` ("downloading catJAM" → "downloaded catJAM.gif"), saved with `downloadBlob`. Unreadable: opens the file in a new tab and says so ("BTTV doesn't let the browser read this file. save it from there"); if the popup is blocked (the click's activation can expire while fetching), the toast has an open action instead.
+- **Open in editor**: fetches the file, loads it with the editor's `loadMediaFile` (validates it) and `saveToLibrary` (both imported lazily, so the panel doesn't ship the editor's model), then navigates to the panel's editor, `/panel/editor/$key` (the user never leaves the panel). `useEditInQuickEditor(host?)` picks the host by route when none is given (`/editor/$key` outside the panel), see [editor.md](editor.md#local-library-srclibmedialocal-libraryts). Unreadable sources get an error toast asking to download it and drop it into the editor; there's no proxy for them.
 
 ## Mutations and cache (`src/lib/emote-mutations.ts`)
 

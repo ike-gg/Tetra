@@ -44,7 +44,7 @@ export function TaskTile({ task, guildName }: TaskTileProps) {
         className="shrink-0"
         render={<Link to="/panel/tasks/$taskId" params={{ taskId: task.id }} />}
       >
-        Fix in editor<span className="sr-only"> {emote.name}</span>
+        fix in editor<span className="sr-only"> {emote.name}</span>
       </Button>
     </li>
   );

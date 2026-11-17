@@ -13,8 +13,10 @@ export function GuildsError({ error, retrying, onRetry }: GuildsErrorProps) {
 
   return (
     <PanelError retrying={retrying} onRetry={onRetry}>
-      Couldn&apos;t load your servers.
-      {starting && " Tetra may still be starting up, try again in a moment."}
+      i couldn&apos;t load your servers
+      {starting
+        ? ". tetra may still be starting up, try again in a moment"
+        : ". try again"}
     </PanelError>
   );
 }

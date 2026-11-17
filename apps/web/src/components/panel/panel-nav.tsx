@@ -49,18 +49,18 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
     : [];
 
   return (
-    <nav aria-label="Panel" className="flex flex-col gap-6 p-3">
+    <nav aria-label="panel" className="flex flex-col gap-6 p-3">
       <ul className="flex flex-col gap-px">
         <li>
           <NavLink to="/panel" activeOptions={{ exact: true }} onClick={onNavigate}>
             <Glyph>⌂</Glyph>
-            Home
+            home
           </NavLink>
         </li>
         <li>
           <NavLink to="/panel/tasks" onClick={onNavigate}>
             <Glyph>✎</Glyph>
-            Tasks
+            tasks
             {pendingTasks > 0 && (
               <span className="ml-auto font-mono text-primary text-xs tabular-nums">
                 {pendingTasks}
@@ -72,19 +72,19 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
         <li>
           <NavLink to="/panel/browse" onClick={onNavigate}>
             <Glyph>◇</Glyph>
-            Browse
+            browse
           </NavLink>
         </li>
         <li>
           <NavLink to="/panel/channels" onClick={onNavigate}>
             <Glyph>@</Glyph>
-            Channels
+            channels
           </NavLink>
         </li>
         <li>
           <NavLink to="/panel/editor" onClick={onNavigate}>
             <Glyph>◱</Glyph>
-            Editor
+            editor
           </NavLink>
         </li>
       </ul>
@@ -94,20 +94,20 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
           id={serversHeadingId}
           className="select-none px-2 font-mono font-normal text-muted text-xs uppercase tracking-widest"
         >
-          Servers
+          servers
         </h2>
 
         {guilds.status === "pending" && (
           <p className="flex items-center gap-2 px-2 font-mono text-muted text-xs">
             <Spinner />
-            loading…
+            loading servers
           </p>
         )}
 
         {guilds.status === "error" && (
           <div className="flex items-center gap-2 px-2">
             <p role="alert" className="text-danger text-xs">
-              Couldn&apos;t load servers.
+              i couldn&apos;t load your servers
             </p>
             <Button
               variant="ghost"
@@ -115,7 +115,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
               disabled={guilds.isFetching}
               onClick={() => void guilds.refetch()}
             >
-              Retry
+              retry
             </Button>
           </div>
         )}
@@ -138,7 +138,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
             <li>
               <a href={INVITE_URL} target="_blank" rel="noreferrer" className={ITEM}>
                 <Glyph>+</Glyph>
-                Add server
+                add server
               </a>
             </li>
           )}
@@ -153,7 +153,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
             id={addableHeadingId}
             className="select-none px-2 font-mono font-normal text-muted text-xs uppercase tracking-widest"
           >
-            Add tetra
+            add tetra
           </h2>
           <ul className="flex flex-col gap-px">
             {addable.slice(0, ADDABLE_LIMIT).map((guild) => (
@@ -187,7 +187,7 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
                 <Glyph>+</Glyph>
                 {addable.length > ADDABLE_LIMIT
                   ? `${addable.length - ADDABLE_LIMIT} more`
-                  : "Other server"}
+                  : "other server"}
               </a>
             </li>
           </ul>

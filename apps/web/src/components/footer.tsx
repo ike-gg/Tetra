@@ -31,7 +31,7 @@ export function Footer({ className }: { className?: string }) {
           <span className="text-brand-500">tetra</span> · emote manager for Discord
         </span>
       </span>
-      <nav aria-label="Site" className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+      <nav aria-label="site" className="flex flex-wrap justify-center gap-x-6 gap-y-2">
         {PAGES.map(({ to, label }) => (
           <Link key={to} to={to} className={LINK} activeOptions={{ exact: true }}>
             {label}

@@ -37,9 +37,9 @@ export type EmoteListContext = {
 };
 
 export const FITTINGS: { value: Fitting; label: string; hint: string }[] = [
-  { value: "contain", label: "Contain", hint: "whole emote, padded" },
-  { value: "cover", label: "Cover", hint: "fills the square, crops" },
-  { value: "fill", label: "Fill", hint: "stretches to a square" },
+  { value: "contain", label: "contain", hint: "whole emote, padded" },
+  { value: "cover", label: "cover", hint: "fills the square, crops" },
+  { value: "fill", label: "fill", hint: "stretches to a square" },
 ];
 
 /**
@@ -97,8 +97,8 @@ export function useEmoteActions(
     actions.push({
       id: "restore",
       type: "run",
-      label: `Restore to ${guild.name}`,
-      barLabel: "Restore",
+      label: `restore to ${guild.name}`,
+      barLabel: "restore",
       placement: "primary",
       section: "main",
       run: () => restore(emote, guild.name),
@@ -109,8 +109,8 @@ export function useEmoteActions(
     actions.push({
       id: "open-task",
       type: "link",
-      label: "Open in editor",
-      compactLabel: "Open",
+      label: "open in editor",
+      compactLabel: "open",
       placement: "primary",
       section: "main",
       render: <Link to="/panel/tasks/$taskId" params={{ taskId: emote.taskId }} />,
@@ -128,8 +128,8 @@ export function useEmoteActions(
     actions.push({
       id: "add-here",
       type: "run",
-      label: `Add to ${preferred.name}`,
-      compactLabel: "Add here",
+      label: `add to ${preferred.name}`,
+      compactLabel: "add here",
       placement: "primary",
       section: "main",
       disabled: full,
@@ -142,8 +142,8 @@ export function useEmoteActions(
     actions.push({
       id: "add-to-server",
       type: "add-to-server",
-      label: "Add to server",
-      compactLabel: "Add",
+      label: "add to server",
+      compactLabel: "add",
       placement:
         kind === "server" || (kind === "catalog" && !preferred) ? "primary" : "bar",
       section: "main",
@@ -156,15 +156,15 @@ export function useEmoteActions(
         ? {
             id: "managed",
             type: "note",
-            label: "Managed by an integration",
+            label: "managed by an integration",
             placement: "more",
             section: "main",
           }
         : {
             id: "remove",
             type: "run",
-            label: `Remove from ${guild.name}`,
-            barLabel: "Remove",
+            label: `remove from ${guild.name}`,
+            barLabel: "remove",
             placement: "bar",
             section: "main",
             variant: "destructive",
@@ -176,7 +176,7 @@ export function useEmoteActions(
   actions.push({
     id: "download",
     type: "run",
-    label: "Download",
+    label: "download",
     placement: "bar",
     section: "file",
     run: () => downloadEmote(emote),
@@ -187,7 +187,7 @@ export function useEmoteActions(
     actions.push({
       id: "edit",
       type: "run",
-      label: "Edit in editor",
+      label: "open in editor",
       placement: "bar",
       section: "file",
       run: () => void editInQuickEditor(emote),
@@ -198,7 +198,7 @@ export function useEmoteActions(
     {
       id: "copy-name",
       type: "run",
-      label: "Copy name",
+      label: "copy name",
       placement: "more",
       section: "share",
       run: () => void copy(emote.name, "name"),
@@ -206,7 +206,7 @@ export function useEmoteActions(
     {
       id: "copy-link",
       type: "run",
-      label: "Copy image link",
+      label: "copy image link",
       placement: "more",
       section: "share",
       run: () => void copy(emote.url, "image link"),
@@ -214,7 +214,7 @@ export function useEmoteActions(
     {
       id: "open-original",
       type: "external",
-      label: "Open original",
+      label: "open original",
       placement: "more",
       section: "share",
       href: emote.pageUrl ?? emote.url,
@@ -227,10 +227,11 @@ export function useEmoteActions(
 const copy = async (text: string, what: string) => {
   try {
     await navigator.clipboard.writeText(text);
-    toast.success(`Copied ${what}`);
+    toast.success(`copied ${what}`);
   } catch {
-    toast.error(`Couldn't copy the ${what}`, {
-      description: "The browser didn't allow access to the clipboard.",
+    toast.error(`couldn't copy the ${what}`, {
+      description:
+        "the browser didn't allow access to the clipboard. allow it in the site settings and try again",
     });
   }
 };
@@ -337,10 +338,10 @@ export function EmoteActionItems({
       ));
   const fittingMenu = kind !== "task" && (
     <MenuSub key="fitting">
-      <MenuSubTrigger>Temporary fitting</MenuSubTrigger>
+      <MenuSubTrigger>temporary fitting</MenuSubTrigger>
       <MenuSubContent>
         <MenuGroup>
-          <MenuGroupLabel>used by Add to server</MenuGroupLabel>
+          <MenuGroupLabel>used by add to server</MenuGroupLabel>
           <MenuRadioGroup<Fitting> value={fitting} onValueChange={onFittingChange}>
             {FITTINGS.map(({ value, label, hint }) => (
               <MenuRadioItem key={value} value={value} label={label}>
@@ -355,7 +356,7 @@ export function EmoteActionItems({
   );
   const infoMenu = (
     <MenuSub key="info">
-      <MenuSubTrigger>Info</MenuSubTrigger>
+      <MenuSubTrigger>info</MenuSubTrigger>
       <MenuSubContent className="min-w-60">
         <EmoteInfo emote={emote} />
       </MenuSubContent>

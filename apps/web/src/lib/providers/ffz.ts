@@ -43,8 +43,10 @@ const pick = (sizes: Sizes, order: (keyof Sizes)[]) => {
   return null;
 };
 
-// Same as core's ffz-lookup: animated emotes as WebP, because FFZ's `animated/<n>.gif`
-// hangs without a response for 2x and 4x, and an extension on a static URL is a 400
+// Animated emotes as WebP, like core's ffz-lookup: `animated/<n>.gif` is made on demand
+// and unreliable per emote and size (hangs, or 522 after 20 s), while `animated/<n>.webp`
+// answers at once. An extension on a static URL is a 400. The editor turns the WebP
+// into a GIF on import.
 const toCatalogEmote = (emote: FfzEmote): CatalogEmote | null => {
   const sizes = emote.animated ?? emote.urls;
   const suffix = emote.animated ? ".webp" : "";

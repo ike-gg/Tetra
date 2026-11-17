@@ -85,7 +85,7 @@ export function Logo({ className, animated = true, slowdown = 1 }: LogoProps) {
   return (
     <span
       role="img"
-      aria-label="Tetra"
+      aria-label="tetra"
       className={cn("relative inline-block size-8 shrink-0 overflow-hidden", className)}
     >
       {animated ? (

@@ -26,7 +26,7 @@ export function PanelError({ children, retrying, onRetry }: PanelErrorProps) {
         {children}
       </p>
       <Button size="sm" disabled={retrying} onClick={onRetry}>
-        {retrying ? "Retrying…" : "Retry"}
+        {retrying ? "retrying" : "retry"}
       </Button>
     </div>
   );

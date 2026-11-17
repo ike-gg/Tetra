@@ -24,20 +24,20 @@ export function DiscardTaskDialog({ task, variant = "ghost" }: DiscardTaskDialog
   const discard = useDiscardTask(task);
 
   return (
-    <AlertDialog pendingAnnouncement="Discarding the task">
+    <AlertDialog pendingAnnouncement="discarding the task">
       <AlertDialogTrigger className={buttonClassName({ variant, size: "sm" })}>
-        Discard task
+        discard task
       </AlertDialogTrigger>
       <AlertDialogBackdrop className="bg-black/60" />
       {/* Top third instead of centered, like a sheet (no vertically centered screens) */}
       <AlertDialogContent className="mt-[15vh] mb-auto flex w-[min(26rem,calc(100%-2rem))] flex-col gap-4 border-border bg-background p-6 shadow-none">
         <div className="flex flex-col gap-2">
           <AlertDialogTitle className="font-semibold text-base tracking-tight">
-            Discard :{task.emote.name}:?
+            discard :{task.emote.name}:?
           </AlertDialogTitle>
           <AlertDialogDescription className="m-0 text-muted text-sm">
-            The task and its original file are deleted. Nothing is added to the server.
-            You can add the emote again with the bot.
+            the task and its original file are deleted, and nothing is added to the
+            server. you can add the emote again with the bot
           </AlertDialogDescription>
         </div>
         <AlertDialogClose
@@ -52,13 +52,13 @@ export function DiscardTaskDialog({ task, variant = "ghost" }: DiscardTaskDialog
               )}
               <div className="flex justify-end gap-2">
                 <AlertDialogClose className={buttonClassName({ size: "sm" })}>
-                  Cancel
+                  cancel
                 </AlertDialogClose>
                 <button
                   {...props}
                   className={buttonClassName({ variant: "primary", size: "sm" })}
                 >
-                  {state.pending ? "Discarding…" : state.error ? "Try again" : "Discard"}
+                  {state.pending ? "discarding" : state.error ? "try again" : "discard"}
                 </button>
               </div>
             </div>

@@ -36,7 +36,7 @@ export function PanelUserMenu() {
       onAction={(value) => (value === "logout" ? logoutMutation.mutateAsync() : null)}
     >
       <MenuTrigger
-        aria-label={name ? `Account: ${name}` : "Account"}
+        aria-label={name ? `account: ${name}` : "account"}
         className="flex h-8 cursor-default select-none items-center gap-2 border-0 bg-transparent px-1.5 font-normal text-sm hover:bg-surface focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:-outline-offset-2 active:bg-neutral-800 data-open:bg-surface sm:px-2"
       >
         <Avatar className="flex size-6 shrink-0 items-center justify-center overflow-hidden bg-neutral-800 font-medium text-neutral-300 text-xs">
@@ -76,7 +76,7 @@ export function PanelUserMenu() {
           value="logout"
           className="flex h-8 min-h-0 cursor-default select-none items-center px-2 text-sm data-highlighted:bg-surface data-pending:cursor-wait"
         >
-          Log out
+          log out
         </MenuItem>
       </MenuContent>
     </Menu>

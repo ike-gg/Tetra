@@ -1,4 +1,4 @@
-import { useDeferredValue, useId, useMemo, useState } from "react";
+import { useDeferredValue, useId, useMemo, useRef, useState } from "react";
 
 import { EmoteGrid } from "@/components/emote/emote-grid";
 import { EmoteMenu } from "@/components/emote/emote-menu";
@@ -9,6 +9,7 @@ import { Text } from "@/components/ui/text";
 import type { PanelEmote } from "@/lib/emote";
 import {
   findSimilarEmoteGroups,
+  pruneSimilarGroups,
   type SimilarGroup,
   similarGroupDismissKey,
 } from "@/lib/similar-emotes";
@@ -38,6 +39,12 @@ const saveDismissed = (guildId: string, dismissed: Set<string>) => {
   }
 };
 
+type Snapshot = {
+  type: SimilarEmotesProps["type"];
+  names: Map<string, string>;
+  groups: SimilarGroup[];
+};
+
 type SimilarEmotesProps = {
   guild: { id: string; name: string };
   emotes: PanelEmote[];
@@ -64,11 +71,21 @@ export function SimilarEmotes({ guild, emotes, query, type }: SimilarEmotesProps
   );
   // The route maps emotes on every render; names and ids are what grouping depends on
   const signature = typed.map(({ id, name }) => `${id}:${name}`).join("\n");
+  const snapshot = useRef<Snapshot | null>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: signature stands for typed
-  const groups = useMemo(
-    () => findSimilarEmoteGroups(typed.map(({ id, name }) => ({ id, name }))),
-    [signature]
-  );
+  const groups = useMemo(() => {
+    const previous = snapshot.current;
+    const names = new Map(typed.map(({ id, name }) => [id, name]));
+    // Only removals since the last grouping: shrink the groups rather than regroup
+    const onlyRemoved =
+      previous?.type === type &&
+      [...names].every(([id, name]) => previous.names.get(id) === name);
+    const next = onlyRemoved
+      ? pruneSimilarGroups(previous.groups, new Set(names.keys()))
+      : findSimilarEmoteGroups(typed.map(({ id, name }) => ({ id, name })));
+    snapshot.current = { type, names, groups: next };
+    return next;
+  }, [signature, type]);
   const byId = useMemo(() => new Map(typed.map((emote) => [emote.id, emote])), [typed]);
 
   const toggle = (group: SimilarGroup) => {
@@ -133,7 +150,7 @@ export function SimilarEmotes({ guild, emotes, query, type }: SimilarEmotesProps
           const members = group.emoteIds.flatMap((id) => byId.get(id) ?? []);
           return (
             <SimilarGroupSection
-              key={similarGroupDismissKey(group)}
+              key={group.key}
               group={group}
               guild={guild}
               emotes={members}

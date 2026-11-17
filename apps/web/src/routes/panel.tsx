@@ -15,7 +15,7 @@ export const Route = createFileRoute("/panel")({
     const leaf = matches.at(-1)?.routeId;
     return leaf === "/panel" || leaf === "/panel/"
       ? seoHead("panel")
-      : { meta: [{ title: "Panel · tetra" }] };
+      : { meta: [{ title: "panel · tetra" }] };
   },
   validateSearch: (search: Record<string, unknown>): PanelSearch =>
     typeof search.error === "string" ? { error: search.error } : {},

@@ -599,7 +599,8 @@ function EmotesSheet() {
 }
 
 function ControlsSheet() {
-  const [view, setView] = useState("preview");
+  const [view, setView] = useState("fit");
+  const [shape, setShape] = useState("keep");
   const [size, setSize] = useState(96);
   const [name, setName] = useState("catJAM");
   const [trimEdges, setTrimEdges] = useState(true);
@@ -616,12 +617,22 @@ function ControlsSheet() {
           &lt;SegmentedControl&gt; · &lt;Slider&gt; · &lt;Switch&gt; · &lt;Radio&gt;
         </p>
         <SegmentedControl
-          aria-label="view"
+          aria-label="preview scale"
           value={view}
           onValueChange={(next) => next && setView(next)}
         >
-          <SegmentedControlItem value="preview">preview</SegmentedControlItem>
-          <SegmentedControlItem value="crop">crop</SegmentedControlItem>
+          <SegmentedControlItem value="fit">fit</SegmentedControlItem>
+          <SegmentedControlItem value="actual">actual size</SegmentedControlItem>
+        </SegmentedControl>
+        <SegmentedControl
+          aria-label="shape"
+          size="sm"
+          value={shape}
+          onValueChange={(next) => next && setShape(next)}
+        >
+          <SegmentedControlItem value="keep">keep shape</SegmentedControlItem>
+          <SegmentedControlItem value="square">square</SegmentedControlItem>
+          <SegmentedControlItem value="stretch">stretch</SegmentedControlItem>
         </SegmentedControl>
         <Slider
           label="size"

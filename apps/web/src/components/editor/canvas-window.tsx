@@ -85,8 +85,14 @@ const saveRect = (rect: Rect | null) => {
   }
 };
 
+// The title bar is the drag handle; its buttons and controls stay clickable
+const isControl = (target: EventTarget) =>
+  target instanceof Element && target.closest("button, [data-window-control]") !== null;
+
 type CanvasWindowProps = {
   title: ReactNode;
+  // Controls on the right of the title bar; pressing them never moves the window
+  controls?: ReactNode;
   // Rendered with the body's current size, so content can fit itself to the window
   children: (body: ElementSize) => ReactNode;
   className?: string;
@@ -97,7 +103,12 @@ type CanvasWindowProps = {
 // desktop. Its last position and size are remembered in this browser; double-clicking the
 // title bar (or Fit window) puts it back and forgets them. A remembered window that
 // doesn't fit the workspace on open is forgotten too.
-export function CanvasWindow({ title, children, className }: CanvasWindowProps) {
+export function CanvasWindow({
+  title,
+  controls,
+  children,
+  className,
+}: CanvasWindowProps) {
   const workspace = useRef<HTMLDivElement>(null);
   const body = useRef<HTMLDivElement>(null);
   const area = useElementSize(workspace);
@@ -137,7 +148,7 @@ export function CanvasWindow({ title, children, className }: CanvasWindowProps) 
   const startDrag =
     (mode: "move" | "resize") => (event: ReactPointerEvent<HTMLElement>) => {
       if (event.button !== 0 || !rect) return;
-      if (mode === "move" && (event.target as Element).closest("button")) return;
+      if (mode === "move" && isControl(event.target)) return;
       event.preventDefault();
 
       const target = event.currentTarget;
@@ -180,7 +191,7 @@ export function CanvasWindow({ title, children, className }: CanvasWindowProps) 
       className={cn("relative min-h-0 overflow-hidden bg-dots", className)}
     >
       <section
-        aria-label="Canvas"
+        aria-label="canvas"
         className={cn(
           "absolute flex flex-col border border-border bg-background",
           !rect && "invisible"
@@ -194,12 +205,15 @@ export function CanvasWindow({ title, children, className }: CanvasWindowProps) 
         {/* biome-ignore lint/a11y/noStaticElementInteractions: a pointer-only drag handle; the Fit window button is the keyboard path */}
         <div
           onPointerDown={startDrag("move")}
-          onDoubleClick={reset}
+          onDoubleClick={(event) => {
+            if (!isControl(event.target)) reset();
+          }}
           className="flex h-9 shrink-0 cursor-default touch-none select-none items-center gap-2 border-border border-b bg-surface px-3"
         >
           <div className="flex min-w-0 flex-1 items-center gap-2 text-sm">{title}</div>
+          {controls && <div data-window-control="">{controls}</div>}
           <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={reset}>
-            Fit window
+            fit window
           </Button>
         </div>
         <div ref={body} className="relative min-h-0 flex-1 overflow-hidden">

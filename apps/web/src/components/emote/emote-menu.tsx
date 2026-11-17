@@ -212,8 +212,8 @@ function SelectionAnnouncer({ emote }: { emote?: PanelEmote }) {
 
   useEffect(() => {
     if (emote?.key === previous.current) return;
-    if (emote) setMessage(`Selected ${emote.name}. Its actions follow the list.`);
-    else if (previous.current) setMessage("Selection cleared.");
+    if (emote) setMessage(`selected ${emote.name}. its actions follow the list`);
+    else if (previous.current) setMessage("selection cleared");
     previous.current = emote?.key;
   }, [emote]);
 

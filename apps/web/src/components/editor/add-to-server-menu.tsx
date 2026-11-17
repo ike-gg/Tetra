@@ -14,9 +14,9 @@ type AddToServerMenuProps = {
 
 // Why the button is off, for its tooltip; the editor shows the same thing in place
 const blockedBy = ({ result, pending, fits, nameValid }: MediaEditorState) => {
-  if (!result || pending) return "Wait for the result to finish.";
-  if (!fits) return `Get it under ${formatBytes(DISCORD_EMOTE_LIMIT)} first.`;
-  if (!nameValid) return "Fix the emote name first.";
+  if (!result || pending) return "wait for the result to finish";
+  if (!fits) return `get it under ${formatBytes(DISCORD_EMOTE_LIMIT)} first`;
+  if (!nameValid) return "fix the emote name first";
   return undefined;
 };
 
@@ -45,11 +45,11 @@ export function AddToServerMenu({ state, animated }: AddToServerMenuProps) {
         })}
       >
         {adding ? (
-          "Adding…"
+          "adding"
         ) : (
           <>
             <span>
-              Add<span className="max-sm:sr-only"> to server</span>
+              add<span className="max-sm:sr-only"> to server</span>
             </span>
             <span aria-hidden="true" className="font-mono text-xs opacity-60">
               ▾

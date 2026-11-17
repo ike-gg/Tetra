@@ -21,7 +21,7 @@ const cropTo = async ({ buffer, mime, crop }: ImageJob) => {
 
   const canvas = new OffscreenCanvas(width, height);
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("Canvas isn't available.");
+  if (!context) throw new Error("this browser can't draw on a canvas");
   context.drawImage(
     bitmap,
     Math.round(area.x),
@@ -153,7 +153,7 @@ const run = async (job: ImageJob): Promise<ImageJobResult> => {
     const file = await encode(image, format, job.compression);
     if (!best || file.byteLength < best.file.byteLength) best = { file, format };
   }
-  if (!best) throw new Error("Nothing to encode.");
+  if (!best) throw new Error("nothing to encode");
 
   return {
     file: best.file,
@@ -171,7 +171,8 @@ self.onmessage = async ({ data }: MessageEvent<ImageJob>) => {
   } catch (error) {
     self.postMessage({
       ok: false,
-      error: error instanceof Error ? error.message : "Processing the image failed.",
+      error:
+        error instanceof Error ? error.message : "processing the image failed. try again",
     });
   }
 };

@@ -42,7 +42,7 @@ function PanelTaskEditor() {
   if (task.status === "pending") {
     return (
       <StateLayout>
-        <PanelLoading>loading the task…</PanelLoading>
+        <PanelLoading>loading the task</PanelLoading>
       </StateLayout>
     );
   }
@@ -54,7 +54,7 @@ function PanelTaskEditor() {
           <TaskGone />
         ) : (
           <PanelError retrying={task.isFetching} onRetry={() => void task.refetch()}>
-            Couldn&apos;t load this task.
+            i couldn&apos;t load this task
           </PanelError>
         )}
       </StateLayout>
@@ -108,7 +108,8 @@ function TaskFile({ task, blob, fileError, retrying, onRetry }: TaskFileProps) {
       <StateLayout task={task}>
         <div className="flex flex-col items-start gap-3">
           <p role="alert" className="text-danger text-sm">
-            The original can&apos;t be opened as an image. It may be broken.
+            i can&apos;t open the original as an image. it may be broken. you can discard
+            the task
           </p>
           <DiscardTaskDialog task={task} variant="secondary" />
         </div>
@@ -121,12 +122,12 @@ function TaskFile({ task, blob, fileError, retrying, onRetry }: TaskFileProps) {
       <StateLayout task={task}>
         <div className="flex flex-col gap-2">
           <PanelLoading>
-            {blob ? "opening the original…" : "downloading the original…"}
+            {blob ? "opening the original" : "downloading the original"}
           </PanelLoading>
           {!blob && (
             <Text size="xs" tone="muted">
-              Tetra fetches it from {fetchedFrom(task)}. A slow host can take up to half a
-              minute.
+              tetra fetches it from {fetchedFrom(task)}. a slow host can take up to half a
+              minute
             </Text>
           )}
         </div>
@@ -154,14 +155,14 @@ function FileError({
   const message =
     {
       DOWNLOAD_DATA_FAILED:
-        "Couldn't download the original. The host didn't answer, or the file is gone.",
-      URL_NOT_ALLOWED: "Tetra isn't allowed to download from the original's address.",
-      FILE_TOO_LARGE: "The original is over 10 MB, too big for Tetra to fetch.",
-      UNSUPPORTED_FILE_TYPE: "The original isn't a GIF, PNG, WebP or JPEG image.",
+        "i couldn't download the original. the host didn't answer, or the file is gone",
+      URL_NOT_ALLOWED: "i'm not allowed to download from the original's address",
+      FILE_TOO_LARGE: "the original is over 10 MB, too big for me to fetch",
+      UNSUPPORTED_FILE_TYPE: "the original isn't a GIF, PNG, WebP or JPEG image",
     }[reference ?? ""] ??
     (error instanceof ApiError && error.status < 500
       ? error.message
-      : "Couldn't reach Tetra to get the original.");
+      : "i couldn't get the original. try again in a moment");
   const permanent =
     reference === "URL_NOT_ALLOWED" ||
     reference === "FILE_TOO_LARGE" ||
@@ -175,7 +176,7 @@ function FileError({
       <div className="flex gap-2">
         {!permanent && (
           <Button size="sm" disabled={retrying} onClick={onRetry}>
-            {retrying ? "Retrying…" : "Retry"}
+            {retrying ? "retrying" : "retry"}
           </Button>
         )}
         {(permanent || reference === "DOWNLOAD_DATA_FAILED") && (
@@ -214,12 +215,12 @@ function TaskEditor({ task, source }: { task: Task; source: MediaFile }) {
   if (!destination.canAdd) {
     notice = (
       <Notice
-        title={`You can't add emotes to ${guildName} anymore`}
+        title={`you can't add emotes to ${guildName} anymore`}
         className="shrink-0 border-x-0 border-t-0"
       >
         {destination.readOnly
-          ? "Tetra is there, but you need the Manage Expressions permission on that server."
-          : "Tetra isn't on that server anymore, or you left it. You can still discard the task."}
+          ? "tetra is there, but you need the manage expressions permission on that server"
+          : "tetra isn't on that server anymore, or you left it. you can still discard the task"}
       </Notice>
     );
   } else if (destination.full) {
@@ -228,9 +229,9 @@ function TaskEditor({ task, source }: { task: Task; source: MediaFile }) {
         title={`${guildName} has no free ${destination.slots} emote slots`}
         className="shrink-0 border-x-0 border-t-0"
       >
-        Discord will refuse it until a slot frees up. Remove{" "}
+        Discord will refuse it until a slot frees up. remove{" "}
         {destination.slots === "animated" ? "an animated" : "a static"} emote there first,
-        then come back: this task stays until you add or discard it.
+        then come back: this task stays until you add or discard it
       </Notice>
     );
   }
@@ -256,15 +257,15 @@ function TaskEditor({ task, source }: { task: Task; source: MediaFile }) {
           onClick={() => result && add({ blob: result.blob, name })}
         >
           <span className="truncate">
-            {adding ? "Adding…" : `Add to ${destination.name ?? "server"}`}
+            {adding ? "adding" : `add to ${destination.name ?? "server"}`}
           </span>
         </Button>
       )}
       sizeNote={({ fits, result }) => (
         <Text size="xs" tone="muted">
           {fits || !result
-            ? `Discord takes emotes up to ${formatBytes(DISCORD_EMOTE_LIMIT)}.`
-            : `Over ${formatBytes(DISCORD_EMOTE_LIMIT)}, Discord won't take it. Fit it automatically or lower the settings, then add it.`}
+            ? `Discord takes emotes up to ${formatBytes(DISCORD_EMOTE_LIMIT)}`
+            : `it's over ${formatBytes(DISCORD_EMOTE_LIMIT)} and Discord won't take it. lower the settings, then add it`}
         </Text>
       )}
     />
@@ -308,14 +309,14 @@ function TaskGone() {
   return (
     <div className="flex max-w-lg flex-col items-start gap-4">
       <Heading level={1} size="lg">
-        This task is gone
+        this task is gone
       </Heading>
       <Text size="sm" tone="muted">
-        It was already added or discarded, maybe from another tab. Your other tasks are
-        still waiting.
+        it was already added or discarded, maybe from another tab. your other tasks are
+        still waiting
       </Text>
       <Button size="sm" render={<Link to="/panel/tasks" />}>
-        Back to tasks
+        back to tasks
       </Button>
     </div>
   );

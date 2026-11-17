@@ -27,7 +27,6 @@ import {
   type Fitting,
   type OutputFormat,
   predictDimensions,
-  reduceStep,
   restoreEdit,
   sizeRange,
   sourceFps,
@@ -40,22 +39,24 @@ import {
   LARGE_FILE_BYTES,
   type MediaFile,
 } from "@/lib/media/media-file";
-import {
-  EMOTE_FORMATS,
-  type MediaRender,
-  renderMedia,
-  STILL_FORMATS,
-} from "@/lib/media/render";
+import { EMOTE_FORMATS, type MediaRender, STILL_FORMATS } from "@/lib/media/render";
 
 import { CanvasWindow } from "./canvas-window";
-import { FITTING_LABELS, FittingPicker } from "./fitting-picker";
+import { FITTING_HINTS, FittingPicker } from "./fitting-picker";
 import { MediaCropper } from "./media-cropper";
-import { MediaPreview, type PreviewScale } from "./media-preview";
+import { type LiveResult, MediaPreview, type PreviewScale } from "./media-preview";
 import { TrimTimeline } from "./trim-timeline";
+import { useCropDraft } from "./use-crop-draft";
 import { useFilmStrip } from "./use-film-strip";
 import { useMediaRender } from "./use-media-render";
 
-type View = "preview" | "crop";
+const sameCrop = (a: Crop | null, b: Crop | null) =>
+  JSON.stringify(a) === JSON.stringify(b);
+
+// What decides the result's geometry, to tell whether the result on screen still matches
+// the crop that's shown
+const geometryKey = (crop: Crop | null, fitting: Fitting) =>
+  JSON.stringify([crop, fitting]);
 
 export type MediaEditorState = {
   // Discord emote mode: the name is an emote name and the result fits Discord's rules
@@ -81,7 +82,7 @@ type MediaEditorProps = {
   // Restores earlier work; the editor starts from these instead of the defaults
   initialEdit?: Edit | null;
   initialName?: string;
-  // Whether the Discord emote checks are on at first (name rules, 256 KB limit, auto-fit)
+  // Whether the Discord emote checks are on at first (name rules, 256 KB limit)
   initialDiscord?: boolean;
   // Always an emote: the checks are on and the switch is hidden
   discordOnly?: boolean;
@@ -116,14 +117,12 @@ export function MediaEditor({
 
   const [name, setName] = useState(initialName ?? source.name);
   const [discord, setDiscord] = useState(discordOnly || initialDiscord);
-  const [view, setView] = useState<View>("preview");
   const [previewScale, setPreviewScale] = useState<PreviewScale>("fit");
   const [edit, setEdit] = useState<Edit>(() => restoreEdit(info, initialEdit));
   // The crop before switching to "cover", so switching back gives the old shape again
   const cropBeforeCover = useRef<Crop | null>(null);
   const [largeNotice, setLargeNotice] = useState(source.bytes > LARGE_FILE_BYTES);
-  const [autoFitting, setAutoFitting] = useState(false);
-  const fitController = useRef<AbortController | null>(null);
+  const [firstFrameNotice, setFirstFrameNotice] = useState(source.firstFrameOnly);
 
   // Core rejects JPEG emotes, so emote mode never renders one
   const formats = useMemo(
@@ -134,6 +133,7 @@ export function MediaEditor({
     [discord, outputFormats]
   );
   const { result, pending, error } = useMediaRender(source, edit, formats);
+  const cropDraft = useCropDraft(info, edit.crop);
   const frames = useFilmStrip(source);
 
   const nameError = discord ? emoteNameError(name) : fileNameError(name);
@@ -147,8 +147,6 @@ export function MediaEditor({
     fits: Boolean(result) && bytes <= DISCORD_EMOTE_LIMIT,
   };
 
-  useEffect(() => () => fitController.current?.abort(), []);
-
   const onWorkChangeRef = useRef(onWorkChange);
   onWorkChangeRef.current = onWorkChange;
   const workKey = JSON.stringify({ edit, name, discord });
@@ -160,11 +158,7 @@ export function MediaEditor({
     onWorkChangeRef.current?.({ edit, name, discord });
   }, [workKey]);
 
-  // Any manual change wins over a running auto-fit
-  const change = (next: (edit: Edit) => Edit) => {
-    fitController.current?.abort();
-    setEdit(next);
-  };
+  const change = (next: (edit: Edit) => Edit) => setEdit(next);
   const setSetting =
     <Key extends keyof EditSettings>(key: Key) =>
     (value: EditSettings[Key]) =>
@@ -173,8 +167,14 @@ export function MediaEditor({
         settings: { ...current.settings, [key]: value },
       }));
   const setCrop = (crop: Crop | null) => change((current) => ({ ...current, crop }));
+  const commitCrop = (crop: Crop | null) => {
+    cropDraft.set(crop);
+    setCrop(crop);
+  };
   // Fitting and crop are one decision: "cover" turns the crop into a square (its middle
-  // square, which the person can then move in Crop), leaving "cover" restores the crop
+  // square, which the person can then move), leaving "cover" restores the crop. The
+  // selection animates there, while the edit takes the final crop at once, so the render
+  // runs during the animation instead of after it.
   const setFitting = (fitting: Fitting) => {
     if (fitting === edit.settings.fitting) return;
     let crop = edit.crop;
@@ -184,60 +184,57 @@ export function MediaEditor({
     } else if (edit.settings.fitting === "cover") {
       crop = cropBeforeCover.current;
     }
+    if (crop !== edit.crop || cropDraft.animating) cropDraft.animateTo(crop);
     change((current) => ({
       ...current,
       crop,
       settings: { ...current.settings, fitting },
     }));
   };
-  const removeCrop = () => {
+  // Under "cover" no crop is still a square: the middle one
+  const uncropped = edit.settings.fitting === "cover" ? squareInside(info, null) : null;
+  const resetCrop = () => {
     cropBeforeCover.current = null;
-    setCrop(null);
+    cropDraft.animateTo(uncropped);
+    setCrop(uncropped);
   };
   const setTrim = (trim: Trim) => change((current) => ({ ...current, trim }));
 
-  const fit = async () => {
-    fitController.current?.abort();
-    const controller = new AbortController();
-    fitController.current = controller;
-    setAutoFitting(true);
-
-    let settings = edit.settings;
-    try {
-      for (;;) {
-        const render = await renderMedia(
-          source,
-          { ...edit, settings },
-          controller.signal,
-          formats
-        );
-        URL.revokeObjectURL(render.url);
-        if (render.bytes <= DISCORD_EMOTE_LIMIT) break;
-        const next = reduceStep(source, settings);
-        if (!next) break;
-        settings = next;
-      }
-      setEdit((current) => ({ ...current, settings }));
-    } catch {
-      // Aborted by a manual change, or a failed run; the current edit stays as it is
-    } finally {
-      if (fitController.current === controller) {
-        fitController.current = null;
-        setAutoFitting(false);
-      }
-    }
-  };
-
   const reset = () => {
-    fitController.current?.abort();
+    cropDraft.stop();
     setName(source.name);
     setEdit(defaultEdit(info));
   };
 
   const { settings } = edit;
-  const dimensionsPreview = predictDimensions(info, edit);
   const size = sizeRange(info);
   const maxFps = sourceFps(info);
+
+  // The crop as shown (the draft), and the result it will make
+  const shownEdit = { ...edit, crop: cropDraft.draft };
+  const shownCrop = effectiveCrop(info, shownEdit);
+  const shownGeometry = geometryKey(shownCrop, settings.fitting);
+  const committedGeometry = geometryKey(effectiveCrop(info, edit), settings.fitting);
+  // A result always belongs to the edit current when it arrives (older runs are
+  // discarded), so its geometry is noted then
+  const [resultGeometry, setResultGeometry] = useState({
+    result,
+    key: committedGeometry,
+  });
+  if (resultGeometry.result !== result) {
+    setResultGeometry({ result, key: committedGeometry });
+  }
+  // Until the render catches up with the shown crop, the result pane draws it from the
+  // original with CSS; a failed render shows its error once nothing is moving
+  const live: LiveResult | null =
+    result &&
+    shownGeometry !== resultGeometry.key &&
+    (!error || shownGeometry !== committedGeometry)
+      ? {
+          crop: shownCrop ?? { x: 0, y: 0, width: info.width, height: info.height },
+          ...predictDimensions(info, shownEdit).to,
+        }
+      : null;
 
   // The first render blocks the editor: until then there's nothing to compare against,
   // and settings changed meanwhile would only restart it
@@ -263,7 +260,7 @@ export function MediaEditor({
         <header className="flex h-12 shrink-0 select-none items-center gap-3 border-border border-b px-4">
           {section ? (
             <nav
-              aria-label="Breadcrumb"
+              aria-label="breadcrumb"
               className="flex min-w-0 items-center gap-2 text-sm"
             >
               <BrandLink />
@@ -291,7 +288,7 @@ export function MediaEditor({
               className={section ? "max-sm:hidden" : undefined}
               onClick={reset}
             >
-              Reset
+              reset
             </Button>
             {actions(state)}
           </div>
@@ -299,101 +296,102 @@ export function MediaEditor({
 
         {largeNotice && (
           <Notice
-            title={`This file is ${formatBytes(source.bytes)}, our editor is made for smaller ones`}
+            title={`this file is ${formatBytes(source.bytes)}, the editor is made for smaller ones`}
             action={
               <Button variant="ghost" size="sm" onClick={() => setLargeNotice(false)}>
-                Continue anyway
+                continue anyway
               </Button>
             }
             className="shrink-0 border-x-0 border-t-0"
           >
-            It runs in your browser and is built for files up to{" "}
-            {formatBytes(LARGE_FILE_BYTES)}. You can keep going, but processing may be
-            slow or fail. For big files a dedicated tool will do better; once it&apos;s
-            smaller, bring it back here.
+            it runs in your browser and is built for files up to{" "}
+            {formatBytes(LARGE_FILE_BYTES)}. you can keep going, but processing may be
+            slow or fail. for big files a dedicated tool will do better; once it&apos;s
+            smaller, bring it back here
+          </Notice>
+        )}
+        {firstFrameNotice && (
+          <Notice
+            title="only the first frame opened"
+            action={
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setFirstFrameNotice(false)}
+              >
+                keep the first frame
+              </Button>
+            }
+            className="shrink-0 border-x-0 border-t-0"
+          >
+            this WebP is animated, but this browser couldn&apos;t read its frames. open it
+            in a newer browser to edit the whole animation
           </Notice>
         )}
         {notice}
 
         <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <main className="flex min-h-0 min-w-0 flex-col">
-            <div className="flex h-12 shrink-0 items-center gap-3 border-border border-b px-4">
-              <SegmentedControl
-                aria-label="View"
-                value={view}
-                onValueChange={(next) => next && setView(next as View)}
-              >
-                <SegmentedControlItem value="preview">Preview</SegmentedControlItem>
-                <SegmentedControlItem value="crop">Crop</SegmentedControlItem>
-              </SegmentedControl>
-              {view === "preview" && (
-                <SegmentedControl
-                  aria-label="Preview scale"
-                  value={previewScale}
-                  onValueChange={(next) => next && setPreviewScale(next as PreviewScale)}
-                  className="ml-auto"
-                >
-                  <SegmentedControlItem value="fit">Fit</SegmentedControlItem>
-                  <SegmentedControlItem value="actual">Actual size</SegmentedControlItem>
-                </SegmentedControl>
-              )}
-              {view === "crop" && (
-                <>
-                  <FittingPicker value={settings.fitting} onValueChange={setFitting} />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="ml-auto"
-                    disabled={!edit.crop}
-                    onClick={removeCrop}
-                  >
-                    Remove crop
-                  </Button>
-                </>
-              )}
-            </div>
-
             <CanvasWindow
               className="max-lg:h-[60vh] lg:flex-1"
-              title={
-                view === "preview" ? (
-                  <span className="font-medium">Preview</span>
-                ) : (
-                  <>
-                    <span className="shrink-0 font-medium">Crop</span>
-                    <span className="truncate text-muted text-xs">
-                      {CROP_HINTS[settings.fitting]}
-                    </span>
-                  </>
-                )
+              title={<span className="font-medium">preview</span>}
+              controls={
+                <SegmentedControl
+                  aria-label="preview scale"
+                  size="sm"
+                  value={previewScale}
+                  onValueChange={(next) => next && setPreviewScale(next as PreviewScale)}
+                >
+                  <SegmentedControlItem value="fit">fit</SegmentedControlItem>
+                  <SegmentedControlItem value="actual">actual size</SegmentedControlItem>
+                </SegmentedControl>
               }
             >
-              {(body) =>
-                view === "preview" ? (
-                  <MediaPreview
-                    source={source}
-                    name={nameError ? source.name : name}
-                    crop={effectiveCrop(info, edit)}
-                    scale={previewScale}
-                    result={result}
-                    pending={pending}
-                    error={error}
-                    discord={discord}
-                    body={body}
-                  />
-                ) : (
-                  <div className="flex size-full">
+              {(body) => (
+                <MediaPreview
+                  source={source}
+                  name={nameError ? source.name : name}
+                  crop={shownCrop}
+                  scale={previewScale}
+                  cropper={(pixelated) => (
                     <MediaCropper
-                      // Remount on shape change so the selection refits to the new ratio
-                      key={settings.fitting === "cover" ? "square" : "free"}
                       source={source}
-                      crop={effectiveCrop(info, edit)}
-                      square={settings.fitting === "cover"}
-                      onCropChange={setCrop}
+                      // Mid-animation the selection passes through other shapes, so the
+                      // square lock waits until it lands
+                      crop={cropDraft.animating ? cropDraft.draft : shownCrop}
+                      square={settings.fitting === "cover" && !cropDraft.animating}
+                      pixelated={pixelated}
+                      onCropChange={cropDraft.set}
+                      onCropCommit={commitCrop}
                     />
-                  </div>
-                )
-              }
+                  )}
+                  cropControls={
+                    <>
+                      <FittingPicker
+                        value={settings.fitting}
+                        onValueChange={setFitting}
+                      />
+                      {!sameCrop(edit.crop, uncropped) && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-auto h-6 px-2 text-xs"
+                          onClick={resetCrop}
+                        >
+                          reset crop
+                        </Button>
+                      )}
+                    </>
+                  }
+                  shapeHint={FITTING_HINTS[settings.fitting]}
+                  result={result}
+                  live={live}
+                  pending={pending}
+                  error={error}
+                  discord={discord}
+                  body={body}
+                />
+              )}
             </CanvasWindow>
 
             {animated && (
@@ -409,7 +407,7 @@ export function MediaEditor({
           </main>
 
           <aside
-            aria-label="Settings"
+            aria-label="settings"
             className="flex min-h-0 flex-col border-border border-t lg:border-t-0 lg:border-l"
           >
             <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -418,7 +416,7 @@ export function MediaEditor({
                   {!discordOnly && (
                     <Switch
                       label="Discord emote"
-                      description={`Checks the name and the ${formatBytes(DISCORD_EMOTE_LIMIT)} limit.`}
+                      description={`checks the name and the ${formatBytes(DISCORD_EMOTE_LIMIT)} limit`}
                       checked={discord}
                       onCheckedChange={setDiscord}
                     />
@@ -426,7 +424,7 @@ export function MediaEditor({
                   {discord ? (
                     <TextField
                       key="emote-name"
-                      label="Emote name"
+                      label="emote name"
                       value={name}
                       onValueChange={setName}
                       prefix=":"
@@ -434,14 +432,14 @@ export function MediaEditor({
                       error={nameError}
                       description={
                         discordOnly
-                          ? "How people type it in chat."
-                          : "How people type it in chat, and the file name."
+                          ? "how people type it in chat"
+                          : "how people type it in chat, and the file name"
                       }
                     />
                   ) : (
                     <TextField
                       key="file-name"
-                      label="File name"
+                      label="file name"
                       value={name}
                       onValueChange={setName}
                       suffix={`.${result?.extension ?? "gif"}`}
@@ -455,51 +453,16 @@ export function MediaEditor({
                 {discord ? (
                   <>
                     <SizeMeter
-                      label={pending ? "Result size · updating" : "Result size"}
+                      label={pending ? "result size · updating" : "result size"}
                       value={bytes}
                       limit={DISCORD_EMOTE_LIMIT}
                       max={source.bytes}
                     />
-                    <Button
-                      className="mt-4 w-full"
-                      disabled={state.fits || autoFitting}
-                      onClick={() => void fit()}
-                    >
-                      {autoFitting ? "Fitting…" : "Fit automatically"}
-                    </Button>
                     {sizeNote && <div className="mt-3">{sizeNote(state)}</div>}
                   </>
                 ) : (
                   <SizeSummary original={source.bytes} result={bytes} pending={pending} />
                 )}
-              </InspectorSection>
-
-              <InspectorSection title="frame">
-                <dl className="grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-1.5 text-sm">
-                  <dt className="text-muted">Crop</dt>
-                  <dd className="font-mono text-xs tabular-nums">
-                    {edit.crop
-                      ? `${Math.round(edit.crop.width)}×${Math.round(edit.crop.height)}`
-                      : "None"}
-                  </dd>
-                  <dt className="text-muted">Fitting</dt>
-                  <dd>{FITTING_LABELS[settings.fitting]}</dd>
-                  <dt className="text-muted">Result</dt>
-                  <dd className="font-mono text-xs tabular-nums">
-                    {Math.round(dimensionsPreview.to.width)}×
-                    {Math.round(dimensionsPreview.to.height)}
-                  </dd>
-                </dl>
-                <p className="mt-3 text-muted text-xs">
-                  Crop and fitting are set in the Crop view.
-                </p>
-                <Button
-                  size="sm"
-                  className="mt-2 w-full"
-                  onClick={() => setView(view === "crop" ? "preview" : "crop")}
-                >
-                  {view === "crop" ? "Exit Crop mode" : "Edit in Crop"}
-                </Button>
               </InspectorSection>
 
               <InspectorSection
@@ -516,7 +479,7 @@ export function MediaEditor({
                       }))
                     }
                   >
-                    Reset
+                    reset
                   </Button>
                 }
               >
@@ -530,7 +493,7 @@ export function MediaEditor({
                     />
                   )}
                   <Slider
-                    label="Size"
+                    label="size"
                     value={settings.size}
                     onValueChange={setSetting("size")}
                     min={size.min}
@@ -540,7 +503,7 @@ export function MediaEditor({
                   />
                   {animated && (
                     <Slider
-                      label="Frame rate"
+                      label="frame rate"
                       value={settings.fps}
                       onValueChange={setSetting("fps")}
                       min={Math.min(5, maxFps)}
@@ -551,7 +514,7 @@ export function MediaEditor({
                   )}
                   {!still && (
                     <Slider
-                      label="Colors"
+                      label="colors"
                       value={settings.colors}
                       onValueChange={setSetting("colors")}
                       min={16}
@@ -560,7 +523,7 @@ export function MediaEditor({
                     />
                   )}
                   <Slider
-                    label="Compression"
+                    label="compression"
                     value={settings.compression}
                     onValueChange={setSetting("compression")}
                     min={0}
@@ -571,7 +534,7 @@ export function MediaEditor({
                   />
                   {animated && (
                     <Slider
-                      label="Speed"
+                      label="speed"
                       value={settings.speed}
                       onValueChange={setSetting("speed")}
                       min={0.5}
@@ -581,8 +544,8 @@ export function MediaEditor({
                     />
                   )}
                   <Switch
-                    label="Trim empty edges"
-                    description="Cut transparent borders around the image."
+                    label="trim empty edges"
+                    description="cuts transparent borders around the image"
                     checked={settings.trimEdges}
                     onCheckedChange={setSetting("trimEdges")}
                   />
@@ -597,7 +560,7 @@ export function MediaEditor({
 }
 
 const FORMATS: { value: OutputFormat; label: string }[] = [
-  { value: "auto", label: "Auto" },
+  { value: "auto", label: "auto" },
   { value: "png", label: "PNG" },
   { value: "webp", label: "WebP" },
   { value: "jpeg", label: "JPEG" },
@@ -618,18 +581,18 @@ function FormatPicker({
   const shown = value === "auto" || formats.includes(value) ? value : "auto";
   const hint = {
     auto: result
-      ? `Smallest of the formats that keep its quality: ${result.formatLabel}.`
-      : "Picks the smallest format that keeps its quality.",
-    png: "Lossless, keeps transparency. Compression doesn't apply.",
-    webp: "Small, keeps transparency.",
-    jpeg: "For photos. Transparent areas turn white.",
+      ? `the smallest of the formats that keep its quality: ${result.formatLabel}`
+      : "picks the smallest format that keeps its quality",
+    png: "lossless, keeps transparency. compression doesn't apply",
+    webp: "small, keeps transparency",
+    jpeg: "for photos. transparent areas turn white",
   }[shown];
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="font-medium text-foreground text-sm">Format</span>
+      <span className="font-medium text-foreground text-sm">format</span>
       <SegmentedControl
-        aria-label="Format"
+        aria-label="format"
         value={shown}
         onValueChange={(next) => next && onValueChange(next as OutputFormat)}
         className="flex w-full"
@@ -647,12 +610,6 @@ function FormatPicker({
   );
 }
 
-const CROP_HINTS: Record<Fitting, string> = {
-  contain: "Drag the edges to crop. The result keeps this shape.",
-  cover: "Move or resize the square. Only what's inside stays.",
-  fill: "Drag the edges to crop. This area gets squeezed into a square.",
-};
-
 function SizeSummary({
   original,
   result,
@@ -667,7 +624,7 @@ function SizeSummary({
   return (
     <div className="flex flex-col gap-1">
       <span className="font-medium text-foreground text-sm">
-        {pending ? "Result size · updating" : "Result size"}
+        {pending ? "result size · updating" : "result size"}
       </span>
       <p className="font-mono text-muted text-xs tabular-nums">
         {formatBytes(original)} →{" "}
@@ -698,11 +655,11 @@ function ProcessingOverlay({
     >
       <div className="flex flex-col items-center gap-3 border border-border bg-background px-8 py-6">
         <Spinner className="text-2xl" />
-        <p className="font-medium text-sm">Processing</p>
+        <p className="font-medium text-sm">processing</p>
         <p className="max-w-64 truncate font-mono text-muted text-xs">{fileName}</p>
         {bytes > LARGE_FILE_BYTES && (
           <p className="max-w-64 text-center text-muted text-xs">
-            {formatBytes(bytes)} is a big file, this can take a while.
+            {formatBytes(bytes)} is a big file, this can take a minute
           </p>
         )}
       </div>

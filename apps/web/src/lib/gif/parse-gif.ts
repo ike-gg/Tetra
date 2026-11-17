@@ -19,7 +19,7 @@ export const parseGif = (buffer: ArrayBuffer): GifInfo => {
   const bytes = new Uint8Array(buffer);
   const signature = String.fromCharCode(...bytes.subarray(0, 6));
   if (signature !== "GIF87a" && signature !== "GIF89a") {
-    throw new Error("This file isn't a GIF.");
+    throw new Error("this file isn't a GIF");
   }
 
   const width = bytes[6] | (bytes[7] << 8);
@@ -67,7 +67,7 @@ export const parseGif = (buffer: ArrayBuffer): GifInfo => {
     }
   }
 
-  if (delays.length === 0) throw new Error("This GIF has no frames.");
+  if (delays.length === 0) throw new Error("this GIF has no frames");
 
   // Browsers play delays under 2 cs as 10 cs, so that's what the person actually sees
   const played = delays.map((delay) => (delay < 2 ? 10 : delay));

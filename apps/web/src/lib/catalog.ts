@@ -64,15 +64,15 @@ export const looksLikeEmoteLink = (text: string) =>
 const providerErrorMessage = ({ provider, kind }: ProviderError) => {
   switch (kind) {
     case "unreachable":
-      return `Couldn't reach ${provider}. Check your connection and try again.`;
+      return `i couldn't reach ${provider}. check your connection and try again`;
     case "rate-limited":
-      return `${provider} got too many searches from you. Wait a minute and try again.`;
+      return `${provider} got too many searches from you. wait a minute and try again`;
     case "not-found":
-      return `That emote isn't on ${provider} anymore, or the link is wrong.`;
+      return `that emote isn't on ${provider} anymore, or the link is wrong`;
     case "failed":
-      return `${provider} didn't answer properly. Try again in a moment.`;
+      return `${provider} didn't answer properly. try again in a moment`;
     case "changed":
-      return `${provider} answered in a shape Tetra doesn't know. Its API may have changed.`;
+      return `${provider} answered in a shape i don't know. its API may have changed, so report it if it keeps happening`;
   }
 };
 
@@ -82,19 +82,19 @@ export const lookupErrorMessage = (error: unknown) => {
   if (!(error instanceof ApiError)) return emoteErrorMessage(error);
   switch (error.reference) {
     case "UNSUPPORTED_LINK":
-      return "That link isn't an emote Tetra can read.";
+      return "i can't read an emote from that link. try a 7TV, BTTV or FFZ link, or a direct image link";
     case "URL_NOT_ALLOWED":
-      return "Tetra can't download images from that site. Try a 7TV, BTTV or FFZ link, or a direct image link.";
+      return "i can't download images from that site. try a 7TV, BTTV or FFZ link, or a direct image link";
     case "EMOTE_NOT_FOUND":
-      return "That emote doesn't exist anymore, or the link is wrong.";
+      return "that emote doesn't exist anymore, or the link is wrong";
     case "UNSUPPORTED_FILE_TYPE":
-      return "That file isn't a GIF, PNG, WebP or JPEG image.";
+      return "that file isn't a GIF, PNG, WebP or JPEG image";
     case "FILE_TOO_LARGE":
-      return "That file is over 10 MB, too big for Tetra to fetch.";
+      return "that file is over 10 MB, too big for me to fetch";
     case "UPSTREAM_ERROR":
-      return "The emote site didn't answer. Press Enter to try again.";
+      return "the emote site didn't answer. press enter to try again";
     case "INVALID_REQUEST_SCHEMA":
-      return "That doesn't look like a link.";
+      return "that doesn't look like a link";
   }
   return emoteErrorMessage(error);
 };

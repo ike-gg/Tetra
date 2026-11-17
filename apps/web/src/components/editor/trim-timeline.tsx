@@ -44,7 +44,7 @@ export function TrimTimeline({ info, frames, value, onValueCommit }: TrimTimelin
 
   return (
     <Slider
-      aria-label="Trim"
+      aria-label="trim"
       value={draft}
       onValueChange={(next) => setDraft([next[0], next[1]])}
       onValueCommit={(next) => onValueCommit([next[0], next[1]])}
@@ -52,11 +52,11 @@ export function TrimTimeline({ info, frames, value, onValueCommit }: TrimTimelin
       max={last}
       step={1}
       minStepsBetweenThumbs={1}
-      format={(index) => `Frame ${index + 1} of ${info.frames}`}
+      format={(index) => `frame ${index + 1} of ${info.frames}`}
       className="flex select-none flex-col gap-2"
     >
       <div className="flex items-baseline justify-between gap-3">
-        <span className="font-medium text-sm">Trim</span>
+        <span className="font-medium text-sm">trim</span>
         <span className="font-mono text-muted text-xs tabular-nums">
           {seconds(startTime)} – {seconds(endTime)} ·{" "}
           <span className={trimmed ? "text-foreground" : undefined}>
@@ -80,8 +80,8 @@ export function TrimTimeline({ info, frames, value, onValueCommit }: TrimTimelin
             style={{ width: `${100 - at(end)}%` }}
           />
           <SliderIndicator className="absolute inset-y-0 border-primary border-y-2 bg-transparent" />
-          <TrimHandle index={0} label="Start" />
-          <TrimHandle index={1} label="End" />
+          <TrimHandle index={0} label="start" />
+          <TrimHandle index={1} label="end" />
         </SliderTrack>
       </SliderControl>
     </Slider>

@@ -67,10 +67,10 @@ export function useAddTaskEmote(task: Task, guildName: string) {
   const add = (variables: AddVariables) => {
     const label = `:${variables.name}:`;
     toast.promise(mutation.mutateAsync(variables), {
-      loading: `Adding ${label} to ${guildName}…`,
-      success: { title: `Added ${label} to ${guildName}` },
+      loading: `adding ${label} to ${guildName}`,
+      success: { title: `added ${label} to ${guildName}` },
       error: (error) => ({
-        title: `Couldn't add ${label} to ${guildName}`,
+        title: `couldn't add ${label} to ${guildName}`,
         description: emoteErrorMessage(error),
       }),
     });
@@ -98,8 +98,8 @@ export function useDiscardTask(task: Task) {
     }
     await navigate({ to: "/panel/tasks" });
     void forget();
-    toast.success(`Discarded :${task.emote.name}:`, {
-      description: "The task and its original file are deleted.",
+    toast.success(`discarded :${task.emote.name}:`, {
+      description: "the task and its original file are deleted",
     });
   };
 }

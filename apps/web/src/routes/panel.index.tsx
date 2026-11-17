@@ -29,7 +29,7 @@ function PanelHome() {
   return (
     <div className="flex flex-col gap-12">
       <Heading level={1} size="lg">
-        Welcome back
+        welcome back
         {name && (
           <>
             , <Accent>{name}</Accent>
@@ -49,7 +49,7 @@ function PendingTasks() {
   if (tasks.status === "error") {
     return (
       <PanelError retrying={tasks.isFetching} onRetry={() => void tasks.refetch()}>
-        Couldn&apos;t load your pending tasks.
+        i couldn&apos;t load your pending tasks
       </PanelError>
     );
   }
@@ -62,19 +62,19 @@ function PendingTasks() {
       <div className="flex items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <Heading level={2} size="sm" id="home-tasks">
-            Pending tasks{" "}
+            pending tasks{" "}
             <span className="font-mono font-normal text-primary text-sm tabular-nums">
               {tasks.data.length}
             </span>
           </Heading>
           <Text size="sm" tone="muted">
-            Emotes the bot couldn&apos;t fit into Discord&apos;s limit on its own. They
-            wait here until you fix them.
+            emotes the bot couldn&apos;t fit into Discord&apos;s limit on its own. they
+            wait here until you fix them
           </Text>
         </div>
         {tasks.data.length > HOME_TASKS && (
           <Button variant="ghost" size="sm" render={<Link to="/panel/tasks" />}>
-            View all
+            view all
           </Button>
         )}
       </div>
@@ -89,10 +89,10 @@ function Servers() {
   return (
     <section aria-labelledby="home-servers" className="flex flex-col gap-4">
       <Heading level={2} size="sm" id="home-servers">
-        Your servers
+        your servers
       </Heading>
 
-      {guilds.status === "pending" && <PanelLoading>loading your servers…</PanelLoading>}
+      {guilds.status === "pending" && <PanelLoading>loading your servers</PanelLoading>}
 
       {guilds.status === "error" && (
         <GuildsError
@@ -124,7 +124,7 @@ function Servers() {
                       +
                     </span>
                     <span className="font-medium text-foreground text-sm">
-                      Add Tetra to a server
+                      add tetra to a server
                     </span>
                   </span>
                   <AddableHint lists={guilds.data} />
@@ -143,8 +143,8 @@ function AddableHint({ lists }: { lists: GuildLists }) {
   return (
     <span className="text-muted text-xs">
       {count > 0
-        ? `${count} of your servers ${count === 1 ? "doesn't" : "don't"} have it yet.`
-        : "Opens Discord's invite in a new tab."}
+        ? `${count} of your servers ${count === 1 ? "doesn't" : "don't"} have it yet`
+        : "opens Discord's invite in a new tab"}
     </span>
   );
 }
@@ -153,19 +153,19 @@ function NoServers({ lists }: { lists: GuildLists }) {
   return (
     <div className="flex max-w-lg flex-col items-start gap-4 border border-border p-6">
       <div className="flex flex-col gap-1">
-        <p className="font-medium text-sm">No servers to manage yet</p>
+        <p className="font-medium text-sm">no servers to manage yet</p>
         <Text size="sm" tone="muted">
-          Servers show up here once Tetra is on them and you have the Manage Expressions
-          permission there.{" "}
+          servers show up here once tetra is on them and you have the manage expressions
+          permission there
           {lists.guildsWithoutBotAvailableToAdd.length > 0 &&
-            `You can add it to ${lists.guildsWithoutBotAvailableToAdd.length} of yours.`}
+            `. you can add it to ${lists.guildsWithoutBotAvailableToAdd.length} of yours`}
         </Text>
       </div>
       <Button
         variant="primary"
         render={<a href={INVITE_URL} target="_blank" rel="noreferrer" />}
       >
-        Add Tetra to a server
+        add tetra to a server
       </Button>
       <ReadOnlyServers lists={lists} />
     </div>
@@ -179,10 +179,10 @@ function ReadOnlyServers({ lists }: { lists: GuildLists }) {
 
   return (
     <Text size="xs" tone="muted">
-      Tetra is also on{" "}
+      tetra is also on{" "}
       {names.length === 1 ? "one more server" : `${names.length} more servers`} of yours,
-      where you&apos;d need Manage Expressions to manage emotes:{" "}
-      <span className="text-foreground">{names.join(", ")}</span>.
+      where you&apos;d need manage expressions to manage emotes:{" "}
+      <span className="text-foreground">{names.join(", ")}</span>
     </Text>
   );
 }

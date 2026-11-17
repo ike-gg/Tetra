@@ -59,7 +59,7 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
       <StateLayout host={host}>
         <Text size="sm" tone="muted" className="flex items-center gap-2 font-mono">
           <Spinner />
-          opening the file…
+          opening the file
         </Text>
       </StateLayout>
     );
@@ -69,14 +69,14 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
     return (
       <StateLayout host={host}>
         <Heading level={1} size="md">
-          This file isn&apos;t in this browser
+          this file isn&apos;t in this browser
         </Heading>
         <Text tone="muted">
-          Files are kept only in the browser you edited them in, and only the last few.
-          Open it again to keep editing.
+          files are kept only in the browser you edited them in, and only the last few.
+          open it again to keep editing
         </Text>
         <Button variant="primary" render={<Link to={config.start} />}>
-          Open a file
+          open a file
         </Button>
       </StateLayout>
     );
@@ -88,11 +88,11 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
     <Button
       variant="ghost"
       size="sm"
-      // On a phone the public toolbar's "Editor" crumb does the same
+      // On a phone the public toolbar's "editor" crumb does the same
       className={host === "public" ? "max-sm:hidden" : undefined}
       onClick={() => void navigate({ to: config.start })}
     >
-      New file
+      new file
     </Button>
   );
 
@@ -107,7 +107,7 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
         key={file.url}
         source={file}
         // The panel's header has the breadcrumb already
-        section={host === "public" ? { label: "Editor", to: "/editor" } : undefined}
+        section={host === "public" ? { label: "editor", to: "/editor" } : undefined}
         toolbarStart={host === "panel" ? newFile : undefined}
         // Fills the panel's content area under its 48px header
         className={
@@ -144,7 +144,7 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
                   )
                 }
               >
-                Download
+                download
               </Button>
             </>
           );
@@ -152,8 +152,8 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
         sizeNote={({ fits, result }) => (
           <Text size="xs" tone="muted">
             {fits || !result
-              ? `Discord accepts emotes up to ${formatBytes(DISCORD_EMOTE_LIMIT)}.`
-              : `Discord won't take emotes over ${formatBytes(DISCORD_EMOTE_LIMIT)}. You can still download it.`}
+              ? `Discord accepts emotes up to ${formatBytes(DISCORD_EMOTE_LIMIT)}`
+              : `Discord won't take emotes over ${formatBytes(DISCORD_EMOTE_LIMIT)}. you can still download it`}
           </Text>
         )}
       />

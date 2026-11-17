@@ -50,32 +50,32 @@ function useCurrentView(): CurrentView {
 
   if (taskEditor) {
     return {
-      label: task.data ? `:${task.data.emote.name}:` : "Editor",
-      parent: { label: "Tasks", to: "/panel/tasks" },
+      label: task.data ? `:${task.data.emote.name}:` : "editor",
+      parent: { label: "tasks", to: "/panel/tasks" },
       fullBleed: true,
     };
   }
   if (fileEditor) {
     return {
       label: file.data?.entry.fileName ?? fileEditor.key,
-      parent: { label: "Editor", to: "/panel/editor" },
+      parent: { label: "editor", to: "/panel/editor" },
       fullBleed: true,
     };
   }
-  if (matchRoute({ to: "/panel/editor" })) return { label: "Editor" };
+  if (matchRoute({ to: "/panel/editor" })) return { label: "editor" };
   const server = matchRoute({ to: "/panel/servers/$guildId" });
   if (server) {
     return {
       label:
         guilds.data?.guildsWithUserPermissions.find(
           (guild) => guild.id === server.guildId
-        )?.name ?? "Server",
+        )?.name ?? "server",
     };
   }
-  if (matchRoute({ to: "/panel/tasks" })) return { label: "Tasks" };
-  if (matchRoute({ to: "/panel/browse" })) return { label: "Browse" };
-  if (matchRoute({ to: "/panel/channels" })) return { label: "Channels" };
-  return { label: "Home" };
+  if (matchRoute({ to: "/panel/tasks" })) return { label: "tasks" };
+  if (matchRoute({ to: "/panel/browse" })) return { label: "browse" };
+  if (matchRoute({ to: "/panel/channels" })) return { label: "channels" };
+  return { label: "home" };
 }
 
 const CRUMB_LINK = "cursor-default text-muted no-underline hover:text-foreground";
@@ -98,7 +98,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-20 flex h-12 select-none items-center gap-2 border-border border-b bg-background px-2 text-sm sm:px-4">
         <Drawer side="left" open={navOpen} onOpenChange={setNavOpen}>
           <DrawerTrigger
-            aria-label="Open navigation"
+            aria-label="open navigation"
             className={cn(ICON_BUTTON, view.fullBleed ? "xl:hidden" : "md:hidden")}
           >
             <span aria-hidden="true">≡</span>
@@ -106,9 +106,9 @@ export function PanelLayout({ children }: { children: ReactNode }) {
           <DrawerBackdrop className="bg-black/60" />
           <DrawerContent className="flex h-full w-72 max-w-[85vw] flex-col gap-0 overflow-y-auto overscroll-none border-0 border-border border-r bg-background p-0 shadow-none">
             <div className="flex h-12 shrink-0 items-center justify-between border-border border-b pr-2 pl-5">
-              <DrawerTitle className="font-medium text-sm">Panel</DrawerTitle>
+              <DrawerTitle className="font-medium text-sm">panel</DrawerTitle>
               <DrawerClose className="h-8 cursor-default select-none border-0 bg-transparent px-3 font-medium text-muted text-sm hover:bg-surface hover:text-foreground focus-visible:outline-2 focus-visible:outline-brand-300 focus-visible:-outline-offset-2 active:bg-neutral-800">
-                Close
+                close
               </DrawerClose>
             </div>
             <PanelNav onNavigate={() => setNavOpen(false)} />
@@ -120,7 +120,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
           /
         </span>
         <Link to="/panel" className={CRUMB_LINK}>
-          Panel
+          panel
         </Link>
         <span aria-hidden="true" className="text-neutral-600">
           /

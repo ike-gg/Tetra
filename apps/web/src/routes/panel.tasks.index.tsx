@@ -9,7 +9,7 @@ import { NOINDEX_META } from "@/lib/seo";
 import { tasksQueryOptions } from "@/lib/tasks";
 
 export const Route = createFileRoute("/panel/tasks/")({
-  head: () => ({ meta: [{ title: "Tasks · tetra" }, NOINDEX_META] }),
+  head: () => ({ meta: [{ title: "tasks · tetra" }, NOINDEX_META] }),
   component: PanelTasks,
 });
 
@@ -20,26 +20,26 @@ function PanelTasks() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <Heading level={1} size="lg">
-          Pending tasks
+          pending tasks
         </Heading>
         <Text size="sm" tone="muted">
-          Emotes the bot couldn&apos;t fit into Discord&apos;s limit on its own, sent here
-          with &ldquo;Open in editor&rdquo;. Newest first.
+          emotes the bot couldn&apos;t fit into Discord&apos;s limit on its own, sent here
+          with &ldquo;open in editor&rdquo;. newest first
         </Text>
       </div>
 
-      {tasks.status === "pending" && <PanelLoading>loading your tasks…</PanelLoading>}
+      {tasks.status === "pending" && <PanelLoading>loading your tasks</PanelLoading>}
 
       {tasks.status === "error" && (
         <PanelError retrying={tasks.isFetching} onRetry={() => void tasks.refetch()}>
-          Couldn&apos;t load your pending tasks.
+          i couldn&apos;t load your pending tasks
         </PanelError>
       )}
 
       {tasks.data &&
         (tasks.data.length === 0 ? (
           <Text size="sm" tone="muted" className="font-mono">
-            nothing to fix · every emote fit :NODDERS:
+            nothing to fix · every emote fit
           </Text>
         ) : (
           <TaskList tasks={tasks.data} />

@@ -1,5 +1,6 @@
 import { toDiscordEmoteName } from "@/lib/emote";
 import { parseGif } from "@/lib/gif/parse-gif";
+import { isAnimatedWebp } from "@/lib/gif/webp-frames";
 
 export type MediaInfo = {
   width: number;
@@ -24,6 +25,8 @@ export type MediaFile = {
   bytes: number;
   // Object URL of the original; release it with `releaseMediaFile`
   url: string;
+  // An animated WebP the browser couldn't convert to GIF, opened as its first frame
+  firstFrameOnly: boolean;
 };
 
 export const ACCEPTED_TYPES = [
@@ -38,22 +41,26 @@ export const ACCEPTED_TYPES = [
   "image/webp",
 ];
 
+// Everything runs in browser memory; past this, processing gets slow on most machines.
+// Also caps the GIF an animated WebP turns into.
+export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+
 // Past this processing in the browser gets slow and can run out of memory; the editor
 // still opens such files but warns that it isn't built for them
 export const LARGE_FILE_BYTES = 5 * 1024 * 1024;
 
 // Discord emote names: 2–32 letters, numbers or underscores
 export const emoteNameError = (name: string) => {
-  if (name.length < 2) return "At least 2 characters.";
-  if (name.length > 32) return "At most 32 characters.";
-  if (!/^[A-Za-z0-9_]+$/.test(name)) return "Only letters, numbers and _.";
+  if (name.length < 2) return "at least 2 characters";
+  if (name.length > 32) return "at most 32 characters";
+  if (!/^[A-Za-z0-9_]+$/.test(name)) return "only letters, numbers and _";
   return undefined;
 };
 
 // Characters file systems reject; everything else is fine in a downloaded file's name
 export const fileNameError = (name: string) => {
-  if (name.trim().length === 0) return "Enter a name.";
-  if (/[/\\:*?"<>|]/.test(name)) return 'Leave out / \\ : * ? " < > |';
+  if (name.trim().length === 0) return "enter a name";
+  if (/[/\\:*?"<>|]/.test(name)) return 'leave out / \\ : * ? " < > |';
   return undefined;
 };
 
@@ -74,7 +81,7 @@ const readImageSize = async (blob: Blob) => {
     bitmap.close();
     return size;
   } catch {
-    throw new Error("This file can't be opened as an image.");
+    throw new Error("i can't open this file as an image. it may be broken");
   }
 };
 
@@ -96,6 +103,7 @@ export const loadMediaFile = async (blob: Blob, fileName: string): Promise<Media
     info,
     bytes: buffer.byteLength,
     url: URL.createObjectURL(blob),
+    firstFrameOnly: !gif && isAnimatedWebp(buffer),
   };
 };
 

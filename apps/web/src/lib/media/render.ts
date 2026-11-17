@@ -47,7 +47,7 @@ export const renderMedia = async (
       buildCommands(source.info, edit),
       signal
     );
-    if (!output) throw new Error("Processing produced no file.");
+    if (!output) throw new Error("processing produced no file. try again");
     const blob = new Blob([output.file], { type: "image/gif" });
     return finish(blob, parseGif(await blob.arrayBuffer()), "gif", "GIF");
   }

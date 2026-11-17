@@ -419,3 +419,14 @@ export function findSimilarEmoteGroups(emotes: NamedEmote[]): SimilarGroup[] {
 /** Changes when an emote joins or leaves the group, so a dismissed group comes back then. */
 export const similarGroupDismissKey = (group: SimilarGroup) =>
   `${group.key}|${sortedText(group.emoteIds).join(",")}`;
+
+/**
+ * The groups after emotes left the server: each loses its removed members and goes once
+ * fewer than two remain. Regrouping instead could merge a shrunk group into another
+ * with the same members, so the group someone is tidying would vanish mid-way.
+ */
+export const pruneSimilarGroups = (groups: SimilarGroup[], present: Set<string>) =>
+  groups.flatMap((group) => {
+    const emoteIds = group.emoteIds.filter((id) => present.has(id));
+    return emoteIds.length >= 2 ? [{ ...group, emoteIds }] : [];
+  });

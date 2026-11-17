@@ -7,10 +7,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { formatBytes } from "@/lib/format-bytes";
-import { ACCEPTED_TYPES } from "@/lib/media/media-file";
-
-// Everything runs in browser memory; past this, processing gets slow on most machines
-export const MAX_FILE_BYTES = 20 * 1024 * 1024;
+import { ACCEPTED_TYPES, MAX_FILE_BYTES } from "@/lib/media/media-file";
 
 const rejectionMessage = ([rejection]: FileRejection[]) => {
   if (!rejection) return "that file didn't work";

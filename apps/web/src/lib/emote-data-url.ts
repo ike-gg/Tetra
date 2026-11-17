@@ -8,7 +8,12 @@ export const toEmoteDataUrl = (blob: Blob) =>
     reader.onload = () => {
       const url = String(reader.result);
       if (EMOTE_DATA_URL.test(url)) resolve(url);
-      else reject(new Error("Only GIF, PNG and WebP can be added."));
+      else
+        reject(
+          new Error(
+            "only GIF, PNG and WebP can be added. pick another format in the editor"
+          )
+        );
     };
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);

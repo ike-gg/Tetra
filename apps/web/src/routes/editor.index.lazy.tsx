@@ -28,7 +28,7 @@ const STEPS = [
   },
   {
     title: "make it fit",
-    body: "turn on Discord emote and a meter shows the size against 256 KB. fit automatically raises compression and lowers the frame rate, colors and size until it fits",
+    body: "turn on Discord emote and a meter shows the size against 256 KB and how much is left to cut. lower the size, frame rate, colors or raise compression until it fits",
   },
   {
     title: "download it",
@@ -50,7 +50,7 @@ const FAQ: { question: string; answer: ReactNode }[] = [
   {
     question: "how do i make a GIF smaller without losing much quality?",
     answer:
-      "crop to the part that matters, trim the clip to the frames you need, lower the size, then the frame rate. each of these cuts bytes without touching what's left. fewer colors and more compression save a lot too, but they show sooner. fit automatically finds settings that fit for you",
+      "crop to the part that matters, trim the clip to the frames you need, lower the size, then the frame rate. each of these cuts bytes without touching what's left. fewer colors and more compression save a lot too, but they show sooner",
   },
   {
     question: "is my file uploaded anywhere?",

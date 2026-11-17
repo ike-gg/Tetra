@@ -24,56 +24,56 @@ import {
 /** A sentence for a toast, from the API's error reference (never from its message text). */
 export const emoteErrorMessage = (error: unknown) => {
   if (!(error instanceof ApiError)) {
-    return "Couldn't reach Tetra. Check your connection and try again.";
+    return "i couldn't reach tetra. check your connection and try again";
   }
   switch (error.reference) {
     case "URL_NOT_ALLOWED":
-      return "Tetra can't download emotes from that address.";
+      return "i can't download emotes from that address";
     case "DOWNLOAD_DATA_FAILED":
-      return "Tetra couldn't download the emote file.";
+      return "i couldn't download the emote file. try again in a moment";
     case "MISSING_PERMISSIONS":
-      return "You need the Manage Expressions permission on that server.";
+      return "you need the manage expressions permission on that server";
     case "USER_NOT_IN_GUILD":
     case "GUILD_NOT_FOUND_UNKNOWN_GUILD_BOT":
-      return "You or Tetra aren't on that server anymore.";
+      return "you or tetra aren't on that server anymore";
     case "OAUTH_GET_GUILDS_ERROR":
-      return "Discord didn't confirm your servers in time. Try again in a moment.";
+      return "Discord didn't confirm your servers in time. try again in a moment";
     case "INVALID_REQUEST_SCHEMA":
-      return "Discord won't take that name: 2–32 letters, numbers or _.";
+      return "Discord needs a name of 2–32 letters, numbers or _";
     case "GUILD_EMOTE_NOT_FOUND":
     case "EMOTE_NOT_FOUND":
-      return "It's already gone.";
+      return "it's already gone";
     case "GUILD_EMOTE_DELETE_FAILED":
-      return "Discord didn't let Tetra remove it.";
+      return "Discord didn't let me remove it";
     case "EMOTE_TOO_LARGE":
-      return "Too big for Discord's 256 KB limit, even after optimizing.";
+      return "it's still over Discord's 256 KB limit after optimizing. try a shorter clip in the editor";
     case "GUILD_EMOJI_LIMIT_REACHED":
-      return "No free emote slots of that type on the server.";
+      return "this server has no free slots of that type. remove one or boost the server for more";
     case "BOT_MISSING_PERMISSIONS":
-      return "Tetra lost the Manage Expressions permission on that server.";
+      return "i need the manage expressions permission on that server";
     case "INVALID_EMOTE_NAME":
-      return "Discord won't take that name: 2–32 letters, numbers or _.";
+      return "Discord needs a name of 2–32 letters, numbers or _";
     case "INVALID_EMOTE_FILE":
-      return "Discord rejected the image file.";
+      return "Discord rejected the image file";
     case "PAYLOAD_TOO_LARGE":
-      return "The file is too big to send. Get it under 256 KB first.";
+      return "the file is too big to send. get it under 256 KB first";
     case "TASK_NOT_FOUND":
-      return "This task is gone: it was already fixed or discarded.";
+      return "this task is gone: it was already fixed or discarded";
     case "FILE_TOO_LARGE":
-      return "The original file is over 10 MB, too big for Tetra to fetch.";
+      return "the original file is over 10 MB, too big for me to fetch";
     case "UNSUPPORTED_FILE_TYPE":
-      return "The original isn't a GIF, PNG, WebP or JPEG image.";
+      return "the original isn't a GIF, PNG, WebP or JPEG image";
     case "NO_SESSION":
     case "SESSION_EXPIRED":
-      return "Your session ended. Log in again, then add it.";
+      return "your session ended. log in again, then add it";
     case "RATE_LIMITED":
-      return "That's a lot at once. Wait a moment and try again.";
+      return "that's a lot at once. wait a moment and try again";
     // Any Discord error core doesn't map to its own code
     case "DISCORD_API_ERROR":
       return `Discord said: ${error.message}`;
   }
   if (error.status >= 500) {
-    return "Something broke on our side. Try again.";
+    return "something broke on my side. try again";
   }
   return error.message;
 };
@@ -106,10 +106,10 @@ export function useAddEmote() {
     const name = toDiscordEmoteName(variables.emote.name);
     const request = mutation.mutateAsync(variables);
     toast.promise(request, {
-      loading: `Adding ${name} to ${variables.guild.name}…`,
-      success: { title: `Added ${name} to ${variables.guild.name}` },
+      loading: `adding ${name} to ${variables.guild.name}`,
+      success: { title: `added ${name} to ${variables.guild.name}` },
       error: (error) => ({
-        title: `Couldn't add ${name} to ${variables.guild.name}`,
+        title: `couldn't add ${name} to ${variables.guild.name}`,
         description: emoteErrorMessage(error),
       }),
     });
@@ -149,10 +149,10 @@ export function useUploadEmote() {
     const label = `:${variables.name}:`;
     const request = mutation.mutateAsync(variables);
     toast.promise(request, {
-      loading: `Adding ${label} to ${variables.guild.name}…`,
-      success: { title: `Added ${label} to ${variables.guild.name}` },
+      loading: `adding ${label} to ${variables.guild.name}`,
+      success: { title: `added ${label} to ${variables.guild.name}` },
       error: (error) => ({
-        title: `Couldn't add ${label} to ${variables.guild.name}`,
+        title: `couldn't add ${label} to ${variables.guild.name}`,
         description: emoteErrorMessage(error),
       }),
     });
@@ -198,13 +198,13 @@ export function useRemoveEmote(guildId: string) {
 
   return (emote: PanelEmote, guildName: string) => {
     toast.promise(mutation.mutateAsync(emote), {
-      loading: `Removing ${emote.name}…`,
+      loading: `removing ${emote.name}`,
       success: {
-        title: `Removed ${emote.name} from ${guildName}`,
-        description: "You can put it back from Removed.",
+        title: `removed ${emote.name} from ${guildName}`,
+        description: "you can put it back from removed",
       },
       error: (error) => ({
-        title: `Couldn't remove ${emote.name}`,
+        title: `couldn't remove ${emote.name}`,
         description: emoteErrorMessage(error),
       }),
     });
@@ -238,10 +238,10 @@ export function useRestoreEmote(guildId: string) {
 
   return (emote: PanelEmote, guildName: string) => {
     toast.promise(mutation.mutateAsync(emote), {
-      loading: `Restoring ${emote.name}…`,
-      success: { title: `Restored ${emote.name} on ${guildName}` },
+      loading: `restoring ${emote.name}`,
+      success: { title: `restored ${emote.name} on ${guildName}` },
       error: (error) => ({
-        title: `Couldn't restore ${emote.name}`,
+        title: `couldn't restore ${emote.name}`,
         description: emoteErrorMessage(error),
       }),
     });

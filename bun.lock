@@ -69,6 +69,7 @@
         "@ui-sdk/core": "0.1.0-beta.1",
         "@ui-sdk/react": "0.1.0-beta.1",
         "clsx": "^2.1.1",
+        "gifenc": "1.0.3",
         "gifsicle-wasm-browser": "1.5.16",
         "hono": "^4.13.18",
         "matter-js": "0.20.0",
@@ -785,6 +786,8 @@
     "get-stream": ["get-stream@6.0.1", "", {}, ""],
 
     "get-tsconfig": ["get-tsconfig@4.10.0", "", { "dependencies": { "resolve-pkg-maps": "^1.0.0" } }, "sha512-kGzZ3LWWQcGIAmg6iWvXn0ei6WDtV26wzHRMwDSzmAbcXrTEXxHy6IehI6/4eT6VRKyMP1eF1VqwrVUmE/LR7A=="],
+
+    "gifenc": ["gifenc@1.0.3", "", {}, "sha512-xdr6AdrfGBcfzncONUOlXMBuc5wJDtOueE3c5rdG0oNgtINLD+f2iFZltrBRZYzACRbKr+mSVU/x98zv2u3jmw=="],
 
     "gifsicle": ["gifsicle@7.0.1", "", { "dependencies": { "bin-build": "^3.0.0", "bin-wrapper": "^4.0.0", "execa": "^6.1.0" }, "bin": { "gifsicle": "cli.js" } }, "sha512-Mwg4tDc7dUUWYNan/NAf4pKcrCwDSUAXRqBNtqXjtwzMyGJ6LVFz5pwMC/SEj2rsw1VILrhr+kk/2wG3+GMXfg=="],
 

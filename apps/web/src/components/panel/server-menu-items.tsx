@@ -23,14 +23,12 @@ export function ServerMenuItems({ animated, onPick, hereId }: ServerMenuItemsPro
 
   return (
     <>
-      {guilds.status === "pending" && (
-        <MenuItem variant="info">Loading servers…</MenuItem>
-      )}
+      {guilds.status === "pending" && <MenuItem variant="info">loading servers</MenuItem>}
       {guilds.status === "error" && (
-        <MenuItem variant="info">Couldn&apos;t load your servers</MenuItem>
+        <MenuItem variant="info">i couldn&apos;t load your servers</MenuItem>
       )}
       {guilds.status === "success" && targets.length === 0 && (
-        <MenuItem variant="info">No servers you can manage</MenuItem>
+        <MenuItem variant="info">no servers you can manage</MenuItem>
       )}
       {targets.map((target) => {
         const free = target.emojis.limit - target.emojis[slots];

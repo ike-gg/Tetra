@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
 import { TextField } from "@/components/ui/text-field";
-import { saveToLibrary } from "@/lib/media/local-library";
-import { loadMediaFile, releaseMediaFile } from "@/lib/media/media-file";
+import { importToLibrary } from "@/lib/media/import-media";
+import { MAX_FILE_BYTES } from "@/lib/media/media-file";
 import { fetchMediaLink, parseMediaLink } from "@/lib/media/media-link";
 
 import { EDITOR_HOSTS, type EditorHost } from "./editor-host";
-import { MAX_FILE_BYTES, MediaDropzone } from "./media-dropzone";
+import { MediaDropzone } from "./media-dropzone";
 import { RecentFiles } from "./recent-files";
 
 const isEditable = (target: EventTarget | null) =>
@@ -22,52 +22,61 @@ const messageOf = (error: unknown) =>
 export function EditorStart({ host }: { host: EditorHost }) {
   const navigate = useNavigate();
   const [fileError, setFileError] = useState<string | null>(null);
+  const [fileStatus, setFileStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState("");
   const [linkError, setLinkError] = useState<string | null>(null);
   const [linkStatus, setLinkStatus] = useState<string | null>(null);
   const linkInput = useRef<HTMLInputElement>(null);
-  const linkRequest = useRef<AbortController | null>(null);
+  // The file or link being opened; a new one aborts it
+  const request = useRef<AbortController | null>(null);
 
-  useEffect(() => () => linkRequest.current?.abort(), []);
+  useEffect(() => () => request.current?.abort(), []);
 
-  // Loading first validates the file, so only files the editor can open are kept
-  const open = async (file: File) => {
-    const media = await loadMediaFile(file, file.name);
-    releaseMediaFile(media);
-    const key = await saveToLibrary(file, media, file.name);
+  const begin = () => {
+    request.current?.abort();
+    const next = new AbortController();
+    request.current = next;
+    setLinkStatus(null);
+    setFileStatus(null);
+    setFileError(null);
+    setBusy(true);
+    return next.signal;
+  };
+
+  const open = async (
+    file: File,
+    signal: AbortSignal,
+    onStatus: (status: string) => void
+  ) => {
+    const key = await importToLibrary(file, file.name, { signal, onStatus });
     await navigate({ to: EDITOR_HOSTS[host].file, params: { key } });
   };
 
   const openFile = async (file: File) => {
-    linkRequest.current?.abort();
-    setLinkStatus(null);
-    setBusy(true);
-    setFileError(null);
+    const signal = begin();
     try {
-      await open(file);
+      await open(file, signal, setFileStatus);
     } catch (cause) {
+      if (signal.aborted) return;
       setFileError(messageOf(cause));
+      setFileStatus(null);
       setBusy(false);
     }
   };
 
   const openLink = async (text: string) => {
-    linkRequest.current?.abort();
-    const request = new AbortController();
-    linkRequest.current = request;
+    const signal = begin();
     setLinkError(null);
-    setFileError(null);
-    setBusy(true);
     try {
       const file = await fetchMediaLink(text, {
         maxBytes: MAX_FILE_BYTES,
-        signal: request.signal,
+        signal,
         onStatus: setLinkStatus,
       });
-      await open(file);
+      await open(file, signal, setLinkStatus);
     } catch (cause) {
-      if (request.signal.aborted) return;
+      if (signal.aborted) return;
       setLinkError(messageOf(cause));
       setLinkStatus(null);
       setBusy(false);
@@ -102,6 +111,15 @@ export function EditorStart({ host }: { host: EditorHost }) {
             onError={setFileError}
             busy={busy}
           />
+          {fileStatus && (
+            <p
+              role="status"
+              className="flex items-center gap-2 font-mono text-muted text-xs"
+            >
+              <Spinner />
+              {fileStatus}
+            </p>
+          )}
           {fileError && (
             <p role="alert" className="text-danger text-sm">
               {fileError}

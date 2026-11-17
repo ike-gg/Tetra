@@ -28,8 +28,8 @@ export function NotFoundPage() {
               404
             </Heading>
             <Text size="lg" tone="muted" className="mt-6 max-w-md text-balance">
-              This page got timed out. The emotes didn&apos;t, so go ahead and throw them
-              around.
+              this page got timed out. the emotes didn&apos;t, so go ahead and throw them
+              around
             </Text>
             <Button
               variant="primary"
@@ -37,7 +37,7 @@ export function NotFoundPage() {
               className="pointer-events-auto mt-10"
               render={<Link to="/" />}
             >
-              Back home
+              back home
             </Button>
           </div>
         </section>

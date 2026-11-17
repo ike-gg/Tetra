@@ -1,4 +1,4 @@
-import type { MediaFile, MediaInfo } from "./media-file";
+import type { MediaInfo } from "./media-file";
 
 // Discord's emote limit, the same on every server. The editor works for any image, this is
 // just the target it measures against.
@@ -41,8 +41,7 @@ export const sizeRange = (info: MediaInfo) => {
   return { min: Math.min(16, longest), max: longest };
 };
 
-// Starts from the original, untouched: the editor isn't only for emotes, and "Fit
-// automatically" is one click away when it has to fit Discord
+// Starts from the original, untouched: the editor isn't only for emotes
 export const defaultSettings = (info: MediaInfo): EditSettings => ({
   size: sizeRange(info).max,
   fps: sourceFps(info),
@@ -137,38 +136,4 @@ export const restoreEdit = (
     crop: saved.crop ?? null,
     trim: [start, end],
   };
-};
-
-// One step of quality traded for size, in the order people notice least.
-// Returns null when there's nothing left to give.
-export const reduceStep = (
-  source: MediaFile,
-  settings: EditSettings
-): EditSettings | null => {
-  const { info } = source;
-  const minSize = Math.min(48, sizeRange(info).max);
-  const smaller = () =>
-    settings.size > minSize
-      ? { ...settings, size: Math.max(minSize, Math.round(settings.size * 0.8)) }
-      : null;
-
-  if (source.kind === "image") {
-    // Lossy WebP/JPEG beats lossless PNG by far; "auto" picks it once compression is on
-    if (settings.compression < 60) {
-      return { ...settings, compression: Math.min(60, settings.compression + 20) };
-    }
-    if (settings.format === "png") return { ...settings, format: "auto" };
-    return smaller();
-  }
-
-  if (settings.compression < 60) {
-    return { ...settings, compression: Math.min(60, settings.compression + 20) };
-  }
-  const minFps = Math.min(12, sourceFps(info));
-  if (settings.fps > minFps) {
-    return { ...settings, fps: Math.max(minFps, Math.floor(settings.fps * 0.75)) };
-  }
-  if (settings.colors > 64) return { ...settings, colors: settings.colors / 2 };
-  if (settings.compression < 100) return { ...settings, compression: 100 };
-  return smaller();
 };

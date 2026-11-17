@@ -25,6 +25,7 @@
     "@ui-sdk/core": "0.1.0-beta.1",
     "@ui-sdk/react": "0.1.0-beta.1",
     "clsx": "^2.1.1",
+    "gifenc": "1.0.3",
     "gifsicle-wasm-browser": "1.5.16",
     "hono": "^4.13.18",
     "matter-js": "0.20.0",

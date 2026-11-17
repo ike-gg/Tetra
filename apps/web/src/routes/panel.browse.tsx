@@ -43,12 +43,12 @@ const PROVIDER_NAMES: Record<BrowseProvider, string> = {
 };
 
 const POPULAR_TITLES: Record<SearchProvider, string> = {
-  "7tv": "Top on 7TV",
-  ffz: "Most used on FFZ",
+  "7tv": "top on 7TV",
+  ffz: "most used on FFZ",
 };
 
 export const Route = createFileRoute("/panel/browse")({
-  head: () => ({ meta: [{ title: "Browse · tetra" }, NOINDEX_META] }),
+  head: () => ({ meta: [{ title: "browse · tetra" }, NOINDEX_META] }),
   // 7TV is the default, so it stays out of the URL
   validateSearch: (search: Record<string, unknown>): BrowseSearch => ({
     provider:
@@ -99,10 +99,10 @@ function PanelBrowse() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <Heading level={1} size="lg">
-          Browse emotes
+          browse emotes
         </Heading>
         <Text size="sm" tone="muted">
-          Select an emote, or right-click it, to add it
+          select an emote, or right-click it, to add it
           {guild ? (
             <>
               {" "}
@@ -111,13 +111,12 @@ function PanelBrowse() {
           ) : (
             " to a server"
           )}
-          .
         </Text>
       </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <SegmentedControl
-          aria-label="Emote site"
+          aria-label="emote site"
           value={provider}
           onValueChange={(next) =>
             next &&
@@ -137,12 +136,12 @@ function PanelBrowse() {
           ))}
         </SegmentedControl>
         <TextField
-          label={`Search ${PROVIDER_NAMES[provider]}`}
+          label={`search ${PROVIDER_NAMES[provider]}`}
           hideLabel
           type="search"
           value={draft}
           onValueChange={setDraft}
-          placeholder={`Search ${PROVIDER_NAMES[provider]}`}
+          placeholder={`search ${PROVIDER_NAMES[provider]}`}
           disabled={!isSearchProvider(provider)}
           className="min-w-40 flex-1 sm:max-w-72"
         />
@@ -160,11 +159,12 @@ function PanelBrowse() {
           title="BTTV is temporarily disabled"
           action={
             <Button size="sm" onClick={() => quickAdd({ guildId: guild?.id })}>
-              Quick add
+              quick add
             </Button>
           }
         >
-          Something's off on their side; Use 7TV or FFZ instead for now.
+          something's off on their side. use 7TV or FFZ for now, or paste a BTTV link into
+          quick add
         </Notice>
       )}
     </div>
@@ -216,9 +216,7 @@ function Results({ provider, query, guild }: ResultsProps) {
 
       {results.status === "pending" && (
         <PanelLoading>
-          {query
-            ? `searching ${name}…`
-            : `loading ${POPULAR_TITLES[provider].toLowerCase()}…`}
+          {query ? `searching ${name}` : `loading ${POPULAR_TITLES[provider]}`}
         </PanelLoading>
       )}
 
@@ -230,7 +228,7 @@ function Results({ provider, query, guild }: ResultsProps) {
 
       {results.status === "success" && emotes.length === 0 && (
         <Text size="sm" tone="muted">
-          Nothing on {name} matches “{query}”.
+          nothing on {name} matches “{query}”
         </Text>
       )}
 
@@ -240,7 +238,7 @@ function Results({ provider, query, guild }: ResultsProps) {
         </EmoteMenu>
       )}
 
-      {isFetchingNextPage && <PanelLoading>loading more…</PanelLoading>}
+      {isFetchingNextPage && <PanelLoading>loading more</PanelLoading>}
 
       {isFetchNextPageError && (
         <PanelError retrying={isFetchingNextPage} onRetry={() => void fetchNextPage()}>

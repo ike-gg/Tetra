@@ -41,11 +41,15 @@ export const runGifsicle = async (
       finish();
       if (Array.isArray(data)) resolve(data);
       else
-        reject(new Error(typeof data === "string" ? data : "Processing the GIF failed."));
+        reject(
+          new Error(
+            typeof data === "string" ? data : "processing the GIF failed. try again"
+          )
+        );
     };
     worker.onerror = (event) => {
       finish();
-      reject(new Error(event.message || "Processing the GIF failed."));
+      reject(new Error(event.message || "processing the GIF failed. try again"));
     };
 
     const file = input.slice(0);

@@ -36,7 +36,7 @@ function PanelGate() {
       <PanelScreen>
         <Text size="sm" tone="muted" className="flex items-center gap-2 font-mono">
           <Spinner />
-          checking your session…
+          checking your session
         </Text>
       </PanelScreen>
     );
@@ -47,14 +47,15 @@ function PanelGate() {
       <PanelScreen>
         <div className="flex flex-col items-start gap-4">
           <p role="alert" className="text-danger text-sm">
-            Couldn&apos;t reach Tetra to check your session. It may be down for a moment.
+            i couldn&apos;t check your session. tetra may be down for a moment, try again
+            soon
           </p>
           <Button
             size="sm"
             disabled={session.isFetching}
             onClick={() => void session.refetch()}
           >
-            {session.isFetching ? "Retrying…" : "Retry"}
+            {session.isFetching ? "retrying" : "retry"}
           </Button>
         </div>
       </PanelScreen>

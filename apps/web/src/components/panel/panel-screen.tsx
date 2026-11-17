@@ -17,7 +17,7 @@ export function PanelScreen({ children, actions }: PanelScreenProps) {
       <header className="flex h-12 shrink-0 select-none items-center gap-2 border-border border-b px-4 text-sm">
         <BrandLink />
         <span className="text-neutral-600">/</span>
-        <span className="font-medium">Panel</span>
+        <span className="font-medium">panel</span>
         {actions && <div className="ml-auto flex items-center gap-2">{actions}</div>}
       </header>
       <main className="flex-1 px-4 pt-16 pb-12 sm:pt-24">

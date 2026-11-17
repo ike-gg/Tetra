@@ -59,7 +59,7 @@ export const renderImage = (
     };
     worker.onerror = (event) => {
       finish();
-      reject(new Error(event.message || "Processing the image failed."));
+      reject(new Error(event.message || "processing the image failed. try again"));
     };
 
     const job: ImageJob = {
