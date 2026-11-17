@@ -37,10 +37,9 @@ const pick = (sizes: z.infer<typeof sizesSchema>, order: ("1" | "2" | "4")[]) =>
   return null;
 };
 
-/**
- * Animated emotes as WebP: FFZ's `animated/<n>.gif` hangs without a response for 2x and
- * 4x (verified 2026-11), and an extension on a static URL (`/4.png`) is a 400.
- */
+// Animated emotes as WebP: FFZ makes `animated/<n>.gif` on demand and it's unreliable per
+// emote and size (hangs, or 522 after 20 s), while `animated/<n>.webp` answers at once.
+// An extension on a static URL (`/4.png`) is a 400.
 const toCatalogEmote = (emote: FfzEmote): CatalogEmote | null => {
   const sizes = emote.animated ?? emote.urls;
   const suffix = emote.animated ? ".webp" : "";
