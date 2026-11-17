@@ -50,54 +50,16 @@ const OPTIMIZED = [
 const SCALE_MAX = Math.max(...OPTIMIZED.map((emote) => emote.before));
 const percent = (bytes: number) => `${(bytes / SCALE_MAX) * 100}%`;
 
-type Product = {
-  title: string;
-  isNew?: boolean;
-  summary: string;
-  facts: { label: string; value: string }[];
-  does: string[];
-  button: ReactNode;
-};
-
-// Same facts in the same order on both cards, so they read as a comparison
-const PRODUCTS: Product[] = [
+const PRODUCTS: { title: string; isNew?: boolean; body: string; button: ReactNode }[] = [
   {
     title: "editor",
     isNew: true,
-    summary: "a quick editor for any GIF or image, in the browser",
-    facts: [
-      { label: "for", value: "any file, emote or not" },
-      { label: "account", value: "none" },
-      { label: "your file", value: "stays on your device" },
-      {
-        label: "result",
-        value: "download it, or add it to a server when you're logged in",
-      },
-    ],
-    does: [
-      "crop, trim, resize and compress",
-      "shows the size against Discord's 256 KB as you change it",
-    ],
+    body: "a fast editor for emotes and any other GIF or image. it runs on your device, no account needed",
     button: <Button render={<Link to="/editor" />}>open the editor</Button>,
   },
   {
     title: "panel",
-    summary: "everything tetra does for your servers, on the web",
-    facts: [
-      { label: "for", value: "the servers you manage emotes on" },
-      { label: "account", value: "log in with Discord" },
-      { label: "your file", value: "edited in this browser, like in the editor" },
-      { label: "result", value: "added straight to the server" },
-    ],
-    does: [
-      "browse 7TV and FFZ and add from there",
-      "a Twitch channel's emotes on Twitch, 7TV, BTTV and FFZ",
-      "every server's emotes: add, remove, and restore ones removed while tetra was there",
-      "keep a server in sync with a 7TV set, with your own rules (experimental)",
-      "“open in editor” on tetra's reply in Discord brings the emote here to fix",
-      "paste a link anywhere in the panel to add it",
-      "the editor, built in",
-    ],
+    body: "the same editor, linked to your Discord account, so managing emotes is simpler. your servers' emotes, 7TV sync and tasks from the bot",
     button: <Button render={<Link to="/panel" />}>open panel</Button>,
   },
 ];
@@ -249,9 +211,8 @@ function TuneIt() {
         too big to shrink well? tune it yourself
       </Heading>
       <Text tone="muted" className="mt-4 max-w-xl">
-        when an emote is far over the limit, fitting it automatically costs quality. in
-        the editor you pick the crop, the length and the size yourself, and the result
-        usually looks better
+        fitting a huge emote automatically costs quality. pick the crop, length and size
+        yourself and it usually looks better
       </Text>
 
       <div className="mt-14 grid gap-px border border-border bg-border md:grid-cols-2">
@@ -265,35 +226,9 @@ function TuneIt() {
                 </span>
               )}
             </Heading>
-            <Text tone="muted" className="mt-2">
-              {product.summary}
+            <Text tone="muted" className="mt-3 max-w-md">
+              {product.body}
             </Text>
-
-            <dl className="m-0 mt-8 border-border border-t">
-              {product.facts.map((fact) => (
-                <div
-                  key={fact.label}
-                  className="grid grid-cols-[6rem_1fr] gap-4 border-border border-b py-3 text-sm"
-                >
-                  <dt className="font-mono text-muted text-xs leading-5 tracking-widest">
-                    {fact.label}
-                  </dt>
-                  <dd className="m-0 text-foreground">{fact.value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <ul className="m-0 mt-6 flex list-none flex-col gap-2 p-0 text-muted text-sm">
-              {product.does.map((item) => (
-                <li key={item} className="flex gap-3">
-                  <span aria-hidden className="font-mono text-border">
-                    -
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-
             <div className="mt-auto pt-8">{product.button}</div>
           </article>
         ))}
