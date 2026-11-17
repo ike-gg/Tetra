@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { ChannelSearch } from "@/components/panel/channel-search";
 import { GuildIcon } from "@/components/panel/guild-icon";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
+import { StvSyncLog } from "@/components/panel/stv-sync-log";
 import { StvSyncReview } from "@/components/panel/stv-sync-review";
 import {
   StvSyncSaveBar,
@@ -35,7 +36,7 @@ import { useSyncSettingsDraft } from "@/lib/stv-sync-settings-draft";
 
 /**
  * A server's 7TV channel sync: setup, the linked channel and its status, the emotes that
- * need review, and its settings.
+ * need review, what it did lately, and its settings.
  */
 export function StvSync({ guild }: { guild: ManagedGuild }) {
   const state = useQuery(syncQueryOptions(guild.id));
@@ -109,6 +110,9 @@ function LinkedSyncBody({
       <SyncStatus guild={guild} state={state} sync={sync} />
       <Section id="sync-review" title="needs review" count={sync.reviewEmotes}>
         <StvSyncReview guild={guild} />
+      </Section>
+      <Section id="sync-activity" title="activity">
+        <StvSyncLog guildId={guild.id} />
       </Section>
       <Section id="sync-settings" title="settings">
         <StvSyncSettings
