@@ -16,7 +16,7 @@ import { PanelUserMenu } from "@/components/panel/panel-user-menu";
 import { QuickAddProvider } from "@/components/panel/quick-add-dialog";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/cn";
-import { guildsQueryOptions } from "@/lib/guilds";
+import { findGuild, guildsQueryOptions } from "@/lib/guilds";
 import { libraryFileQueryOptions } from "@/lib/media/library-file";
 import { taskQueryOptions } from "@/lib/tasks";
 
@@ -70,8 +70,7 @@ function useCurrentView(): CurrentView {
   }
   if (matchRoute({ to: "/panel/editor" })) return { label: "editor" };
   const serverName = (guildId: string) =>
-    guilds.data?.guildsWithUserPermissions.find((guild) => guild.id === guildId)?.name ??
-    "server";
+    findGuild(guilds.data, guildId)?.name ?? "server";
   const activity = matchRoute({ to: "/panel/servers/$guildId/sync/activity" });
   if (activity) {
     return {

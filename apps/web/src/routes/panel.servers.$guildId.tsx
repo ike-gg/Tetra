@@ -10,6 +10,7 @@ import { PanelError, PanelLoading } from "@/components/panel/query-state";
 import { QuickAdd } from "@/components/panel/quick-add";
 import { SimilarEmotes } from "@/components/panel/similar-emotes";
 import { StvSyncTile } from "@/components/panel/stv-sync";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Notice } from "@/components/ui/notice";
@@ -63,18 +64,21 @@ function PanelServer() {
 
   const guild = guilds.data.guildsWithUserPermissions.find(({ id }) => id === guildId);
   // Keyed so a switch to another server starts with fresh filters
-  if (guild) return <Server key={guild.id} guild={guild} />;
+  if (guild) return <Server key={guild.id} guild={guild} canManage />;
 
-  const readOnly = guilds.data.guildsWithBot.find(({ id }) => id === guildId);
+  // tetra is there but the user lacks manage expressions: browsing only, core still
+  // answers 403 to any write
+  const viewOnly = guilds.data.guildsWithBot.find(({ id }) => id === guildId);
+  if (viewOnly) return <Server key={viewOnly.id} guild={viewOnly} canManage={false} />;
+
   return (
     <div className="flex max-w-lg flex-col items-start gap-4">
       <Heading level={1} size="lg">
-        {readOnly ? `you can't manage emotes on ${readOnly.name}` : "server not found"}
+        server not found
       </Heading>
       <Text size="sm" tone="muted">
-        {readOnly
-          ? "tetra is there, but you need the manage expressions permission on that server"
-          : "tetra isn't on this server, or you're not a member of it. check the link, or pick a server from the list"}
+        tetra isn&apos;t on this server, or you&apos;re not a member of it. check the
+        link, or pick a server from the list
       </Text>
       <Button size="sm" render={<Link to="/panel" />}>
         back to home
@@ -88,8 +92,10 @@ type Sort = "newest" | "name";
 
 const LEVELS = ["no boost", "boost level 1", "boost level 2", "boost level 3"];
 
-function Server({ guild }: { guild: ManagedGuild }) {
-  const { view } = Route.useSearch();
+function Server({ guild, canManage }: { guild: ManagedGuild; canManage: boolean }) {
+  const search = Route.useSearch();
+  // Removed emotes and similar names are for cleaning up, which needs manage expressions
+  const view = canManage ? search.view : undefined;
   const navigate = Route.useNavigate();
   const details = useQuery(guildQueryOptions(guild.id));
   const [query, setQuery] = useState("");
@@ -116,43 +122,57 @@ function Server({ guild }: { guild: ManagedGuild }) {
             <Heading level={1} size="lg" className="min-w-0 truncate">
               {guild.name}
             </Heading>
-            <p className="font-mono text-muted text-xs">
-              {details.data ? LEVELS[details.data.level] : "…"}
-              {emotes &&
-                ` · ${emotes.length} ${emotes.length === 1 ? "emote" : "emotes"}`}
-              {managed > 0 && ` · ${managed} managed`}
+            <p className="flex flex-wrap items-center gap-x-2 font-mono text-muted text-xs">
+              <span>
+                {details.data ? LEVELS[details.data.level] : "…"}
+                {emotes &&
+                  ` · ${emotes.length} ${emotes.length === 1 ? "emote" : "emotes"}`}
+                {managed > 0 && ` · ${managed} managed`}
+              </span>
+              {!canManage && <Badge>view only</Badge>}
             </p>
           </div>
-          <Button
-            size="sm"
-            className="ml-auto shrink-0"
-            render={<Link to="/panel/browse" search={{ guild: guild.id }} />}
-          >
-            browse emotes
-          </Button>
+          {canManage && (
+            <Button
+              size="sm"
+              className="ml-auto shrink-0"
+              render={<Link to="/panel/browse" search={{ guild: guild.id }} />}
+            >
+              browse emotes
+            </Button>
+          )}
         </div>
+        {!canManage && (
+          <Text size="sm" tone="muted" className="max-w-xl">
+            you can browse, download and copy these emotes, or add them to a server you
+            manage. to add or remove emotes here, you need the manage expressions
+            permission on {guild.name}
+          </Text>
+        )}
         <div className="flex flex-wrap gap-4">
           <div className="grid w-full max-w-md grid-cols-2 gap-6 border border-border p-4">
             <SlotMeter label="static" used={staticUsed} limit={limit} />
             <SlotMeter label="animated" used={animatedUsed} limit={limit} />
           </div>
-          <StvSyncTile guildId={guild.id} />
+          {canManage && <StvSyncTile guildId={guild.id} />}
         </div>
       </header>
 
       {/* Adding and filtering are separate sections with their own headings: one input
           right above the other read as a single search over this server's emotes */}
-      <section aria-labelledby="server-add" className="flex flex-col gap-3">
-        <Heading id="server-add" level={2} size="sm">
-          add an emote
-        </Heading>
-        <QuickAdd
-          compact
-          defaultGuildId={guild.id}
-          placeholder={`search 7TV or paste a link to add to ${guild.name}`}
-          className="max-w-xl"
-        />
-      </section>
+      {canManage && (
+        <section aria-labelledby="server-add" className="flex flex-col gap-3">
+          <Heading id="server-add" level={2} size="sm">
+            add an emote
+          </Heading>
+          <QuickAdd
+            compact
+            defaultGuildId={guild.id}
+            placeholder={`search 7TV or paste a link to add to ${guild.name}`}
+            className="max-w-xl"
+          />
+        </section>
+      )}
 
       <section
         aria-labelledby="server-emotes"
@@ -162,21 +182,23 @@ function Server({ guild }: { guild: ManagedGuild }) {
           emotes on this server
         </Heading>
         <div className="flex flex-wrap items-center gap-3">
-          <SegmentedControl
-            aria-label="show"
-            value={view ?? "emotes"}
-            onValueChange={(next) =>
-              next &&
-              void navigate({
-                search: next === "removed" || next === "similar" ? { view: next } : {},
-                replace: true,
-              })
-            }
-          >
-            <SegmentedControlItem value="emotes">emotes</SegmentedControlItem>
-            <SegmentedControlItem value="removed">removed</SegmentedControlItem>
-            <SegmentedControlItem value="similar">similar names</SegmentedControlItem>
-          </SegmentedControl>
+          {canManage && (
+            <SegmentedControl
+              aria-label="show"
+              value={view ?? "emotes"}
+              onValueChange={(next) =>
+                next &&
+                void navigate({
+                  search: next === "removed" || next === "similar" ? { view: next } : {},
+                  replace: true,
+                })
+              }
+            >
+              <SegmentedControlItem value="emotes">emotes</SegmentedControlItem>
+              <SegmentedControlItem value="removed">removed</SegmentedControlItem>
+              <SegmentedControlItem value="similar">similar names</SegmentedControlItem>
+            </SegmentedControl>
+          )}
           <TextField
             label="filter by name"
             hideLabel
@@ -210,7 +232,7 @@ function Server({ guild }: { guild: ManagedGuild }) {
         <EmoteMenu
           kind={view === "removed" ? "removed" : "server"}
           guild={target}
-          canManage
+          canManage={canManage}
         >
           {view === "removed" ? (
             <div className="flex flex-col gap-4">
@@ -241,6 +263,7 @@ function Server({ guild }: { guild: ManagedGuild }) {
             <ServerEmotes
               emotes={details.data.emotes.map(fromGuildEmote)}
               filters={filters}
+              canManage={canManage}
               onClear={() => setQuery("")}
             />
           )}
@@ -295,15 +318,22 @@ type ListProps = { filters: Filters; onClear: () => void };
 function ServerEmotes({
   emotes,
   filters,
+  canManage,
   onClear,
-}: ListProps & { emotes: PanelEmote[] }) {
+}: ListProps & { emotes: PanelEmote[]; canManage: boolean }) {
   const visible = useFiltered(emotes, filters);
 
   if (emotes.length === 0) {
     return (
       <EmptyState title="no emotes yet">
-        add one with <span className="font-mono text-foreground">/addemote</span> in
-        Discord, or select an emote anywhere in the panel and pick add to server
+        {canManage ? (
+          <>
+            add one with <span className="font-mono text-foreground">/addemote</span> in
+            Discord, or select an emote anywhere in the panel and pick add to server
+          </>
+        ) : (
+          "this server has no custom emotes"
+        )}
       </EmptyState>
     );
   }

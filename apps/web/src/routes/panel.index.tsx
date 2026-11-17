@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
+import { GuildIcon } from "@/components/panel/guild-icon";
 import { GuildTile, TILE } from "@/components/panel/guild-tile";
 import { GuildsError } from "@/components/panel/guilds-error";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
@@ -10,6 +11,7 @@ import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { cn } from "@/lib/cn";
 import { type GuildLists, guildsQueryOptions, sortByName } from "@/lib/guilds";
 import { INVITE_URL } from "@/lib/links";
 import { meQueryOptions } from "@/lib/session";
@@ -39,6 +41,7 @@ function PanelHome() {
       <QuickAdd className="max-w-xl" />
       <PendingTasks />
       <Servers />
+      <ViewOnlyServers />
     </div>
   );
 }
@@ -131,7 +134,6 @@ function Servers() {
                 </a>
               </li>
             </ul>
-            <ReadOnlyServers lists={guilds.data} />
           </>
         ))}
     </section>
@@ -155,10 +157,10 @@ function NoServers({ lists }: { lists: GuildLists }) {
       <div className="flex flex-col gap-1">
         <p className="font-medium text-sm">no servers to manage yet</p>
         <Text size="sm" tone="muted">
-          servers show up here once tetra is on them and you have the manage expressions
+          a server shows up here once tetra is on it and you have the manage expressions
           permission there
           {lists.guildsWithoutBotAvailableToAdd.length > 0 &&
-            `. you can add it to ${lists.guildsWithoutBotAvailableToAdd.length} of yours`}
+            `. you can add tetra to ${lists.guildsWithoutBotAvailableToAdd.length} of yours`}
         </Text>
       </div>
       <Button
@@ -167,22 +169,48 @@ function NoServers({ lists }: { lists: GuildLists }) {
       >
         add tetra to a server
       </Button>
-      <ReadOnlyServers lists={lists} />
     </div>
   );
 }
 
-// Tetra is there, but the user can't manage emotes: worth a quiet mention, not a tile
-function ReadOnlyServers({ lists }: { lists: GuildLists }) {
-  const names = lists.guildsWithBot.map((guild) => guild.name);
-  if (names.length === 0) return null;
+// tetra is there, but the user can't manage emotes: compact rows under the managed
+// servers, without slot meters, so those stay the main thing on Home
+function ViewOnlyServers() {
+  const guilds = useQuery(guildsQueryOptions);
+  const servers = guilds.data ? sortByName(guilds.data.guildsWithBot) : [];
+  if (servers.length === 0) return null;
 
   return (
-    <Text size="xs" tone="muted">
-      tetra is also on{" "}
-      {names.length === 1 ? "one more server" : `${names.length} more servers`} of yours,
-      where you&apos;d need manage expressions to manage emotes:{" "}
-      <span className="text-foreground">{names.join(", ")}</span>
-    </Text>
+    <section aria-labelledby="home-view-only" className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <Heading level={2} size="sm" id="home-view-only">
+          view only
+        </Heading>
+        <Text size="sm" tone="muted">
+          tetra is on these servers too. you can browse their emotes; to manage them, you
+          need the manage expressions permission there
+        </Text>
+      </div>
+      <ul className="grid grid-cols-1 gap-px p-px sm:grid-cols-2 xl:grid-cols-3">
+        {servers.map((guild) => (
+          <li key={guild.id} className="min-w-0 outline outline-border">
+            <Link
+              to="/panel/servers/$guildId"
+              params={{ guildId: guild.id }}
+              className={cn(TILE, "group/view flex-row items-center gap-3 p-3")}
+            >
+              <GuildIcon
+                guild={guild}
+                size="sm"
+                className="opacity-50 group-hover/view:opacity-100"
+              />
+              <span className="truncate text-muted text-sm group-hover/view:text-foreground">
+                {guild.name}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

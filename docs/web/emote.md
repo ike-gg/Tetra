@@ -29,7 +29,7 @@ Adapters build it from API shapes: `fromGuildEmote` (`GET /guilds/:guildId`), `f
 
 `EmoteMenu` (`src/components/emote/emote-menu.tsx`) wraps a list of emotes. It owns **one** ui-sdk `Menu` with a `createMenuController<PanelEmote>()`; each `Emote` is a `MenuContextTrigger` connected to that controller with its emote as the `payload`. So 500 tiles cost 500 small triggers and one menu, and a virtualized tile that unmounts doesn't take the menu with it.
 
-Props (`EmoteListContext`): `kind` (`server` | `removed` | `task` | `catalog`), `guild` (`{ id, name }` the list belongs to; for `catalog`, the server to offer first), `canManage`, `onOpen(emote)` after a click selects, and `selectable` (default true; `false` makes left click do nothing and drops `aria-pressed`: Quick add's preview, whose form already is the actions, and the task editor's header tile, where a bar would only cover the editor).
+Props (`EmoteListContext`): `kind` (`server` | `removed` | `task` | `catalog`), `guild` (`{ id, name }` the list belongs to; for `catalog`, the server to offer first), `canManage` (false on a view-only server, see [web.md](../web.md#server-states): no remove or restore, add to server still lists the user's other servers), `onOpen(emote)` after a click selects, and `selectable` (default true; `false` makes left click do nothing and drops `aria-pressed`: Quick add's preview, whose form already is the actions, and the task editor's header tile, where a bar would only cover the editor).
 
 Per-emote UI state lives in `EmoteMenu`, keyed by `emote.key`, so it survives tiles scrolling out: the temporary fitting and the selection. `useEmoteMenu()` exposes `fittingOf` / `setFitting`, so a control outside the menu (Quick add's fitting) shares the same state.
 

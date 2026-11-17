@@ -43,7 +43,9 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
   const pendingTasks = tasks.data?.length ?? 0;
   // The nav renders twice on narrow screens (hidden sidebar + drawer)
   const serversHeadingId = useId();
+  const viewOnlyHeadingId = useId();
   const addableHeadingId = useId();
+  const viewOnly = guilds.data ? sortByName(guilds.data.guildsWithBot) : [];
   const addable = guilds.data
     ? sortByName(guilds.data.guildsWithoutBotAvailableToAdd)
     : [];
@@ -144,6 +146,38 @@ export function PanelNav({ onNavigate }: PanelNavProps) {
           )}
         </ul>
       </section>
+
+      {/* tetra is there but the user lacks manage expressions: browsing only, kept apart
+          and dimmed so the servers they manage stay first */}
+      {viewOnly.length > 0 && (
+        <section aria-labelledby={viewOnlyHeadingId} className="flex flex-col gap-2">
+          <h2
+            id={viewOnlyHeadingId}
+            className="select-none px-2 font-mono font-normal text-muted text-xs uppercase tracking-widest"
+          >
+            view only
+          </h2>
+          <ul className="flex flex-col gap-px">
+            {viewOnly.map((guild) => (
+              <li key={guild.id}>
+                <NavLink
+                  to="/panel/servers/$guildId"
+                  params={{ guildId: guild.id }}
+                  onClick={onNavigate}
+                  className="group/view"
+                >
+                  <GuildIcon
+                    guild={guild}
+                    size="sm"
+                    className="opacity-50 group-hover/view:opacity-100 group-data-[status=active]/view:opacity-100"
+                  />
+                  <span className="truncate">{guild.name}</span>
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Servers the user can add tetra to, each opening Discord's invite with that server
           picked. Refetching the servers on window focus moves one up once it's added. */}
