@@ -50,29 +50,57 @@ const OPTIMIZED = [
 const SCALE_MAX = Math.max(...OPTIMIZED.map((emote) => emote.before));
 const percent = (bytes: number) => `${(bytes / SCALE_MAX) * 100}%`;
 
-// wideVIBE (01G1GXCR380004YN3NKDRR9QHD, 3x.gif of 3011837 bytes), both outputs from core's
-// optimizeBuffer: contain (the default) and cover (the editor's "square")
-const WIDEVIBE_SOURCE = 3011837;
-const WIDEVIBE = [
+type Product = {
+  title: string;
+  isNew?: boolean;
+  summary: string;
+  facts: { label: string; value: string }[];
+  does: string[];
+  button: ReactNode;
+};
+
+// Same facts in the same order on both cards, so they read as a comparison
+const PRODUCTS: Product[] = [
   {
-    key: "auto",
-    label: "auto",
-    src: "/home/widevibe.gif",
-    width: 128,
-    height: 43,
-    bytes: 136041,
+    title: "editor",
+    isNew: true,
+    summary: "a quick editor for any GIF or image, in the browser",
+    facts: [
+      { label: "for", value: "any file, emote or not" },
+      { label: "account", value: "none" },
+      { label: "your file", value: "stays on your device" },
+      {
+        label: "result",
+        value: "download it, or add it to a server when you're logged in",
+      },
+    ],
+    does: [
+      "crop, trim, resize and compress",
+      "shows the size against Discord's 256 KB as you change it",
+    ],
+    button: <Button render={<Link to="/editor" />}>open the editor</Button>,
   },
   {
-    key: "square",
-    label: "square crop",
-    src: "/home/widevibe-cover.gif",
-    width: 96,
-    height: 96,
-    bytes: 171717,
+    title: "panel",
+    summary: "everything tetra does for your servers, on the web",
+    facts: [
+      { label: "for", value: "the servers you manage emotes on" },
+      { label: "account", value: "log in with Discord" },
+      { label: "your file", value: "edited in this browser, like in the editor" },
+      { label: "result", value: "added straight to the server" },
+    ],
+    does: [
+      "browse 7TV and FFZ and add from there",
+      "a Twitch channel's emotes on Twitch, 7TV, BTTV and FFZ",
+      "every server's emotes: add, remove, and restore ones removed while tetra was there",
+      "keep a server in sync with a 7TV set, with your own rules (experimental)",
+      "“open in editor” on tetra's reply in Discord brings the emote here to fix",
+      "paste a link anywhere in the panel to add it",
+      "the editor, built in",
+    ],
+    button: <Button render={<Link to="/panel" />}>open panel</Button>,
   },
 ];
-// Twice the real pixel size, the same for both, so the relative size is honest
-const WIDEVIBE_SCALE = 2;
 
 const FEATURES: { key: string; title: ReactNode; body: string }[] = [
   {
@@ -126,8 +154,8 @@ function Optimization() {
       <Text tone="muted" className="mt-4 max-w-xl">
         Discord rejects emotes over 256 KB, and about one in three of 7TV&apos;s most
         popular animated emotes is bigger than that. tetra fits them automatically, with
-        no hand tuning. side by side you can see a difference: that&apos;s how strict the
-        limit is
+        no hand tuning. side by side you can spot a difference, because Discord&apos;s
+        limit is that strict
       </Text>
 
       <div className="mt-14 border-border border-t">
@@ -216,100 +244,61 @@ function LimitMark() {
 
 function TuneIt() {
   return (
-    <section className="mx-auto grid max-w-6xl gap-14 px-6 py-28 lg:grid-cols-2 lg:gap-16">
-      <div>
-        <Heading level={2} className="max-w-xl">
-          too big to shrink well? tune it yourself
-        </Heading>
-        <Text tone="muted" className="mt-4 max-w-xl">
-          when an emote is far over the limit, fitting it automatically costs quality. in
-          the editor you pick the crop, the length and the size yourself, and the result
-          usually looks better
-        </Text>
-
-        <div className="mt-10 border-border border-t">
-          <EntryRow
-            title="editor"
-            isNew
-            body="any GIF or image, right in the browser. no account, and the file never leaves your device"
-            button={
-              <Button size="sm" render={<Link to="/editor" />}>
-                open the editor
-              </Button>
-            }
-          />
-          <EntryRow
-            title="panel"
-            body={
-              <>
-                “open in editor” on tetra&apos;s reply in Discord sends the emote to your
-                panel, where you fit it and add it straight to the server. the panel also
-                shows the emotes on your servers and restores removed ones
-              </>
-            }
-            button={
-              <Button size="sm" render={<Link to="/panel" />}>
-                open panel
-              </Button>
-            }
-          />
-        </div>
-      </div>
-
-      <figure className="m-0 flex flex-col gap-6 lg:pt-2">
-        <div className="flex flex-wrap items-end gap-6">
-          {WIDEVIBE.map((version) => (
-            <div key={version.key} className="flex flex-col gap-3">
-              <span className="block w-fit bg-checker">
-                <img
-                  src={version.src}
-                  alt={`wideVIBE, ${version.label}`}
-                  width={version.width * WIDEVIBE_SCALE}
-                  height={version.height * WIDEVIBE_SCALE}
-                  loading="lazy"
-                  decoding="async"
-                  className="block h-auto max-w-full"
-                />
-              </span>
-              <span className="font-mono text-muted text-xs tracking-widest">
-                <span className="text-foreground">{version.label}</span> · {version.width}
-                ×{version.height} · {formatBytes(version.bytes)}
-              </span>
-            </div>
-          ))}
-        </div>
-        <figcaption className="max-w-md font-mono text-muted text-xs leading-relaxed tracking-widest">
-          wideVIBE, both made by tetra from the same {formatBytes(WIDEVIBE_SOURCE)} file
-          from 7TV. auto keeps the shape and ends up thin in chat. the square crop is the
-          editor&apos;s square shape. shown at twice their size
-        </figcaption>
-      </figure>
-    </section>
-  );
-}
-
-function EntryRow({
-  title,
-  body,
-  button,
-  isNew,
-}: {
-  title: string;
-  body: ReactNode;
-  button: ReactNode;
-  isNew?: boolean;
-}) {
-  return (
-    <div className="flex flex-col gap-3 border-border border-b py-5">
-      <Heading level={3} size="sm" className="flex items-center gap-3">
-        {title}
-        {isNew && (
-          <span className="font-mono text-signal text-xs tracking-widest">[new]</span>
-        )}
+    <section className="mx-auto max-w-6xl px-6 py-28">
+      <Heading level={2} className="max-w-2xl">
+        too big to shrink well? tune it yourself
       </Heading>
-      <Text tone="muted">{body}</Text>
-      <div>{button}</div>
-    </div>
+      <Text tone="muted" className="mt-4 max-w-xl">
+        when an emote is far over the limit, fitting it automatically costs quality. in
+        the editor you pick the crop, the length and the size yourself, and the result
+        usually looks better
+      </Text>
+
+      <div className="mt-14 grid gap-px border border-border bg-border md:grid-cols-2">
+        {PRODUCTS.map((product) => (
+          <article key={product.title} className="flex flex-col bg-background p-8">
+            <Heading level={3} size="lg" className="flex items-center gap-3">
+              {product.title}
+              {product.isNew && (
+                <span className="font-mono font-normal text-signal text-xs tracking-widest">
+                  [new]
+                </span>
+              )}
+            </Heading>
+            <Text tone="muted" className="mt-2">
+              {product.summary}
+            </Text>
+
+            <dl className="m-0 mt-8 border-border border-t">
+              {product.facts.map((fact) => (
+                <div
+                  key={fact.label}
+                  className="grid grid-cols-[6rem_1fr] gap-4 border-border border-b py-3 text-sm"
+                >
+                  <dt className="font-mono text-muted text-xs leading-5 tracking-widest">
+                    {fact.label}
+                  </dt>
+                  <dd className="m-0 text-foreground">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <ul className="m-0 mt-6 flex list-none flex-col gap-2 p-0 text-muted text-sm">
+              {product.does.map((item) => (
+                <li key={item} className="flex gap-3">
+                  <span aria-hidden className="font-mono text-border">
+                    -
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-auto pt-8">{product.button}</div>
+          </article>
+        ))}
+      </div>
+    </section>
   );
 }
 
