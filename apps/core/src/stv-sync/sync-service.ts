@@ -5,6 +5,7 @@ import { TIME } from "@/constants/time";
 import { db } from "@/db";
 import { stvSyncConfigs } from "@/db/schema";
 import { env } from "@/env";
+import { createErrorCode, logErrorCode } from "@/utils/error-code";
 
 import { addSyncedEmote, reviewFilteredEmote } from "./add-synced-emote";
 import { EventApiClient, type Subscription } from "./event-api/client";
@@ -19,6 +20,7 @@ import { runForGuild } from "./job-queue";
 import { removeSyncedEmote } from "./remove-synced-emote";
 import { findRejectingFilter, readStoredSettings } from "./settings";
 import { toSyncEmote } from "./sync-emote";
+import { logSyncActivity } from "./sync-log";
 
 import { StvSyncConsole } from "#/loggers";
 
@@ -32,6 +34,22 @@ const connectionFieldsSchema = z.array(
 
 const describeError = (error: unknown) =>
   error instanceof Error ? (error.stack ?? error.message) : String(error);
+
+/** An unexpected error in a guild's job: logged under a code, which the activity log shows. */
+const logJobFailure = (
+  guildId: string,
+  stage: "add" | "remove",
+  emote: { stvEmoteId: string; name: string | null; animated: boolean | null },
+  error: unknown
+) => {
+  const code = createErrorCode();
+  logErrorCode(
+    code,
+    `[7TV-SYNC] [guild ${guildId}] ${stage === "add" ? "syncing" : "removing"} ${emote.stvEmoteId} failed:`,
+    describeError(error)
+  );
+  return logSyncActivity(guildId, { action: "failed", emote, stage, code });
+};
 
 /**
  * The 7TV channel sync in the manager process: one EventAPI client for every guild,
@@ -225,11 +243,17 @@ class StvSyncService {
           await reviewFilteredEmote(guildId, sync.source, filter);
           return;
         }
-        await addSyncedEmote(guildId, sync.source, settings, { runRules: true });
+        await addSyncedEmote(guildId, sync.source, settings, "event");
       }).catch((error) =>
-        StvSyncConsole.error(
-          `[guild ${guildId}] syncing ${emote.id} failed:`,
-          describeError(error)
+        logJobFailure(
+          guildId,
+          "add",
+          {
+            stvEmoteId: emote.id,
+            name: sync.source.name,
+            animated: sync.source.animated,
+          },
+          error
         )
       );
     }
@@ -246,6 +270,10 @@ class StvSyncService {
     }
 
     const { id, timestamp } = parsed.data;
+    const fromEvent = {
+      name: parsed.data.name ?? null,
+      animated: parsed.data.data?.animated ?? null,
+    };
     if (this.isDuplicate(`${setId}:${id}:remove:${timestamp ?? ""}`, timestamp != null)) {
       StvSyncConsole.log(`set ${setId}: duplicate removal of ${id} skipped`);
       return;
@@ -261,12 +289,9 @@ class StvSyncService {
           where: eq(stvSyncConfigs.guildId, guildId),
         });
         if (!config?.enabled || config.emoteSetId !== setId) return;
-        await removeSyncedEmote(guildId, id);
+        await removeSyncedEmote(guildId, id, fromEvent);
       }).catch((error) =>
-        StvSyncConsole.error(
-          `[guild ${guildId}] removing ${id} failed:`,
-          describeError(error)
-        )
+        logJobFailure(guildId, "remove", { stvEmoteId: id, ...fromEvent }, error)
       );
     }
   }
@@ -307,6 +332,12 @@ class StvSyncService {
 
     if (this.isDuplicate(`${userId}:set:${newSetId}`, false)) return;
 
+    const before = await db
+      .select({ guildId: stvSyncConfigs.guildId, emoteSetId: stvSyncConfigs.emoteSetId })
+      .from(stvSyncConfigs)
+      .where(eq(stvSyncConfigs.stvUserId, userId));
+    const previousSet = new Map(before.map((row) => [row.guildId, row.emoteSetId]));
+
     const moved = await db
       .update(stvSyncConfigs)
       .set({ emoteSetId: newSetId, updatedAt: new Date() })
@@ -326,6 +357,15 @@ class StvSyncService {
     StvSyncConsole.info(
       `user ${userId}: active set is now ${newSetId ?? "none"}, moved ${moved.length} server(s)`
     );
+    for (const { guildId } of moved) {
+      const fromSetId = previousSet.get(guildId) ?? null;
+      if (fromSetId === newSetId) continue;
+      await logSyncActivity(guildId, {
+        action: "set_switched",
+        fromSetId,
+        toSetId: newSetId,
+      });
+    }
     await this.refresh();
   }
 }

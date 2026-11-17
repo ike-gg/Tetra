@@ -71,3 +71,28 @@ export const stvSyncReview = pgTable(
     uniqueIndex("stv_sync_review_guild_emote_idx").on(table.guildId, table.stvEmoteId),
   ]
 );
+
+/**
+ * What the sync did, per guild, for the panel's activity log. Trimmed on insert to the
+ * newest 200 per guild and 30 days (docs/core/7tv-sync.md#activity-log).
+ */
+export const stvSyncLog = pgTable(
+  "stv_sync_log",
+  {
+    id: serial("id").primaryKey(),
+    guildId: varchar("guild_id", { length: 255 }).notNull(),
+    action: varchar("action", { length: 32 }).notNull(),
+    // Null for channel actions (linked, paused, set switched…)
+    stvEmoteId: varchar("stv_emote_id", { length: 32 }),
+    // The alias at the time; the Twitch login for `linked`
+    name: varchar("name", { length: 128 }),
+    animated: boolean("animated"),
+    discordEmojiId: varchar("discord_emoji_id", { length: 32 }),
+    // Per action, see `SyncLogInput`
+    reason: varchar("reason", { length: 32 }),
+    detail: varchar("detail", { length: 128 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  // Pages and trims go by id (serial, so insert order = time order)
+  (table) => [index("stv_sync_log_guild_id_idx").on(table.guildId, table.id.desc())]
+);

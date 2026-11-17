@@ -117,7 +117,11 @@ export type ActiveEmote = z.infer<typeof activeEmoteSchema>;
 /** Only the id is needed for a removal; `data` is null when the emote was deleted on 7TV. */
 export const removedEmoteSchema = z.object({
   id: z.string(),
+  /** The alias in the set; only for the activity log. */
+  name: z.string().nullish(),
   timestamp: z.number().nullish(),
+  // Null when the emote itself was deleted from 7TV
+  data: z.object({ animated: z.boolean().nullish() }).nullish(),
 });
 
 /** Active emote flags (per set). */

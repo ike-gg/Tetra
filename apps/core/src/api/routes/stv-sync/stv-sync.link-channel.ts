@@ -2,10 +2,11 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { stvSyncConfigs, stvSyncLinks, stvSyncReview } from "@/db/schema";
+import { stvSyncConfigs, stvSyncLinks, stvSyncLog, stvSyncReview } from "@/db/schema";
 import { getTwitchChannel } from "@/emotes/lookup/twitch-channel-lookup";
 import { DEFAULT_SYNC_SETTINGS } from "@/stv-sync/settings";
 import { getStvChannel } from "@/stv-sync/stv-user";
+import { logSyncActivity } from "@/stv-sync/sync-log";
 import { stvSync } from "@/stv-sync/sync-service";
 
 import { authFactory } from "../../api-env";
@@ -26,8 +27,8 @@ const bodyLinkChannel = z.union([
 
 /**
  * Links a Twitch channel (by id or login) and starts syncing its active 7TV set. Linking
- * another channel replaces the old one and drops its links and review list; linking the same
- * channel again only refreshes the ids and keeps everything.
+ * another channel replaces the old one and drops its links, review list and activity log;
+ * linking the same channel again only refreshes the ids and keeps everything.
  */
 export const stvSyncLinkChannel = authFactory.createHandlers(
   requireAuth,
@@ -60,6 +61,7 @@ export const stvSyncLinkChannel = authFactory.createHandlers(
       if (existing && !sameChannel) {
         await tx.delete(stvSyncLinks).where(eq(stvSyncLinks.guildId, guildId));
         await tx.delete(stvSyncReview).where(eq(stvSyncReview.guildId, guildId));
+        await tx.delete(stvSyncLog).where(eq(stvSyncLog.guildId, guildId));
       }
 
       const values = {
@@ -84,6 +86,11 @@ export const stvSyncLinkChannel = authFactory.createHandlers(
     StvSyncConsole.info(
       `[guild ${guildId}] linked ${channel.twitchLogin} (7TV user ${channel.stvUserId}, set ${channel.emoteSetId ?? "none"})`
     );
+    await logSyncActivity(guildId, {
+      action: "linked",
+      login: channel.twitchLogin,
+      twitchId: channel.twitchId,
+    });
     await stvSync.refresh();
 
     return c.json(await buildSyncState(guildId), 200);

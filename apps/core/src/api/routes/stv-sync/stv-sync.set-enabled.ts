@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { db } from "@/db";
 import { stvSyncConfigs } from "@/db/schema";
+import { logSyncActivity } from "@/stv-sync/sync-log";
 import { stvSync } from "@/stv-sync/sync-service";
 
 import { authFactory } from "../../api-env";
@@ -25,7 +26,7 @@ export const stvSyncSetEnabled = authFactory.createHandlers(
     const { enabled } = c.req.valid("json");
 
     await getManageableGuild(guildId, c.var);
-    await requireSyncConfig(guildId);
+    const config = await requireSyncConfig(guildId);
 
     await db
       .update(stvSyncConfigs)
@@ -33,6 +34,9 @@ export const stvSyncSetEnabled = authFactory.createHandlers(
       .where(eq(stvSyncConfigs.guildId, guildId));
 
     StvSyncConsole.info(`[guild ${guildId}] sync ${enabled ? "enabled" : "paused"}`);
+    if (config.enabled !== enabled) {
+      await logSyncActivity(guildId, { action: enabled ? "resumed" : "paused" });
+    }
     await stvSync.refresh();
 
     return c.json(await buildSyncState(guildId), 200);

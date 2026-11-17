@@ -53,14 +53,15 @@ export const upsertReviewEntry = async (
     });
 };
 
+/** The removed entry's alias and type, undefined when there was none. */
 export const removeReviewEntryForEmote = async (guildId: string, stvEmoteId: string) => {
-  const removed = await db
+  const [removed] = await db
     .delete(stvSyncReview)
     .where(
       and(eq(stvSyncReview.guildId, guildId), eq(stvSyncReview.stvEmoteId, stvEmoteId))
     )
-    .returning({ id: stvSyncReview.id });
-  return removed.length > 0;
+    .returning({ name: stvSyncReview.name, animated: stvSyncReview.animated });
+  return removed;
 };
 
 /** One entry, only if it belongs to the guild. */

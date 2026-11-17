@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { stvSyncConfigs, stvSyncReview } from "@/db/schema";
 import { readStoredSettings } from "@/stv-sync/settings";
+import { logSyncActivity } from "@/stv-sync/sync-log";
 
 import { authFactory } from "../../api-env";
 import { requireAuth } from "../../middleware/auth";
@@ -56,6 +57,12 @@ export const stvSyncDismissEntry = authFactory.createHandlers(
         })
         .where(eq(stvSyncConfigs.guildId, guildId));
     }
+
+    await logSyncActivity(guildId, {
+      action: "dismissed",
+      emote: { stvEmoteId: entry.stvEmoteId, name: entry.name, animated: entry.animated },
+      excluded: !!config,
+    });
 
     return c.json({ dismissed: entry.id, excluded: !!config }, 200);
   }

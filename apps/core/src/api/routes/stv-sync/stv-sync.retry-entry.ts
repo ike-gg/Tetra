@@ -36,7 +36,7 @@ export const stvSyncRetryEntry = authFactory.createHandlers(
     const settings = readStoredSettings(config.settings);
 
     const outcome = await runForGuild(guildId, () =>
-      addSyncedEmote(guildId, toSyncSource(entry), settings)
+      addSyncedEmote(guildId, toSyncSource(entry), settings, "retry")
     );
 
     if (outcome.status === "added") {

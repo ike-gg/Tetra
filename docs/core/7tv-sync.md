@@ -33,6 +33,7 @@ Code in `src/stv-sync/` (manager process; never imports `@/bot`), routes in `src
 | `add-synced-emote.ts` | Add flow, see below; `linkSyncedEmoji`. |
 | `remove-synced-emote.ts` | Drops the review entry, deletes the link, then the Discord emoji (Unknown Emoji = fine; other failures put the link back). |
 | `settings.ts`, `rules.ts`, `review.ts`, `sync-emote.ts`, `stv-user.ts`, `links.ts` | Settings schema and basic filters; advanced rules (schema, defaults, evaluation); review rows and their messages; 7TV active emote → source and filter input; 7TV user by Twitch id; link drop for the shard's `emojiDelete`. |
+| `sync-log.ts` | Activity log: `logSyncActivity` (never throws), trim, list, serializer. See [Activity log](#activity-log). |
 
 ### Add flow
 
@@ -40,7 +41,7 @@ Every job first re-reads the config (enabled, same set). Then:
 
 1. **Basic filters** (events only; a retry skips them, the admin picked the emote): excluded id → skipped silently, never in review; a toggle → review `FILTERED` with the filter name, nothing downloaded.
 2. Already linked (guild, 7TV emote) → skipped.
-3. **Rules** (events only; a retry skips them too), see [Advanced rules](#advanced-rules). `skip` → logged, nothing stored; `review` → review `RULE` with the rule's position; `add` or no match → on.
+3. **Rules** (events only; a retry skips them too), see [Advanced rules](#advanced-rules). `skip` → activity log only, nothing in review; `review` → review `RULE` with the rule's position; `add` or no match → on.
 4. Download `4x.gif` (animated) / `4x.png` through `assertAllowedEmoteSourceUrl` + `getBufferFromUrl` (10 MB, 15 s, 2 attempts), normalize, read width / frame height / frames / delays. Failure → `FAILED` `download` / `invalid_file`. Skipped when a rule already downloaded it.
 5. Aspect ratio (long side / short side) over `maxAspectRatio` → `ASPECT_RATIO` with the ratio. Applies to `add` rules too.
 6. Free slot of the file's type (from the file, not 7TV's flag): `GET /guilds/:id` over REST (emojis + tier + features, not the shard cache), managed emojis not counted, `getEmojiSlotLimit` → `NO_SLOT` with `static`/`animated`. The guild is read once per job (rules reuse it; jobs of a guild run serially).
@@ -52,8 +53,8 @@ Download and optimization results are cached in memory for 10 min (by file URL),
 
 ### Decisions
 
-- **Unlink** drops links and the review list; the Discord emojis stay. Links are keyed by 7TV emote id, so stale links could let another channel's removals delete emojis after a relink. Linking a different channel does the same; relinking the same channel keeps both.
-- **Pause** (`enabled: false`) keeps links and the review list and unsubscribes (when no other server needs the set). Events while paused are lost.
+- **Unlink** drops links, the review list and the activity log; the Discord emojis stay. Links are keyed by 7TV emote id, so stale links could let another channel's removals delete emojis after a relink. Linking a different channel does the same; relinking the same channel keeps all three.
+- **Pause** (`enabled: false`) keeps links, the review list and the activity log and unsubscribes (when no other server needs the set). Events while paused are lost.
 - **Review** has one entry per (guild, 7TV emote); a new failure updates it (reason, `flaggedAt`). Freed slots never retry anything. A `skip` rule leaves an existing entry alone.
 - **Moderator deletes**: the shard's `emojiDelete` handler drops the link (`dropSyncLinkForEmoji`, idempotent). Sync removals delete the link before calling Discord, so their own `emojiDelete` finds nothing; the existing removed-emotes record is still written (`deletedWithPanel: false`), so the panel can restore them.
 - **Rule fields were cut down** before release to what admins actually use: original name, name length, renamed, name taken, author, added by, tags, listed, emote age, width/height and `matches_regex` were dropped (with the GraphQL actor lookup and the regex guard they needed).
@@ -65,7 +66,7 @@ Stored as `jsonb` in `stv_sync_configs.settings`, validated by `syncSettingsSche
 
 ```json
 {
-  "filters": { "includeStatic": true, "includeAnimated": true, "includeZeroWidth": false, "includeNsfw": false },
+  "filters": { "includeStatic": true, "includeAnimated": true, "includeZeroWidth": true, "includeNsfw": true },
   "excludedEmoteIds": [],
   "optimization": { "maxAspectRatio": 2 },
   "advancedRules": [
@@ -94,15 +95,38 @@ Conditions `{ field, operator, value }` (`ruleConditionSchema`, a Zod union of o
 | `frame_count` (static: 1) | `gt`, `lt` | int 0–10000 | file |
 | `free_slots` (of the file's type, before adding) | `gt`, `lt` | int 0–250 | server + file |
 
+### Activity log
+
+A compact per-guild history for the panel (`stv_sync_log`, `sync-log.ts`). Written with `logSyncActivity`, which catches and prints its own errors (`[7TV-SYNC]`), so logging never breaks a job. Not logged on purpose: already-linked adds, "never sync" (excluded) adds, removals with nothing to remove and no review entry, renames, settings changes, unlink (it clears the log).
+
+| `action` | when | extra fields |
+|---|---|---|
+| `added` / `added_retry` / `added_upload` | emoji created by an event / review retry / editor upload from review | `emote.discordEmojiId` |
+| `removed` | a remove event deleted the linked emoji (also when Discord said it was already gone) | `emote.discordEmojiId` |
+| `review` | sent to review (event filter or add flow, or a retry that failed again) | `reason` (review reason), `detail` (review detail) |
+| `skipped_rule` | a `skip` rule matched | `detail` = rule position |
+| `review_removed` | a remove event cleared the emote's review entry | |
+| `link_dropped` | a moderator deleted a synced emoji (shard's `emojiDelete`); `name` is the Discord name there | `emote.discordEmojiId` |
+| `dismissed` | dismissed from review | `excluded` (also "never sync") |
+| `failed` | unexpected error in a job, or Discord refused a removal (the link stays) | `failure: { stage: add \| remove, code }`, the code is in the server log (`logErrorCode`) |
+| `set_switched` | the streamer's active set changed | `set: { fromSetId, toSetId }` (null = none) |
+| `linked` | channel linked (also a relink of the same channel) | `channel: { login, twitchId }` |
+| `paused` / `resumed` | `PATCH /` changed `enabled` | |
+
+`emote` = `{ stvEmoteId, name, animated, discordEmojiId }` (null for the last four rows): `name` is the set alias at the time (null when a removal event came without it), `animated` 7TV's flag or the file's when known. Add failures inside the add flow land in review (`review` with `FAILED`), not as `failed`.
+
+Retention: trimmed on every insert to the guild's newest 200 entries and 30 days (one `DELETE` with a subquery, cheap at this size). Index `(guild_id, id desc)`: pages and trims go by id (serial, so insert order = time order) instead of `created_at`. Verified in a rolled-back transaction on Postgres: 206 rows (one 31 days old) trim to the newest 200, other guilds untouched, `before` paging continues at the right row.
+
 ### Tables
 
 - `stv_sync_configs` (pk `guild_id`): Twitch id/login/display name, 7TV user id, active set id (null without one), `enabled`, `settings`, `linked_by` (Discord user id), timestamps.
 - `stv_sync_links`: (guild, 7TV emote) unique → Discord emoji id, name, animated; index on the emoji id.
 - `stv_sync_review`: (guild, 7TV emote) unique; alias, animated, file and preview URL, width/height, author, `reason` (`FILTERED | RULE | TOO_LARGE | ASPECT_RATIO | NO_SLOT | FAILED`), `detail`, `flagged_at`. Renamed from `stv_sync_queue` before release; `db:push` proposes dropping the old table, which is fine (nothing released).
+- `stv_sync_log`: guild, `action`, nullable emote columns (`stv_emote_id`, `name`, `animated`, `discord_emoji_id`), `reason` / `detail` (per action: review reason/detail, rule position, `excluded`, failure stage/code, old/new set id, Twitch id), `created_at`. See [Activity log](#activity-log).
 
 ### API
 
-Under `/api/guilds/:guildId/sync`, every route `requireAuth` + `getManageableGuild` (read routes too: settings are admin data). Review entries are loaded by id **and** guild. See [core.md](../core.md#api) for the shapes; codes: `404 SYNC_NOT_LINKED`, `404 REVIEW_ENTRY_NOT_FOUND`, `404 STV_USER_NOT_FOUND`, `404 CHANNEL_NOT_FOUND`, `502 UPSTREAM_ERROR`, `409 EMOTE_ALREADY_SYNCED`, plus the upload codes for add-after-edit.
+Under `/api/guilds/:guildId/sync`, every route `requireAuth` + `getManageableGuild` (read routes too: settings are admin data). Review entries are loaded by id **and** guild. `GET /log` reads the activity log. See [core.md](../core.md#api) for the shapes; codes: `404 SYNC_NOT_LINKED`, `404 REVIEW_ENTRY_NOT_FOUND`, `404 STV_USER_NOT_FOUND`, `404 CHANNEL_NOT_FOUND`, `502 UPSTREAM_ERROR`, `409 EMOTE_ALREADY_SYNCED`, plus the upload codes for add-after-edit.
 
 ## 7TV EventAPI (verified 2026-11-17)
 

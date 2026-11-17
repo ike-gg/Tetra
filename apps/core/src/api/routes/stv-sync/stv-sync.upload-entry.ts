@@ -5,6 +5,7 @@ import { stvSyncLinks } from "@/db/schema";
 import { discordRestApi } from "@/lib/discord-rest-api";
 import { linkSyncedEmoji } from "@/stv-sync/add-synced-emote";
 import { runForGuild } from "@/stv-sync/job-queue";
+import { logSyncActivity } from "@/stv-sync/sync-log";
 import { getEmoteUrl } from "@/utils/discord/get-emote-url";
 
 import { authFactory } from "../../api-env";
@@ -56,10 +57,20 @@ export const stvSyncUploadEntry = authFactory.createHandlers(
         image: emote,
         name,
       });
-      await linkSyncedEmoji(guildId, entry.stvEmoteId, {
+      const synced = {
         id: emoji.id ?? "",
         name: emoji.name ?? name,
         animated: emoji.animated ?? false,
+      };
+      await linkSyncedEmoji(guildId, entry.stvEmoteId, synced);
+      await logSyncActivity(guildId, {
+        action: "added_upload",
+        emote: {
+          stvEmoteId: entry.stvEmoteId,
+          name: entry.name,
+          animated: synced.animated,
+          discordEmojiId: synced.id,
+        },
       });
       return emoji;
     });

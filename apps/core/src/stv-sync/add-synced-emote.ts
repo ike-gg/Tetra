@@ -21,6 +21,7 @@ import { type ReviewDetail, type ReviewReason, upsertReviewEntry } from "./revie
 import { findMatchingRule } from "./rules";
 import type { SyncSettings } from "./settings";
 import type { SyncEmoteSource } from "./sync-emote";
+import { logSyncActivity } from "./sync-log";
 
 import { StvSyncConsole } from "#/loggers";
 
@@ -237,18 +238,20 @@ export const linkSyncedEmoji = async (
 };
 
 /**
- * Adds one 7TV emote to a guild, or puts it in review with the reason. Basic filters are
- * the caller's job. Events pass `runRules`, so the advanced rules run; a retry doesn't
- * (the admin picked the emote). Run it through `runForGuild`, so slot counts stay
+ * Adds one 7TV emote to a guild, or puts it in review with the reason, and writes the
+ * activity log. Basic filters are the caller's job. Events run the advanced rules; a retry
+ * doesn't (the admin picked the emote). Run it through `runForGuild`, so slot counts stay
  * correct.
  */
 export const addSyncedEmote = async (
   guildId: string,
   emote: SyncEmoteSource,
   settings: SyncSettings,
-  { runRules = false }: { runRules?: boolean } = {}
+  via: "event" | "retry"
 ): Promise<AddOutcome> => {
   const tag = `[guild ${guildId}] ${emote.name} (${emote.stvEmoteId})`;
+  const runRules = via === "event";
+  const logEmote = { stvEmoteId: emote.stvEmoteId, name: emote.name };
 
   const existing = await db.query.stvSyncLinks.findFirst({
     where: and(
@@ -284,6 +287,14 @@ export const addSyncedEmote = async (
       });
       if (match?.rule.action === "skip") {
         StvSyncConsole.info(`${tag} skipped by rule ${match.position}`);
+        await logSyncActivity(guildId, {
+          action: "skipped_rule",
+          emote: {
+            ...logEmote,
+            animated: (source as PreparedSource | undefined)?.animated ?? emote.animated,
+          },
+          rule: match.position,
+        });
         return { status: "skipped", why: "rule" };
       }
       if (match?.rule.action === "review") {
@@ -322,6 +333,10 @@ export const addSyncedEmote = async (
     };
     await linkSyncedEmoji(guildId, emote.stvEmoteId, emoji);
     StvSyncConsole.success(`${tag} added as emoji ${emoji.id}`);
+    await logSyncActivity(guildId, {
+      action: via === "event" ? "added" : "added_retry",
+      emote: { ...logEmote, animated: emoji.animated, discordEmojiId: emoji.id },
+    });
     return { status: "added", emoji };
   } catch (error) {
     const outcome = toReviewOutcome(error, tag);
@@ -333,6 +348,12 @@ export const addSyncedEmote = async (
       height: prepared?.height,
     });
     StvSyncConsole.warn(`${tag} needs review: ${outcome.message}`);
+    await logSyncActivity(guildId, {
+      action: "review",
+      emote: { ...logEmote, animated: prepared?.animated ?? emote.animated },
+      reason: outcome.reason,
+      detail: outcome.detail,
+    });
     return { status: "review", reason: outcome.reason, detail: outcome.detail };
   }
 };
@@ -344,6 +365,12 @@ export const reviewFilteredEmote = async (
   filter: string
 ) => {
   await upsertReviewEntry(guildId, emote, "FILTERED", filter);
+  await logSyncActivity(guildId, {
+    action: "review",
+    emote: { stvEmoteId: emote.stvEmoteId, name: emote.name, animated: emote.animated },
+    reason: "FILTERED",
+    detail: filter,
+  });
   StvSyncConsole.info(
     `[guild ${guildId}] ${emote.name} (${emote.stvEmoteId}) filtered (${filter}), needs review`
   );
