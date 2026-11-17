@@ -4,6 +4,7 @@ import { type ReactNode, useRef, useState } from "react";
 import { Footer } from "@/components/footer";
 import { Stats } from "@/components/stats";
 import { TetraField } from "@/components/tetra-field";
+import { TunePeek } from "@/components/tune-peek";
 import { Accent } from "@/components/ui/accent";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
@@ -187,6 +188,7 @@ function TuneIt() {
       </Text>
 
       <div className="mt-14 grid gap-px border border-border bg-border md:grid-cols-2">
+        <TunePeek className="md:col-span-2" />
         {PRODUCTS.map((product) => (
           <article key={product.title} className="flex flex-col bg-background p-8">
             <Heading level={3} size="lg" className="flex items-center gap-3">
