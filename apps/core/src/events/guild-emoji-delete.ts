@@ -3,6 +3,7 @@ import { and, asc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { EmoteOrigin, emotes, removedEmotes } from "@/db/schema";
+import { dropSyncLinkForEmoji } from "@/stv-sync/links";
 
 import type { EventHandler } from ".";
 
@@ -11,6 +12,23 @@ import { BotConsole } from "#/loggers";
 export const guildEmojiDeleteHandler: EventHandler<Events.GuildEmojiDelete> = async (
   removedEmote
 ) => {
+  // A moderator deleting a synced emoji ends its 7TV sync; tetra's own sync removals
+  // drop the link before deleting, so this finds nothing then
+  dropSyncLinkForEmoji(removedEmote.guild.id, removedEmote.id)
+    .then((dropped) => {
+      if (dropped) {
+        BotConsole.info(
+          `[7TV-SYNC] emoji ${removedEmote.id} deleted in guild ${removedEmote.guild.id}, link dropped`
+        );
+      }
+    })
+    .catch((error) => {
+      BotConsole.error(
+        `[7TV-SYNC] dropping the link of emoji ${removedEmote.id} failed:`,
+        error
+      );
+    });
+
   try {
     const guildId = removedEmote.guild.id;
 

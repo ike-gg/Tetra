@@ -1,11 +1,12 @@
 import { startContinuityCleanup } from "@/interactions/continuity/cleanup-continuity";
 import { shardingManager } from "@/lib/sharding-manager";
+import { stvSync } from "@/stv-sync/sync-service";
 
 import { initApi } from "./api";
 import { env, isProduction } from "./env";
 
 import { TempFileManager } from "#/files/temp-file-manager";
-import { BotConsole, CoreConsole } from "#/loggers";
+import { BotConsole, CoreConsole, StvSyncConsole } from "#/loggers";
 
 if (isProduction) {
   CoreConsole.warn("Running in production mode.");
@@ -15,6 +16,14 @@ if (isProduction) {
 startContinuityCleanup();
 
 if (env.API_ENABLED) initApi();
+
+// One EventAPI client for all shards; it talks to Discord over REST
+stvSync.start().catch((error) => {
+  StvSyncConsole.error(
+    "failed to start:",
+    error instanceof Error ? error.message : error
+  );
+});
 
 // Shards are child processes: if the manager dies without killing them they stay logged in.
 // `bun --watch` restarts the manager in place without running these hooks; shards then

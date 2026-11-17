@@ -144,6 +144,14 @@ const envSchema = z.object({
     .optional()
     .describe("Domain of the session cookie, e.g. .tetra.lol; host-only when not set"),
 
+  SEVENTV_SYNC_ENABLED: z
+    .string()
+    .default("false")
+    .transform((val) => val === "true" || val === "1")
+    .describe(
+      "Experimental 7TV channel sync: connect to 7TV's EventAPI in the manager process"
+    ),
+
   PORT: z.string().default("3002").describe("Port for the API to listen on"),
 
   INVITE_LINK: z.string().url().describe("Discord Bot invite link"),

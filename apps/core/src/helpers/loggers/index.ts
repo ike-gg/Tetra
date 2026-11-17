@@ -24,4 +24,10 @@ class DeployConsole extends TConsole {
   }
 }
 
-export { ApiConsole, BotConsole, CoreConsole, DeployConsole };
+class StvSyncConsole extends TConsole {
+  get prefix(): string {
+    return "7TV-SYNC";
+  }
+}
+
+export { ApiConsole, BotConsole, CoreConsole, DeployConsole, StvSyncConsole };

@@ -1,0 +1,306 @@
+import { DiscordAPIError, RESTJSONErrorCodes } from "discord.js";
+import { and, eq } from "drizzle-orm";
+import sharp from "sharp";
+
+import { MAX_SUPPORTED_SIZE } from "@/constants";
+import { EmoteTooLargeError, UnsupportedEmoteFileError } from "@/constants/errors";
+import { TIME } from "@/constants/time";
+import { db } from "@/db";
+import { stvSyncLinks, stvSyncQueue } from "@/db/schema";
+import getBufferFromUrl from "@/emotes/source/get-buffer-from-url";
+import { normalizeEmoteBuffer } from "@/lib/buffer/normalize-emote-buffer";
+import { optimizeBuffer } from "@/lib/buffer/optimize-buffer";
+import { discordRestApi } from "@/lib/discord-rest-api";
+import { assertAllowedEmoteSourceUrl } from "@/lib/network/url-guard";
+import { getEmojiSlotLimit } from "@/utils/discord/guild-parse-premium";
+import parseDiscordRegexName from "@/utils/discord/parse-discord-regex-name";
+import { createErrorCode, logErrorCode } from "@/utils/error-code";
+
+import { Semaphore } from "./job-queue";
+import { type QueueDetail, type QueueReason, upsertQueueEntry } from "./queue";
+import type { SyncSettings } from "./settings";
+import type { SyncEmoteSource } from "./sync-emote";
+
+import { StvSyncConsole } from "#/loggers";
+
+const DOWNLOAD_TIMEOUT = 15_000;
+const PREPARED_TTL = 10 * TIME.MINUTE;
+const PREPARED_MAX = 50;
+
+export type AddOutcome =
+  | { status: "added"; emoji: { id: string; name: string; animated: boolean } }
+  | { status: "queued"; reason: QueueReason; detail: QueueDetail }
+  | { status: "skipped"; why: string };
+
+interface PreparedSource {
+  buffer: Buffer;
+  animated: boolean;
+  width: number;
+  height: number;
+}
+
+class QueueOutcome extends Error {
+  constructor(
+    readonly reason: QueueReason,
+    readonly detail: QueueDetail
+  ) {
+    super(`${reason}${detail ? ` (${detail})` : ""}`);
+  }
+}
+
+// Several servers syncing one channel get the same emote at once: download and optimize
+// it once. Promises are cached, so concurrent jobs share the work.
+const sourceCache = new Map<string, { at: number; value: Promise<PreparedSource> }>();
+const optimizedCache = new Map<string, { at: number; value: Promise<Buffer> }>();
+const heavyWork = new Semaphore(2);
+
+const cachedPromise = <T>(
+  cache: Map<string, { at: number; value: Promise<T> }>,
+  key: string,
+  create: () => Promise<T>
+) => {
+  const now = Date.now();
+  for (const [cachedKey, entry] of cache) {
+    if (now - entry.at > PREPARED_TTL) cache.delete(cachedKey);
+  }
+  const hit = cache.get(key);
+  if (hit) return hit.value;
+
+  if (cache.size >= PREPARED_MAX) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
+  const value = create();
+  cache.set(key, { at: now, value });
+  // Failures aren't cached: a retry must download again
+  value.catch(() => cache.delete(key));
+  return value;
+};
+
+const loadSource = (fileUrl: string) =>
+  cachedPromise(sourceCache, fileUrl, () =>
+    heavyWork.run(async () => {
+      let buffer: Buffer;
+      try {
+        await assertAllowedEmoteSourceUrl(fileUrl);
+        buffer = await getBufferFromUrl(fileUrl, {
+          maxBufferSize: MAX_SUPPORTED_SIZE,
+          maxRetries: 2,
+          timeoutMs: DOWNLOAD_TIMEOUT,
+        });
+      } catch (error) {
+        StvSyncConsole.warn(
+          `download of ${fileUrl} failed:`,
+          error instanceof Error ? error.message : String(error)
+        );
+        throw new QueueOutcome("FAILED", "download");
+      }
+
+      try {
+        const normalized = await normalizeEmoteBuffer(buffer);
+        const metadata = await sharp(normalized.buffer, { animated: true }).metadata();
+        return {
+          buffer: normalized.buffer,
+          animated: normalized.animated,
+          width: metadata.width ?? 1,
+          // `height` of an animated image is all frames stacked
+          height: metadata.pageHeight ?? metadata.height ?? 1,
+        };
+      } catch (error) {
+        if (error instanceof UnsupportedEmoteFileError) {
+          throw new QueueOutcome("FAILED", "invalid_file");
+        }
+        throw error;
+      }
+    })
+  );
+
+const optimizeSource = (
+  fileUrl: string,
+  source: PreparedSource,
+  fitting: SyncSettings["optimization"]["fitting"]
+) =>
+  cachedPromise(optimizedCache, `${fileUrl}|${fitting}`, () =>
+    heavyWork.run(async () => {
+      try {
+        const { buffer } = await optimizeBuffer(source.buffer, { fitting });
+        return buffer;
+      } catch (error) {
+        if (error instanceof EmoteTooLargeError)
+          throw new QueueOutcome("TOO_LARGE", null);
+        if (error instanceof UnsupportedEmoteFileError) {
+          throw new QueueOutcome("FAILED", "invalid_file");
+        }
+        throw error;
+      }
+    })
+  );
+
+/** Free slots of the emote's type, read from Discord (not the shard cache). */
+const hasFreeSlot = async (guildId: string, animated: boolean) => {
+  const guild = await discordRestApi.guilds.get(guildId);
+  const limit = getEmojiSlotLimit(guild.premium_tier, guild.features);
+  // Managed emojis (Twitch integration) don't take slots
+  const used = guild.emojis.filter(
+    (emoji) => !emoji.managed && !!emoji.animated === animated
+  ).length;
+  return used < limit;
+};
+
+/** Maps Discord's refusal of an emoji create to a queue reason; null = unexpected. */
+const queueOutcomeForDiscordError = (error: unknown): QueueOutcome | null => {
+  if (!(error instanceof DiscordAPIError)) return null;
+  switch (error.code) {
+    case RESTJSONErrorCodes.MaximumNumberOfEmojisReached:
+    case RESTJSONErrorCodes.MaximumNumberOfAnimatedEmojisReached:
+      return new QueueOutcome("NO_SLOT", null);
+    case RESTJSONErrorCodes.FailedToResizeAssetBelowTheMaximumSize:
+    case RESTJSONErrorCodes.FileUploadedExceedsMaximumSize:
+      return new QueueOutcome("TOO_LARGE", null);
+    case RESTJSONErrorCodes.MissingPermissions:
+    case RESTJSONErrorCodes.MissingAccess:
+      return new QueueOutcome("FAILED", "permissions");
+    case RESTJSONErrorCodes.InvalidFileUploaded:
+      return new QueueOutcome("FAILED", "invalid_file");
+    default:
+      return new QueueOutcome("FAILED", "discord");
+  }
+};
+
+const toQueueOutcome = (error: unknown, tag: string): QueueOutcome => {
+  if (error instanceof QueueOutcome) return error;
+
+  const discordOutcome = queueOutcomeForDiscordError(error);
+  if (discordOutcome) {
+    StvSyncConsole.warn(
+      `${tag} Discord refused it:`,
+      error instanceof Error ? error.message : String(error)
+    );
+    return discordOutcome;
+  }
+
+  const code = createErrorCode();
+  logErrorCode(code, `${tag} sync add failed:`, error);
+  return new QueueOutcome("FAILED", `unknown:${code}`);
+};
+
+/** Stores the link of a created emoji and drops the emote's queue entry. */
+export const linkSyncedEmoji = async (
+  guildId: string,
+  stvEmoteId: string,
+  emoji: { id: string; name: string; animated: boolean }
+) => {
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(stvSyncLinks)
+      .values({
+        guildId,
+        stvEmoteId,
+        discordEmojiId: emoji.id,
+        name: emoji.name,
+        animated: emoji.animated,
+      })
+      .onConflictDoUpdate({
+        target: [stvSyncLinks.guildId, stvSyncLinks.stvEmoteId],
+        set: {
+          discordEmojiId: emoji.id,
+          name: emoji.name,
+          animated: emoji.animated,
+          createdAt: new Date(),
+        },
+      });
+    await tx
+      .delete(stvSyncQueue)
+      .where(
+        and(eq(stvSyncQueue.guildId, guildId), eq(stvSyncQueue.stvEmoteId, stvEmoteId))
+      );
+  });
+};
+
+/**
+ * Adds one 7TV emote to a guild, or queues it with the reason. Filters are the caller's
+ * job (a retry skips them). Run it through `runForGuild`, so slot counts stay correct.
+ */
+export const addSyncedEmote = async (
+  guildId: string,
+  emote: SyncEmoteSource,
+  settings: SyncSettings
+): Promise<AddOutcome> => {
+  const tag = `[guild ${guildId}] ${emote.name} (${emote.stvEmoteId})`;
+
+  const existing = await db.query.stvSyncLinks.findFirst({
+    where: and(
+      eq(stvSyncLinks.guildId, guildId),
+      eq(stvSyncLinks.stvEmoteId, emote.stvEmoteId)
+    ),
+  });
+  if (existing) {
+    StvSyncConsole.info(
+      `${tag} already linked to emoji ${existing.discordEmojiId}, skipped`
+    );
+    return { status: "skipped", why: "already linked" };
+  }
+
+  let source: PreparedSource | undefined;
+
+  try {
+    source = await loadSource(emote.fileUrl);
+
+    const ratio =
+      Math.max(source.width, source.height) /
+      Math.max(1, Math.min(source.width, source.height));
+    if (ratio > settings.optimization.maxAspectRatio) {
+      throw new QueueOutcome("ASPECT_RATIO", ratio.toFixed(2));
+    }
+
+    if (!(await hasFreeSlot(guildId, source.animated))) {
+      throw new QueueOutcome("NO_SLOT", source.animated ? "animated" : "static");
+    }
+
+    const buffer = await optimizeSource(
+      emote.fileUrl,
+      source,
+      settings.optimization.fitting
+    );
+    const metadata = await sharp(buffer).metadata();
+    const name = parseDiscordRegexName(emote.name);
+
+    StvSyncConsole.info(`${tag} creating emoji ${name} (${buffer.byteLength} bytes)`);
+
+    const created = await discordRestApi.guilds.createEmoji(guildId, {
+      name,
+      image: `data:image/${metadata.format};base64,${buffer.toString("base64")}`,
+    });
+
+    const emoji = {
+      id: created.id ?? "",
+      name: created.name ?? name,
+      animated: created.animated ?? source.animated,
+    };
+    await linkSyncedEmoji(guildId, emote.stvEmoteId, emoji);
+    StvSyncConsole.success(`${tag} added as emoji ${emoji.id}`);
+    return { status: "added", emoji };
+  } catch (error) {
+    const outcome = toQueueOutcome(error, tag);
+
+    await upsertQueueEntry(guildId, emote, outcome.reason, outcome.detail, {
+      animated: source?.animated,
+      width: source?.width,
+      height: source?.height,
+    });
+    StvSyncConsole.warn(`${tag} queued: ${outcome.message}`);
+    return { status: "queued", reason: outcome.reason, detail: outcome.detail };
+  }
+};
+
+/** Queues an emote a filter rejected, without downloading it. */
+export const queueFilteredEmote = async (
+  guildId: string,
+  emote: SyncEmoteSource,
+  filter: string
+) => {
+  await upsertQueueEntry(guildId, emote, "FILTERED", filter);
+  StvSyncConsole.info(
+    `[guild ${guildId}] ${emote.name} (${emote.stvEmoteId}) filtered (${filter}), queued`
+  );
+};
