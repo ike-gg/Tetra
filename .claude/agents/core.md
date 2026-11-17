@@ -24,7 +24,8 @@ You work on `apps/core` of Tetra: the sharded discord.js bot and the Hono API th
 - Never import `@/bot` from API/manager code or tests: it logs in with the bot token.
 - Don't start `bun dev` / the bot unless the user asks: the `.env` token may be production and the watcher runs every edit against it. If you did start it, stop it and check `pgrep -fl src/bot.ts` for orphaned shards.
 - Every server-side download of a user URL goes through `safeFetch` (`src/lib/network/url-guard.ts`). Every write endpoint checks guild access with `getManageableGuild`. Records loaded by id are checked against the guild/user in the URL. Never log tokens, session values or keys.
-- Validate external input with Zod. Don't run `db:push` against anything but a local/throwaway database, and never accept a destructive change it proposes.
+- Validate external input with Zod.
+- Every schema change ships with a migration: change `src/db/schemas/`, run `bun db:generate`, read the generated SQL (no unintended drops or truncates; make it safe for existing data) and commit it with the schema. Core applies pending migrations on startup, so a schema change without a migration never reaches production. `db:push` is only for prototyping on a local/throwaway database; never accept a destructive change it proposes.
 - Verify assumptions about Discord and the emote APIs (7TV, BTTV, FFZ, Twitch) against their docs or live responses before relying on them.
 
 ## Testing
