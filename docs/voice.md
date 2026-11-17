@@ -70,7 +70,7 @@ We drop:
 | emoji | built-in emoji like 😃 (the word, not the character) | emote |
 | server | a Discord server | guild (code only) |
 | panel | the web panel | dashboard |
-| editor | the web editor | studio, tool |
+| editor | the web editor, including what it does under the hood | studio, tool, gifsicle |
 | premium | paid features (will become **supporter**) | pro, plus |
 | 7TV, BTTV, FFZ | the providers | 7tv, SevenTV |
 

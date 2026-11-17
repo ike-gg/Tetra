@@ -125,3 +125,5 @@ Rendered at `/branding/logo` (`apps/web/src/routes/branding.logo.tsx`), componen
 ## Voice
 
 How tetra talks (bot replies, errors, buttons, site copy) is in [voice.md](voice.md).
+
+Never name **gifsicle** in anything a user reads (site copy, bot replies, editor labels, the brand book). It's an implementation detail: say **the editor** (or just describe the result). The name belongs only in code, code comments and technical docs.

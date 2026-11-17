@@ -284,8 +284,7 @@ export function TunePeek({ className }: { className?: string }) {
             />
           </span>
           <p className="m-0 font-mono text-muted text-xs tracking-widest">
-            real sizes from the editor&apos;s gifsicle settings · Discord&apos;s limit,
-            256 KB
+            real sizes from the editor&apos;s settings · Discord&apos;s limit, 256 KB
           </p>
         </div>
       </div>
