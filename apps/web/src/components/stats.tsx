@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { EASE_OUT } from "@/components/logo";
+import { Heading } from "@/components/ui/heading";
 
 const STATS = [
   { value: "3,500", label: "servers use tetra" },
@@ -41,16 +42,15 @@ export function Stats() {
   }, []);
 
   return (
-    <section
-      ref={sectionRef}
-      aria-label="tetra in numbers"
-      className="mx-auto max-w-6xl px-6"
-    >
-      <dl className="m-0 flex flex-col border-border border-y sm:flex-row">
+    <section ref={sectionRef} className="mx-auto max-w-6xl px-6 py-14">
+      <Heading level={2} size="lg">
+        tetra so far
+      </Heading>
+      <dl className="m-0 mt-8 grid gap-px border border-border bg-border sm:grid-cols-3">
         {STATS.map((stat, index) => (
           <div
             key={stat.label}
-            className="flex flex-1 items-baseline gap-4 border-border py-6 not-first:border-t sm:flex-col sm:gap-2 sm:not-first:border-t-0 sm:not-first:border-l sm:not-first:pl-8"
+            className="flex items-baseline justify-between gap-4 bg-background px-6 py-6 sm:flex-col sm:justify-start sm:gap-3 sm:px-8"
           >
             <dt className="order-last font-mono text-muted text-xs tracking-widest">
               {stat.label}
