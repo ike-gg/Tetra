@@ -42,8 +42,8 @@ export const DEFAULT_SYNC_SETTINGS: SyncSettings = {
   filters: {
     includeStatic: true,
     includeAnimated: true,
-    includeZeroWidth: false,
-    includeNsfw: false,
+    includeZeroWidth: true,
+    includeNsfw: true,
   },
   excludedEmoteIds: [],
   optimization: { maxAspectRatio: 2 },
