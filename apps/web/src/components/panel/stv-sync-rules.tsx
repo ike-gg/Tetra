@@ -459,11 +459,11 @@ function ConditionRow({
             >
               <SelectTrigger
                 aria-label={`${label}: how to compare`}
-                className="w-auto min-w-28 flex-1 sm:w-40 sm:flex-none"
+                className="w-auto min-w-28 flex-1 sm:w-56 sm:flex-none"
               >
                 <SelectValue className="min-w-0 truncate" />
               </SelectTrigger>
-              <SelectContent className="min-w-40">
+              <SelectContent className="min-w-56">
                 {spec.operators.map((operator) => (
                   <SelectItem
                     key={operator.value}

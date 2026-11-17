@@ -71,9 +71,14 @@ const TEXT_OPERATORS: Option<RuleOperator>[] = [
   { value: "not_equals", label: "isn't" },
 ];
 
+// Core's order. `eq` (and the "or equal" half of `gte` / `lte`) rounds to the field's
+// precision first; the hints say so where it isn't whole numbers anyway
 const COMPARE: Option<RuleOperator>[] = [
-  { value: "gt", label: "over" },
-  { value: "lt", label: "under" },
+  { value: "gt", label: "greater than" },
+  { value: "gte", label: "greater than or equal to" },
+  { value: "eq", label: "equal to" },
+  { value: "lte", label: "less than or equal to" },
+  { value: "lt", label: "less than" },
 ];
 
 const number = (unit: string, max: number, integer = false): NumberKind => ({
@@ -99,7 +104,7 @@ export const FIELDS: Record<RuleField, FieldSpec> = {
     operators: COMPARE,
     kind: number(":1", 100),
     defaultValue: "3",
-    hint: "long side divided by the short side",
+    hint: "long side divided by the short side. equal is checked at 2 decimals",
     costly: true,
   },
   file_size_kb: {
@@ -117,7 +122,7 @@ export const FIELDS: Record<RuleField, FieldSpec> = {
     operators: COMPARE,
     kind: number("s", 3600),
     defaultValue: "10",
-    hint: "static emotes count as 0 s",
+    hint: "static emotes count as 0 s. equal is checked at 0.1 s",
     costly: true,
   },
   frame_count: {
