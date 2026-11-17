@@ -7,10 +7,11 @@ import { formatBytes } from "@/lib/format-bytes";
 import { DISCORD_EMOTE_LIMIT } from "@/lib/optimized-emotes";
 import peek from "@/lib/tune-peek-sizes.json";
 
-type PeekFrames = { grid: number; delays: number[]; frames: string[] };
+type PeekFrames = { grid: number; levels: number; delays: number[]; frames: string[] };
 
 const FRAMES_URL = "/home/tune-peek.json";
-const BOX_PX = 240;
+// 48 cells across at full size: 6 px glyphs, the densest that still read as glyphs
+const BOX_PX = 288;
 // Glyphs for opaque cells, light to dense: an opaque cell is never blank
 const GLYPHS = ASCII_RAMP.slice(1);
 // Fewer colors, fewer ramp levels: the glyphs posterize like the palette does
@@ -50,7 +51,8 @@ type Look = { size: number; colors: number };
 function draw(canvas: HTMLCanvasElement, data: PeekFrames, frame: number, look: Look) {
   const context = canvas.getContext("2d");
   if (!context) return;
-  const dpr = Math.min(window.devicePixelRatio, 2);
+  // Up to 3×: at 6 px a glyph needs every device pixel to stay crisp
+  const dpr = Math.min(window.devicePixelRatio, 3);
   const pixels = Math.round(BOX_PX * dpr);
   if (canvas.width !== pixels) {
     canvas.width = pixels;
@@ -93,7 +95,7 @@ function draw(canvas: HTMLCanvasElement, data: PeekFrames, frame: number, look: 
           const char = source[y * grid + x];
           if (char === " ") continue;
           opaque++;
-          luma += (Number.parseInt(char, 16) + 0.5) / 16;
+          luma += (Number(char) + 0.5) / data.levels;
         }
       }
       if (opaque * 2 < count) continue;
@@ -215,10 +217,16 @@ export function TunePeek({ className }: { className?: string }) {
   return (
     <div
       ref={rootRef}
-      className={cn("grid gap-8 bg-background p-8 md:grid-cols-[auto_1fr]", className)}
+      className={cn(
+        "grid gap-8 bg-background p-4 sm:p-8 md:grid-cols-[auto_1fr]",
+        className
+      )}
     >
-      <div className="mx-auto size-60 bg-checker md:mx-0" aria-hidden>
-        <canvas ref={canvasRef} className="block size-60" />
+      <div
+        className="mx-auto aspect-square w-full max-w-72 bg-checker md:mx-0 md:w-72"
+        aria-hidden
+      >
+        <canvas ref={canvasRef} className="block size-full" />
       </div>
 
       <div className="flex min-w-0 flex-col gap-5">

@@ -1,6 +1,6 @@
 // Builds the data of the homepage's "tune it yourself" peek:
 // - `public/home/tune-peek.json` (fetched when the peek comes into view): every frame of Vibe (7TV 3x.gif) as a GRID x GRID string, one character per
-//   cell: " " transparent, "0"–"f" the cell's luminance in 16 levels
+//   cell: " " transparent, "0"–"8" the cell's luminance in LEVELS levels
 // - `src/lib/tune-peek-sizes.json` (bundled, so the readout is in the prerendered HTML):
 //   the steps and the real output size in bytes for every combination of the peek's slider
 //   steps, from the web editor's own gifsicle commands (`src/lib/gif/gif-commands.ts`:
@@ -15,7 +15,10 @@ import { join } from "node:path";
 import sharp from "sharp";
 
 const EMOTE_ID = "01FRTYR8RR0005FHRFCCZBSEKR";
-const GRID = 24;
+const GRID = 48;
+// Luminance levels per cell: as many as the ramp has glyphs for opaque cells, so nothing
+// is lost at 256 colors, and 9 symbols pack far better than 16 (74 vs 110 KB gzipped)
+const LEVELS = 9;
 const SIZES = [96, 80, 64, 48, 32];
 const FPS = [25, 20, 15, 10, 5];
 const COLORS = [256, 128, 64, 32, 16];
@@ -57,7 +60,7 @@ for (let page = 0; page < pages; page++) {
       continue;
     }
     const luma = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
-    cells += Math.min(15, Math.floor(luma * 16)).toString(16);
+    cells += Math.min(LEVELS - 1, Math.floor(luma * LEVELS));
   }
   frames.push(cells);
 }
@@ -126,7 +129,7 @@ await rm(dir, { recursive: true });
 const version = execFileSync("gifsicle", ["--version"]).toString().split("\n")[0];
 await writeFile(
   framesFile,
-  `${JSON.stringify({ grid: GRID, delays, frames }, null, 2)}\n`
+  `${JSON.stringify({ grid: GRID, levels: LEVELS, delays, frames }, null, 2)}\n`
 );
 await writeFile(
   sizesFile,
