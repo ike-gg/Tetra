@@ -47,9 +47,9 @@ export const stvSyncLinks = pgTable(
   ]
 );
 
-/** 7TV emotes the sync couldn't add, with the reason. One entry per guild and emote. */
-export const stvSyncQueue = pgTable(
-  "stv_sync_queue",
+/** 7TV emotes that need review (not added), with the reason. One entry per guild and emote. */
+export const stvSyncReview = pgTable(
+  "stv_sync_review",
   {
     id: serial("id").primaryKey(),
     guildId: varchar("guild_id", { length: 255 }).notNull(),
@@ -65,9 +65,9 @@ export const stvSyncQueue = pgTable(
     author: varchar("author", { length: 64 }),
     reason: varchar("reason", { length: 32 }).notNull(),
     detail: varchar("detail", { length: 64 }),
-    queuedAt: timestamp("queued_at").notNull().defaultNow(),
+    flaggedAt: timestamp("flagged_at").notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex("stv_sync_queue_guild_emote_idx").on(table.guildId, table.stvEmoteId),
+    uniqueIndex("stv_sync_review_guild_emote_idx").on(table.guildId, table.stvEmoteId),
   ]
 );

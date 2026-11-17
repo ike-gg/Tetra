@@ -2,9 +2,14 @@ import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { stvSyncConfigs, stvSyncLinks, stvSyncQueue } from "@/db/schema";
+import { stvSyncConfigs, stvSyncLinks, stvSyncReview } from "@/db/schema";
 import { env } from "@/env";
-import { getQueueEntry, type QueueRow, queueMessage } from "@/stv-sync/queue";
+import {
+  getReviewEntry,
+  type ReviewReason,
+  type ReviewRow,
+  reviewMessage,
+} from "@/stv-sync/review";
 import {
   DEFAULT_SYNC_SETTINGS,
   readStoredSettings,
@@ -16,7 +21,7 @@ import parseDiscordRegexName from "@/utils/discord/parse-discord-regex-name";
 import { TetraAPIError } from "../../tetra-api-error";
 import { guildParamsSchema } from "../guilds/guilds.shared";
 
-export const queueEntryParamsSchema = guildParamsSchema.extend({
+export const reviewEntryParamsSchema = guildParamsSchema.extend({
   entryId: z
     .string()
     .regex(/^\d{1,10}$/)
@@ -41,7 +46,7 @@ export const requireSyncConfig = async (guildId: string) => {
 };
 
 const countRows = async (
-  table: typeof stvSyncLinks | typeof stvSyncQueue,
+  table: typeof stvSyncLinks | typeof stvSyncReview,
   guildId: string
 ) => {
   const [row] = await db
@@ -51,8 +56,8 @@ const countRows = async (
   return row?.value ?? 0;
 };
 
-/** The panel's view of a queue entry. */
-export const serializeQueueEntry = (row: QueueRow, settings: SyncSettings) => ({
+/** The panel's view of a review entry. */
+export const serializeReviewEntry = (row: ReviewRow, settings: SyncSettings) => ({
   id: row.id,
   stvEmoteId: row.stvEmoteId,
   /** The alias in the streamer's set. */
@@ -66,13 +71,13 @@ export const serializeQueueEntry = (row: QueueRow, settings: SyncSettings) => ({
   width: row.width,
   height: row.height,
   author: row.author,
-  reason: row.reason as "FILTERED" | "TOO_LARGE" | "ASPECT_RATIO" | "NO_SLOT" | "FAILED",
+  reason: row.reason as ReviewReason,
   detail: row.detail,
-  message: queueMessage(row, settings),
-  queuedAt: row.queuedAt.toISOString(),
+  message: reviewMessage(row, settings),
+  flaggedAt: row.flaggedAt.toISOString(),
 });
 
-/** The sync state of one guild, as every sync route except the queue answers it. */
+/** The sync state of one guild, as every sync route except the review routes answers it. */
 export const buildSyncState = async (guildId: string) => {
   const config = await getSyncConfig(guildId);
   const connection = stvSync.status(config?.enabled ? config.emoteSetId : null);
@@ -86,9 +91,9 @@ export const buildSyncState = async (guildId: string) => {
     };
   }
 
-  const [linkedEmotes, queuedEmotes] = await Promise.all([
+  const [linkedEmotes, reviewEmotes] = await Promise.all([
     countRows(stvSyncLinks, guildId),
-    countRows(stvSyncQueue, guildId),
+    countRows(stvSyncReview, guildId),
   ]);
 
   return {
@@ -105,7 +110,7 @@ export const buildSyncState = async (guildId: string) => {
       enabled: config.enabled,
       settings: readStoredSettings(config.settings),
       linkedEmotes,
-      queuedEmotes,
+      reviewEmotes,
       linkedAt: config.createdAt.toISOString(),
       updatedAt: config.updatedAt.toISOString(),
     },
@@ -113,14 +118,14 @@ export const buildSyncState = async (guildId: string) => {
   };
 };
 
-/** A queue entry by id, only if it belongs to the guild in the URL. */
-export const requireQueueEntry = async (guildId: string, entryId: number) => {
-  const entry = await getQueueEntry(guildId, entryId);
+/** A review entry by id, only if it belongs to the guild in the URL. */
+export const requireReviewEntry = async (guildId: string, entryId: number) => {
+  const entry = await getReviewEntry(guildId, entryId);
   if (!entry) {
     throw new TetraAPIError(
       404,
-      "this queue entry doesn't exist anymore",
-      "QUEUE_ENTRY_NOT_FOUND"
+      "this emote isn't in review anymore",
+      "REVIEW_ENTRY_NOT_FOUND"
     );
   }
   return entry;

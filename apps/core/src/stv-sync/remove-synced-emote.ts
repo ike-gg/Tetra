@@ -5,20 +5,20 @@ import { db } from "@/db";
 import { stvSyncLinks } from "@/db/schema";
 import { discordRestApi } from "@/lib/discord-rest-api";
 
-import { removeQueueEntryForEmote } from "./queue";
+import { removeReviewEntryForEmote } from "./review";
 
 import { StvSyncConsole } from "#/loggers";
 
 /**
- * Handles a 7TV removal: drops the emote's queue entry and deletes the Discord emoji
+ * Handles a 7TV removal: drops the emote's review entry and deletes the Discord emoji
  * tetra created for it. Emojis without a link (added by hand, or deleted by a moderator)
  * are never touched.
  */
 export const removeSyncedEmote = async (guildId: string, stvEmoteId: string) => {
   const tag = `[guild ${guildId}] ${stvEmoteId}`;
 
-  if (await removeQueueEntryForEmote(guildId, stvEmoteId)) {
-    StvSyncConsole.info(`${tag} removed from the queue`);
+  if (await removeReviewEntryForEmote(guildId, stvEmoteId)) {
+    StvSyncConsole.info(`${tag} removed from review`);
   }
 
   // Deleted first: the gateway emojiDelete that follows then has nothing to drop

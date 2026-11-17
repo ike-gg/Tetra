@@ -15,7 +15,7 @@ import { StvSyncConsole } from "#/loggers";
 
 const bodySetEnabled = z.object({ enabled: z.boolean() });
 
-/** Pauses or resumes the sync. Links and the queue stay; paused time isn't caught up. */
+/** Pauses or resumes the sync. Links and the review list stay; paused time isn't caught up. */
 export const stvSyncSetEnabled = authFactory.createHandlers(
   requireAuth,
   validate("param", guildParamsSchema),

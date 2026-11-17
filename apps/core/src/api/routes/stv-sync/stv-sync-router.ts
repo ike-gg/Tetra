@@ -2,7 +2,7 @@ import { Hono } from "hono";
 
 import type { AppEnv } from "../../api-env";
 import { stvSyncDismissEntry } from "./stv-sync.dismiss-entry";
-import { stvSyncGetQueue } from "./stv-sync.get-queue";
+import { stvSyncGetReview } from "./stv-sync.get-review";
 import { stvSyncGetSync } from "./stv-sync.get-sync";
 import { stvSyncLinkChannel } from "./stv-sync.link-channel";
 import { stvSyncRetryEntry } from "./stv-sync.retry-entry";
@@ -18,7 +18,7 @@ export const stvSyncRouter = new Hono<AppEnv>()
   .patch("/", ...stvSyncSetEnabled)
   .delete("/", ...stvSyncUnlink)
   .put("/settings", ...stvSyncUpdateSettings)
-  .get("/queue", ...stvSyncGetQueue)
-  .post("/queue/:entryId/retry", ...stvSyncRetryEntry)
-  .post("/queue/:entryId/upload", ...stvSyncUploadEntry)
-  .delete("/queue/:entryId", ...stvSyncDismissEntry);
+  .get("/review", ...stvSyncGetReview)
+  .post("/review/:entryId/retry", ...stvSyncRetryEntry)
+  .post("/review/:entryId/upload", ...stvSyncUploadEntry)
+  .delete("/review/:entryId", ...stvSyncDismissEntry);

@@ -16,17 +16,17 @@ import {
   getManageableGuild,
   readyEmoteBodySchema,
 } from "../guilds/guilds.shared";
-import { queueEntryParamsSchema, requireQueueEntry } from "./stv-sync.shared";
+import { requireReviewEntry, reviewEntryParamsSchema } from "./stv-sync.shared";
 
 import { StvSyncConsole } from "#/loggers";
 
 /**
- * Adds a queued emote from a file the browser editor fitted (same body as
+ * Adds an emote in review from a file the browser editor fitted (same body as
  * `POST /guilds/:guildId/emote/upload`), links it to the 7TV emote and drops the entry.
  */
 export const stvSyncUploadEntry = authFactory.createHandlers(
   requireAuth,
-  validate("param", queueEntryParamsSchema),
+  validate("param", reviewEntryParamsSchema),
   validate("json", readyEmoteBodySchema),
   async (c) => {
     const { guildId, entryId } = c.req.valid("param");
@@ -34,7 +34,7 @@ export const stvSyncUploadEntry = authFactory.createHandlers(
 
     assertReadyEmoteFits(emote);
     await getManageableGuild(guildId, c.var);
-    const entry = await requireQueueEntry(guildId, entryId);
+    const entry = await requireReviewEntry(guildId, entryId);
 
     const created = await runForGuild(guildId, async () => {
       const linked = await db.query.stvSyncLinks.findFirst({

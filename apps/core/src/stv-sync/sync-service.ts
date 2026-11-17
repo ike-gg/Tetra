@@ -6,7 +6,7 @@ import { db } from "@/db";
 import { stvSyncConfigs } from "@/db/schema";
 import { env } from "@/env";
 
-import { addSyncedEmote, queueFilteredEmote } from "./add-synced-emote";
+import { addSyncedEmote, reviewFilteredEmote } from "./add-synced-emote";
 import { EventApiClient, type Subscription } from "./event-api/client";
 import {
   activeEmoteSchema,
@@ -222,10 +222,10 @@ class StvSyncService {
           return;
         }
         if (filter) {
-          await queueFilteredEmote(guildId, sync.source, filter);
+          await reviewFilteredEmote(guildId, sync.source, filter);
           return;
         }
-        await addSyncedEmote(guildId, sync.source, settings);
+        await addSyncedEmote(guildId, sync.source, settings, sync.facts);
       }).catch((error) =>
         StvSyncConsole.error(
           `[guild ${guildId}] syncing ${emote.id} failed:`,

@@ -1,33 +1,35 @@
 import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { stvSyncQueue } from "@/db/schema";
+import { stvSyncReview } from "@/db/schema";
 import { reportWithCode } from "@/utils/error-code";
 
 import type { SyncSettings } from "./settings";
 import type { SyncEmoteSource } from "./sync-emote";
 
-export type QueueReason =
+export type ReviewReason =
   | "FILTERED"
+  | "RULE"
   | "TOO_LARGE"
   | "ASPECT_RATIO"
   | "NO_SLOT"
   | "FAILED";
 
 /**
- * FILTERED: the filter (`SyncFilter`). ASPECT_RATIO: the ratio, e.g. `3.20`. NO_SLOT:
- * `static` / `animated` (null when Discord refused without a count). FAILED: `download`,
- * `invalid_file`, `permissions`, `discord`, or `unknown:<error code>`.
+ * FILTERED: the basic filter (`SyncFilter`). RULE: the rule's 1-based position. ASPECT_RATIO:
+ * the ratio, e.g. `3.20`. NO_SLOT: `static` / `animated` (null when Discord refused without
+ * a count). FAILED: `download`, `invalid_file`, `permissions`, `discord`, or
+ * `unknown:<error code>`.
  */
-export type QueueDetail = string | null;
+export type ReviewDetail = string | null;
 
-export type QueueRow = typeof stvSyncQueue.$inferSelect;
+export type ReviewRow = typeof stvSyncReview.$inferSelect;
 
-export const upsertQueueEntry = async (
+export const upsertReviewEntry = async (
   guildId: string,
   emote: SyncEmoteSource,
-  reason: QueueReason,
-  detail: QueueDetail,
+  reason: ReviewReason,
+  detail: ReviewDetail,
   fromFile: { animated?: boolean; width?: number; height?: number } = {}
 ) => {
   const values = {
@@ -40,41 +42,41 @@ export const upsertQueueEntry = async (
     author: emote.author,
     reason,
     detail,
-    queuedAt: new Date(),
+    flaggedAt: new Date(),
   };
   await db
-    .insert(stvSyncQueue)
+    .insert(stvSyncReview)
     .values({ guildId, stvEmoteId: emote.stvEmoteId, ...values })
     .onConflictDoUpdate({
-      target: [stvSyncQueue.guildId, stvSyncQueue.stvEmoteId],
+      target: [stvSyncReview.guildId, stvSyncReview.stvEmoteId],
       set: values,
     });
 };
 
-export const removeQueueEntryForEmote = async (guildId: string, stvEmoteId: string) => {
+export const removeReviewEntryForEmote = async (guildId: string, stvEmoteId: string) => {
   const removed = await db
-    .delete(stvSyncQueue)
+    .delete(stvSyncReview)
     .where(
-      and(eq(stvSyncQueue.guildId, guildId), eq(stvSyncQueue.stvEmoteId, stvEmoteId))
+      and(eq(stvSyncReview.guildId, guildId), eq(stvSyncReview.stvEmoteId, stvEmoteId))
     )
-    .returning({ id: stvSyncQueue.id });
+    .returning({ id: stvSyncReview.id });
   return removed.length > 0;
 };
 
 /** One entry, only if it belongs to the guild. */
-export const getQueueEntry = (guildId: string, entryId: number) =>
-  db.query.stvSyncQueue.findFirst({
-    where: and(eq(stvSyncQueue.id, entryId), eq(stvSyncQueue.guildId, guildId)),
+export const getReviewEntry = (guildId: string, entryId: number) =>
+  db.query.stvSyncReview.findFirst({
+    where: and(eq(stvSyncReview.id, entryId), eq(stvSyncReview.guildId, guildId)),
   });
 
-export const listQueue = (guildId: string) =>
+export const listReview = (guildId: string) =>
   db
     .select()
-    .from(stvSyncQueue)
-    .where(eq(stvSyncQueue.guildId, guildId))
-    .orderBy(desc(stvSyncQueue.queuedAt), desc(stvSyncQueue.id));
+    .from(stvSyncReview)
+    .where(eq(stvSyncReview.guildId, guildId))
+    .orderBy(desc(stvSyncReview.flaggedAt), desc(stvSyncReview.id));
 
-export const toSyncSource = (row: QueueRow): SyncEmoteSource => ({
+export const toSyncSource = (row: ReviewRow): SyncEmoteSource => ({
   stvEmoteId: row.stvEmoteId,
   name: row.name,
   animated: row.animated,
@@ -86,25 +88,23 @@ export const toSyncSource = (row: QueueRow): SyncEmoteSource => ({
 });
 
 const FILTER_MESSAGES: Record<string, string> = {
-  static: "static emotes are turned off in the sync filters",
-  animated: "animated emotes are turned off in the sync filters",
-  zero_width: "zero-width emotes are skipped in the sync filters",
-  nsfw: "7TV marks this emote as NSFW, and NSFW emotes are skipped",
-  name: "the name doesn't contain any of your filter words",
-  regex: "the name doesn't match your filter pattern",
-  author: "its author is filtered out",
-  excluded: "you excluded this emote from the sync",
+  static: "static emotes are turned off in the sync settings",
+  animated: "animated emotes are turned off in the sync settings",
+  zero_width: "zero-width emotes are turned off in the sync settings",
+  nsfw: "7TV marks this emote as sensitive, and those are turned off in the sync settings",
 };
 
 /** The reason in tetra's voice (docs/voice.md), for the panel. */
-export const queueMessage = (
-  row: Pick<QueueRow, "reason" | "detail">,
+export const reviewMessage = (
+  row: Pick<ReviewRow, "reason" | "detail">,
   settings: SyncSettings
 ): string => {
   const { reason, detail } = row;
   switch (reason) {
     case "FILTERED":
-      return (detail && FILTER_MESSAGES[detail]) ?? "a sync filter skipped it";
+      return (detail && FILTER_MESSAGES[detail]) ?? "the sync settings turned it off";
+    case "RULE":
+      return detail ? `it matched rule ${detail}` : "it matched one of your rules";
     case "TOO_LARGE":
       return "i couldn't get it under Discord's 256 KB limit. shorten or shrink it in the editor";
     case "ASPECT_RATIO":

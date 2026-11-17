@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { db } from "@/db";
-import { stvSyncConfigs, stvSyncLinks, stvSyncQueue } from "@/db/schema";
+import { stvSyncConfigs, stvSyncLinks, stvSyncReview } from "@/db/schema";
 import { getTwitchChannel } from "@/emotes/lookup/twitch-channel-lookup";
 import { DEFAULT_SYNC_SETTINGS } from "@/stv-sync/settings";
 import { getStvChannel } from "@/stv-sync/stv-user";
@@ -26,7 +26,7 @@ const bodyLinkChannel = z.union([
 
 /**
  * Links a Twitch channel (by id or login) and starts syncing its active 7TV set. Linking
- * another channel replaces the old one and drops its links and queue; linking the same
+ * another channel replaces the old one and drops its links and review list; linking the same
  * channel again only refreshes the ids and keeps everything.
  */
 export const stvSyncLinkChannel = authFactory.createHandlers(
@@ -59,7 +59,7 @@ export const stvSyncLinkChannel = authFactory.createHandlers(
     await db.transaction(async (tx) => {
       if (existing && !sameChannel) {
         await tx.delete(stvSyncLinks).where(eq(stvSyncLinks.guildId, guildId));
-        await tx.delete(stvSyncQueue).where(eq(stvSyncQueue.guildId, guildId));
+        await tx.delete(stvSyncReview).where(eq(stvSyncReview.guildId, guildId));
       }
 
       const values = {

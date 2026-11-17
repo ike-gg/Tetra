@@ -90,11 +90,16 @@ export const activeEmoteSchema = z.object({
   name: z.string(),
   flags: z.number().nullish(),
   timestamp: z.number().nullish(),
+  /** 7TV user id of whoever added it to the set; null on old entries. */
+  actor_id: z.string().nullish(),
   data: z
     .object({
       id: z.string(),
       name: z.string(),
       flags: z.number().nullish(),
+      tags: z.array(z.string()).nullish(),
+      /** Approved for 7TV's public listing. */
+      listed: z.boolean().nullish(),
       animated: z.boolean(),
       owner: z.object({ id: z.string(), username: z.string() }).passthrough().nullish(),
       host: z.object({
@@ -124,7 +129,8 @@ export const removedEmoteSchema = z.object({
 export const ACTIVE_EMOTE_FLAG_ZERO_WIDTH = 1;
 /** Emote data flags. */
 export const EMOTE_FLAG_ZERO_WIDTH = 1 << 8;
-export const EMOTE_FLAG_SEXUAL = 1 << 16;
+/** 7TV calls it "sexual"; user-facing texts say "sensitive". */
+export const EMOTE_FLAG_SENSITIVE = 1 << 16;
 
 /** WebSocket close / End of Stream codes. */
 export const CloseCode = {

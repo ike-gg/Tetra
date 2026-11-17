@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { stvSyncConfigs, stvSyncLinks, stvSyncQueue } from "@/db/schema";
+import { stvSyncConfigs, stvSyncLinks, stvSyncReview } from "@/db/schema";
 import { stvSync } from "@/stv-sync/sync-service";
 
 import { authFactory } from "../../api-env";
@@ -13,7 +13,7 @@ import { buildSyncState, requireSyncConfig } from "./stv-sync.shared";
 import { StvSyncConsole } from "#/loggers";
 
 /**
- * Stops syncing and forgets the channel: links and queue are dropped, the Discord emotes
+ * Stops syncing and forgets the channel: links and the review list are dropped, the Discord emotes
  * stay. Links are keyed by 7TV emote id, so keeping them would let another channel's
  * removal delete them after a relink.
  */
@@ -28,7 +28,7 @@ export const stvSyncUnlink = authFactory.createHandlers(
 
     await db.transaction(async (tx) => {
       await tx.delete(stvSyncLinks).where(eq(stvSyncLinks.guildId, guildId));
-      await tx.delete(stvSyncQueue).where(eq(stvSyncQueue.guildId, guildId));
+      await tx.delete(stvSyncReview).where(eq(stvSyncReview.guildId, guildId));
       await tx.delete(stvSyncConfigs).where(eq(stvSyncConfigs.guildId, guildId));
     });
 
