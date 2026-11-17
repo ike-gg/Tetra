@@ -53,7 +53,41 @@ function onInviteClick(event: MouseEvent) {
   const location =
     link.closest<HTMLElement>("[data-track-location]")?.dataset.trackLocation ??
     (["footer", "nav", "header"].find((tag) => link.closest(tag)) || "page");
-  track("invite_click", { location });
+  const gtag = window.gtag;
+  if (typeof gtag !== "function") return;
+  const params: AnalyticsEvents["invite_click"] = { location };
+
+  const plainClick =
+    event.type === "click" &&
+    event.button === 0 &&
+    !event.metaKey &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.defaultPrevented &&
+    (!link.target || link.target === "_self");
+  if (!plainClick) {
+    // This page stays open, so the beacon gets out on its own
+    gtag("event", "invite_click", { ...params, transport_type: "beacon" });
+    return;
+  }
+
+  // `/invite` unloads the page at once, before gtag.js sends the hit: navigate after it
+  // (Google's outbound link pattern), with a timeout for when the callback never fires
+  event.preventDefault();
+  const href = link.href;
+  let navigated = false;
+  const navigate = () => {
+    if (navigated) return;
+    navigated = true;
+    window.location.assign(href);
+  };
+  window.setTimeout(navigate, 800);
+  gtag("event", "invite_click", {
+    ...params,
+    transport_type: "beacon",
+    event_callback: navigate,
+  });
 }
 
 /** Starts the invite click listener (an effect: returns its cleanup). No-op without GA. */
