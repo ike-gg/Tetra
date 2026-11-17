@@ -81,7 +81,7 @@ function ReviewRow({ guild, entry }: { guild: Guild; entry: ReviewEntry }) {
           alt=""
           loading="lazy"
           draggable={false}
-          className="size-14 shrink-0 bg-checker object-contain p-1"
+          className="size-14 shrink-0 bg-checker object-contain"
         />
         <div className="flex min-w-0 flex-col gap-1">
           <p className="m-0 flex min-w-0 flex-wrap items-baseline gap-x-2">
