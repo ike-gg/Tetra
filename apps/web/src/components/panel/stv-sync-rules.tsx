@@ -20,12 +20,10 @@ import {
   type DraftCondition,
   type DraftRule,
   FIELD_GROUPS,
-  FIELD_HINTS,
   FIELDS,
   fieldsInGroup,
   newCondition,
   newRuleId,
-  parseList,
   RULE_ACTIONS,
   RULE_LIMITS,
   RULE_PRESETS,
@@ -110,9 +108,9 @@ export function StvSyncRules({ rules, errors, onChange, defaults }: StvSyncRules
   return (
     <div className="flex flex-col gap-4">
       <Text size="sm" tone="muted">
-        when an emote is added on 7TV, rules run from top to bottom and the first one that
-        matches decides what happens. an emote no rule matches is added as usual. rules
-        don&apos;t run on retry
+        when an emote is added to the 7TV set, rules run from top to bottom and the first
+        one that matches decides what happens. an emote no rule matches is added as usual.
+        rules don&apos;t run on retry
       </Text>
 
       {rules.length === 0 ? (
@@ -162,12 +160,7 @@ export function StvSyncRules({ rules, errors, onChange, defaults }: StvSyncRules
           onAction={(value) => {
             const preset = RULE_PRESETS.find(({ id }) => id === value);
             if (!preset) return;
-            const rule = ruleFromPreset(preset, taken());
-            // Presets without a value (authors) start in that field
-            add(
-              rule,
-              rule.conditions[0]?.value ? '[role="combobox"]' : 'input[name="rule-value"]'
-            );
+            add(ruleFromPreset(preset, taken()), '[role="combobox"]');
           }}
         >
           <MenuTrigger
@@ -427,7 +420,7 @@ function ConditionRow({
   onRemove,
 }: ConditionRowProps) {
   const spec = FIELDS[condition.field];
-  const hint = FIELD_HINTS[condition.field];
+  const { hint } = spec;
 
   return (
     <li data-condition={condition.key} className="flex items-start gap-2">
@@ -457,59 +450,38 @@ function ConditionRow({
             </SelectContent>
           </Select>
 
-          {spec.kind.type === "boolean" ? (
-            <Select<"true" | "false">
-              value={condition.value === "true" ? "true" : "false"}
-              onValueChange={(next) => next && onChange((c) => ({ ...c, value: next }))}
+          {spec.operators.length > 1 && (
+            <Select<RuleOperator>
+              value={condition.operator}
+              onValueChange={(next) =>
+                next && onChange((c) => ({ ...c, operator: next }))
+              }
             >
-              <SelectTrigger aria-label={`${label}: yes or no`} className="w-28">
-                <SelectValue />
+              <SelectTrigger
+                aria-label={`${label}: how to compare`}
+                className="w-auto min-w-28 flex-1 sm:w-40 sm:flex-none"
+              >
+                <SelectValue className="min-w-0 truncate" />
               </SelectTrigger>
-              <SelectContent className="min-w-28">
-                <SelectItem value="true" label={spec.kind.yes}>
-                  {spec.kind.yes}
-                </SelectItem>
-                <SelectItem value="false" label={spec.kind.no}>
-                  {spec.kind.no}
-                </SelectItem>
+              <SelectContent className="min-w-40">
+                {spec.operators.map((operator) => (
+                  <SelectItem
+                    key={operator.value}
+                    value={operator.value}
+                    label={operator.label}
+                  >
+                    {operator.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          ) : (
-            <>
-              {spec.operators.length > 1 && (
-                <Select<RuleOperator>
-                  value={condition.operator}
-                  onValueChange={(next) =>
-                    next && onChange((c) => ({ ...c, operator: next }))
-                  }
-                >
-                  <SelectTrigger
-                    aria-label={`${label}: how to compare`}
-                    className="w-auto min-w-28 flex-1 sm:w-40 sm:flex-none"
-                  >
-                    <SelectValue className="min-w-0 truncate" />
-                  </SelectTrigger>
-                  <SelectContent className="min-w-40">
-                    {spec.operators.map((operator) => (
-                      <SelectItem
-                        key={operator.value}
-                        value={operator.value}
-                        label={operator.label}
-                      >
-                        {operator.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              <ValueField
-                condition={condition}
-                label={`${label}: value`}
-                error={error}
-                onChange={(value) => onChange((c) => ({ ...c, value }))}
-              />
-            </>
           )}
+          <ValueField
+            condition={condition}
+            label={`${label}: value`}
+            error={error}
+            onChange={(value) => onChange((c) => ({ ...c, value }))}
+          />
         </div>
         {hint && !error && <span className="text-muted text-xs">{hint}</span>}
       </div>
@@ -540,9 +512,6 @@ function ValueField({
   onChange: (value: string) => void;
 }) {
   const { kind } = FIELDS[condition.field];
-  const list = condition.operator === "in" || condition.operator === "not_in";
-  const regex = condition.operator === "matches_regex";
-  const count = list ? parseList(condition.value).length : 0;
 
   return (
     <TextField
@@ -556,24 +525,8 @@ function ValueField({
       inputMode={
         kind.type === "number" ? (kind.integer ? "numeric" : "decimal") : undefined
       }
-      prefix={regex ? "/" : undefined}
-      suffix={kind.type === "number" ? kind.unit : regex ? "/i" : undefined}
-      placeholder={
-        kind.type === "user"
-          ? list
-            ? "names or ids, separated by commas"
-            : "7TV username or id"
-          : regex
-            ? "^peepo"
-            : kind.type === "text"
-              ? condition.field === "tags"
-                ? "a tag"
-                : "text"
-              : undefined
-      }
-      description={
-        list && count > 0 ? `${count} ${count === 1 ? "user" : "users"}` : undefined
-      }
+      suffix={kind.type === "number" ? kind.unit : undefined}
+      placeholder={kind.type === "text" ? "text" : undefined}
     />
   );
 }

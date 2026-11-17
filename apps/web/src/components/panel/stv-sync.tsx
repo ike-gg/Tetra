@@ -41,7 +41,7 @@ export function StvSync({ guild }: { guild: ManagedGuild }) {
   const state = useQuery(syncQueryOptions(guild.id));
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 pb-12">
       <header className="flex flex-col gap-6">
         <div className="flex min-w-0 items-center gap-4">
           <GuildIcon guild={guild} size="lg" />
@@ -62,9 +62,10 @@ export function StvSync({ guild }: { guild: ManagedGuild }) {
           </div>
         </div>
         <Notice title="experimental: this may behave unpredictably" className="max-w-2xl">
-          when the streamer adds an emote to their active 7TV set, tetra adds it here, and
-          when they remove it, tetra removes the one it added. nothing from before you
-          link the channel is added, and changes while tetra is offline are missed
+          when an emote is added to the channel&apos;s active 7TV set, tetra adds it here,
+          and when it&apos;s removed from the set, tetra removes the one it added. nothing
+          from before you link the channel is added, and changes while tetra is offline
+          are missed
         </Notice>
       </header>
 

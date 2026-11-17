@@ -49,7 +49,7 @@ export function StvSyncSettings({ guildId, sync, defaults, form }: StvSyncSettin
       >
         <Group
           title="filters"
-          description="checked first when an emote is added on 7TV. an emote a filter catches needs review, where you can still add it"
+          description="checked first when an emote is added to the 7TV set. on means tetra syncs that kind. the rest needs review, where you can still add it"
         >
           <div className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
             <Switch
@@ -63,16 +63,16 @@ export function StvSyncSettings({ guildId, sync, defaults, form }: StvSyncSettin
               onCheckedChange={(value) => setFilter("includeAnimated", value)}
             />
             <Switch
-              label="skip zero-width emotes"
+              label="zero-width emotes"
               description="made to sit on top of another emote, which Discord can't do"
-              checked={draft.filters.skipZeroWidth}
-              onCheckedChange={(value) => setFilter("skipZeroWidth", value)}
+              checked={draft.filters.includeZeroWidth}
+              onCheckedChange={(value) => setFilter("includeZeroWidth", value)}
             />
             <Switch
-              label="skip sensitive emotes"
-              description="emotes 7TV marks as sensitive"
-              checked={draft.filters.skipNsfw}
-              onCheckedChange={(value) => setFilter("skipNsfw", value)}
+              label="sensitive emotes"
+              description="emotes 7TV marks as sensitive content"
+              checked={draft.filters.includeNsfw}
+              onCheckedChange={(value) => setFilter("includeNsfw", value)}
             />
           </div>
           {!draft.filters.includeStatic && !draft.filters.includeAnimated && (
@@ -118,6 +118,10 @@ export function StvSyncSettings({ guildId, sync, defaults, form }: StvSyncSettin
             <Text size="xs" tone="muted">
               emotes wider or taller than this need review, so you can crop them in the
               editor. they&apos;d look tiny in a square
+            </Text>
+            <Text size="xs" tone="muted">
+              this is a hard limit, checked after the advanced filters. not even an add
+              rule gets past it
             </Text>
           </div>
         </Group>

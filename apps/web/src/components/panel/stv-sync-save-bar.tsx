@@ -15,10 +15,10 @@ import { ApiError } from "@/lib/api";
 import { syncErrorMessage } from "@/lib/stv-sync";
 import type { SettingsForm } from "@/lib/stv-sync-settings-draft";
 
-// The form checks everything it can; core also rejects patterns its own check flags
+// The form checks what core's schema checks, so this only fires when the two drift apart
 const saveErrorMessage = (error: Error) =>
   error instanceof ApiError && error.reference === "INVALID_REQUEST_SCHEMA"
-    ? "i can't use one of these rules. a name pattern may repeat inside a repeat, like (a+)+, which could stall the sync. simplify it"
+    ? "i can't use one of these settings. reload the page, check the rules and save again"
     : syncErrorMessage(error);
 
 /**
