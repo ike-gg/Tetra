@@ -8,5 +8,14 @@ export const Route = createLazyFileRoute("/panel/editor/$key")({
 
 function PanelEditorFile() {
   const { key } = Route.useParams();
-  return <LibraryEditor fileKey={key} host="panel" />;
+  const { syncGuild, syncEntry } = Route.useSearch();
+  return (
+    <LibraryEditor
+      fileKey={key}
+      host="panel"
+      syncTarget={
+        syncGuild && syncEntry ? { guildId: syncGuild, entryId: syncEntry } : undefined
+      }
+    />
+  );
 }

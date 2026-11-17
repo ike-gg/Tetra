@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer";
 import { Logo } from "@/components/logo";
 import { Navbar } from "@/components/navbar";
 import { Accent } from "@/components/ui/accent";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { Heading } from "@/components/ui/heading";
@@ -752,6 +753,16 @@ function ControlsSheet() {
         >
           you can keep going, but processing may be slow or fail
         </Notice>
+      </div>
+      <div className="flex flex-col gap-3 bg-background p-6 sm:col-span-2">
+        <p className="font-mono text-muted text-xs">
+          &lt;Badge tone&gt; · a mono tag; signal only for a rare new or experimental mark
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <Badge>affiliate</Badge>
+          <Badge tone="primary">partner</Badge>
+          <Badge tone="signal">experimental</Badge>
+        </div>
       </div>
     </div>
   );

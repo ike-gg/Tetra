@@ -28,14 +28,20 @@ const toApiError = async (response: Pick<Response, "status" | "statusText" | "js
   );
 };
 
+// Distributes over a route with several success shapes (one `c.json` per outcome)
+type BodyOf<R> =
+  R extends ClientResponse<infer T, infer _Status, infer _Format> ? T : never;
+
 /** Returns the parsed body of a successful response, throws `ApiError` otherwise. */
-export const unwrap = async <T>(request: Promise<ClientResponse<T>>): Promise<T> => {
+export const unwrap = async <R extends ClientResponse<unknown>>(
+  request: Promise<R>
+): Promise<BodyOf<R>> => {
   const response = await request;
   if (!response.ok) throw await toApiError(response);
 
   // 204, and 200 with an empty body (`/me/state`), have nothing to parse
   const text = await response.text();
-  return (text ? JSON.parse(text) : undefined) as T;
+  return (text ? JSON.parse(text) : undefined) as BodyOf<R>;
 };
 
 /** For endpoints that answer with a file: the body as a `Blob`, `ApiError` otherwise. */

@@ -30,6 +30,7 @@ import { Route as PanelEditorKeyRouteImport } from './routes/panel.editor.$key'
 import { Route as PanelServersGuildIdRouteImport } from './routes/panel.servers.$guildId'
 import { Route as PanelTasksIndexRouteImport } from './routes/panel.tasks.index'
 import { Route as PanelTasksTaskIdRouteImport } from './routes/panel.tasks.$taskId'
+import { Route as PanelServersGuildIdSyncRouteImport } from './routes/panel.servers.$guildId_.sync'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -140,6 +141,11 @@ const PanelTasksTaskIdRoute = PanelTasksTaskIdRouteImport.update({
 } as any).lazy(() =>
   import('./routes/panel.tasks.$taskId.lazy').then((d) => d.Route),
 )
+const PanelServersGuildIdSyncRoute = PanelServersGuildIdSyncRouteImport.update({
+  id: '/servers/$guildId_/sync',
+  path: '/servers/$guildId/sync',
+  getParentRoute: () => PanelRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
   '/panel/editor/': typeof PanelEditorIndexRoute
   '/panel/tasks/': typeof PanelTasksIndexRoute
+  '/panel/servers/$guildId/sync': typeof PanelServersGuildIdSyncRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -185,6 +192,7 @@ export interface FileRoutesByTo {
   '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
   '/panel/editor': typeof PanelEditorIndexRoute
   '/panel/tasks': typeof PanelTasksIndexRoute
+  '/panel/servers/$guildId/sync': typeof PanelServersGuildIdSyncRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -209,6 +217,7 @@ export interface FileRoutesById {
   '/panel/tasks/$taskId': typeof PanelTasksTaskIdRoute
   '/panel/editor/': typeof PanelEditorIndexRoute
   '/panel/tasks/': typeof PanelTasksIndexRoute
+  '/panel/servers/$guildId_/sync': typeof PanelServersGuildIdSyncRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/panel/tasks/$taskId'
     | '/panel/editor/'
     | '/panel/tasks/'
+    | '/panel/servers/$guildId/sync'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -256,6 +266,7 @@ export interface FileRouteTypes {
     | '/panel/tasks/$taskId'
     | '/panel/editor'
     | '/panel/tasks'
+    | '/panel/servers/$guildId/sync'
   id:
     | '__root__'
     | '/'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/panel/tasks/$taskId'
     | '/panel/editor/'
     | '/panel/tasks/'
+    | '/panel/servers/$guildId_/sync'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -446,6 +458,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelTasksTaskIdRouteImport
       parentRoute: typeof PanelRoute
     }
+    '/panel/servers/$guildId_/sync': {
+      id: '/panel/servers/$guildId_/sync'
+      path: '/servers/$guildId/sync'
+      fullPath: '/panel/servers/$guildId/sync'
+      preLoaderRoute: typeof PanelServersGuildIdSyncRouteImport
+      parentRoute: typeof PanelRoute
+    }
   }
 }
 
@@ -458,6 +477,7 @@ interface PanelRouteChildren {
   PanelTasksTaskIdRoute: typeof PanelTasksTaskIdRoute
   PanelEditorIndexRoute: typeof PanelEditorIndexRoute
   PanelTasksIndexRoute: typeof PanelTasksIndexRoute
+  PanelServersGuildIdSyncRoute: typeof PanelServersGuildIdSyncRoute
 }
 
 const PanelRouteChildren: PanelRouteChildren = {
@@ -469,6 +489,7 @@ const PanelRouteChildren: PanelRouteChildren = {
   PanelTasksTaskIdRoute: PanelTasksTaskIdRoute,
   PanelEditorIndexRoute: PanelEditorIndexRoute,
   PanelTasksIndexRoute: PanelTasksIndexRoute,
+  PanelServersGuildIdSyncRoute: PanelServersGuildIdSyncRoute,
 }
 
 const PanelRouteWithChildren = PanelRoute._addFileChildren(PanelRouteChildren)

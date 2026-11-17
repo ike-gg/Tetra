@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { ChannelAvatar } from "@/components/panel/channel-avatar";
+import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
 import { channelSearchQueryOptions, parseTwitchLogin } from "@/lib/channels";
 import { cn } from "@/lib/cn";
@@ -136,16 +137,11 @@ export function ChannelSearch({ defaultValue, onChoose }: ChannelSearchProps) {
                   </span>
                 )}
                 {channel.broadcasterType && (
-                  <span
-                    className={cn(
-                      "shrink-0 border px-1 font-mono text-[11px] leading-4",
-                      channel.broadcasterType === "partner"
-                        ? "border-primary text-primary"
-                        : "border-neutral-700 text-muted"
-                    )}
+                  <Badge
+                    tone={channel.broadcasterType === "partner" ? "primary" : "neutral"}
                   >
                     {channel.broadcasterType}
-                  </span>
+                  </Badge>
                 )}
                 {channel.live && (
                   <span className="ml-auto flex shrink-0 items-center gap-1.5 font-mono text-foreground text-xs">

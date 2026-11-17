@@ -9,6 +9,7 @@ import { GuildsError } from "@/components/panel/guilds-error";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
 import { QuickAdd } from "@/components/panel/quick-add";
 import { SimilarEmotes } from "@/components/panel/similar-emotes";
+import { StvSyncTile } from "@/components/panel/stv-sync";
 import { Button } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
 import { Notice } from "@/components/ui/notice";
@@ -130,9 +131,12 @@ function Server({ guild }: { guild: ManagedGuild }) {
             browse emotes
           </Button>
         </div>
-        <div className="grid max-w-md grid-cols-2 gap-6 border border-border p-4">
-          <SlotMeter label="static" used={staticUsed} limit={limit} />
-          <SlotMeter label="animated" used={animatedUsed} limit={limit} />
+        <div className="flex flex-wrap gap-4">
+          <div className="grid w-full max-w-md grid-cols-2 gap-6 border border-border p-4">
+            <SlotMeter label="static" used={staticUsed} limit={limit} />
+            <SlotMeter label="animated" used={animatedUsed} limit={limit} />
+          </div>
+          <StvSyncTile guildId={guild.id} />
         </div>
       </header>
 

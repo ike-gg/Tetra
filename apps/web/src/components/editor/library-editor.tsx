@@ -13,6 +13,7 @@ import { DISCORD_EMOTE_LIMIT } from "@/lib/media/edit";
 import { libraryFileQueryOptions } from "@/lib/media/library-file";
 import { saveEdit } from "@/lib/media/local-library";
 
+import type { SyncTarget } from "./add-to-sync-button";
 import { EDITOR_HOSTS, type EditorHost } from "./editor-host";
 import { type EditorWork, MediaEditor } from "./media-editor";
 import { useCanAddToServer } from "./use-can-add-to-server";
@@ -24,6 +25,13 @@ const SAVE_DELAY_MS = 400;
 const AddToServerMenu = lazy(() =>
   import("./add-to-server-menu").then((module) => ({ default: module.AddToServerMenu }))
 );
+// Only for a file opened from a server's 7TV sync queue (panel)
+const AddToSyncButton = lazy(() =>
+  import("./add-to-sync-button").then((module) => ({ default: module.AddToSyncButton }))
+);
+const SyncTargetNotice = lazy(() =>
+  import("./add-to-sync-button").then((module) => ({ default: module.SyncTargetNotice }))
+);
 // The panel mounts its own; the public editor needs one only for adding
 const Toaster = lazy(() =>
   import("@/components/ui/toaster").then((module) => ({ default: module.Toaster }))
@@ -32,13 +40,15 @@ const Toaster = lazy(() =>
 type LibraryEditorProps = {
   fileKey: string;
   host: EditorHost;
+  // A 7TV sync queue entry the result goes to instead of "add to server ▾"
+  syncTarget?: SyncTarget;
 };
 
 /**
  * A file from the local library in the editor, on the public site or in the panel. Its
  * settings are saved back to the library as they change.
  */
-export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
+export function LibraryEditor({ fileKey, host, syncTarget }: LibraryEditorProps) {
   const config = EDITOR_HOSTS[host];
   const navigate = useNavigate();
   const stored = useQuery(libraryFileQueryOptions(fileKey));
@@ -115,6 +125,13 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
             ? "min-h-[calc(100dvh-3rem)] lg:h-[calc(100dvh-3rem)]"
             : undefined
         }
+        notice={
+          syncTarget && (
+            <Suspense fallback={null}>
+              <SyncTargetNotice target={syncTarget} />
+            </Suspense>
+          )
+        }
         initialEdit={saved?.edit}
         initialName={saved?.name}
         initialDiscord={saved?.discord ?? config.discordByDefault}
@@ -128,7 +145,11 @@ export function LibraryEditor({ fileKey, host }: LibraryEditorProps) {
               {host === "public" && newFile}
               {adding && (
                 <Suspense fallback={null}>
-                  <AddToServerMenu state={state} animated={file.info.frames > 1} />
+                  {syncTarget ? (
+                    <AddToSyncButton state={state} target={syncTarget} />
+                  ) : (
+                    <AddToServerMenu state={state} animated={file.info.frames > 1} />
+                  )}
                 </Suspense>
               )}
               <Button

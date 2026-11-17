@@ -26,7 +26,9 @@ const ICON_BUTTON =
 type CurrentView = {
   label: string;
   // A crumb between Panel and the label, for views that live under another one
-  parent?: { label: string; to: "/panel/tasks" | "/panel/editor" };
+  parent?:
+    | { label: string; to: "/panel/tasks" | "/panel/editor" }
+    | { label: string; to: "/panel/servers/$guildId"; params: { guildId: string } };
   // The editor fills the content area edge to edge
   fullBleed?: boolean;
 };
@@ -63,15 +65,22 @@ function useCurrentView(): CurrentView {
     };
   }
   if (matchRoute({ to: "/panel/editor" })) return { label: "editor" };
-  const server = matchRoute({ to: "/panel/servers/$guildId" });
-  if (server) {
+  const serverName = (guildId: string) =>
+    guilds.data?.guildsWithUserPermissions.find((guild) => guild.id === guildId)?.name ??
+    "server";
+  const sync = matchRoute({ to: "/panel/servers/$guildId/sync" });
+  if (sync) {
     return {
-      label:
-        guilds.data?.guildsWithUserPermissions.find(
-          (guild) => guild.id === server.guildId
-        )?.name ?? "server",
+      label: "7TV sync",
+      parent: {
+        label: serverName(sync.guildId),
+        to: "/panel/servers/$guildId",
+        params: { guildId: sync.guildId },
+      },
     };
   }
+  const server = matchRoute({ to: "/panel/servers/$guildId" });
+  if (server) return { label: serverName(server.guildId) };
   if (matchRoute({ to: "/panel/tasks" })) return { label: "tasks" };
   if (matchRoute({ to: "/panel/browse" })) return { label: "browse" };
   if (matchRoute({ to: "/panel/channels" })) return { label: "channels" };
@@ -79,6 +88,15 @@ function useCurrentView(): CurrentView {
 }
 
 const CRUMB_LINK = "cursor-default text-muted no-underline hover:text-foreground";
+
+function ParentCrumb({ parent }: { parent: NonNullable<CurrentView["parent"]> }) {
+  const { label, ...link } = parent;
+  return (
+    <Link {...link} className={cn(CRUMB_LINK, "min-w-0 truncate max-sm:hidden")}>
+      {label}
+    </Link>
+  );
+}
 
 // App chrome of the logged-in panel: header with breadcrumb and account, a fixed sidebar on
 // wide screens and the same navigation in a drawer on narrow ones
@@ -127,9 +145,7 @@ export function PanelLayout({ children }: { children: ReactNode }) {
         </span>
         {view.parent && (
           <>
-            <Link to={view.parent.to} className={cn(CRUMB_LINK, "max-sm:hidden")}>
-              {view.parent.label}
-            </Link>
+            <ParentCrumb parent={view.parent} />
             <span aria-hidden="true" className="text-neutral-600 max-sm:hidden">
               /
             </span>
