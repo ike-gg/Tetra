@@ -13,7 +13,7 @@ const filtersSchema = z.object({
   includeStatic: z.boolean(),
   includeAnimated: z.boolean(),
   includeZeroWidth: z.boolean(),
-  /** 7TV's sensitive flag. */
+  /** 7TV's NSFW flag. */
   includeNsfw: z.boolean(),
 });
 

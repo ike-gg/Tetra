@@ -11,7 +11,7 @@ Experimental, built behind `SEVENTV_SYNC_ENABLED` (default off) and not tested l
 - **Link table.** Every synced emoji is stored as (guild, 7TV emote id) → Discord emoji id. A `remove` deletes only emojis from this table, so emojis added by hand are never touched. Key on the 7TV emote id, never the name.
 - **Moderator actions.** A moderator deleting a synced emoji drops its link (a later 7TV `remove` does nothing). Editing it by hand keeps the link.
 - **Per-server settings:**
-  - basic filters: static, animated, zero-width, sensitive (7TV's NSFW flag); plus the "never sync" list fed by dismissing with exclude;
+  - basic filters: static, animated, zero-width, NSFW (7TV flag `1<<16`); plus the "never sync" list fed by dismissing with exclude;
   - optimization: up to which aspect ratio tetra adds automatically (always `contain`, the whole emote stays visible); wider emotes need review (Discord emojis are square);
   - advanced rules: an ordered list of condition sets with an action (review, skip, add).
 - **Names** go through the existing name sanitizer (Discord: 2–32 chars, `[a-zA-Z0-9_]`). Use the set's alias (`name` on the active emote), not the emote's original name.
@@ -58,7 +58,7 @@ Download and optimization results are cached in memory for 10 min (by file URL),
 - **Review** has one entry per (guild, 7TV emote); a new failure updates it (reason, `flaggedAt`). Freed slots never retry anything. A `skip` rule leaves an existing entry alone.
 - **Moderator deletes**: the shard's `emojiDelete` handler drops the link (`dropSyncLinkForEmoji`, idempotent). Sync removals delete the link before calling Discord, so their own `emojiDelete` finds nothing; the existing removed-emotes record is still written (`deletedWithPanel: false`), so the panel can restore them.
 - **Rule fields were cut down** before release to what admins actually use: original name, name length, renamed, name taken, author, added by, tags, listed, emote age, width/height and `matches_regex` were dropped (with the GraphQL actor lookup and the regex guard they needed).
-- **Wording**: 7TV's `1<<16` flag is called "sexual" in its code but covers more; user-facing text says "sensitive" (`includeNsfw` keeps its key).
+- **Wording**: 7TV's `1<<16` flag is called "sexual" in its code but covers more; user-facing text says "NSFW" and never "sexual".
 
 ### Settings
 
@@ -78,7 +78,7 @@ Stored as `jsonb` in `stv_sync_configs.settings`, validated by `syncSettingsSche
 }
 ```
 
-`excludedEmoteIds` ≤ 1000 7TV ids (the "never sync" list, filled by dismiss with `exclude`, oldest dropped first). `maxAspectRatio` 1–4, rounded to one decimal; a 7TV emote wider than 4:1 always needs review. It is a hard limit checked after the rules: even an `add` rule can't bypass it. Zero-width = active flag `1` or emote flag `1<<8`; sensitive = emote flag `1<<16`.
+`excludedEmoteIds` ≤ 1000 7TV ids (the "never sync" list, filled by dismiss with `exclude`, oldest dropped first). `maxAspectRatio` 1–4, rounded to one decimal; a 7TV emote wider than 4:1 always needs review. It is a hard limit checked after the rules: even an `add` rule can't bypass it. Zero-width = active flag `1` or emote flag `1<<8`; NSFW = emote flag `1<<16`.
 
 ### Advanced rules
 

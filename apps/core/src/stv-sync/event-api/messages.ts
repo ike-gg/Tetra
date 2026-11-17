@@ -128,7 +128,7 @@ export const removedEmoteSchema = z.object({
 export const ACTIVE_EMOTE_FLAG_ZERO_WIDTH = 1;
 /** Emote data flags. */
 export const EMOTE_FLAG_ZERO_WIDTH = 1 << 8;
-/** 7TV calls it "sexual"; user-facing texts say "sensitive". */
+/** 7TV calls it "sexual"; user-facing texts say "NSFW". */
 export const EMOTE_FLAG_SENSITIVE = 1 << 16;
 
 /** WebSocket close / End of Stream codes. */

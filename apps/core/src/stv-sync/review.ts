@@ -92,7 +92,7 @@ const FILTER_MESSAGES: Record<string, string> = {
   static: "static emotes are turned off in the sync settings",
   animated: "animated emotes are turned off in the sync settings",
   zero_width: "zero-width emotes are turned off in the sync settings",
-  nsfw: "7TV marks this emote as sensitive, and those are turned off in the sync settings",
+  nsfw: "7TV marks this emote as NSFW, and those are turned off in the sync settings",
 };
 
 /** The reason in tetra's voice (docs/voice.md), for the panel. */
