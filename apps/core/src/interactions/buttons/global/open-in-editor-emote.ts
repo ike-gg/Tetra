@@ -14,6 +14,7 @@ import {
   BaseContinuity,
   type ContinuityHandler,
 } from "@/interactions/continuity/base-continuity";
+import { trimUserEditorTasks } from "@/lib/retention/emote-records";
 import { ProcessingEmoteService } from "@/services/processing-emote.service";
 import type { SupportedEmoteOrigin } from "@/types";
 import { TetraEmbed } from "@/utils/embed-messages/tetra-embed";
@@ -70,29 +71,38 @@ const OpenInEditorEmoteContinuity = new OpenInEditorEmoteButtonInteraction(
         data.processingEmoteKey
       );
 
-      // The editor downloads the source file in the browser, local edits are not kept
-      const [insertedEmote] = await db
-        .insert(emotes)
-        .values({
-          externalId: emote.id,
-          isAnimated: emote.animated,
-          name: customName ?? emote.name,
-          origin: toDbOrigin(emote.origin),
-          previewUrl: emote.file.preview,
-          url: emote.file.url,
-        })
-        .returning();
+      const guildId = interaction.guild.id;
 
-      const [task] = await db
-        .insert(editorTasks)
-        .values({
-          emoteId: insertedEmote.id,
-          guildId: interaction.guild.id,
-          userId: interaction.user.id,
-          channelId: interaction.channelId,
-          messageId: interaction.message.id,
-        })
-        .returning();
+      // The editor downloads the source file in the browser, local edits are not kept.
+      // A new task always succeeds; the user's oldest tasks make room for it.
+      const task = await db.transaction(async (tx) => {
+        const [insertedEmote] = await tx
+          .insert(emotes)
+          .values({
+            externalId: emote.id,
+            isAnimated: emote.animated,
+            name: customName ?? emote.name,
+            origin: toDbOrigin(emote.origin),
+            previewUrl: emote.file.preview,
+            url: emote.file.url,
+          })
+          .returning();
+
+        const [insertedTask] = await tx
+          .insert(editorTasks)
+          .values({
+            emoteId: insertedEmote.id,
+            guildId,
+            userId: interaction.user.id,
+            channelId: interaction.channelId,
+            messageId: interaction.message.id,
+          })
+          .returning();
+
+        await trimUserEditorTasks(tx, interaction.user.id);
+
+        return insertedTask;
+      });
 
       const linkRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()

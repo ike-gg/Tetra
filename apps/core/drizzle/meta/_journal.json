@@ -15,6 +15,13 @@
       "when": 1794921854793,
       "tag": "0001_stv_sync",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794965535351,
+      "tag": "0002_removed-emotes-removed-at",
+      "breakpoints": true
     }
   ]
 }

@@ -14,7 +14,11 @@ import { authFactory } from "../../api-env";
 import { requireAuth } from "../../middleware/auth";
 import { TetraAPIError } from "../../tetra-api-error";
 import { validate } from "../../validate";
-import { getManageableGuild, guildParamsSchema } from "./guilds.shared";
+import {
+  getManageableGuild,
+  guildParamsSchema,
+  notExpiredRemovedEmote,
+} from "./guilds.shared";
 
 const restoreParamsSchema = guildParamsSchema.extend({
   restoreId: z.coerce.number().int().positive(),
@@ -29,7 +33,11 @@ export const guildsRestoreEmote = authFactory.createHandlers(
     const guild = await getManageableGuild(guildId, c.var);
 
     const removedEmote = await db.query.removedEmotes.findFirst({
-      where: and(eq(removedEmotes.id, restoreId), eq(removedEmotes.guildId, guildId)),
+      where: and(
+        eq(removedEmotes.id, restoreId),
+        eq(removedEmotes.guildId, guildId),
+        notExpiredRemovedEmote()
+      ),
       with: { emote: true },
     });
 

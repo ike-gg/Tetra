@@ -45,6 +45,7 @@ export const removedEmotes = pgTable("removed_emotes", {
     .notNull()
     .references(() => emotes.id),
   deletedWithPanel: boolean("deleted_with_panel").notNull(),
+  removedAt: timestamp("removed_at").notNull().defaultNow(),
 });
 
 export const removedEmotesRelations = relations(removedEmotes, ({ one }) => ({

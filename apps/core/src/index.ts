@@ -1,5 +1,6 @@
 import { runMigrations } from "@/db/migrate";
 import { startContinuityCleanup } from "@/interactions/continuity/cleanup-continuity";
+import { startRetentionCleanup } from "@/lib/retention/cleanup-retention";
 import { shardingManager } from "@/lib/sharding-manager";
 import { stvSync } from "@/stv-sync/sync-service";
 
@@ -24,6 +25,7 @@ if (isProduction) {
 } else CoreConsole.info("Running in development mode.");
 
 startContinuityCleanup();
+startRetentionCleanup();
 
 if (env.API_ENABLED) initApi();
 

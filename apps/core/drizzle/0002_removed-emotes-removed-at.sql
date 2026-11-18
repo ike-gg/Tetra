@@ -1,0 +1,1 @@
+ALTER TABLE "removed_emotes" ADD COLUMN "removed_at" timestamp DEFAULT now() NOT NULL;

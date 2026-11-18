@@ -1,8 +1,11 @@
 import { type Client, type GuildPremiumTier, PermissionsBitField } from "discord.js";
+import { gte } from "drizzle-orm";
 import { z } from "zod";
 
 import { MAX_EMOTE_SIZE } from "@/constants";
 import { EmoteTooLargeError } from "@/constants/errors";
+import { RETENTION, retentionCutoff } from "@/constants/retention";
+import { removedEmotes } from "@/db/schema";
 import { getUserGuilds } from "@/lib/discord-oauth/user-guilds-cache";
 import { discordRestApi } from "@/lib/discord-rest-api";
 
@@ -15,6 +18,10 @@ export const guildParamsSchema = z.object({
 });
 
 /** A finished emote file from the browser editor, uploaded to Discord as-is. */
+/** Expired removed emotes are hidden and can't be restored, even before the cleanup runs. */
+export const notExpiredRemovedEmote = () =>
+  gte(removedEmotes.removedAt, retentionCutoff(RETENTION.REMOVED_EMOTE_MAX_AGE));
+
 export const readyEmoteBodySchema = z.object({
   emote: z
     .string()
