@@ -11,6 +11,9 @@ const staticPages = [
   "/branding/logo",
   "/branding/static-logo",
   "/branding/feedback",
+  "/terms",
+  "/privacy",
+  "/cookies",
 ];
 // Server routes (src/routes/robots[.]txt.ts, sitemap[.]xml.ts, llms[.]txt.ts), prerendered to plain files
 const staticFiles = ["/robots.txt", "/sitemap.xml", "/llms.txt"];

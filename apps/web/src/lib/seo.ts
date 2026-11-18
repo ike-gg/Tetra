@@ -70,6 +70,28 @@ export const SEO_PAGES = {
       "manage your servers' emotes in the browser: add them from 7TV and FFZ, restore removed ones, fix the ones that didn't fit",
     og: { eyebrow: "panel", heading: "your emotes,", accent: "one panel" },
   },
+  // Legal pages keep formal capitalization (an exception to voice.md, see web.md)
+  terms: {
+    path: "/terms",
+    title: "Terms of Service · tetra",
+    description:
+      "The terms for using Tetra: the Discord bot, the website at tetra.lol, the editor and the panel.",
+    og: { eyebrow: "legal", heading: "Terms of", accent: "Service" },
+  },
+  privacy: {
+    path: "/privacy",
+    title: "Privacy Policy · tetra",
+    description:
+      "What information Tetra collects, why, how long it is kept, who receives it and how to have it deleted.",
+    og: { eyebrow: "legal", heading: "Privacy", accent: "Policy" },
+  },
+  cookies: {
+    path: "/cookies",
+    title: "Cookie Policy · tetra",
+    description:
+      "The cookies and browser storage used on tetra.lol and how to control or delete them.",
+    og: { eyebrow: "legal", heading: "Cookie", accent: "Policy" },
+  },
 } satisfies Record<string, SeoPage>;
 
 export type SeoPageKey = keyof typeof SEO_PAGES;

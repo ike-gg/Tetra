@@ -92,6 +92,7 @@ The site follows the same voice but may sell a little more:
 - Lead with what the user gets, not with technology.
 - Descriptions, FAQ, buttons and forms talk exactly like the bot.
 - Only claim what's verified: pricing, limits, permissions and numbers.
+- **Exception: the legal pages** (`/terms`, `/privacy`, `/cookies`) are classic formal legal text with normal capitalization, periods and `Tetra` capitalized (owner's call). Their footer links stay lowercase.
 
 ## Before and after
 

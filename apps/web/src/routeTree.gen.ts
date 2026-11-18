@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as R404RouteImport } from './routes/404'
+import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as LlmsDottxtRouteImport } from './routes/llms[.]txt'
 import { Route as PanelRouteImport } from './routes/panel'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as BrandingIndexRouteImport } from './routes/branding.index'
 import { Route as BrandingFeedbackRouteImport } from './routes/branding.feedback'
 import { Route as BrandingGuideRouteImport } from './routes/branding.guide'
@@ -43,6 +46,11 @@ const R404Route = R404RouteImport.update({
   path: '/404',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CookiesRoute = CookiesRouteImport.update({
+  id: '/cookies',
+  path: '/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LlmsDottxtRoute = LlmsDottxtRouteImport.update({
   id: '/llms.txt',
   path: '/llms.txt',
@@ -53,6 +61,11 @@ const PanelRoute = PanelRouteImport.update({
   path: '/panel',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() => import('./routes/panel.lazy').then((d) => d.Route))
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
@@ -61,6 +74,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BrandingIndexRoute = BrandingIndexRouteImport.update({
@@ -157,10 +175,13 @@ const PanelServersGuildIdSyncActivityRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/404': typeof R404Route
+  '/cookies': typeof CookiesRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/panel': typeof PanelRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/branding/feedback': typeof BrandingFeedbackRoute
   '/branding/guide': typeof BrandingGuideRoute
   '/branding/logo': typeof BrandingLogoRoute
@@ -182,9 +203,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/404': typeof R404Route
+  '/cookies': typeof CookiesRoute
   '/llms.txt': typeof LlmsDottxtRoute
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/branding/feedback': typeof BrandingFeedbackRoute
   '/branding/guide': typeof BrandingGuideRoute
   '/branding/logo': typeof BrandingLogoRoute
@@ -207,10 +231,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/404': typeof R404Route
+  '/cookies': typeof CookiesRoute
   '/llms.txt': typeof LlmsDottxtRoute
   '/panel': typeof PanelRouteWithChildren
+  '/privacy': typeof PrivacyRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/branding/feedback': typeof BrandingFeedbackRoute
   '/branding/guide': typeof BrandingGuideRoute
   '/branding/logo': typeof BrandingLogoRoute
@@ -234,10 +261,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/404'
+    | '/cookies'
     | '/llms.txt'
     | '/panel'
+    | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/terms'
     | '/branding/feedback'
     | '/branding/guide'
     | '/branding/logo'
@@ -259,9 +289,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/404'
+    | '/cookies'
     | '/llms.txt'
+    | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/terms'
     | '/branding/feedback'
     | '/branding/guide'
     | '/branding/logo'
@@ -283,10 +316,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/404'
+    | '/cookies'
     | '/llms.txt'
     | '/panel'
+    | '/privacy'
     | '/robots.txt'
     | '/sitemap.xml'
+    | '/terms'
     | '/branding/feedback'
     | '/branding/guide'
     | '/branding/logo'
@@ -309,10 +345,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   R404Route: typeof R404Route
+  CookiesRoute: typeof CookiesRoute
   LlmsDottxtRoute: typeof LlmsDottxtRoute
   PanelRoute: typeof PanelRouteWithChildren
+  PrivacyRoute: typeof PrivacyRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   BrandingFeedbackRoute: typeof BrandingFeedbackRoute
   BrandingGuideRoute: typeof BrandingGuideRoute
   BrandingLogoRoute: typeof BrandingLogoRoute
@@ -338,6 +377,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof R404RouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cookies': {
+      id: '/cookies'
+      path: '/cookies'
+      fullPath: '/cookies'
+      preLoaderRoute: typeof CookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/llms.txt': {
       id: '/llms.txt'
       path: '/llms.txt'
@@ -352,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PanelRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/robots.txt': {
       id: '/robots.txt'
       path: '/robots.txt'
@@ -364,6 +417,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/branding/': {
@@ -519,10 +579,13 @@ const PanelRouteWithChildren = PanelRoute._addFileChildren(PanelRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   R404Route: R404Route,
+  CookiesRoute: CookiesRoute,
   LlmsDottxtRoute: LlmsDottxtRoute,
   PanelRoute: PanelRouteWithChildren,
+  PrivacyRoute: PrivacyRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   BrandingFeedbackRoute: BrandingFeedbackRoute,
   BrandingGuideRoute: BrandingGuideRoute,
   BrandingLogoRoute: BrandingLogoRoute,

@@ -6,3 +6,6 @@ export const INVITE_URL = "https://tetra.lol/invite";
  */
 export const inviteUrlFor = (guildId: string) =>
   `${INVITE_URL}?guild=${encodeURIComponent(guildId)}`;
+
+// Tetra's support server on Discord: support, data requests and abuse reports (legal pages)
+export const SUPPORT_SERVER_URL = "https://discord.gg/dNqBstzs4p";

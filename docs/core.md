@@ -225,6 +225,7 @@ Limits live in `RETENTION` (`src/constants/retention.ts`).
 - Every editor task delete goes through `deleteEditorTasks`, which also deletes the `emotes` rows it leaves unreferenced (`deleteOrphanedEmotes`: no `removed_emotes` and no `editor_tasks` row points at it).
 - **Cleanup** (`startRetentionCleanup`, manager only, at start then hourly, one transaction): expired and over-cap tasks and removed emotes, then a global orphan sweep of `emotes`. The sweep skips rows younger than 1 h, because `guild-emoji-delete` inserts a `removed_emotes` row for an existing `emotes` row outside a transaction.
 - Drizzle `relations()` are code only; changing them doesn't change the DB.
+- **Privacy policy**: when what core stores, how long it keeps it or which third parties receive data changes, update the privacy policy on the website (`apps/web/src/routes/privacy.tsx`, see [web.md](web.md#legal-pages)) and bump its date.
 
 ## Environment variables
 
