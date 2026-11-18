@@ -12,6 +12,7 @@ The documentation lives in `docs/`. Read the overview, then only the doc for the
   - [docs/web/background.md](docs/web/background.md) – homepage WebGL emote background. Only when working on it.
 - [docs/branding.md](docs/branding.md) – visual identity: colors, fonts, square shape, ASCII accents, motion, logo. **Read before any UI work.**
 - [docs/voice.md](docs/voice.md) – how tetra talks: tone, casing, message patterns, words. **Read before writing any user-facing text** (bot replies, errors, buttons, labels, site copy).
+- [docs/supporter.md](docs/supporter.md) – planned paid tier (premium → supporter rename, perk ideas). Nothing there is built yet.
 
 App docs link to deeper topic docs; follow those links only when the task needs them.
 
