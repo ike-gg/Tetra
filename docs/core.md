@@ -157,7 +157,7 @@ Handlers in `src/lib/media/` (`PlatformHandlerCallback(url, { progress, fileLimi
 - Such a command may answer only through the interaction (reply / deferReply / editReply / followUp, within the 15-minute token); no `channel.send`, no channel/guild fetches. `/media` uses `FeedbackManager` (reply, then editReply) and `interaction.attachmentSizeLimit` for its file limit, so it works the same everywhere.
 - If the user lacks **Use External Apps** in that guild channel, Discord forces the responses to be ephemeral (only the user sees them).
 - Shared path: `interaction-create.ts` lets interactions outside guilds through only for commands whose `metadata.contexts` contains a non-guild context (components always pass: they can only exist on messages such commands produced). The interaction log stores `interaction.guildId` (set also in guilds without the bot), not `guild.id`. Handlers that need the guild (emote flow) keep checking `interaction.guild`.
-- Setup (user side): Developer Portal → Installation → enable **User Install** with the `applications.commands` scope. `integration_types` and `contexts` only apply to **global** commands, so re-register with `bun --filter @tetra/core deployCommands` (`src/deploy/deploy-commands-global.ts`, PUTs all global commands). `deploy:dev` registers guild commands on `DEV_GUILDS`, which can't be user-installed.
+- Setup (user side): Developer Portal → Installation → enable **User Install** with the `applications.commands` scope. `integration_types` and `contexts` only apply to **global** commands, so re-register with `bun --filter @tetra/core deployCommands` (`src/deploy/deploy-commands-global.ts`, PUTs all global commands). `deploy:dev` registers guild commands on `DEV_GUILDS`, which can't be user-installed. Keep the dev app guild-only (`commands:clear` removes its global commands); having both shows duplicates.
 
 ### Platform facts (verified 2026-11, yt-dlp 2026.10.26, gallery-dl 1.32.20, residential IP, no cookies)
 
@@ -234,7 +234,7 @@ Validated in `src/env.ts` (Zod + a readable error table); the app doesn't start 
 Run inside `apps/core`, or from the root with `bun --filter @tetra/core <script>`.
 
 - `dev` – watch, `start` – production
-- `deploy:dev` – register commands on `DEV_GUILDS`; `deployCommands` – globally
+- `deploy:dev` – register commands on `DEV_GUILDS`; `deployCommands` – globally; `commands:clear` – remove all global commands (`--guild <id>`, repeatable, clears those guilds instead; refuses with `ENV=production` unless `--force`). Dev app setup: `commands:clear` once, then only `deploy:dev`. Global commands take priority in the picker, so global + guild registrations show duplicates.
 - `emojis:sync` – upload the feedback emojis as application emojis of the current env's app (`--force` replaces changed ones)
 - `db:generate` (new migration from the schema), `db:migrate` (apply), `db:push` (local prototyping only), `db:studio` – Drizzle (also available from the root)
 - `typecheck` – `tsc --noEmit`
