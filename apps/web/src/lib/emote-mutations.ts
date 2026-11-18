@@ -20,6 +20,7 @@ import {
   type RemovedEmote,
   removedEmotesQueryOptions,
 } from "@/lib/guilds";
+import { RETENTION_DAYS } from "@/lib/retention";
 
 /** A sentence for a toast, from the API's error reference (never from its message text). */
 export const emoteErrorMessage = (error: unknown) => {
@@ -58,7 +59,7 @@ export const emoteErrorMessage = (error: unknown) => {
     case "PAYLOAD_TOO_LARGE":
       return "the file is too big to send. get it under 256 KB first";
     case "TASK_NOT_FOUND":
-      return "this task is gone: it was already fixed or discarded";
+      return "this task is gone. it was already added or discarded, or it expired";
     case "FILE_TOO_LARGE":
       return "the original file is over 10 MB, too big for me to fetch";
     case "UNSUPPORTED_FILE_TYPE":
@@ -213,10 +214,17 @@ export function useRemoveEmote(guildId: string) {
 
 const restoreKey = (guildId: string) => ["restore-emote", guildId];
 
+const isRemovedGone = (error: unknown) =>
+  error instanceof ApiError && error.reference === "EMOTE_NOT_FOUND";
+
 /** Puts a removed emote back on its server. */
 export function useRestoreEmote(guildId: string) {
   const queryClient = useQueryClient();
   const removedKey = removedEmotesQueryOptions(guildId).queryKey;
+  const dropRemoved = (emote: PanelEmote) =>
+    queryClient.setQueryData<RemovedEmote[]>(removedKey, (removed) =>
+      removed?.filter(({ id }) => id !== emote.restoreId)
+    );
 
   const mutation = useMutation({
     mutationKey: restoreKey(guildId),
@@ -227,11 +235,15 @@ export function useRestoreEmote(guildId: string) {
         })
       ),
     onSuccess: async ({ preview }, emote) => {
-      queryClient.setQueryData<RemovedEmote[]>(removedKey, (removed) =>
-        removed?.filter(({ id }) => id !== emote.restoreId)
-      );
+      dropRemoved(emote);
       await holdSlotCounts(queryClient, guildId);
       shiftSlotCounts(queryClient, guildId, slotTypeOfPreview(preview), 1);
+    },
+    // Expired, or restored from another tab: the list is out of date
+    onError: (error, emote) => {
+      if (!isRemovedGone(error)) return;
+      dropRemoved(emote);
+      void queryClient.invalidateQueries({ queryKey: removedKey, exact: true });
     },
     onSettled: () => refreshSlotCounts(queryClient, guildId),
   });
@@ -242,7 +254,9 @@ export function useRestoreEmote(guildId: string) {
       success: { title: `restored ${emote.name} on ${guildName}` },
       error: (error) => ({
         title: `couldn't restore ${emote.name}`,
-        description: emoteErrorMessage(error),
+        description: isRemovedGone(error)
+          ? `it's not in removed anymore. tetra keeps removed emotes for ${RETENTION_DAYS} days, so it may have expired or been restored already`
+          : emoteErrorMessage(error),
       }),
     });
   };

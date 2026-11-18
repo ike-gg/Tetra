@@ -30,6 +30,8 @@ export type PanelEmote = {
   available?: boolean;
   /** Set on removed emotes: the id `POST /guilds/:guildId/restore/:restoreId` takes. */
   restoreId?: number;
+  /** Set on removed emotes: when tetra forgets it (ISO), see `lib/retention.ts`. */
+  expiresAt?: string;
   /** Set on task emotes: the editor task the panel editor opens (`/panel/tasks/$taskId`). */
   taskId?: string;
   /** The emote's page at its source (7TV, BTTV, FFZ); "Open original" prefers it. */
@@ -88,6 +90,7 @@ export const fromRemovedEmote = (removed: RemovedEmote, guildId: string): PanelE
   key: `removed:${removed.id}`,
   guildId,
   restoreId: removed.id,
+  expiresAt: removed.expiresAt,
 });
 
 export const fromTask = (task: Task): PanelEmote => ({

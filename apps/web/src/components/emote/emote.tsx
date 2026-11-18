@@ -5,6 +5,7 @@ import { MenuContextTrigger } from "@/components/ui/menu";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/cn";
 import type { Fitting, PanelEmote } from "@/lib/emote";
+import { timeLeft } from "@/lib/retention";
 
 const FIT: Record<Fitting, string> = {
   contain: "object-contain",
@@ -57,6 +58,7 @@ export const Emote = memo(function Emote({
     rememberTileList(tile);
   };
   const unavailable = emote.available === false;
+  const expiry = emote.expiresAt ? timeLeft(emote.expiresAt) : undefined;
 
   return (
     <MenuContextTrigger
@@ -132,6 +134,17 @@ export const Emote = memo(function Emote({
             {unavailable ? "unavailable" : "managed"}
           </span>
         )}
+        {expiry && (
+          <span
+            aria-hidden="true"
+            className={cn(
+              "absolute bottom-0 left-0 bg-background/85 px-1 font-mono text-[0.625rem] leading-4",
+              expiry.soon ? "text-primary" : "text-muted"
+            )}
+          >
+            {expiry.short}
+          </span>
+        )}
       </span>
       {pending && (
         <span className="absolute inset-0 flex items-center justify-center">
@@ -149,6 +162,7 @@ export const Emote = memo(function Emote({
           {emote.name}
         </span>
       )}
+      {expiry && <span className="sr-only">, {expiry.long}</span>}
     </MenuContextTrigger>
   );
 });

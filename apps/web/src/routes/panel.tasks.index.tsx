@@ -5,6 +5,7 @@ import { PanelError, PanelLoading } from "@/components/panel/query-state";
 import { TaskList } from "@/components/panel/task-list";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { RETENTION_DAYS, TASK_LIMIT } from "@/lib/retention";
 import { NOINDEX_META } from "@/lib/seo";
 import { tasksQueryOptions } from "@/lib/tasks";
 
@@ -24,7 +25,8 @@ function PanelTasks() {
         </Heading>
         <Text size="sm" tone="muted">
           emotes the bot couldn&apos;t fit into Discord&apos;s limit on its own, sent here
-          with &ldquo;open in editor&rdquo;. newest first
+          with &ldquo;open in editor&rdquo;. newest first. each task stays for{" "}
+          {RETENTION_DAYS} days, and past {TASK_LIMIT} a new one replaces your oldest
         </Text>
       </div>
 

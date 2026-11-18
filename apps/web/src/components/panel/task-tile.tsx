@@ -4,6 +4,7 @@ import { Emote } from "@/components/emote/emote";
 import { Button } from "@/components/ui/button";
 import { fromTask } from "@/lib/emote";
 import { relativeTime } from "@/lib/relative-time";
+import { timeLeft } from "@/lib/retention";
 import type { Task } from "@/lib/tasks";
 
 const ORIGINS: Record<Task["emote"]["origin"], string> = {
@@ -23,6 +24,7 @@ type TaskTileProps = {
 
 export function TaskTile({ task, guildName }: TaskTileProps) {
   const { emote } = task;
+  const left = timeLeft(task.expiresAt);
 
   return (
     <li className="flex items-center gap-3 bg-background p-3">
@@ -36,6 +38,14 @@ export function TaskTile({ task, guildName }: TaskTileProps) {
             title={new Date(task.createdAt).toLocaleString()}
           >
             {relativeTime(Date.parse(task.createdAt))}
+          </time>{" "}
+          ·{" "}
+          <time
+            dateTime={task.expiresAt}
+            title={`${left.long}, ${new Date(task.expiresAt).toLocaleString()}`}
+            className={left.soon ? "text-primary" : undefined}
+          >
+            {left.short}
           </time>
         </p>
       </div>

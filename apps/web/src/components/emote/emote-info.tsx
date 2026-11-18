@@ -5,6 +5,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { type PanelEmote, SOURCE_LABELS } from "@/lib/emote";
 import { emoteFileQueryOptions } from "@/lib/emote-file";
 import { formatBytes } from "@/lib/format-bytes";
+import { timeLeft } from "@/lib/retention";
 
 const DISCORD_LIMIT = 256 * 1024;
 
@@ -14,6 +15,20 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <span className="w-16 shrink-0 font-mono text-muted text-xs">{label}</span>
       <span className="min-w-0 truncate tabular-nums">{children}</span>
     </MenuItem>
+  );
+}
+
+function ExpiresRow({ expiresAt }: { expiresAt: string }) {
+  const left = timeLeft(expiresAt);
+  const date = new Date(expiresAt).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+  return (
+    <Row label="expires">
+      {date}
+      <span className={left.soon ? "text-primary" : "text-muted"}> · {left.short}</span>
+    </Row>
   );
 }
 
@@ -54,6 +69,7 @@ export function EmoteInfo({ emote }: { emote: PanelEmote }) {
           <span className="text-muted">unknown</span>
         )}
       </Row>
+      {emote.expiresAt && <ExpiresRow expiresAt={emote.expiresAt} />}
       <Row label="id">
         <span className="font-mono text-xs">{emote.id}</span>
       </Row>

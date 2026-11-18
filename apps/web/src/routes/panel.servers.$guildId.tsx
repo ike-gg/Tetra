@@ -35,6 +35,7 @@ import {
   type ManagedGuild,
   removedEmotesQueryOptions,
 } from "@/lib/guilds";
+import { RETENTION_DAYS } from "@/lib/retention";
 import { NOINDEX_META } from "@/lib/seo";
 
 type ServerSearch = { view?: "removed" | "similar" };
@@ -279,8 +280,9 @@ function RemovedNotice() {
   return (
     <Notice title="removed emotes are a tetra feature" className="max-w-2xl">
       Discord doesn&apos;t keep removed emotes. tetra saves every emote removed while
-      it&apos;s on this server, from the panel or in Discord, so you can restore it.
-      emotes removed before tetra joined aren&apos;t here
+      it&apos;s on this server, from the panel or in Discord, and keeps it for{" "}
+      {RETENTION_DAYS} days so you can restore it. emotes removed before tetra joined
+      aren&apos;t here
     </Notice>
   );
 }
@@ -294,8 +296,13 @@ const guildErrorMessage = (error: Error) => {
 
 type Filters = { query: string; type: TypeFilter; sort: Sort };
 
-// Instant, client-side: even 500 emotes filter in well under a frame
-function useFiltered(emotes: PanelEmote[], { query, type, sort }: Filters) {
+// Instant, client-side: even 500 emotes filter in well under a frame. `serverOrder`
+// keeps the API's order for "newest" (removed emotes come newest removal first).
+function useFiltered(
+  emotes: PanelEmote[],
+  { query, type, sort }: Filters,
+  serverOrder = false
+) {
   const deferredQuery = useDeferredValue(query.trim().toLowerCase());
   return useMemo(() => {
     const filtered = emotes.filter(
@@ -303,14 +310,10 @@ function useFiltered(emotes: PanelEmote[], { query, type, sort }: Filters) {
         (type === "all" || emote.animated === (type === "animated")) &&
         (!deferredQuery || emote.name.toLowerCase().includes(deferredQuery))
     );
-    return sort === "name"
-      ? filtered.sort((a, b) => a.name.localeCompare(b.name))
-      : filtered.sort((a, b) =>
-          a.restoreId !== undefined && b.restoreId !== undefined
-            ? b.restoreId - a.restoreId
-            : compareSnowflakes(b.id, a.id)
-        );
-  }, [emotes, deferredQuery, type, sort]);
+    if (sort === "name") return filtered.sort((a, b) => a.name.localeCompare(b.name));
+    if (serverOrder) return filtered;
+    return filtered.sort((a, b) => compareSnowflakes(b.id, a.id));
+  }, [emotes, deferredQuery, type, sort, serverOrder]);
 }
 
 type ListProps = { filters: Filters; onClear: () => void };
@@ -348,7 +351,7 @@ function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: str
     () => removed.data?.map((emote) => fromRemovedEmote(emote, guildId)) ?? [],
     [removed.data, guildId]
   );
-  const visible = useFiltered(emotes, filters);
+  const visible = useFiltered(emotes, filters, true);
   const pendingKeys = useMemo(
     () => new Set(restoring.filter((key) => key !== undefined)),
     [restoring]
@@ -366,7 +369,8 @@ function RemovedEmotes({ guildId, filters, onClear }: ListProps & { guildId: str
   if (emotes.length === 0) {
     return (
       <EmptyState title="nothing to restore">
-        no emote has been removed since tetra joined this server
+        no emote was removed from this server in the last {RETENTION_DAYS} days while
+        tetra was on it
       </EmptyState>
     );
   }

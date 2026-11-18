@@ -18,6 +18,7 @@ import { formatBytes } from "@/lib/format-bytes";
 import { findGuild, type GuildLists, guildsQueryOptions } from "@/lib/guilds";
 import { DISCORD_EMOTE_LIMIT } from "@/lib/media/edit";
 import type { MediaFile } from "@/lib/media/media-file";
+import { RETENTION_DAYS, TASK_LIMIT } from "@/lib/retention";
 import { useAddTaskEmote } from "@/lib/task-mutations";
 import { type Task, taskFileQueryOptions, taskQueryOptions } from "@/lib/tasks";
 
@@ -272,6 +273,28 @@ function TaskEditor({ task, source }: { task: Task; source: MediaFile }) {
   );
 }
 
+// The API answers 404 for added, discarded and expired tasks alike, so one state covers
+// all three
+function TaskGone() {
+  return (
+    <div className="flex max-w-lg flex-col items-start gap-4">
+      <Heading level={1} size="lg">
+        this task is gone
+      </Heading>
+      <Text size="sm" tone="muted">
+        it was already added or discarded, or it expired. tasks are kept for{" "}
+        {RETENTION_DAYS} days, and only your {TASK_LIMIT} newest stay
+      </Text>
+      <Text size="sm" tone="muted">
+        to fix the emote again, use &ldquo;open in editor&rdquo; on it in Discord
+      </Text>
+      <Button size="sm" render={<Link to="/panel/tasks" />}>
+        back to tasks
+      </Button>
+    </div>
+  );
+}
+
 // Loading and error states: inline at the top of the content area, never centered
 function StateLayout({ task, children }: { task?: Task; children: ReactNode }) {
   return (
@@ -302,22 +325,5 @@ function TaskHeader({ task }: { task: Task }) {
         </div>
       </div>
     </EmoteMenu>
-  );
-}
-
-function TaskGone() {
-  return (
-    <div className="flex max-w-lg flex-col items-start gap-4">
-      <Heading level={1} size="lg">
-        this task is gone
-      </Heading>
-      <Text size="sm" tone="muted">
-        it was already added or discarded, maybe from another tab. your other tasks are
-        still waiting
-      </Text>
-      <Button size="sm" render={<Link to="/panel/tasks" />}>
-        back to tasks
-      </Button>
-    </div>
   );
 }
