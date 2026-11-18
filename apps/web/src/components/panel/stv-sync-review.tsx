@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { editorLink } from "@/components/editor/editor-link";
 import { PanelError, PanelLoading } from "@/components/panel/query-state";
 import { Button, buttonClassName } from "@/components/ui/button";
 import { Heading } from "@/components/ui/heading";
@@ -7,11 +8,7 @@ import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
 import { Text } from "@/components/ui/text";
 import { relativeTime } from "@/lib/relative-time";
 import { type ReviewEntry, syncReviewQueryOptions } from "@/lib/stv-sync";
-import {
-  useDismissReviewEntry,
-  useOpenReviewEntryInEditor,
-  useRetryReviewEntry,
-} from "@/lib/stv-sync-mutations";
+import { useDismissReviewEntry, useRetryReviewEntry } from "@/lib/stv-sync-mutations";
 
 type Guild = { id: string; name: string };
 
@@ -62,7 +59,6 @@ export function StvSyncReview({ guild }: { guild: Guild }) {
 function ReviewRow({ guild, entry }: { guild: Guild; entry: ReviewEntry }) {
   const retry = useRetryReviewEntry(guild);
   const dismiss = useDismissReviewEntry(guild.id);
-  const openInEditor = useOpenReviewEntryInEditor(guild.id);
   const busy = retry.isPending || dismiss.isPending;
   const label = `:${entry.discordName}:`;
 
@@ -112,7 +108,11 @@ function ReviewRow({ guild, entry }: { guild: Guild; entry: ReviewEntry }) {
           size="sm"
           disabled={busy}
           aria-label={`open ${label} in the editor`}
-          onClick={() => void openInEditor(entry)}
+          render={editorLink(
+            "panel",
+            { url: entry.fileUrl, name: entry.discordName },
+            { syncGuild: guild.id, syncEntry: entry.id }
+          )}
         >
           open in editor
         </Button>

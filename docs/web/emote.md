@@ -79,11 +79,11 @@ Rendered by the owning `EmoteMenu` while it has a selection (keyed by the emote,
 
 ## Files: download, open in editor
 
-`src/lib/emote-file.ts`. Both fetch `emote.url` (Discord: the CDN link without `?size`, so the original size) and name the file `<name>.<gif|png|webp|jpg>` from the response's content type (the URL's extension as fallback).
+`src/lib/emote-file.ts` (download) and the editor's `fetchMediaLink` (open in editor). Both fetch `emote.url` (Discord: the CDN link without `?size`, so the original size) and name the file `<name>.<gif|png|webp|jpg>` from the response's content type (the URL's extension as fallback).
 
 - **CORS, verified 2026-11** from `http://localhost:*`: `cdn.discordapp.com` (emojis, `*`), `cdn.7tv.app` (`*`), `cdn.frankerfacez.com` (`*`) can be read. `cdn.betterttv.net` sends no `Access-Control-Allow-Origin`, so BTTV files (removed or task emotes from BTTV) can't be read; link sources depend on their host. A CORS failure and a network error look the same to `fetch` (a `TypeError`), so both count as "can't read" (`EmoteFileUnreadableError`).
 - **Download**: `toast.promise` ("downloading catJAM" → "downloaded catJAM.gif"), saved with `downloadBlob`. Unreadable: opens the file in a new tab and says so ("BTTV doesn't let the browser read this file. save it from there"); if the popup is blocked (the click's activation can expire while fetching), the toast has an open action instead.
-- **Open in editor**: fetches the file, loads it with the editor's `loadMediaFile` (validates it) and `saveToLibrary` (both imported lazily, so the panel doesn't ship the editor's model), then navigates to the panel's editor, `/panel/editor/$key` (the user never leaves the panel). `useEditInQuickEditor(host?)` picks the host by route when none is given (`/editor/$key` outside the panel), see [editor.md](editor.md#local-library-srclibmedialocal-libraryts). Unreadable sources get an error toast asking to download it and drop it into the editor; there's no proxy for them.
+- **Open in editor**: a link (`editorLink`) that opens the panel's editor in a new tab with `?open=<emote.url>&name=<name>`; the new tab fetches the file and imports it, see [editor.md](editor.md#local-library-srclibmedialocal-libraryts). In menus it carries the new-tab `↗`. Unreadable sources (BTTV) fail there, under the link field, asking to download it and drop it in; there's no proxy for them.
 
 ## Mutations and cache (`src/lib/emote-mutations.ts`)
 

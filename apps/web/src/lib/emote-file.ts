@@ -1,6 +1,3 @@
-import { useMatchRoute, useNavigate } from "@tanstack/react-router";
-
-import { EDITOR_HOSTS, type EditorHost } from "@/components/editor/editor-host";
 import { toast } from "@/components/ui/toaster";
 import { downloadBlob } from "@/lib/download-blob";
 import { type PanelEmote, SOURCE_LABELS } from "@/lib/emote";
@@ -86,51 +83,6 @@ export const downloadEmote = (emote: PanelEmote) => {
     }),
   });
 };
-
-/**
- * Puts the emote's file into the quick editor's local library (this browser's
- * IndexedDB) and opens it in the editor of `host`: by default the panel's
- * (`/panel/editor/$key`) inside the panel, the public one (`/editor/$key`) elsewhere.
- * Resolves to whether it opened; failures are toasted, never thrown.
- */
-export function useEditInQuickEditor(host?: EditorHost) {
-  const navigate = useNavigate();
-  const matchRoute = useMatchRoute();
-  const inPanel = Boolean(matchRoute({ to: "/panel", fuzzy: true }));
-  const fileRoute = EDITOR_HOSTS[host ?? (inPanel ? "panel" : "public")].file;
-
-  return async (emote: PanelEmote) => {
-    const request = (async () => {
-      // The editor's model loads only when it's used, not with the panel
-      const [{ blob, fileName }, { importToLibrary }] = await Promise.all([
-        fetchEmoteFile(emote),
-        import("@/lib/media/import-media"),
-      ]);
-      return importToLibrary(blob, fileName);
-    })();
-    toast.promise(request, {
-      loading: `opening ${emote.name} in the editor`,
-      success: { title: `opened ${emote.name} in the editor` },
-      error: (error) => ({
-        title: `couldn't open ${emote.name} in the editor`,
-        description:
-          error instanceof EmoteFileUnreadableError
-            ? `${error.message}. download it, then drop it into the editor`
-            : error instanceof Error
-              ? error.message
-              : undefined,
-      }),
-    });
-    try {
-      const key = await request;
-      await navigate({ to: fileRoute, params: { key } });
-      return true;
-    } catch {
-      // The toast already told the user
-      return false;
-    }
-  };
-}
 
 const loadDimensions = (url: string) =>
   new Promise<{ width: number; height: number } | null>((resolve) => {

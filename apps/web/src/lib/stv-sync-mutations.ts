@@ -162,60 +162,6 @@ export function useDismissReviewEntry(guildId: string) {
   });
 }
 
-const EXTENSIONS: Record<string, string> = {
-  "image/gif": "gif",
-  "image/png": "png",
-  "image/webp": "webp",
-};
-
-/**
- * Puts the 7TV file of an emote that needs review into the editor's local library and
- * opens it in the panel's editor with the entry as its target, so "add" goes back to the
- * sync.
- */
-export function useOpenReviewEntryInEditor(guildId: string) {
-  const navigate = useNavigate();
-
-  return async (entry: ReviewEntry) => {
-    const label = `:${entry.discordName}:`;
-    const request = (async () => {
-      const [response, { importToLibrary }] = await Promise.all([
-        fetch(entry.fileUrl),
-        import("@/lib/media/import-media"),
-      ]);
-      if (!response.ok) {
-        throw new Error(`7TV answered ${response.status}. try again in a moment`);
-      }
-      const blob = await response.blob();
-      const extension = EXTENSIONS[blob.type] ?? (entry.animated ? "gif" : "png");
-      return importToLibrary(blob, `${entry.discordName}.${extension}`);
-    })();
-    toast.promise(request, {
-      loading: `opening ${label} in the editor`,
-      success: { title: `opened ${label} in the editor` },
-      error: (error) => ({
-        title: `couldn't open ${label} in the editor`,
-        description:
-          error instanceof TypeError
-            ? "i couldn't download it from 7TV. check your connection and try again"
-            : error instanceof Error
-              ? error.message
-              : undefined,
-      }),
-    });
-    try {
-      const key = await request;
-      await navigate({
-        to: "/panel/editor/$key",
-        params: { key },
-        search: { syncGuild: guildId, syncEntry: entry.id },
-      });
-    } catch {
-      // The toast already told the user
-    }
-  };
-}
-
 type UploadVariables = { blob: Blob; name: string };
 
 /**

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { type FormEvent, useEffect, useId, useMemo, useRef, useState } from "react";
 
+import { editorLink } from "@/components/editor/editor-link";
 import { Emote } from "@/components/emote/emote";
 import { EmoteMenu, FITTINGS, useEmoteMenu } from "@/components/emote/emote-menu";
 import { GuildIcon } from "@/components/panel/guild-icon";
@@ -34,7 +35,6 @@ import {
   SOURCE_LABELS,
   toDiscordEmoteName,
 } from "@/lib/emote";
-import { useEditInQuickEditor } from "@/lib/emote-file";
 import { useAddEmote } from "@/lib/emote-mutations";
 import {
   type GuildLists,
@@ -223,8 +223,6 @@ function QuickAddDetails({
 }: DetailsProps) {
   const guilds = useQuery(guildsQueryOptions);
   const add = useAddEmote();
-  const editInEditor = useEditInQuickEditor();
-  const [opening, setOpening] = useState(false);
   const { fittingOf, setFitting } = useEmoteMenu();
   const [name, setName] = useState(() => toDiscordEmoteName(emote.name));
   const [adding, setAdding] = useState(false);
@@ -251,14 +249,6 @@ function QuickAddDetails({
     const added = await add({ emote: preview, guild: picked, fitting });
     setAdding(false);
     if (added) onAdded();
-  };
-
-  const openInEditor = async () => {
-    if (opening) return;
-    setOpening(true);
-    const opened = await editInEditor(preview);
-    setOpening(false);
-    if (opened) onOpenedInEditor?.();
   };
 
   const renamed = toDiscordEmoteName(emote.name) !== emote.name;
@@ -327,14 +317,8 @@ function QuickAddDetails({
       </div>
 
       <div className="flex flex-wrap justify-end gap-2">
-        <Button
-          type="button"
-          disabled={opening}
-          data-pending={opening || undefined}
-          aria-busy={opening || undefined}
-          onClick={() => void openInEditor()}
-        >
-          {opening ? "opening" : "open in editor"}
+        <Button render={editorLink("panel", preview)} onClick={onOpenedInEditor}>
+          open in editor
         </Button>
         <Button
           type="submit"

@@ -151,6 +151,8 @@ type FetchMediaLinkOptions = {
   signal?: AbortSignal;
   /** What is happening right now, for the line under the field. */
   onStatus?: (status: string) => void;
+  /** The link is the file itself (an emote's file from the panel): no provider lookup. */
+  name?: string;
 };
 
 /**
@@ -160,7 +162,7 @@ type FetchMediaLinkOptions = {
  */
 export const fetchMediaLink = async (
   text: string,
-  { maxBytes, signal, onStatus }: FetchMediaLinkOptions
+  { maxBytes, signal, onStatus, name }: FetchMediaLinkOptions
 ) => {
   const url = parseMediaLink(text);
   if (!url) {
@@ -170,8 +172,13 @@ export const fetchMediaLink = async (
     );
   }
 
-  onStatus?.(`reading ${url.hostname}`);
-  const target = await resolveTarget(url, signal);
+  let target: Target;
+  if (name) {
+    target = { url: url.href, name, source: url.hostname };
+  } else {
+    onStatus?.(`reading ${url.hostname}`);
+    target = await resolveTarget(url, signal);
+  }
   onStatus?.(`downloading ${target.name}`);
 
   let response: Response;

@@ -1,7 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { Fragment, type ReactElement, type ReactNode } from "react";
 
+import {
+  editorLink,
+  taskEditorLink,
+  useEditorHost,
+} from "@/components/editor/editor-link";
 import { EmoteInfo } from "@/components/emote/emote-info";
 import { ServerMenuItems } from "@/components/panel/server-menu-items";
 import {
@@ -17,7 +21,7 @@ import {
 } from "@/components/ui/menu";
 import { toast } from "@/components/ui/toaster";
 import type { Fitting, PanelEmote } from "@/lib/emote";
-import { downloadEmote, useEditInQuickEditor } from "@/lib/emote-file";
+import { downloadEmote } from "@/lib/emote-file";
 import { useAddEmote, useRemoveEmote, useRestoreEmote } from "@/lib/emote-mutations";
 import { guildsQueryOptions, type ManagedGuild } from "@/lib/guilds";
 
@@ -65,8 +69,11 @@ export type EmoteAction = {
   hint?: string;
 } & (
   | { type: "run"; run: () => void }
-  /** An in-app link (a TanStack `<Link />`), rendered as the item or button. */
-  | { type: "link"; render: ReactElement<Record<string, unknown>> }
+  /**
+   * An in-app link (a TanStack `<Link />`), rendered as the item or button. `newTab`:
+   * the link opens a new tab, which menus mark with ↗.
+   */
+  | { type: "link"; render: ReactElement<Record<string, unknown>>; newTab?: boolean }
   /** Opens in a new tab. */
   | { type: "external"; href: string }
   /** "Add to server": a submenu in menus, a dropdown in the bar. */
@@ -89,7 +96,7 @@ export function useEmoteActions(
   const add = useAddEmote();
   const remove = useRemoveEmote(guild?.id ?? "");
   const restore = useRestoreEmote(guild?.id ?? "");
-  const editInQuickEditor = useEditInQuickEditor();
+  const editorHost = useEditorHost();
   const managesHere = Boolean(guild && canManage);
   const actions: EmoteAction[] = [];
 
@@ -113,7 +120,8 @@ export function useEmoteActions(
       compactLabel: "open",
       placement: "primary",
       section: "main",
-      render: <Link to="/panel/tasks/$taskId" params={{ taskId: emote.taskId }} />,
+      render: taskEditorLink(emote.taskId),
+      newTab: true,
     });
   }
 
@@ -186,11 +194,12 @@ export function useEmoteActions(
   if (kind !== "task") {
     actions.push({
       id: "edit",
-      type: "run",
+      type: "link",
       label: "open in editor",
       placement: "bar",
       section: "file",
-      run: () => void editInQuickEditor(emote),
+      render: editorLink(editorHost, emote),
+      newTab: true,
     });
   }
 
@@ -261,6 +270,14 @@ export function AddToServerItems({
   );
 }
 
+function NewTabGlyph() {
+  return (
+    <span aria-hidden="true" className="-ml-1 font-mono text-muted text-xs">
+      {"↗︎"}
+    </span>
+  );
+}
+
 function ActionMenuItem({
   action,
   emote,
@@ -283,14 +300,17 @@ function ActionMenuItem({
         </MenuItem>
       );
     case "link":
-      return <MenuItem render={action.render}>{action.label}</MenuItem>;
+      return (
+        <MenuItem render={action.render}>
+          {action.label}
+          {action.newTab && <NewTabGlyph />}
+        </MenuItem>
+      );
     case "external":
       return (
         <MenuItem render={<a href={action.href} target="_blank" rel="noreferrer" />}>
           {action.label}
-          <span aria-hidden="true" className="-ml-1 font-mono text-muted text-xs">
-            {"↗︎"}
-          </span>
+          <NewTabGlyph />
         </MenuItem>
       );
     case "add-to-server":

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+import { validateOpenSearch, validateSyncSearch } from "@/components/editor/editor-host";
 import { EditorStart } from "@/components/editor/editor-start";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
@@ -9,6 +10,10 @@ import { NOINDEX_META } from "@/lib/seo";
 
 export const Route = createFileRoute("/panel/editor/")({
   head: () => ({ meta: [{ title: "editor · tetra" }, NOINDEX_META] }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    ...validateOpenSearch(search),
+    ...validateSyncSearch(search),
+  }),
   component: PanelEditorStart,
 });
 

@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
@@ -7,7 +7,7 @@ import { importToLibrary } from "@/lib/media/import-media";
 import { MAX_FILE_BYTES } from "@/lib/media/media-file";
 import { fetchMediaLink, parseMediaLink } from "@/lib/media/media-link";
 
-import { EDITOR_HOSTS, type EditorHost } from "./editor-host";
+import { type EditorHost, validateSyncSearch } from "./editor-host";
 import { MediaDropzone } from "./media-dropzone";
 import { RecentFiles } from "./recent-files";
 
@@ -21,6 +21,7 @@ const messageOf = (error: unknown) =>
 // The start screen below the host's intro: open a file or a link, or pick one edited before
 export function EditorStart({ host }: { host: EditorHost }) {
   const navigate = useNavigate();
+  const search = useSearch({ strict: false });
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileStatus, setFileStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -44,13 +45,25 @@ export function EditorStart({ host }: { host: EditorHost }) {
     return next.signal;
   };
 
+  // From `?open`, the file replaces the start screen in history, so Back doesn't fetch
+  // it again; the sync target only exists in the panel
   const open = async (
     file: File,
     signal: AbortSignal,
-    onStatus: (status: string) => void
+    onStatus: (status: string) => void,
+    fromSearch = false
   ) => {
     const key = await importToLibrary(file, file.name, { signal, onStatus });
-    await navigate({ to: EDITOR_HOSTS[host].file, params: { key } });
+    if (host === "panel") {
+      await navigate({
+        to: "/panel/editor/$key",
+        params: { key },
+        search: fromSearch ? validateSyncSearch(search) : {},
+        replace: fromSearch,
+      });
+    } else {
+      await navigate({ to: "/editor/$key", params: { key }, replace: fromSearch });
+    }
   };
 
   const openFile = async (file: File) => {
@@ -65,7 +78,7 @@ export function EditorStart({ host }: { host: EditorHost }) {
     }
   };
 
-  const openLink = async (text: string) => {
+  const openLink = async (text: string, fromSearch?: { name?: string }) => {
     const signal = begin();
     setLinkError(null);
     try {
@@ -73,8 +86,9 @@ export function EditorStart({ host }: { host: EditorHost }) {
         maxBytes: MAX_FILE_BYTES,
         signal,
         onStatus: setLinkStatus,
+        name: fromSearch?.name,
       });
-      await open(file, signal, setLinkStatus);
+      await open(file, signal, setLinkStatus, Boolean(fromSearch));
     } catch (cause) {
       if (signal.aborted) return;
       setLinkError(messageOf(cause));
@@ -84,6 +98,15 @@ export function EditorStart({ host }: { host: EditorHost }) {
   };
   const openLinkRef = useRef(openLink);
   openLinkRef.current = openLink;
+
+  // "Open in editor" elsewhere links here in a new tab with the file to open
+  const requested = typeof search.open === "string" ? search.open : null;
+  const requestedName = typeof search.name === "string" ? search.name : undefined;
+  useEffect(() => {
+    if (!requested) return;
+    setLink(requested);
+    void openLinkRef.current(requested, { name: requestedName });
+  }, [requested, requestedName]);
 
   // A link pasted anywhere on the screen opens like one pasted into the field; files go
   // to the drop zone, which listens on the document too

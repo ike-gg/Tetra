@@ -1,5 +1,4 @@
-import { Link } from "@tanstack/react-router";
-
+import { taskEditorLink } from "@/components/editor/editor-link";
 import { Emote } from "@/components/emote/emote";
 import { Button } from "@/components/ui/button";
 import { fromTask } from "@/lib/emote";
@@ -49,11 +48,7 @@ export function TaskTile({ task, guildName }: TaskTileProps) {
           </time>
         </p>
       </div>
-      <Button
-        size="sm"
-        className="shrink-0"
-        render={<Link to="/panel/tasks/$taskId" params={{ taskId: task.id }} />}
-      >
+      <Button size="sm" className="shrink-0" render={taskEditorLink(task.id)}>
         fix in editor<span className="sr-only"> {emote.name}</span>
       </Button>
     </li>
